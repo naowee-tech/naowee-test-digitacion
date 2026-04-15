@@ -1,0 +1,694 @@
+<div class="app-shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <!-- Sidebar Header / Logo -->
+    <div class="sidebar-logo">
+      <span class="logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="5" width="3" height="14" rx="1.5" fill="#FF7500"/>
+          <rect x="8" y="5" width="3" height="14" rx="1.5" fill="#FF7500"/>
+        </svg>
+      </span>
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 32'%3E%3Ctext x='0' y='24' font-family='Inter,sans-serif' font-weight='700' font-size='22' fill='%23FF7500'%3Enaowee%3C/text%3E%3C/svg%3E"
+           alt="naowee" class="logo-img" />
+    </div>
+
+    <!-- Nav content -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">DASHBOARD</div>
+
+      <!-- Inicio -->
+      <div class="nav-item">
+        <div class="nav-item-row">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="#646587" stroke-width="1.5" fill="none"/>
+              <path d="M8 18v-6h4v6" stroke="#646587" stroke-width="1.5"/>
+            </svg>
+          </span>
+          <span class="nav-label">Inicio</span>
+          <span class="badge-dot badge-red"></span>
+        </div>
+      </div>
+
+      <div class="nav-section-label mt-12">GESTIÓN</div>
+
+      <!-- Competencias (expanded) -->
+      <div class="nav-item nav-item--active-parent">
+        <div class="nav-item-row">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2l2.5 5 5.5.8-4 3.9.94 5.47L10 14.77l-4.94 2.4.94-5.47L2 7.8l5.5-.8L10 2z" stroke="#646587" stroke-width="1.5" fill="none"/>
+            </svg>
+          </span>
+          <span class="nav-label nav-label--semibold">Competencias</span>
+          <span class="nav-chevron nav-chevron--up">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 10l4-4 4 4" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+        <!-- Submenu -->
+        <div class="nav-submenu">
+          <div class="nav-sub-item">
+            <span class="dot dot--hidden"></span>
+            <span class="nav-sub-label">Lista de competencias</span>
+          </div>
+          <div class="nav-sub-item nav-sub-item--active">
+            <span class="dot dot--orange"></span>
+            <span class="nav-sub-label nav-sub-label--active">Nueva competencia</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Digitadores -->
+      <div class="nav-item">
+        <div class="nav-item-row">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="7" r="3" stroke="#646587" stroke-width="1.5"/>
+              <path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#646587" stroke-width="1.5"/>
+            </svg>
+          </span>
+          <span class="nav-label nav-label--semibold">Digitadores</span>
+        </div>
+      </div>
+
+      <!-- Coordinadores -->
+      <div class="nav-item">
+        <div class="nav-item-row">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="8" cy="7" r="3" stroke="#646587" stroke-width="1.5"/>
+              <path d="M2 17c0-3.3 2.7-6 6-6" stroke="#646587" stroke-width="1.5"/>
+              <path d="M13 12l2 2 3-3" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="nav-label nav-label--semibold">Coordinadores</span>
+        </div>
+      </div>
+
+      <!-- Auditoria -->
+      <div class="nav-item">
+        <div class="nav-item-row">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="4" y="2" width="12" height="16" rx="2" stroke="#646587" stroke-width="1.5"/>
+              <path d="M7 7h6M7 10h6M7 13h4" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="nav-label nav-label--semibold">Auditoria</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-logout">
+      <div class="nav-item-row">
+        <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M13 14l4-4-4-4" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M17 10H8" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8 4H4a1 1 0 00-1 1v10a1 1 0 001 1h4" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Cerrar sesion</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main-wrapper">
+
+    <!-- Top header -->
+    <header class="top-header">
+      <div class="header-user">
+        <div class="user-profile">
+          <div class="avatar">
+            <span class="avatar-initials">AS</span>
+            <span class="avatar-badge"></span>
+          </div>
+          <div class="user-info">
+            <span class="user-name">Ana Maria S...</span>
+            <span class="user-role">Coordinador d...</span>
+          </div>
+          <button class="header-btn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3 5l4 4 4-4" stroke="#282834" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="page-content">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12L6 8l4-4" stroke="#d74009" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <a href="#" class="breadcrumb-link">Volver a competencias</a>
+      </div>
+
+      <!-- Page title -->
+      <h1 class="page-title">Nueva competencia</h1>
+      <p class="page-subtitle">Complete la información para registrar una nueva competencia deportiva</p>
+
+      <!-- ===== STEPPER ===== -->
+      <div class="stepper">
+        <div *ngFor="let step of steps; let i = index; let last = last" class="stepper-item-wrapper">
+          <div class="stepper-step" [class.stepper-step--active]="step.active">
+            <div class="step-badge"
+                 [class.step-badge--completed]="step.completed"
+                 [class.step-badge--active]="step.active">
+              <svg *ngIf="step.completed" width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span *ngIf="step.active" class="step-number">4</span>
+            </div>
+            <span class="step-label">{{ step.label }}</span>
+          </div>
+          <div *ngIf="!last" class="stepper-connector"
+               [class.stepper-connector--completed]="step.completed"></div>
+        </div>
+      </div>
+
+      <!-- ===== CONFIG CARD ===== -->
+      <div class="config-card">
+        <div class="config-card-header">
+          <div class="config-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="3" stroke="#282834" stroke-width="1.5"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="#282834" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="config-title">Configuración del enfrentamiento</h2>
+            <p class="config-subtitle">Revisa el formato y composición auto-determinados, ajusta tiempos y completa los detalles</p>
+          </div>
+        </div>
+
+        <!-- Expandable: Fase de grupos -->
+        <div class="expandable-section">
+          <div class="expandable-header" (click)="faseGruposExpanded = !faseGruposExpanded">
+            <div class="expandable-title-row">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="7" stroke="#646587" stroke-width="1.2"/>
+                <path d="M6 9h6M9 6v6" stroke="#646587" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <span class="expandable-title">Fase de grupos</span>
+              <span class="tag-link">• Sistema de competencia</span>
+            </div>
+            <div class="expandable-actions">
+              <span class="see-more">Ver mas</span>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" [class.rotated]="faseGruposExpanded">
+                <path d="M5 7l4 4 4-4" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expandable: Rondas de eliminación directa (expanded) -->
+        <div class="expandable-section expandable-section--expanded">
+          <div class="expandable-header" (click)="rondasExpanded = !rondasExpanded">
+            <div class="expandable-title-row">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="7" stroke="#646587" stroke-width="1.2"/>
+                <path d="M6 9h6M9 6v6" stroke="#646587" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <span class="expandable-title">Rondas de eliminación directa</span>
+              <span class="tag-link">• Sistema de competencia</span>
+            </div>
+            <div class="expandable-actions">
+              <span class="see-more">Ver menos</span>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M5 11l4-4 4 4" stroke="#646587" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Expanded content -->
+          <div class="expandable-body">
+
+            <!-- Fase inicial radio -->
+            <div class="fase-inicial">
+              <span class="fase-label">Fase inicial</span>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="fase" value="octavos"
+                         [checked]="faseInicial === 'octavos'"
+                         (change)="setFaseInicial('octavos')">
+                  <span class="radio-custom" [class.radio-custom--checked]="faseInicial === 'octavos'"></span>
+                  <span class="radio-label">Octavos</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="fase" value="cuartos"
+                         [checked]="faseInicial === 'cuartos'"
+                         (change)="setFaseInicial('cuartos')">
+                  <span class="radio-custom" [class.radio-custom--checked]="faseInicial === 'cuartos'"></span>
+                  <span class="radio-label">Cuartos</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="fase" value="semifinal"
+                         [checked]="faseInicial === 'semifinal'"
+                         (change)="setFaseInicial('semifinal')">
+                  <span class="radio-custom" [class.radio-custom--checked]="faseInicial === 'semifinal'"></span>
+                  <span class="radio-label">Semifinal</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- ===== TOURNAMENT BRACKET ===== -->
+            <div class="bracket-wrapper">
+              <div class="bracket">
+
+                <!-- OCTAVOS column -->
+                <div class="bracket-column">
+                  <div class="bracket-col-header">OCTAVOS</div>
+                  <div class="bracket-matches">
+
+                    <div class="bracket-pair" id="pair-1">
+                      <div class="team-slot">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 1</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-2">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 2</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-3">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 3</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-4">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 4</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-spacer"></div>
+
+                    <div class="bracket-pair" id="pair-5">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 5</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-6">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 6</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-7">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 7</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-8">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 8</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-spacer"></div>
+
+                    <div class="bracket-pair" id="pair-9">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 9</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-10">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 10</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-11">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 11</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-12">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 12</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-spacer"></div>
+
+                    <div class="bracket-pair" id="pair-13">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 13</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-14">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 14</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-15">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 15</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bracket-pair" id="pair-16">
+                      <div class="team-slot team-slot--top">
+                        <div class="team-btn">
+                          <span class="team-name">Equipo 16</span>
+                          <button class="team-chevron">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M2 4l3 3 3-3" stroke="#d74009" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Connector 1→2 -->
+                <div class="bracket-connectors bracket-connectors--oct-cuar">
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                    <span class="connector-label">Ganador llave 1</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                    <span class="connector-label">Ganador llave 2</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                    <span class="connector-label">Ganador llave 3</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                    <span class="connector-label">Ganador llave 4</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                    <span class="connector-label">Ganador llave 5</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                    <span class="connector-label">Ganador llave 6</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                    <span class="connector-label">Ganador llave 7</span>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                    <span class="connector-label">Ganador llave 8</span>
+                  </div>
+                </div>
+
+                <!-- CUARTOS column -->
+                <div class="bracket-column">
+                  <div class="bracket-col-header">CUARTOS</div>
+                  <div class="bracket-matches bracket-matches--cuartos">
+                    <div class="winner-slot">
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Ganador llave 1-2</span>
+                      </div>
+                    </div>
+                    <div class="winner-slot">
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Ganador llave 3...</span>
+                      </div>
+                    </div>
+                    <div class="winner-slot">
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Ganador llave 5-6</span>
+                      </div>
+                    </div>
+                    <div class="winner-slot">
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Ganador llave 7-8</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Connector 2→3 -->
+                <div class="bracket-connectors bracket-connectors--cuar-semi">
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                  </div>
+                </div>
+
+                <!-- SEMI FINAL column -->
+                <div class="bracket-column">
+                  <div class="bracket-col-header">SEMI FINAL</div>
+                  <div class="bracket-matches bracket-matches--semi">
+                    <div class="winner-slot">
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Ganador llave 1-2</span>
+                      </div>
+                    </div>
+                    <div class="winner-slot">
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Ganador llave 3...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Connector 3→4 -->
+                <div class="bracket-connectors bracket-connectors--semi-final">
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--top"></div>
+                  </div>
+                  <div class="connector-group">
+                    <div class="connector-line connector-line--bottom"></div>
+                  </div>
+                </div>
+
+                <!-- FINAL column -->
+                <div class="bracket-column">
+                  <div class="bracket-col-header">FINAL</div>
+                  <div class="bracket-matches bracket-matches--final">
+                    <div class="final-slot">
+                      <div class="final-label">Ganador:</div>
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Semi final 1</span>
+                      </div>
+                    </div>
+                    <div class="final-slot">
+                      <div class="final-label">Ganador:</div>
+                      <div class="team-btn team-btn--winner">
+                        <span class="team-name">Semi final 2</span>
+                      </div>
+                    </div>
+
+                    <div class="third-place-section">
+                      <div class="third-place-label">TERCER PUESTO</div>
+                      <div class="final-slot">
+                        <div class="final-label">Perdedor:</div>
+                        <div class="team-btn team-btn--winner">
+                          <span class="team-name">Semi final 1</span>
+                        </div>
+                      </div>
+                      <div class="final-slot">
+                        <div class="final-label">Perdedor:</div>
+                        <div class="team-btn team-btn--winner">
+                          <span class="team-name">Semi final 2</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- end bracket -->
+            </div><!-- end bracket-wrapper -->
+
+          </div><!-- end expandable-body -->
+        </div><!-- end expandable rondas -->
+
+        <!-- Tercer puesto toggle row -->
+        <div class="option-row">
+          <div class="option-text">
+            <span class="option-title">Tercer puesto</span>
+            <span class="option-desc">Habilita la disputa por el tercer lugar y entrega medalla de bronce</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="tercerPuesto">
+            <span class="switch-slider" [class.switch-slider--on]="tercerPuesto">
+              <span class="switch-knob"></span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Desempate checkbox -->
+        <div class="checkbox-row">
+          <label class="checkbox-label">
+            <span class="checkbox-custom" [class.checkbox-custom--checked]="desempate" (click)="desempate = !desempate">
+              <svg *ngIf="desempate" width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="checkbox-text">Desampato</span>
+          </label>
+        </div>
+
+        <!-- Info text -->
+        <div class="info-row">
+          <span class="info-dot">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" fill="#1f78d1" opacity="0.15"/>
+              <circle cx="7" cy="7" r="5.5" stroke="#1f78d1" stroke-width="1"/>
+              <path d="M7 6.5V10" stroke="#1f78d1" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="7" cy="4.5" r="0.6" fill="#1f78d1"/>
+            </svg>
+          </span>
+          <p class="info-text">
+            Los partidos de esta fase usan las mismas reglas de sets definidas para volibol (mejor de 5; set 5 a 15).
+            El empate en sets se resuelve con el 5° set.
+          </p>
+        </div>
+
+      </div><!-- end config-card -->
+
+      <!-- ===== FOOTER ACTIONS ===== -->
+      <div class="form-footer">
+        <button class="btn btn--secondary">Cancelar</button>
+        <button class="btn btn--primary">
+          Siguiente
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 4l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+    </main>
+  </div>
+</div>

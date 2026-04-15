@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee – Detalle competencia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="design-system.css"/>
+<link rel="stylesheet" href="scoring-modal.css"/>
+<style>
+:root {
+  --naranja:#FF7500; --azul:#002B5B;
+  --text-primary:#282834; --text-secondary:#646587;
+  --accent:#d74009;
+  --green:#1f8923; --green-bg:#e6f4e7; --green-border:#b7dfb9;
+  --surface:#ffffff; --bg:#f5f6fa;
+  --border:#e7e9f3; --border-dark:#d0d4e6;
+  --blue-info:#1f78d1; --blue-bg:#eef5ff;
+  --orange-bg:#fff3e6; --orange-border:#ffbf75;
+  --red-bg:#fff0ee; --red-border:#ffc4bb;
+  --purple:#7c3aed; --purple-bg:#f3eeff;
+  --sidebar-w:274px; --header-h:88px;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+  --font:'Inter',sans-serif;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--surface);color:var(--text-primary);font-size:14px}
+
+/* ═══ SHELL ══════════════════════════════════════════════ */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ═══ SIDEBAR ════════════════════════════════════════════ */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:width .2s,min-width .2s}
+.sidebar-logo{height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+.burger-btn{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;border-radius:var(--radius-sm);transition:background .15s,transform .2s}
+.burger-btn:hover{background:rgba(0,0,0,.06)}
+.burger-btn:active{transform:scale(.9)}
+.burger-btn svg{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed .burger-btn svg{transform:rotate(180deg)}
+.naowee-logo{height:33px;flex-shrink:0}
+.sidebar-nav{flex:1;padding:24px 0 10px;display:flex;flex-direction:column;gap:10px}
+.nav-section{font-size:12px;font-weight:500;color:#b5b9d4;letter-spacing:0;padding:0 12px;line-height:16px}
+.nav-row{display:flex;align-items:center;gap:12px;height:44px;padding:0 20px 0 0;border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;position:relative}
+.nav-row:hover{background:#f5f6fa}
+.nav-row .icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-left:28px}
+.nav-row .lbl{flex:1;font-size:14px;font-weight:500;color:var(--text-primary)}
+.nav-row .badge-red{width:7px;height:7px;background:#e52000;border-radius:50%}
+.nav-row .nav-arrow{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.7}
+.active-bar{position:absolute;left:4px;top:8px;width:4px;height:28px;background:var(--accent);border-radius:25px}
+.subnav{padding-left:0}
+.sub-row{display:flex;align-items:center;gap:8px;height:36px;padding:0 8px 0 64px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:background .12s;text-decoration:none}
+.sub-row:hover{background:#f5f6fa}
+.sub-row .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sub-row.active-sub{color:var(--accent);font-weight:500}
+.sub-row.active-sub .dot{background:var(--accent)}
+.sidebar-bottom{padding:8px 0;border-top:1px solid var(--border)}
+.sidebar.collapsed{width:72px;min-width:72px;overflow:hidden}
+.sidebar.collapsed .naowee-logo,.sidebar.collapsed .lbl,.sidebar.collapsed .nav-arrow,.sidebar.collapsed .nav-section,.sidebar.collapsed .subnav,.sidebar.collapsed .sidebar-bottom .lbl{display:none}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row .icon{margin-left:0}
+
+/* ═══ MAIN ═══════════════════════════════════════════════ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ═══ TOP HEADER ═════════════════════════════════════════ */
+.top-header{height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 24px;flex-shrink:0;gap:12px}
+.profile-switcher{position:relative}
+.profile-current{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-full);cursor:pointer;font-size:13px;font-weight:500;color:var(--text-primary);transition:all .15s;background:var(--surface)}
+.profile-current:hover{border-color:var(--accent);background:#fff8f4}
+.profile-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);min-width:260px;z-index:100;display:none;overflow:hidden}
+.profile-dropdown.open{display:block}
+.profile-option{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;transition:background .12s;color:var(--text-secondary)}
+.profile-option:hover{background:#f5f6fa}
+.profile-option.active{background:var(--orange-bg);color:var(--accent)}
+.po-name{font-size:13px;font-weight:500;color:inherit}
+.po-desc{font-size:11px;color:var(--text-secondary);margin-top:1px}
+.user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--radius-full);padding:6px 12px 6px 6px;cursor:pointer}
+.ava{position:relative}
+.ava-ring{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.ava-dot{position:absolute;bottom:0;right:0;width:8px;height:8px;background:var(--green);border:2px solid #fff;border-radius:50%}
+.user-info{display:flex;flex-direction:column;gap:1px}
+.user-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.user-role{font-size:11px;color:var(--text-secondary)}
+
+/* ═══ PAGE CONTENT ════════════════════════════════════════ */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 28px 40px;background:var(--surface)}
+
+/* ═══ BACK LINK ══════════════════════════════════════════ */
+.back-link{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--accent);text-decoration:none;margin-bottom:16px;cursor:pointer;padding:8px 16px;border-radius:var(--radius-md);border:none;background:transparent;transition:all .15s}
+.back-link:hover{background:rgba(215,64,9,.08)}
+
+/* ═══ DETAIL HEADER CARD ═════════════════════════════════ */
+.detail-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px 28px;margin-bottom:20px;animation:fadeInUp .4s cubic-bezier(.4,0,.2,1);overflow:visible}
+.detail-card.paused{border-color:#93b4d4;border-left:4px solid var(--blue-info)}
+.pause-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;margin:-24px -28px 20px;background:linear-gradient(135deg,#eef5ff 0%,#e8f0fe 100%);border-bottom:1px solid #c2d6f0}
+.pause-banner-icon{width:38px;height:38px;border-radius:10px;background:var(--blue-info);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pause-banner-text{font-size:14px;font-weight:600;color:var(--blue-info)}
+.pause-banner-sub{font-size:11px;font-weight:400;color:var(--text-secondary);margin-top:2px}
+.detail-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.detail-left{flex:1;min-width:300px}
+.detail-right{display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0}
+
+.badge-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.badge-est{font-size:10px;font-weight:600;padding:3px 10px;border-radius:var(--radius-full);white-space:nowrap}
+.badge-est.digitacion{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge-est.pausa{background:var(--orange-bg);color:var(--naranja);border:1px solid var(--orange-border)}
+.badge-est.asignada{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border-dark)}
+.badge-est.finalizada{background:#e8f4ff;color:var(--blue-info);border:1px solid #b8daff}
+.badge-est.creada{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border)}
+.badge-sis{font-size:10px;font-weight:600;padding:3px 10px;border-radius:var(--radius-full);background:var(--bg);color:var(--text-primary);border:1px solid var(--border-dark)}
+.badge-medal{font-size:10px;font-weight:600;padding:3px 10px;border-radius:var(--radius-full);background:#fef9e7;color:#b7791f;border:1px solid #f6e05e;display:flex;align-items:center;gap:4px}
+
+.detail-title{font-size:22px;font-weight:600;color:var(--text-primary);margin-bottom:4px}
+.detail-code{font-size:12px;color:var(--text-secondary);margin-bottom:10px}
+.detail-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary)}
+.detail-meta-item{display:flex;align-items:center;gap:5px}
+
+/* Progress */
+.progress-wrap{text-align:right;min-width:160px}
+.progress-label{font-size:12px;color:var(--text-secondary);margin-bottom:2px}
+.progress-count{font-size:14px;font-weight:600;color:var(--text-primary)}
+.progress-bar{width:160px;height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin:4px 0 2px auto}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s}
+.progress-pct{font-size:11px;color:var(--text-secondary)}
+
+/* Action buttons */
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{height:40px;padding:0 20px;border-radius:var(--radius-md);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .15s;border:none}
+.btn:hover{opacity:.88}
+.btn:active{transform:scale(.97)}
+.btn-accent{background:var(--accent);color:#fff;border-radius:var(--radius-lg)}
+.btn-outline{background:var(--surface);color:var(--text-primary);border:1px solid var(--border-dark)}
+.btn-outline:hover{background:var(--orange-bg);border-color:var(--accent);color:var(--accent);border-radius:var(--radius-lg)}
+.btn-outline-orange{background:var(--surface);color:var(--accent);border:1px solid var(--accent)}
+.btn-outline-green{background:var(--surface);color:var(--green);border:1px solid var(--green-border)}
+.btn-sm{height:34px;padding:0 14px;font-size:12px}
+
+.coord-digi-row{display:flex;align-items:center;gap:24px;margin-top:8px}
+.coord-digi-item{display:flex;align-items:center;gap:6px;font-size:12px}
+.coord-digi-label{color:var(--text-secondary);font-weight:500}
+.coord-digi-name{color:var(--text-primary);font-weight:500}
+/* Digitador dropdown */
+.digi-dd{position:relative;display:inline-flex}
+.digi-dd-trigger{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border-dark);border-radius:var(--radius-md);cursor:pointer;font-size:12px;font-weight:500;color:var(--text-primary);background:var(--surface);transition:all .15s}
+.digi-dd-trigger:hover{border-color:var(--accent);background:var(--orange-bg)}
+.digi-dd-trigger.open{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.1)}
+.digi-dd-trigger svg{color:var(--text-secondary);transition:transform .2s;flex-shrink:0}
+.digi-dd-trigger.open svg{transform:rotate(180deg);color:var(--accent)}
+.digi-dd-menu{position:absolute;top:calc(100% + 4px);right:0;min-width:200px;max-height:0;overflow:hidden;opacity:0;background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-md);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;transition:max-height .2s cubic-bezier(.4,0,.2,1),opacity .15s ease}
+.digi-dd-menu.open{max-height:240px;opacity:1;overflow-y:auto}
+.digi-dd-opt{padding:8px 12px;font-size:12px;color:var(--text-primary);cursor:pointer;transition:background .1s;display:flex;align-items:center;gap:8px}
+.digi-dd-opt:hover{background:#f5f6fa}
+.digi-dd-opt.selected{background:var(--orange-bg);color:var(--accent);font-weight:500}
+.digi-dd-ava{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex-shrink:0}
+
+/* ═══ TABS ═══════════════════════════════════════════════ */
+.tab-bar{display:flex;gap:0;padding:0;border-bottom:1px solid var(--border);margin:0 -28px 20px;padding-left:28px}
+.tab-btn{padding:10px 20px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:8px;transition:all .15s;font-family:var(--font)}
+.tab-btn:hover{color:var(--text-primary)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ═══ TAB CONTENT CARD ═══════════════════════════════════ */
+.tab-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px 28px;animation:fadeInUp .35s cubic-bezier(.4,0,.2,1) .08s both}
+
+/* ═══ JORNADA / GROUP PILLS ══════════════════════════════ */
+.filter-pills{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.filter-pill{padding:6px 16px;border-radius:var(--radius-full);font-size:12px;font-weight:500;border:1px solid var(--border-dark);background:var(--surface);color:var(--text-secondary);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.filter-pill:hover{border-color:var(--accent);color:var(--accent)}
+.filter-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ═══ MATCH ROW ══════════════════════════════════════════ */
+.match-card{display:flex;align-items:center;padding:16px 20px;border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;transition:all .15s;background:var(--surface)}
+.match-card:hover{box-shadow:var(--shadow-sm)}
+.match-team{flex:1;display:flex;align-items:center;gap:10px}
+.match-team.right{justify-content:flex-end;text-align:right}
+.team-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.team-name{font-size:14px;font-weight:500;color:var(--text-primary)}
+.team-sub{font-size:11px;color:var(--text-secondary)}
+.match-center{width:100px;text-align:center;flex-shrink:0}
+.match-vs{font-size:14px;font-weight:600;color:var(--text-secondary)}
+.match-status{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.match-score{font-size:18px;font-weight:600}
+.match-actions{flex-shrink:0;margin-left:12px}
+.btn-digitar{height:36px;padding:0 16px;border-radius:var(--radius-md);background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s}
+.btn-digitar:hover{opacity:.88}
+
+/* ═══ BRACKET ════════════════════════════════════════════ */
+.bracket-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.bracket-header h3{font-size:16px;font-weight:600;color:var(--text-primary)}
+.bracket-header .edit-link{font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;text-decoration:none;padding:6px 12px;border-radius:var(--radius-md);transition:background .15s}
+.bracket-header .edit-link:hover{background:rgba(215,64,9,.08)}
+.bracket-titles{display:flex;gap:0;align-items:center;margin-bottom:12px}
+.bracket-titles .bracket-col-title{flex:0 0 260px;min-width:260px}
+.bracket-titles .bracket-svg-spacer{flex:0 0 48px}
+.bracket-wrap{display:flex;gap:0;overflow-x:auto;padding:0;align-items:stretch}
+.bracket-col{display:flex;flex-direction:column;min-width:260px;padding:0;position:relative;gap:16px;justify-content:space-around}
+.bracket-col-title{font-size:10px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;text-align:center;text-transform:uppercase;flex-shrink:0;padding:6px 16px;background:#f5f6fa;border-radius:var(--radius-full);border:1px solid var(--border)}
+.bracket-node{border:1.5px solid var(--border);border-radius:16px;padding:0;background:var(--surface);transition:all .2s;position:relative;overflow:hidden}
+.bracket-node.finalizado{border-color:var(--border)}
+.bracket-node.pending{border-color:var(--border-dark);border-style:dashed}
+.bracket-node.tercer-puesto{border-color:#f6e05e}
+.bracket-team-row{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.bracket-team-row.winner{background:#f0fdf4}
+.bracket-team-row+.bracket-team-row{border-top:1px solid var(--border)}
+.bracket-initial{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.bracket-team-row.winner .bracket-initial{background:var(--green-bg);color:var(--green)}
+.bracket-team-row.loser .bracket-initial{background:#f0f1f5;color:var(--text-secondary)}
+.bracket-team-row:not(.winner):not(.loser) .bracket-initial{color:#fff}
+.bracket-tname-wrap{flex:1;min-width:0}
+.bracket-tname{font-size:14px;font-weight:600;color:var(--text-primary)}
+.bracket-tsub{font-size:11px;color:var(--text-secondary);font-weight:400}
+.bracket-score-wrap{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0}
+.bracket-trophy{font-size:16px}
+.bracket-score{font-size:20px;font-weight:800;color:var(--text-primary)}
+.bracket-score.pending-score{font-size:18px;font-weight:600;color:var(--border-dark)}
+.bracket-status{font-size:11px;color:var(--text-secondary);text-align:center;padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:5px;border-top:1px solid var(--border);background:#fafbfd}
+.bracket-status.done{color:var(--text-secondary)}
+.bracket-status.en-curso{color:var(--accent);font-weight:600;background:var(--orange-bg)}
+.bracket-register{font-size:12px;color:var(--accent);font-weight:600;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 16px;border-top:1px solid var(--border);transition:background .15s}
+.bracket-register:hover{background:var(--orange-bg)}
+.bracket-svg-col{width:48px;flex-shrink:0;position:relative}
+
+/* ═══ RANKING (Final Directa) ════════════════════════════ */
+.ranking-header{text-align:center;margin-bottom:28px}
+.ranking-phase{font-size:11px;font-weight:500;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px}
+.ranking-prueba{font-size:20px;font-weight:600;color:var(--text-primary)}
+.ranking-list{display:flex;flex-direction:column;gap:0}
+.ranking-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface);transition:all .2s cubic-bezier(.4,0,.2,1);position:relative}
+.ranking-row:last-child{border-bottom:none}
+.ranking-row:hover{background:#fafbfd}
+.ranking-row.gold{background:linear-gradient(90deg,#fefce8 0%,var(--surface) 60%)}
+.ranking-row.gold::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#eab308;border-radius:0 3px 3px 0}
+.ranking-row.silver{background:linear-gradient(90deg,#f8f9fa 0%,var(--surface) 60%)}
+.ranking-row.silver::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#9ca3af;border-radius:0 3px 3px 0}
+.ranking-row.bronze{background:linear-gradient(90deg,#fffbeb 0%,var(--surface) 60%)}
+.ranking-row.bronze::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b;border-radius:0 3px 3px 0}
+.ranking-pos{width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.ranking-pos.p1{background:#eab308;color:#fff}
+.ranking-pos.p2{background:#e5e7eb;color:#4b5563}
+.ranking-pos.p3{background:#fde68a;color:#92400e}
+.ranking-pos.p4{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+.ranking-info{flex:1;min-width:0}
+.ranking-name{font-size:14px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ranking-city{font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:1px}
+.ranking-mark{font-size:16px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.ranking-medal{width:20px;height:20px;flex-shrink:0;opacity:.85}
+
+/* ═══ STANDINGS TABLE ════════════════════════════════════ */
+.standings-title{font-size:16px;font-weight:600;color:var(--text-primary);margin:20px 0 12px}
+.standings-table{width:100%;border-collapse:collapse;font-size:13px}
+.standings-table th{padding:10px 12px;text-align:left;font-weight:500;color:var(--text-secondary);font-size:11px;letter-spacing:.3px;border-bottom:2px solid var(--border)}
+.standings-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.standings-table th:not(:first-child):not(:nth-child(2)),.standings-table td:not(:first-child):not(:nth-child(2)){text-align:center}
+.standings-pos{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;background:var(--accent)}
+.standings-pos.pos2{background:var(--blue-info)}
+.standings-pos.pos3{background:var(--text-secondary)}
+.standings-team{display:flex;align-items:center;gap:8px}
+.standings-team-name{font-weight:500;color:var(--text-primary)}
+.standings-team-sub{font-size:11px;color:var(--text-secondary)}
+.standings-pts{font-weight:600;color:var(--text-primary)}
+
+/* ═══ HISTORIAL TIMELINE ═════════════════════════════════ */
+.timeline{position:relative;padding-left:44px}
+.timeline::before{content:'';position:absolute;left:15px;top:8px;bottom:8px;width:1.5px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:20px;animation:fadeInUp .3s cubic-bezier(.4,0,.2,1) both;display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-radius:var(--radius-md);transition:background .15s}
+.timeline-item:hover{background:var(--bg)}
+.timeline-dot{position:absolute;left:-44px;top:12px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.timeline-dot.green{background:var(--green)}
+.timeline-dot.blue{background:var(--blue-info)}
+.timeline-dot.orange{background:var(--naranja)}
+.timeline-dot.gray{background:#a0a3bd}
+.timeline-content{flex:1;min-width:0}
+.timeline-title{font-size:13px;font-weight:600;color:var(--text-primary)}
+.timeline-desc{font-size:11px;color:var(--text-secondary);margin-top:2px;line-height:1.4}
+.timeline-date{font-size:10px;color:var(--text-secondary);flex-shrink:0;display:flex;align-items:center;gap:4px;white-space:nowrap;margin-top:2px}
+
+/* ═══ MEDALLERIA ═════════════════════════════════════════ */
+.medal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.medal-card{text-align:center;padding:24px 16px;border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--surface)}
+.medal-icon{font-size:40px;margin-bottom:8px}
+.medal-label{font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
+.medal-name{font-size:14px;font-weight:600;color:var(--text-primary)}
+.medal-city{font-size:11px;color:var(--text-secondary)}
+.medal-card.gold{border-color:#f6e05e;background:#fefce8}
+.medal-card.silver{border-color:#d1d5db;background:#f9fafb}
+.medal-card.bronze{border-color:#f59e0b;background:#fffbeb}
+
+
+/* ═══ DOBLE ELIMINATION ═════════════════════════════════ */
+.doble-section{margin-bottom:24px}
+.doble-section-title{font-size:13px;font-weight:600;color:var(--text-secondary);letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.doble-section-title .badge-bracket{font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--radius-full)}
+.badge-winners{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge-losers{background:var(--red-bg);color:#d74009;border:1px solid var(--red-border)}
+.badge-granfinal{background:#fef9e7;color:#b7791f;border:1px solid #f6e05e}
+
+/* ═══ FINALIZED BANNER ══════════════════════════════════ */
+.finalized-banner{
+  background:#f5f6fa;border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:32px 28px;text-align:center;animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) .1s both;
+}
+.finalized-banner-icon{width:56px;height:56px;border-radius:50%;background:var(--border);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
+.finalized-banner-title{font-size:18px;font-weight:600;color:var(--text-secondary);margin-bottom:12px}
+.finalized-banner-text{font-size:13px;color:var(--text-secondary);line-height:1.8;max-width:560px;margin:0 auto}
+
+/* ═══ ANIMATIONS ═════════════════════════════════════════ */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+/* ═══ RESPONSIVE ═════════════════════════════════════════ */
+@media(max-width:900px){
+  .sidebar{width:72px;min-width:72px;overflow:hidden}
+  .sidebar .naowee-logo,.sidebar .lbl,.sidebar .nav-arrow,.sidebar .nav-section,.sidebar .subnav,.sidebar .sidebar-bottom .lbl{display:none}
+  .sidebar .sidebar-logo{justify-content:center;padding:0}
+  .sidebar .nav-row{justify-content:center;padding:0}
+  .sidebar .nav-row .icon{margin-left:0}
+  .detail-top{flex-direction:column}
+  .detail-right{align-items:flex-start}
+  .bracket-wrap{overflow-x:auto}
+  .medal-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <button class="burger-btn" onclick="toggleSidebar()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.5 12H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 16H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 8H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <svg class="naowee-logo" viewBox="0 0 177 33.22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M28.11 33.21c-1.25 0-2.42-.48-3.31-1.36a4.67 4.67 0 01-1.37-3.29l.02-16.73-5.92 5.91a1.6 1.6 0 01-1.75.35 1.6 1.6 0 01-.99-1.47V1.6c0-.88.72-1.6 1.6-1.6h8.59c4.3 0 7.8 3.48 7.8 7.76v20.8c0 2.56-2.1 4.65-4.67 4.65zm-3.05-26.85c.2 0 .41.04.61.12.6.25.99.83.99 1.48l-.02 20.6c0 .39.15.76.43 1.03.28.28.64.43 1.04.43.8 0 1.46-.65 1.46-1.46V7.76c0-2.52-2.06-4.57-4.59-4.57H18v9.56l5.92-5.92c.31-.31.72-.47 1.14-.47" fill="#F49C1C"/>
+        <path d="M16.39 33.21H7.8C3.5 33.21 0 29.73 0 25.45V4.65C0 2.09 2.1 0 4.67 0c1.25 0 2.42.49 3.31 1.36.88.88 1.37 2.05 1.36 3.29L9.33 21.38l5.92-5.91c.46-.46 1.15-.6 1.75-.35.6.25.99.83.99 1.47v15.02c0 .88-.72 1.6-1.6 1.6M4.67 3.19c-.81 0-1.47.65-1.47 1.46v20.8c0 2.52 2.06 4.57 4.59 4.57h7V20.46l-5.92 5.92c-.46.46-1.15.6-1.75.35a1.6 1.6 0 01-.99-1.47L6.14 4.65c0-.39-.15-.76-.43-1.03a1.45 1.45 0 00-1.04-.43" fill="#FF7500"/>
+        <path d="M71.59 24.93h-.31c-.6.72-1.32 1.34-2.16 1.86-.84.52-1.93.77-3.25.77-3.95 0-7.12-2.37-7.12-6.5 0-4.68 3.49-6.42 7.78-6.42 1.25 0 2.27.1 3.07.29.81.19 1.47.39 1.99.6v-.58c0-1.01-.4-1.84-1.21-2.49-.8-.66-1.8-.99-2.99-.99-1.77 0-3.26.73-4.48 2.21l-3.7-2.52c2.03-2.53 4.79-3.79 8.29-3.79 2.96 0 5.22.69 6.77 2.07 1.56 1.38 2.34 3.42 2.34 6.13v11.88h-5.02v-2.52zm0-5.69c-.6-.28-1.21-.51-1.85-.68-.64-.17-1.33-.25-2.08-.25-1.22 0-2.16.26-2.82.79-.66.53-1 1.18-1 1.95 0 .78.32 1.39.96 1.86.64.47 1.37.7 2.2.7.67 0 1.3-.12 1.87-.37.57-.24 1.06-.57 1.46-.97.4-.4.71-.86.93-1.39.22-.53.33-1.08.33-1.65" fill="#002B5B"/>
+        <path d="M89.28 7.37c5.06 0 10.12 3.57 10.12 10.1 0 6.52-5.06 10.1-10.12 10.1-5.06 0-10.11-3.58-10.11-10.1 0-6.53 5.05-10.1 10.11-10.1zm0 15.51c2.41 0 5.02-1.67 5.02-5.42 0-3.74-2.61-5.42-5.02-5.42s-5.02 1.68-5.02 5.42c0 3.75 2.61 5.42 5.02 5.42z" fill="#002B5B"/>
+        <path d="M101.96 7.37h5.72l3.15 12.65h.27l3.78-12.65h5.25l3.82 12.65h.27l3.11-12.65h5.64l-6.11 20.2h-5.49l-3.81-12.74h-.27l-3.81 12.74h-5.41l-6.11-20.2z" fill="#002B5B"/>
+        <path d="M154.68 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.12-4.24-10.12-10.1 0-5.71 4.23-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.1.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.15 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
+        <path d="M176.69 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.11-4.24-10.11-10.1 0-5.71 4.22-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.09.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.14 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
+        <path d="M53.69 27.57c-1.38 0-2.5-1.02-2.5-2.29V15.66c0-2.05-1.82-3.72-4.07-3.72-2.24 0-4.07 1.67-4.07 3.72v9.62c0 1.26-1.12 2.29-2.5 2.29s-2.5-1.02-2.5-2.29V15.66c0-4.57 4.07-8.29 9.07-8.29s9.07 3.72 9.07 8.29v9.62c0 1.26-1.12 2.29-2.5 2.29" fill="#002B5B"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-bottom">
+      <div class="nav-row" id="btnLogout">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M13 17l5-5-5-5M18 12H3" stroke="#282834" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="lbl">Cerrar sesion</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <header class="top-header">
+      <div class="profile-switcher" id="profileSwitcher">
+        <div class="profile-current" onclick="toggleProfileDD()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span id="profileLabel">Digitador</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="profile-option" onclick="switchProfile('coordinador')">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3"/></svg>
+            <div><div class="po-name">Coordinador de eventos</div><div class="po-desc">Gestión completa de competencias</div></div>
+          </div>
+          <div class="profile-option active" onclick="switchProfile('digitador')">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7h4M7 9.5h4M7 12h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <div><div class="po-name">Digitador</div><div class="po-desc">Registro de resultados en vivo</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="user-chip">
+        <div class="ava"><div class="ava-ring" style="background:#b8d4f0;color:#1a3a5c">CL</div><div class="ava-dot"></div></div>
+        <div class="user-info"><span class="user-name" id="userName">Carlos López</span><span class="user-role" id="userRoleLabel">Digitador Deportivo</span></div>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 5l3 3 3-3" stroke="#646587" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+    </header>
+
+    <div class="page">
+      <a class="back-link" id="backLink" href="lista.html">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="backLinkText">Volver a Competencias</span>
+      </a>
+
+      <!-- DETAIL HEADER -->
+      <div class="detail-card" id="detailHeader"></div>
+
+      <!-- TABS + CONTENT CARD -->
+      <div class="tab-card" id="tabCard">
+        <div class="tab-bar" id="tabBar"></div>
+        <div id="tabContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCORING MODAL -->
+<div class="modal-overlay" id="scoringModal">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="digi-toast" id="digiToast">
+  <div class="digi-toast-icon"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="digi-toast-body"><div class="digi-toast-title" id="digiToastTitle">Resultado guardado</div><div class="digi-toast-desc" id="digiToastDesc"></div></div>
+  <button class="digi-toast-close" onclick="hideDigiToast()">×</button>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal"></div>
+</div>
+
+<script src="shared.js"></script>
+<script src="scoring-modal.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════════ */
+TEAM_COLORS = ['#2c5f9b','#e67e22','#9b59b6','#1f8923','#e74c3c','#3498db','#f39c12','#1abc9c','#e91e63','#00bcd4'];
+function teamColor(name){ let h=0; for(let i=0;i<name.length;i++) h=name.charCodeAt(i)+((h<<5)-h); return TEAM_COLORS[Math.abs(h)%TEAM_COLORS.length]; }
+function teamInit(name){ return name.split(' ').filter(w=>w.length>1).map(w=>w[0]).join('').substring(0,2).toUpperCase()||name[0]; }
+
+const COMPETITIONS = [
+  {
+    id:'COMP-2024-001', nombre:'Fútbol Sala Masculino Sub-20',
+    code:'COMP-2024-001', deporte:'Fútbol Sala', subDeporte:'Fútbol Sala', emoji:'⚽', sportKey:'futsal',
+    genero:'Masculino', categoria:'Sub-20',
+    sistema:'Eliminación Directa', sisCls:'elim',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Centro', fase:'Fase Final', participantes:8, fecha:'2024-03-15',
+    estado:'En Digitación', estCls:'digitacion',
+    coordinador:'María García', digitador:'Carlos López',
+    progreso:{done:5,total:8},
+    bracket:[
+      {round:'CUARTOS DE FINAL', matches:[
+        {id:1,t1:'Bogotá D.C.',t2:'Mosquera',s1:3,s2:1,status:'done',winner:1},
+        {id:2,t1:'Chía',t2:'Facatativá',s1:2,s2:2,status:'done',winner:1},
+        {id:3,t1:'Soacha',t2:'Fusagasugá',s1:4,s2:0,status:'done',winner:1},
+        {id:4,t1:'Zipaquirá',t2:'Girardot',s1:1,s2:3,status:'done',winner:2}
+      ]},
+      {round:'SEMIFINAL', matches:[
+        {id:5,t1:'Bogotá D.C.',t2:'Chía',s1:2,s2:1,status:'done',winner:1},
+        {id:6,t1:'Soacha',t2:'Girardot',s1:null,s2:null,status:'pending',winner:null}
+      ]},
+      {round:'FINAL', matches:[
+        {id:7,t1:'Bogotá D.C.',t2:null,s1:null,s2:null,status:'pending',winner:null}
+      ]},
+      {round:'TERCER PUESTO', matches:[
+        {id:8,t1:'Chía',t2:'Fusagasugá',s1:null,s2:null,status:'pending',winner:null}
+      ]}
+    ],
+    historial:[
+      {icon:'blue',title:'Semifinal iniciada',desc:'Soacha vs Girardot — en curso',date:'2024-03-15 09:05'},
+      {icon:'green',title:'Resultado registrado',desc:'Bogotá 2 - 1 Chía (Semifinal)',date:'2024-03-14 16:45'},
+      {icon:'green',title:'Cuartos de Final finalizados',desc:'4 enfrentamientos completados',date:'2024-03-14 14:00'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Carlos',date:'2024-03-15'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-03-01'}
+    ]
+  },
+  {
+    id:'COMP-2024-002', nombre:'Voleibol Femenino Mayor',
+    code:'COMP-2024-002', deporte:'Voleibol', subDeporte:'Voleibol', emoji:'🏐', sportKey:'voleibol',
+    genero:'Femenino', categoria:'Mayor',
+    sistema:'Round Robin', sisCls:'robin',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Norte', fase:'Fase Clasificatoria', participantes:5, fecha:'2024-03-10',
+    estado:'En Pausa', estCls:'pausa',
+    coordinador:'María García', digitador:'Ana Martínez',
+    progreso:{done:4,total:6},
+    jornadas:{
+      equipos:['Bogotá D.C.','Facatativá','Chía','Soacha','Zipaquirá'],
+      partidos:[
+        {jornada:1,t1:'Bogotá D.C.',t2:'Facatativá',s1:3,s2:1,status:'done'},
+        {jornada:1,t1:'Chía',t2:'Soacha',s1:2,s2:3,status:'done'},
+        {jornada:2,t1:'Bogotá D.C.',t2:'Chía',s1:3,s2:0,status:'done'},
+        {jornada:2,t1:'Facatativá',t2:'Zipaquirá',s1:1,s2:3,status:'done'},
+        {jornada:3,t1:'Bogotá D.C.',t2:'Facatativá',s1:null,s2:null,status:'pending'},
+        {jornada:3,t1:'Chía',t2:'Soacha',s1:null,s2:null,status:'pending'}
+      ],
+      tabla:[
+        {equipo:'Bogotá D.C.',pj:2,pg:2,pp:0,pts:6},
+        {equipo:'Zipaquirá',pj:1,pg:1,pp:0,pts:3},
+        {equipo:'Soacha',pj:2,pg:1,pp:1,pts:3},
+        {equipo:'Facatativá',pj:2,pg:0,pp:2,pts:0},
+        {equipo:'Chía',pj:2,pg:0,pp:2,pts:0}
+      ]
+    },
+    historial:[
+      {icon:'orange',title:'Competencia pausada',desc:'Pausada por coordinador',date:'2024-03-12 14:00'},
+      {icon:'green',title:'Jornada 2 finalizada',desc:'2 partidos completados',date:'2024-03-12 12:00'},
+      {icon:'green',title:'Jornada 1 finalizada',desc:'2 partidos completados',date:'2024-03-11 18:00'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Ana Martínez',date:'2024-03-10'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-03-01'}
+    ]
+  },
+  {
+    id:'COMP-2024-003', nombre:'Atletismo 100m Masculino Mayor',
+    code:'COMP-2024-003', deporte:'Atletismo', subDeporte:'Pista', emoji:'🏃', sportKey:'atletismo',
+    genero:'Masculino', categoria:'Mayor',
+    sistema:'Final Directa', sisCls:'final',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Centro', fase:'Fase Final', participantes:8, fecha:'2024-03-05',
+    estado:'Finalizada', estCls:'finalizada',
+    coordinador:'María García', digitador:'Carlos López',
+    progreso:{done:8,total:8},
+    prueba:'100 metros planos',
+    ranking:[
+      {pos:1,nombre:'Sebastián Herrera',ciudad:'Bogotá D.C.',marca:'10.45s'},
+      {pos:2,nombre:'Camilo Vargas',ciudad:'Soacha',marca:'10.67s'},
+      {pos:3,nombre:'Felipe Morales',ciudad:'Zipaquirá',marca:'10.89s'},
+      {pos:4,nombre:'Andrés Castillo',ciudad:'Chía',marca:'11.02s'},
+      {pos:5,nombre:'Daniel Ríos',ciudad:'Facatativá',marca:'11.15s'},
+      {pos:6,nombre:'Luis Jiménez',ciudad:'Mosquera',marca:'11.28s'},
+      {pos:7,nombre:'Roberto Sánchez',ciudad:'Fusagasugá',marca:'11.45s'},
+      {pos:8,nombre:'Fernando Romero',ciudad:'Girardot',marca:'11.62s'}
+    ],
+    historial:[
+      {icon:'green',title:'Competencia finalizada',desc:'Resultados oficiales registrados',date:'2024-03-15 18:00'},
+      {icon:'green',title:'Resultado registrado',desc:'Final — 8 participantes clasificados',date:'2024-03-15 16:30'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Carlos',date:'2024-03-15'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-03-01'}
+    ]
+  },
+  {
+    id:'COMP-2024-004', nombre:'Baloncesto Masculino Sub-17',
+    code:'COMP-2024-004', deporte:'Baloncesto', subDeporte:'Baloncesto', emoji:'🏀', sportKey:'baloncesto',
+    genero:'Masculino', categoria:'Sub-17',
+    sistema:'Fase de Grupos', sisCls:'grupos',
+    medal:false, evento:'Copa Alcaldía Mayor 2024',
+    zona:'Norte', fase:'Fase de Grupos', participantes:8, fecha:null,
+    estado:'Asignada', estCls:'asignada',
+    coordinador:'Jorge Pedraza', digitador:'Pedro Rodríguez',
+    progreso:{done:0,total:4},
+    grupos:[
+      {nombre:'Grupo A',equipos:['Bogotá D.C.','Soacha','Zipaquirá','Chía'],
+       partidos:[
+         {t1:'Bogotá D.C.',t2:'Soacha',s1:null,s2:null,status:'pending'},
+         {t1:'Zipaquirá',t2:'Chía',s1:null,s2:null,status:'pending'}
+       ],
+       tabla:[
+         {equipo:'Bogotá D.C.',pj:0,pg:0,pp:0,pts:0},
+         {equipo:'Soacha',pj:0,pg:0,pp:0,pts:0},
+         {equipo:'Zipaquirá',pj:0,pg:0,pp:0,pts:0},
+         {equipo:'Chía',pj:0,pg:0,pp:0,pts:0}
+       ]
+      },
+      {nombre:'Grupo B',equipos:['Facatativá','Mosquera','Fusagasugá','Girardot'],
+       partidos:[
+         {t1:'Facatativá',t2:'Mosquera',s1:null,s2:null,status:'pending'},
+         {t1:'Fusagasugá',t2:'Girardot',s1:null,s2:null,status:'pending'}
+       ],
+       tabla:[
+         {equipo:'Facatativá',pj:0,pg:0,pp:0,pts:0},
+         {equipo:'Mosquera',pj:0,pg:0,pp:0,pts:0},
+         {equipo:'Fusagasugá',pj:0,pg:0,pp:0,pts:0},
+         {equipo:'Girardot',pj:0,pg:0,pp:0,pts:0}
+       ]
+      }
+    ],
+    historial:[
+      {icon:'gray',title:'Digitador asignado',desc:'Pedro Rodríguez asignado como digitador',date:'2024-02-28'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-02-15'}
+    ]
+  },
+  {
+    id:'COMP-2024-005', nombre:'Taekwondo Masculino Sub-20',
+    code:'COMP-2024-005', deporte:'Taekwondo', subDeporte:'Combate -68kg', emoji:'🥋', sportKey:'taekwondo',
+    genero:'Masculino', categoria:'Sub-20',
+    sistema:'Eliminación Doble', sisCls:'doble',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Centro', fase:'Fase Final', participantes:8, fecha:'2024-04-01',
+    estado:'En Digitación', estCls:'digitacion',
+    coordinador:'María García', digitador:'Carlos López',
+    progreso:{done:6,total:11},
+    doble:{
+      winners:[
+        {round:'RONDA 1 (W)', matches:[
+          {id:1,t1:'Bogotá D.C.',t2:'Mosquera',s1:10,s2:4,status:'done',winner:1},
+          {id:2,t1:'Chía',t2:'Facatativá',s1:8,s2:6,status:'done',winner:1},
+          {id:3,t1:'Soacha',t2:'Fusagasugá',s1:12,s2:3,status:'done',winner:1},
+          {id:4,t1:'Zipaquirá',t2:'Girardot',s1:5,s2:9,status:'done',winner:2}
+        ]},
+        {round:'SEMIFINAL (W)', matches:[
+          {id:5,t1:'Bogotá D.C.',t2:'Chía',s1:8,s2:5,status:'done',winner:1},
+          {id:6,t1:'Soacha',t2:'Girardot',s1:null,s2:null,status:'pending',winner:null}
+        ]},
+        {round:'FINAL (W)', matches:[
+          {id:7,t1:'Bogotá D.C.',t2:null,s1:null,s2:null,status:'pending',winner:null}
+        ]}
+      ],
+      losers:[
+        {round:'RONDA 1 (L)', matches:[
+          {id:8,t1:'Mosquera',t2:'Facatativá',s1:7,s2:5,status:'done',winner:1},
+          {id:9,t1:'Fusagasugá',t2:'Zipaquirá',s1:4,s2:8,status:'done',winner:2}
+        ]},
+        {round:'RONDA 2 (L)', matches:[
+          {id:10,t1:'Chía',t2:'Mosquera',s1:null,s2:null,status:'pending',winner:null},
+          {id:11,t1:null,t2:'Zipaquirá',s1:null,s2:null,status:'pending',winner:null}
+        ]}
+      ],
+      granFinal:[
+        {round:'GRAN FINAL', matches:[
+          {id:12,t1:null,t2:null,s1:null,s2:null,status:'pending',winner:null}
+        ]}
+      ]
+    },
+    historial:[
+      {icon:'blue',title:'Semifinal Winners en curso',desc:'Soacha vs Girardot pendiente',date:'2024-04-02 10:00'},
+      {icon:'green',title:'Ronda 1 Losers finalizada',desc:'2 enfrentamientos completados',date:'2024-04-01 18:00'},
+      {icon:'green',title:'Semifinal Winners — parcial',desc:'Bogotá 8 - 5 Chía',date:'2024-04-01 16:00'},
+      {icon:'green',title:'Ronda 1 Winners finalizada',desc:'4 enfrentamientos completados',date:'2024-04-01 12:00'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Carlos',date:'2024-04-01'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-03-20'}
+    ]
+  },
+  /* ── Curling — Round Robin ── */
+  {
+    id:'COMP-2024-006', nombre:'Curling Mixto Mayor',
+    code:'COMP-2024-006', deporte:'Curling', subDeporte:'Curling', emoji:'🥌', sportKey:'curling',
+    genero:'Mixto', categoria:'Mayor',
+    sistema:'Round Robin', sisCls:'robin',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Centro', fase:'Fase Clasificatoria', participantes:5, fecha:'2024-04-10',
+    estado:'En Digitación', estCls:'digitacion',
+    coordinador:'María García', digitador:'Carlos López',
+    progreso:{done:6,total:10},
+    jornadas:{
+      equipos:['Bogotá D.C.','Soacha','Zipaquirá','Chía','Facatativá'],
+      partidos:[
+        {jornada:1,t1:'Bogotá D.C.',t2:'Soacha',s1:8,s2:5,status:'done'},
+        {jornada:1,t1:'Zipaquirá',t2:'Chía',s1:6,s2:7,status:'done'},
+        {jornada:2,t1:'Bogotá D.C.',t2:'Zipaquirá',s1:9,s2:4,status:'done'},
+        {jornada:2,t1:'Soacha',t2:'Facatativá',s1:7,s2:6,status:'done'},
+        {jornada:3,t1:'Bogotá D.C.',t2:'Chía',s1:10,s2:3,status:'done'},
+        {jornada:3,t1:'Zipaquirá',t2:'Facatativá',s1:5,s2:5,status:'done'},
+        {jornada:4,t1:'Bogotá D.C.',t2:'Facatativá',s1:null,s2:null,status:'pending'},
+        {jornada:4,t1:'Soacha',t2:'Chía',s1:null,s2:null,status:'pending'},
+        {jornada:5,t1:'Soacha',t2:'Zipaquirá',s1:null,s2:null,status:'pending'},
+        {jornada:5,t1:'Chía',t2:'Facatativá',s1:null,s2:null,status:'pending'}
+      ],
+      tabla:[
+        {equipo:'Bogotá D.C.',pj:3,pg:3,pp:0,pts:9},
+        {equipo:'Chía',pj:2,pg:1,pp:1,pts:3},
+        {equipo:'Soacha',pj:2,pg:1,pp:1,pts:3},
+        {equipo:'Zipaquirá',pj:3,pg:0,pp:2,pe:1,pts:1},
+        {equipo:'Facatativá',pj:2,pg:0,pp:1,pe:1,pts:1}
+      ]
+    },
+    historial:[
+      {icon:'green',title:'Jornada 3 finalizada',desc:'6 partidos completados',date:'2024-04-12 18:00'},
+      {icon:'green',title:'Jornada 2 finalizada',desc:'4 partidos completados',date:'2024-04-11 17:00'},
+      {icon:'green',title:'Jornada 1 finalizada',desc:'2 partidos completados',date:'2024-04-10 16:00'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Carlos',date:'2024-04-10'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-04-05'}
+    ]
+  },
+  /* ── Curling — Eliminación Directa ── */
+  {
+    id:'COMP-2024-007', nombre:'Curling Masculino Sub-20',
+    code:'COMP-2024-007', deporte:'Curling', subDeporte:'Curling', emoji:'🥌', sportKey:'curling',
+    genero:'Masculino', categoria:'Sub-20',
+    sistema:'Eliminación Directa', sisCls:'elim',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Norte', fase:'Fase Final', participantes:8, fecha:'2024-04-15',
+    estado:'En Digitación', estCls:'digitacion',
+    coordinador:'Jorge Pedraza', digitador:'Ana Martínez',
+    progreso:{done:5,total:7},
+    bracket:[
+      {round:'CUARTOS DE FINAL', matches:[
+        {id:1,t1:'Bogotá D.C.',t2:'Mosquera',s1:9,s2:4,status:'done',winner:1},
+        {id:2,t1:'Chía',t2:'Facatativá',s1:7,s2:8,status:'done',winner:2},
+        {id:3,t1:'Soacha',t2:'Girardot',s1:6,s2:5,status:'done',winner:1},
+        {id:4,t1:'Zipaquirá',t2:'Fusagasugá',s1:10,s2:3,status:'done',winner:1}
+      ]},
+      {round:'SEMIFINAL', matches:[
+        {id:5,t1:'Bogotá D.C.',t2:'Facatativá',s1:8,s2:6,status:'done',winner:1},
+        {id:6,t1:'Soacha',t2:'Zipaquirá',s1:null,s2:null,status:'pending'}
+      ]},
+      {round:'FINAL', matches:[
+        {id:7,t1:'Bogotá D.C.',t2:'—',s1:null,s2:null,status:'pending'}
+      ]}
+    ],
+    historial:[
+      {icon:'blue',title:'Semifinal en curso',desc:'Bogotá 8 - 6 Facatativá completado',date:'2024-04-16 14:00'},
+      {icon:'green',title:'Cuartos de final finalizados',desc:'4 enfrentamientos completados',date:'2024-04-15 18:00'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Ana',date:'2024-04-15'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-04-10'}
+    ]
+  },
+  /* ── Curling Dobles — Round Robin ── */
+  {
+    id:'COMP-2024-008', nombre:'Curling Dobles Femenino Mayor',
+    code:'COMP-2024-008', deporte:'Curling', subDeporte:'Curling Dobles', emoji:'🥌', sportKey:'curling_dobles',
+    genero:'Femenino', categoria:'Mayor',
+    sistema:'Round Robin', sisCls:'robin',
+    medal:true, evento:'Copa Alcaldía Mayor 2024',
+    zona:'Sur', fase:'Fase Clasificatoria', participantes:4, fecha:'2024-04-20',
+    estado:'En Digitación', estCls:'digitacion',
+    coordinador:'María García', digitador:'Pedro Rodríguez',
+    progreso:{done:3,total:6},
+    jornadas:{
+      equipos:['Bogotá D.C.','Soacha','Chía','Facatativá'],
+      partidos:[
+        {jornada:1,t1:'Bogotá D.C.',t2:'Soacha',s1:7,s2:5,status:'done'},
+        {jornada:1,t1:'Chía',t2:'Facatativá',s1:6,s2:8,status:'done'},
+        {jornada:2,t1:'Bogotá D.C.',t2:'Chía',s1:9,s2:4,status:'done'},
+        {jornada:2,t1:'Soacha',t2:'Facatativá',s1:null,s2:null,status:'pending'},
+        {jornada:3,t1:'Bogotá D.C.',t2:'Facatativá',s1:null,s2:null,status:'pending'},
+        {jornada:3,t1:'Soacha',t2:'Chía',s1:null,s2:null,status:'pending'}
+      ],
+      tabla:[
+        {equipo:'Bogotá D.C.',pj:2,pg:2,pp:0,pts:6},
+        {equipo:'Facatativá',pj:1,pg:1,pp:0,pts:3},
+        {equipo:'Soacha',pj:1,pg:0,pp:1,pts:0},
+        {equipo:'Chía',pj:2,pg:0,pp:2,pts:0}
+      ]
+    },
+    historial:[
+      {icon:'green',title:'Jornada 2 parcial',desc:'Bogotá 9 - 4 Chía completado',date:'2024-04-21 15:00'},
+      {icon:'green',title:'Jornada 1 finalizada',desc:'2 partidos completados',date:'2024-04-20 17:00'},
+      {icon:'blue',title:'Digitación iniciada',desc:'Por Pedro',date:'2024-04-20'},
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-04-18'}
+    ]
+  },
+  /* ── Curling Dobles — Eliminación Directa ── */
+  {
+    id:'COMP-2024-009', nombre:'Curling Dobles Masculino Sub-23',
+    code:'COMP-2024-009', deporte:'Curling', subDeporte:'Curling Dobles', emoji:'🥌', sportKey:'curling_dobles',
+    genero:'Masculino', categoria:'Sub-23',
+    sistema:'Eliminación Directa', sisCls:'elim',
+    medal:true, evento:'Juegos Departamentales Cundinamarca 2024',
+    zona:'Centro', fase:'Fase Final', participantes:4, fecha:'2024-04-22',
+    estado:'Asignada', estCls:'asignada',
+    coordinador:'Jorge Pedraza', digitador:'Carlos López',
+    progreso:{done:0,total:3},
+    bracket:[
+      {round:'SEMIFINAL', matches:[
+        {id:1,t1:'Bogotá D.C.',t2:'Soacha',s1:null,s2:null,status:'pending'},
+        {id:2,t1:'Chía',t2:'Facatativá',s1:null,s2:null,status:'pending'}
+      ]},
+      {round:'FINAL', matches:[
+        {id:3,t1:'—',t2:'—',s1:null,s2:null,status:'pending'}
+      ]}
+    ],
+    historial:[
+      {icon:'gray',title:'Competencia creada',desc:'Estado inicial: Creada',date:'2024-04-18'}
+    ]
+  }
+];
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+const params = new URLSearchParams(window.location.search);
+const compId = params.get('id') || 'COMP-2024-001';
+const role = params.get('role') || 'digitador';
+
+// Sport key mapping from filterKey to SPORTS_DB key
+/* filterKey → SPORTS_DB key. Most filterKeys ARE the SPORTS_DB key (fallback handles it).
+   Only map keys that differ or need special handling. */
+const SPORT_KEY_MAP = {
+  ajedrez:'ajedrez_clasico',
+  futbol:'f_tbol', hockey:'hockey_cesped', karate:'karate_do',
+  natacion:'nataci_n', badminton:'b_dminton', beisbol:'b_isbol'
+};
+
+// Sistema labels
+const SIS_LABELS = {elim:'Eliminación Directa',robin:'Round Robin',final:'Final Directa',grupos:'Fase de Grupos',doble:'Eliminación Doble'};
+
+function generateFallbackComp(){
+  const sportParam = params.get('sport') || 'futbol';
+  const sisParam = params.get('sis') || 'elim';
+  const emoji = decodeURIComponent(params.get('emoji') || '⚽');
+  const deporte = decodeURIComponent(params.get('deporte') || 'Deporte');
+  const nombre = decodeURIComponent(params.get('nombre') || 'Competencia');
+  const estado = decodeURIComponent(params.get('estado') || 'Asignada');
+  const estCls = params.get('estCls') || 'asignada';
+  const medal = params.get('medal') === 'true';
+  const sportKey = SPORT_KEY_MAP[sportParam] || sportParam;
+
+  const teams = ['Bogotá D.C.','Soacha','Zipaquirá','Chía','Facatativá','Mosquera','Fusagasugá','Girardot'];
+  const fallback = {
+    id:compId, code:compId, nombre:nombre,
+    deporte:deporte, subDeporte:deporte, emoji:emoji, sportKey:sportKey,
+    genero:'', categoria:'',
+    sistema:SIS_LABELS[sisParam]||sisParam, sisCls:sisParam,
+    medal:medal, evento:'Juegos Departamentales 2024',
+    zona:'Centro', fase:'Fase Final', participantes:8, fecha:null,
+    estado:estado, estCls:estCls,
+    coordinador:'María García', digitador:'Carlos López',
+    progreso:{done:0,total:4},
+    historial:[{icon:'gray',title:'Competencia creada',desc:'Estado inicial',date:'2024-01-15'}]
+  };
+
+  // Generate structure based on system
+  if(sisParam==='elim'){
+    fallback.bracket=[
+      {round:'SEMIFINAL',matches:[
+        {id:1,t1:teams[0],t2:teams[1],s1:null,s2:null,status:'pending',winner:null},
+        {id:2,t1:teams[2],t2:teams[3],s1:null,s2:null,status:'pending',winner:null}
+      ]},
+      {round:'FINAL',matches:[{id:3,t1:null,t2:null,s1:null,s2:null,status:'pending',winner:null}]}
+    ];
+  } else if(sisParam==='robin'){
+    fallback.jornadas={equipos:teams.slice(0,4),
+      partidos:[
+        {jornada:1,t1:teams[0],t2:teams[1],s1:null,s2:null,status:'pending'},
+        {jornada:1,t1:teams[2],t2:teams[3],s1:null,s2:null,status:'pending'},
+        {jornada:2,t1:teams[0],t2:teams[2],s1:null,s2:null,status:'pending'},
+        {jornada:2,t1:teams[1],t2:teams[3],s1:null,s2:null,status:'pending'}
+      ],
+      tabla:teams.slice(0,4).map(t=>({equipo:t,pj:0,pg:0,pp:0,pts:0}))
+    };
+  } else if(sisParam==='final'){
+    fallback.prueba=nombre;
+    const participants = teams.map((t,i) => 'Participante '+(i+1)+' ('+t+')');
+    const isFinalizada = estCls === 'finalizada';
+    /* Generate demo times for finalized competitions */
+    const _demoTimes = ['10:23.45','10:28.12','10:31.67','10:35.89','10:40.23','10:44.56','10:48.91','10:52.34'];
+    fallback.matches=[{
+      id:0, phase:'Final', teams:['Todos'],
+      participants: participants,
+      status: isFinalizada ? 'done' : 'pending', scores:null
+    }];
+    fallback.ranking=teams.map((t,i)=>({
+      pos:i+1,
+      nombre:'Participante '+(i+1),
+      ciudad:t,
+      marca: isFinalizada ? _demoTimes[i] || '--' : '--'
+    }));
+  } else if(sisParam==='grupos'){
+    fallback.grupos=[
+      {nombre:'Grupo A',equipos:teams.slice(0,4),
+        partidos:[{t1:teams[0],t2:teams[1],s1:null,s2:null,status:'pending'},{t1:teams[2],t2:teams[3],s1:null,s2:null,status:'pending'}],
+        tabla:teams.slice(0,4).map(t=>({equipo:t,pj:0,pg:0,pp:0,pts:0}))
+      },
+      {nombre:'Grupo B',equipos:teams.slice(4),
+        partidos:[{t1:teams[4],t2:teams[5],s1:null,s2:null,status:'pending'},{t1:teams[6],t2:teams[7],s1:null,s2:null,status:'pending'}],
+        tabla:teams.slice(4).map(t=>({equipo:t,pj:0,pg:0,pp:0,pts:0}))
+      }
+    ];
+  } else if(sisParam==='doble'){
+    fallback.doble={
+      winners:[
+        {round:'RONDA 1 (W)',matches:[
+          {id:1,t1:teams[0],t2:teams[1],s1:null,s2:null,status:'pending',winner:null},
+          {id:2,t1:teams[2],t2:teams[3],s1:null,s2:null,status:'pending',winner:null}
+        ]},
+        {round:'FINAL WINNERS',matches:[{id:3,t1:null,t2:null,s1:null,s2:null,status:'pending',winner:null}]}
+      ],
+      losers:[
+        {round:'RONDA 1 (L)',matches:[{id:4,t1:null,t2:null,s1:null,s2:null,status:'pending',winner:null}]},
+        {round:'FINAL LOSERS',matches:[{id:5,t1:null,t2:null,s1:null,s2:null,status:'pending',winner:null}]}
+      ],
+      granFinal:[{round:'GRAN FINAL',matches:[{id:6,t1:null,t2:null,s1:null,s2:null,status:'pending',winner:null}]}]
+    };
+  }
+  return fallback;
+}
+
+var comp = COMPETITIONS.find(c => c.id === compId || c.code === compId) || generateFallbackComp();
+
+/* Ensure comp.sport alias exists for scoring-modal.js compatibility */
+if(!comp.sport && comp.sportKey) comp.sport = comp.sportKey;
+
+/* Build flat .matches array from bracket/jornadas/grupos/doble so saveResult can find matches by ID */
+if(!comp.matches){
+  const _allMatches = [];
+  if(comp.bracket) comp.bracket.forEach(r => r.matches.forEach(m => { m._round = r.round; _allMatches.push(m); }));
+  if(comp.jornadas && comp.jornadas.partidos) comp.jornadas.partidos.forEach((m,i) => { if(!m.id) m.id=i; _allMatches.push(m); });
+  if(comp.grupos) comp.grupos.forEach(g => g.partidos.forEach((m,i) => { if(!m.id) m.id=1000+i; _allMatches.push(m); }));
+  if(comp.doble){
+    ['winners','losers','granFinal'].forEach(k => {
+      if(comp.doble[k]) comp.doble[k].forEach(r => r.matches.forEach(m => { m._round=r.round; _allMatches.push(m); }));
+    });
+  }
+  if(_allMatches.length > 0) comp.matches = _allMatches;
+}
+/* Ensure progreso reflects actual data */
+if(comp.matches){
+  comp.progreso = { done: comp.matches.filter(m=>m.status==='done').length, total: comp.matches.length };
+}
+
+let currentTab = 'enfrentamientos';
+let currentJornada = 'all';
+let currentGrupo = 0;
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════════ */
+function buildSidebar(){
+  const nav = document.getElementById('sidebarNav');
+  const isCoord = role === 'coordinador';
+  nav.innerHTML = `
+    <div class="nav-section">DASHBOARD</div>
+    <div class="nav-row" onclick="window.location.href='${isCoord?'eventos.html':'digitador.html'}'">
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/></svg></div>
+      <span class="lbl">Inicio</span>
+    </div>
+    ${!isCoord ? '<div class="nav-row" onclick="window.location.href=\'digitador.html\'"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#B5B9D4" stroke-width="1.5"/><path d="M7 7h10M7 11h10M7 15h6" stroke="#B5B9D4" stroke-width="1.3" stroke-linecap="round"/></svg></div><span class="lbl">Mi Digitación</span></div>' : ''}
+    <div class="nav-section">GESTI&Oacute;N</div>
+    <div class="nav-row active">
+      <div class="active-bar"></div>
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 19.5 19.5" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.75.75h8a1 1 0 011 1v6a5 5 0 01-10 0v-6a1 1 0 011-1z" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.17 9.75H4.75a4 4 0 01-4-4v-2a1 1 0 011-1h3" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.33 9.75h.42a4 4 0 004-4v-2a1 1 0 00-1-1h-3" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.42 15.75H6.08a1.25 1.25 0 01-1.18-1.68l.33-1a1.25 1.25 0 011.18-.82h7.33c.54 0 1.02.34 1.18.82l.33 1a1.25 1.25 0 01-1.18 1.68z" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75 12.75v3" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="lbl">Competencias</span>
+      <span class="nav-arrow"><svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M7.33 12.83L11 9.17l3.67 3.67" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="subnav">
+      <a class="sub-row active-sub" href="${isCoord ? 'lista.html' : 'lista.html'}"><span class="dot"></span>Lista de competencias</a>
+      <a class="sub-row" href="stepper.html"><span class="dot" style="background:transparent"></span>Nueva competencia</a>
+    </div>
+    <div class="nav-row" onclick="window.location.href='digitadores.html'"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16 20v-1a4 4 0 00-4-4H6a4 4 0 00-4 4v1" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#B5B9D4" stroke-width="1.5"/><path d="M22 20v-1a4 4 0 00-4-4" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M15 3a4 4 0 010 8" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="lbl">Digitadores</span></div>
+    <div class="nav-row" onclick="window.location.href='coordinadores.html'"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="16.75" cy="17.75" r="4.25" stroke="#B5B9D4" stroke-width="1.5"/><path d="M18.18 16.91l-1.79 1.78-1.07-1.07" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M10 15H7a4 4 0 00-4 4v1" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="7" r="4" stroke="#B5B9D4" stroke-width="1.5"/></svg></div><span class="lbl">Coordinadores</span></div>
+    <div class="nav-row"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 20H5a2 2 0 01-2-2v-2a2 2 0 012-2h16" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M20 17H6" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="7.29" cy="7" rx="3" ry="3" stroke="#B5B9D4" stroke-width="1.5"/><ellipse cx="16.72" cy="7" rx="3" ry="3" stroke="#B5B9D4" stroke-width="1.5"/><path d="M10.29 7a2.72 2.72 0 013.43 0" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M3 7h1.29M19.72 7H21" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="lbl">Auditor&iacute;a</span></div>
+  `;
+  // Profile
+  const label = document.getElementById('profileLabel');
+  if(isCoord){
+    label.textContent = 'Coordinador de eventos';
+    document.getElementById('userName').textContent = 'Ana Maria S...';
+    document.getElementById('userRoleLabel').textContent = 'Coordinador d...';
+    document.querySelector('.ava-ring').textContent = 'AS';
+    document.querySelector('.ava-ring').style.background = '#ffb8c1';
+    document.querySelector('.ava-ring').style.color = '#672834';
+    document.querySelectorAll('.profile-option')[0].classList.add('active');
+    document.querySelectorAll('.profile-option')[1].classList.remove('active');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════ */
+function renderHeader(){
+  const pct = comp.progreso.total ? Math.round(comp.progreso.done/comp.progreso.total*100) : 0;
+  const progColor = 'var(--green)';
+
+  let actionsHtml = '';
+  if(role==='coordinador'){
+    if(comp.estCls==='pausa'){
+      actionsHtml=`<button class="btn btn-link btn-sm" onclick="changeCompStatus('digitacion')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2.5l7.5 4.5-7.5 4.5V2.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Reanudar</button>
+        <button class="btn btn-link btn-sm" onclick="showFinalizeModal()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 2.5h9v9h-9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Finalizar</button>`;
+    } else if(comp.estCls==='digitacion'){
+      actionsHtml=`<button class="btn btn-link btn-sm" onclick="changeCompStatus('pausa')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="2.5" width="3" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="2.5" width="3" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+          Pausar</button>
+        <button class="btn btn-link btn-sm" onclick="showFinalizeModal()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 2.5h9v9h-9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Finalizar</button>`;
+    } else if(comp.estCls==='asignada'){
+      actionsHtml=`<button class="btn btn-outline-green btn-sm" onclick="changeCompStatus('digitacion')">Iniciar Digitaci\u00f3n</button>`;
+    } else if(comp.estCls==='finalizada'){
+      actionsHtml=`<button class="btn btn-sm" onclick="showReabrirModal()" style="background:#dc2626;color:#fff;border:none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="4.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 4.5V3.5a2 2 0 014 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Reabrir Competencia
+      </button>`;
+    }
+  } else {
+    if(comp.estCls==='asignada'){
+      actionsHtml=`<button class="btn btn-outline-green btn-sm" onclick="changeCompStatus('digitacion')">Iniciar Digitaci\u00f3n</button>`;
+    }
+  }
+
+  const isPaused = comp.estCls === 'pausa';
+  const detailCard = document.getElementById('detailHeader');
+  detailCard.classList.toggle('paused', isPaused);
+
+  detailCard.innerHTML = `
+    ${isPaused ? `<div class="pause-banner">
+      <div class="pause-banner-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="4.5" y="3" width="3.5" height="12" rx="1.2" fill="white"/><rect x="10" y="3" width="3.5" height="12" rx="1.2" fill="white"/></svg>
+      </div>
+      <div>
+        <div class="pause-banner-text">Competencia en pausa</div>
+        <div class="pause-banner-sub">La digitación está suspendida temporalmente. Reanuda para continuar registrando resultados.</div>
+      </div>
+    </div>` : ''}
+    <div class="detail-top">
+      <div class="detail-left">
+        <div class="badge-row">
+          <span class="badge-est ${comp.estCls}">${comp.estado}</span>
+          <span class="badge-sis">${comp.sistema}</span>
+          ${comp.medal?'<span class="badge-medal">🏅 Con Medallas</span>':''}
+        </div>
+        <div class="detail-title">${comp.nombre}</div>
+        <div class="detail-code">${comp.code} · ${comp.deporte} · ${comp.subDeporte}</div>
+        <div class="detail-meta">
+          <span class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#646587" stroke-width="1.2"/><path d="M7 4v3l2 1.5" stroke="#646587" stroke-width="1.2" stroke-linecap="round"/></svg> ${comp.evento}</span>
+          <span class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.2 1 2 3.7 2 6.3 2 10 7 13 7 13s5-3 5-6.7C12 3.7 9.8 1 7 1z" stroke="#646587" stroke-width="1.2"/><circle cx="7" cy="6" r="1.5" stroke="#646587" stroke-width="1.2"/></svg> ${comp.zona} — ${comp.fase}</span>
+          <span class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5" cy="5" r="2.5" stroke="#646587" stroke-width="1.2"/><circle cx="9" cy="5" r="2.5" stroke="#646587" stroke-width="1.2"/><path d="M1 12c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5" stroke="#646587" stroke-width="1.2"/></svg> ${comp.participantes} participantes</span>
+          ${comp.fecha?`<span class="detail-meta-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="#646587" stroke-width="1.2"/><path d="M1.5 5.5h11" stroke="#646587" stroke-width="1.2"/><path d="M4.5 1v2M9.5 1v2" stroke="#646587" stroke-width="1.2" stroke-linecap="round"/></svg> ${comp.fecha}</span>`:''}
+        </div>
+      </div>
+      <div class="detail-right">
+        <div class="progress-wrap">
+          <div><span class="progress-label">Avance </span><span class="progress-count">${comp.progreso.done}/${comp.progreso.total}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${progColor}"></div></div>
+          <div class="progress-pct">${pct}% completado</div>
+        </div>
+        <div class="detail-actions">${actionsHtml}</div>
+        <div class="coord-digi-row">
+          <div class="coord-digi-item">
+            <span class="coord-digi-label">Coordinador:</span>
+            <span class="coord-digi-name">${comp.coordinador}</span>
+          </div>
+          <div class="coord-digi-item">
+            <span class="coord-digi-label">Digitador:</span>
+            <div class="digi-dd" id="digiDD">
+              <div class="digi-dd-trigger" onclick="toggleDigiDD()">
+                <span id="digiLabel">${comp.digitador}</span>
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="digi-dd-menu" id="digiMenu"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════════════ */
+function getTabs(){
+  const tabs = [{id:'enfrentamientos',label:'Enfrentamientos',icon:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h6M4 8.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'}];
+  if(comp.sisCls==='robin') tabs.push({id:'posiciones',label:'Tabla Posiciones',icon:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7.5h6M4 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'});
+  if(comp.sisCls==='grupos') tabs.push({id:'posiciones',label:'Tabla Posiciones',icon:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7.5h6M4 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'});
+  if(comp.sisCls==='final' && comp.medal) tabs.push({id:'medalleria',label:'Medallería',icon:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="8" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M5 1h4l-1 4H6L5 1z" stroke="currentColor" stroke-width="1.2"/></svg>'});
+  tabs.push({id:'historial',label:'Historial',icon:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1.5" width="10" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 4.5h4M5 7h4M5 9.5h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'});
+  return tabs;
+}
+
+function renderTabs(){
+  const tabs = getTabs();
+  document.getElementById('tabBar').innerHTML = tabs.map(t =>
+    `<button class="tab-btn${t.id===currentTab?' active':''}" onclick="switchTab('${t.id}')">${t.icon} ${t.label}</button>`
+  ).join('');
+}
+
+function switchTab(tabId){
+  currentTab = tabId;
+  renderTabs();
+  renderTabContent();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAB CONTENT DISPATCHER
+═══════════════════════════════════════════════════════════ */
+function renderTabContent(){
+  const el = document.getElementById('tabContent');
+  switch(currentTab){
+    case 'enfrentamientos': renderEnfrentamientos(el); break;
+    case 'posiciones': renderPosiciones(el); break;
+    case 'medalleria': renderMedalleria(el); break;
+    case 'historial': renderHistorial(el); break;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ENFRENTAMIENTOS
+═══════════════════════════════════════════════════════════ */
+function renderEnfrentamientos(el){
+  switch(comp.sisCls){
+    case 'elim': renderBracketView(el); break;
+    case 'robin': renderRobinView(el); break;
+    case 'final': renderFinalView(el); break;
+    case 'grupos': renderGruposView(el); break;
+    case 'doble': renderDobleView(el); break;
+    default: el.innerHTML='<p>Vista no disponible para este sistema.</p>';
+  }
+}
+
+/* ── BRACKET (Eliminación Directa) ── */
+function _renderBracketNode(m, isTercer, roundName){
+  const cls = m.status==='done'?'finalizado':m.status==='pending'?'pending':'';
+  const tercerCls = isTercer?'tercer-puesto':'';
+  const isDone = m.status==='done' || comp.estCls==='finalizada';
+  const t1IsWinner = isDone && m.winner===1;
+  const t2IsWinner = isDone && m.winner===2;
+  /* If no explicit winner but scores differ, infer */
+  const t1Won = t1IsWinner || (isDone && m.s1!==null && m.s2!==null && m.s1>m.s2);
+  const t2Won = t2IsWinner || (isDone && m.s1!==null && m.s2!==null && m.s2>m.s1);
+
+  /* Emojis: FINAL → 🏆 winner / 🥈 loser, TERCER PUESTO → 🥉 winner, rest → 🏆 winner */
+  const isFinal = roundName === 'FINAL';
+  function _winEmoji(won){ return isTercer ? '🥉' : (isFinal && !won ? '🥈' : '🏆'); }
+  let h = `<div class="bracket-node ${cls} ${tercerCls}">`;
+
+  /* Team 1 */
+  if(m.t1){
+    const rowCls = isDone ? (t1Won ? 'winner' : 'loser') : '';
+    const c1 = teamColor(m.t1);
+    const t1Emoji = isDone && isFinal ? (t1Won ? '🏆' : '🥈') : (t1Won ? _winEmoji(true) : '');
+    h += `<div class="bracket-team-row ${rowCls}">
+      <div class="bracket-initial" ${!isDone?`style="background:${c1};color:#fff"`:''}>${teamInit(m.t1)}</div>
+      <div class="bracket-tname-wrap"><div class="bracket-tname">${m.t1}</div><div class="bracket-tsub">${m.t1}</div></div>
+      <div class="bracket-score-wrap">
+        ${t1Emoji?`<span class="bracket-trophy">${t1Emoji}</span>`:''}
+        <span class="bracket-score ${m.s1===null?'pending-score':''}">${m.s1!==null?m.s1:'-'}</span>
+      </div>
+    </div>`;
+  }
+
+  /* Team 2 */
+  if(m.t2){
+    const rowCls = isDone ? (t2Won ? 'winner' : 'loser') : '';
+    const c2 = teamColor(m.t2);
+    const t2Emoji = isDone && isFinal ? (t2Won ? '🏆' : '🥈') : (t2Won ? _winEmoji(true) : '');
+    h += `<div class="bracket-team-row ${rowCls}">
+      <div class="bracket-initial" ${!isDone?`style="background:${c2};color:#fff"`:''}>${teamInit(m.t2)}</div>
+      <div class="bracket-tname-wrap"><div class="bracket-tname">${m.t2}</div><div class="bracket-tsub">${m.t2}</div></div>
+      <div class="bracket-score-wrap">
+        ${t2Emoji?`<span class="bracket-trophy">${t2Emoji}</span>`:''}
+        <span class="bracket-score ${m.s2===null?'pending-score':''}">${m.s2!==null?m.s2:'-'}</span>
+      </div>
+    </div>`;
+  } else if(!m.t2 && m.status==='pending'){
+    h += `<div class="bracket-team-row">
+      <div class="bracket-initial" style="background:#e8e9ee;color:var(--text-secondary)">?</div>
+      <div class="bracket-tname-wrap"><div class="bracket-tname" style="color:var(--text-secondary)">Por definir</div></div>
+      <span class="bracket-score pending-score">-</span>
+    </div>`;
+  }
+
+  /* Status bar */
+  if(isDone){
+    h += '<div class="bracket-status done"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Finalizado</div>';
+  } else if(m.status==='in-progress'){
+    h += '<div class="bracket-status en-curso">En curso &bull; Digitando</div>';
+  } else if(m.status==='pending' && (m.t1||m.t2)){
+    h += `<div class="bracket-register" onclick="openDigitar('${(m.t1||'').replace(/'/g,"\\'")}','${(m.t2||'').replace(/'/g,"\\'")}','${roundName}',${m.id})"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Registrar resultado</div>`;
+  }
+
+  h += '</div>';
+  return h;
+}
+
+function renderBracketView(el){
+  /* Filter out TERCER PUESTO from main flow */
+  const mainRounds = comp.bracket.filter(r => r.round !== 'TERCER PUESTO');
+  const tercerRound = comp.bracket.find(r => r.round === 'TERCER PUESTO');
+
+  let html = '<div class="bracket-header"><h3>Cuadro de Eliminación Directa</h3><a class="edit-link" href="#">Editar datos</a></div>';
+
+  /* Titles row — all at the same height */
+  html += '<div class="bracket-titles">';
+  mainRounds.forEach((round,ri) => {
+    if(ri > 0) html += '<div class="bracket-svg-spacer"></div>';
+    html += `<div class="bracket-col-title">${round.round}</div>`;
+  });
+  if(tercerRound) html += '<div class="bracket-svg-spacer"></div><div class="bracket-col-title">TERCER PUESTO</div>';
+  html += '</div>';
+
+  /* Bracket nodes */
+  html += '<div class="bracket-wrap">';
+  mainRounds.forEach((round,ri) => {
+    if(ri > 0) html += _buildSvgConnector();
+
+    html += '<div class="bracket-col">';
+    round.matches.forEach(m => { html += _renderBracketNode(m, false, round.round); });
+    html += '</div>';
+  });
+
+  /* Tercer puesto as last column */
+  if(tercerRound){
+    html += _buildSvgConnector();
+    html += '<div class="bracket-col">';
+    tercerRound.matches.forEach(m => { html += _renderBracketNode(m, true, tercerRound.round); });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+  requestAnimationFrame(_drawBracketLines);
+}
+
+/* Build SVG connector lines between bracket rounds */
+function _buildSvgConnector(){
+  return '<div class="bracket-svg-col"></div>';
+}
+
+/* Draw SVG connector lines between bracket columns after DOM render */
+function _drawBracketLines(){
+  document.querySelectorAll('.bracket-wrap').forEach(wrap => {
+    const cols = wrap.querySelectorAll('.bracket-col');
+    const svgCols = wrap.querySelectorAll('.bracket-svg-col');
+    const wrapRect = wrap.getBoundingClientRect();
+
+    svgCols.forEach((svgCol, si) => {
+      const prevCol = cols[si];
+      const nextCol = cols[si + 1];
+      if(!prevCol || !nextCol) return;
+
+      const prevNodes = prevCol.querySelectorAll('.bracket-node');
+      const nextNodes = nextCol.querySelectorAll('.bracket-node');
+      const colRect = svgCol.getBoundingClientRect();
+      const w = colRect.width;
+      const h = Math.max(colRect.height, wrap.scrollHeight);
+
+      let lines = '';
+      /* For each pair in prev → one in next */
+      nextNodes.forEach((nNode, ni) => {
+        const topNode = prevNodes[ni * 2];
+        const botNode = prevNodes[ni * 2 + 1];
+        if(!topNode) return;
+
+        const nRect = nNode.getBoundingClientRect();
+        const nMidY = nRect.top + nRect.height / 2 - colRect.top;
+
+        const tRect = topNode.getBoundingClientRect();
+        const tMidY = tRect.top + tRect.height / 2 - colRect.top;
+
+        if(botNode){
+          const bRect = botNode.getBoundingClientRect();
+          const bMidY = bRect.top + bRect.height / 2 - colRect.top;
+          const midY = (tMidY + bMidY) / 2;
+          /* Horizontal from top node to midpoint */
+          lines += `<line x1="0" y1="${tMidY}" x2="${w/2}" y2="${tMidY}" stroke="#d74009" stroke-width="2"/>`;
+          /* Horizontal from bottom node to midpoint */
+          lines += `<line x1="0" y1="${bMidY}" x2="${w/2}" y2="${bMidY}" stroke="#d74009" stroke-width="2"/>`;
+          /* Vertical connecting top to bottom */
+          lines += `<line x1="${w/2}" y1="${tMidY}" x2="${w/2}" y2="${bMidY}" stroke="#d74009" stroke-width="2"/>`;
+          /* Horizontal from midpoint to next node (right-angle, no diagonal) */
+          lines += `<line x1="${w/2}" y1="${midY}" x2="${w}" y2="${midY}" stroke="#d74009" stroke-width="2"/>`;
+        } else {
+          /* Single node → single node: straight horizontal */
+          const midY = (tMidY + nMidY) / 2;
+          lines += `<line x1="0" y1="${tMidY}" x2="${w/2}" y2="${tMidY}" stroke="#d74009" stroke-width="2"/>`;
+          lines += `<line x1="${w/2}" y1="${tMidY}" x2="${w/2}" y2="${nMidY}" stroke="#d74009" stroke-width="2"/>`;
+          lines += `<line x1="${w/2}" y1="${nMidY}" x2="${w}" y2="${nMidY}" stroke="#d74009" stroke-width="2"/>`;
+        }
+      });
+
+      svgCol.innerHTML = `<svg width="${w}" height="${h}" style="position:absolute;top:0;left:0;overflow:visible">${lines}</svg>`;
+    });
+  });
+}
+
+/* ── ROUND ROBIN ── */
+function renderRobinView(el){
+  const jornadas = [...new Set(comp.jornadas.partidos.map(p=>p.jornada))];
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><h3 style="font-size:16px;font-weight:600">Enfrentamientos</h3>';
+  html += '<div class="filter-pills">';
+  html += `<button class="filter-pill${currentJornada==='all'?' active':''}" onclick="currentJornada='all';renderTabContent()">Todos</button>`;
+  jornadas.forEach(j => {
+    html += `<button class="filter-pill${currentJornada===j?' active':''}" onclick="currentJornada=${j};renderTabContent()">Jornada ${j}</button>`;
+  });
+  html += '</div></div>';
+
+  const filtered = currentJornada==='all' ? comp.jornadas.partidos : comp.jornadas.partidos.filter(p=>p.jornada===currentJornada);
+  filtered.forEach(m => {
+    const c1 = teamColor(m.t1), c2 = teamColor(m.t2);
+    html += `<div class="match-card">
+      <div class="match-team"><div class="team-avatar" style="background:${c1};color:#fff">${teamInit(m.t1)}</div><div><div class="team-name">${m.t1}</div><div class="team-sub">${m.t1}</div></div></div>
+      <div class="match-center">
+        ${m.status==='done'?`<div class="match-score">${m.s1} - ${m.s2}</div>`:'<div class="match-vs">VS</div>'}
+        <div class="match-status">${m.status==='done'?'Finalizado':'Pendiente'}</div>
+      </div>
+      <div class="match-team right"><div><div class="team-name">${m.t2}</div><div class="team-sub">${m.t2}</div></div><div class="team-avatar" style="background:${c2};color:#fff">${teamInit(m.t2)}</div></div>
+      ${m.status==='pending' && comp.estCls!=='finalizada'?`<div class="match-actions"><button class="btn-digitar" onclick="openDigitar('${m.t1.replace(/'/g,"\\'")}','${m.t2.replace(/'/g,"\\'")}','Jornada ${m.jornada}')">Digitar</button></div>`:''}
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+/* ── FINAL DIRECTA ── */
+function renderFinalView(el){
+  const isFinalizada = comp.estCls === 'finalizada';
+  const allDone = comp.matches && comp.matches.every(m => m.status === 'done');
+
+  /* ── Finalized / All done: show results table with medals ── */
+  if((isFinalizada || allDone) && comp.ranking && comp.ranking.some(r => r.marca !== '--')){
+    const medalEmoji = ['🥇','🥈','🥉'];
+    let html = `<div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <span style="font-size:16px">🏅</span>
+        <h3 style="font-size:16px;font-weight:600;color:var(--text-primary)">Resultados Oficiales</h3>
+        <span style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:3px 10px;border-radius:var(--radius-full)">Finalizada</span>
+      </div>`;
+    html += `<table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;padding:10px 8px;letter-spacing:.3px;width:50px">Pos</th>
+        <th style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;padding:10px 12px;letter-spacing:.3px">Participante</th>
+        <th style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;padding:10px 12px;letter-spacing:.3px">Institución</th>
+        <th style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:right;padding:10px 12px;letter-spacing:.3px">Marca / Tiempo</th>
+      </tr></thead><tbody>`;
+    comp.ranking.forEach(r => {
+      const isMedal = r.pos <= 3;
+      const medal = isMedal ? medalEmoji[r.pos-1] : '';
+      const rowBg = r.pos === 1 ? 'background:linear-gradient(90deg,#fefce8 0%,#fff 60%)' : r.pos === 2 ? 'background:linear-gradient(90deg,#f8fafc 0%,#fff 60%)' : r.pos === 3 ? 'background:linear-gradient(90deg,#fffbeb 0%,#fff 60%)' : '';
+      html += `<tr style="${rowBg};border-bottom:1px solid var(--border)">
+        <td style="text-align:center;padding:14px 8px;font-size:14px;font-weight:700;color:${isMedal?'var(--text-primary)':'var(--text-secondary)'}">${medal || r.pos}</td>
+        <td style="padding:14px 12px"><div style="font-size:14px;font-weight:600;color:var(--text-primary)">${r.nombre}</div></td>
+        <td style="padding:14px 12px;font-size:13px;color:var(--text-secondary)">${r.ciudad}</td>
+        <td style="text-align:right;padding:14px 12px;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-primary)">${r.marca}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  /* ── Active: show digitizable match cards ── */
+  let html = '<div style="padding:0">';
+  const pending = comp.matches ? comp.matches.filter(m => m.status === 'pending') : [];
+  const done = comp.matches ? comp.matches.filter(m => m.status === 'done') : [];
+
+  if(pending.length > 0 && !isFinalizada){
+    html += `<div style="font-size:12px;font-weight:600;color:var(--text-secondary);letter-spacing:.3px;margin-bottom:12px">PENDIENTES DE DIGITACIÓN (${pending.length})</div>`;
+    pending.forEach(m => {
+      const pCount = m.participants ? m.participants.length : 0;
+      const label = pCount > 0 ? pCount + ' participantes' : (m.teams||[]).join(' vs ');
+      html += `<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--green-bg);border:1.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${m.phase}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">${label}</div>
+        </div>
+        <button class="btn-digitar" onclick="openDigitarFinal(${m.id})">Digitar</button>
+      </div>`;
+    });
+  }
+
+  if(done.length > 0){
+    html += `<div style="font-size:12px;font-weight:600;color:var(--green);letter-spacing:.3px;margin:20px 0 12px">COMPLETADOS (${done.length})</div>`;
+    done.forEach(m => {
+      const pCount = m.participants ? m.participants.length : 0;
+      const label = pCount > 0 ? pCount + ' participantes · Resultados registrados' : (m.teams||[]).join(' vs ');
+      html += `<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;opacity:.7">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--green-bg);border:1.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${m.phase}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">${label}</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;color:var(--green);padding:4px 12px;background:var(--green-bg);border-radius:var(--radius-full)">Completado</span>
+      </div>`;
+    });
+  }
+
+  /* Show ranking table if exists (even for non-finalized with partial results) */
+  if(comp.ranking && comp.ranking.length > 0 && !isFinalizada){
+    html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">';
+    html += '<div style="font-size:12px;font-weight:600;color:var(--text-secondary);letter-spacing:.3px;margin-bottom:12px">CLASIFICACIÓN PARCIAL</div>';
+    comp.ranking.forEach(r => {
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="width:24px;text-align:center;font-size:12px;font-weight:600;color:var(--text-secondary)">${r.pos}</span>
+        <span style="font-size:13px;font-weight:500;color:var(--text-primary);flex:1">${r.nombre}</span>
+        <span style="font-size:12px;color:var(--text-secondary)">${r.ciudad}</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums">${r.marca}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* ── FASE DE GRUPOS ── */
+function renderGruposView(el){
+  let html = '<div class="filter-pills" style="margin-bottom:16px">';
+  comp.grupos.forEach((g,i) => {
+    html += `<button class="filter-pill${currentGrupo===i?' active':''}" onclick="currentGrupo=${i};renderTabContent()">${g.nombre}</button>`;
+  });
+  html += '</div>';
+  const grupo = comp.grupos[currentGrupo];
+  // Matches
+  grupo.partidos.forEach(m => {
+    const c1 = teamColor(m.t1), c2 = teamColor(m.t2);
+    html += `<div class="match-card">
+      <div class="match-team"><div class="team-avatar" style="background:${c1};color:#fff">${teamInit(m.t1)}</div><div><div class="team-name">${m.t1}</div><div class="team-sub">${m.t1}</div></div></div>
+      <div class="match-center">
+        ${m.status==='done'?`<div class="match-score">${m.s1} - ${m.s2}</div>`:'<div class="match-vs">VS</div>'}
+        <div class="match-status">${m.status==='done'?'Finalizado':'Pendiente'}</div>
+      </div>
+      <div class="match-team right"><div><div class="team-name">${m.t2}</div><div class="team-sub">${m.t2}</div></div><div class="team-avatar" style="background:${c2};color:#fff">${teamInit(m.t2)}</div></div>
+      ${m.status==='pending' && comp.estCls!=='finalizada'?`<div class="match-actions"><button class="btn-digitar" onclick="openDigitar('${m.t1.replace(/'/g,"\\'")}','${m.t2.replace(/'/g,"\\'")}','${grupo.nombre}')">Digitar</button></div>`:''}
+    </div>`;
+  });
+  // Standings
+  html += `<div class="standings-title">Tabla — ${grupo.nombre}</div>`;
+  html += '<table class="standings-table"><thead><tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th></tr></thead><tbody>';
+  grupo.tabla.forEach((t,i) => {
+    const posCls = i===0?'':i===1?'pos2':i===2?'pos3':'pos3';
+    html += `<tr>
+      <td><span class="standings-pos ${posCls}">${i+1}</span></td>
+      <td><div class="standings-team"><div class="team-avatar" style="background:${teamColor(t.equipo)};color:#fff;width:28px;height:28px;font-size:10px">${teamInit(t.equipo)}</div><div><div class="standings-team-name">${t.equipo}</div><div class="standings-team-sub">${t.equipo}</div></div></div></td>
+      <td>${t.pj}</td><td>${t.pg}</td><td>${t.pp}</td><td class="standings-pts">${t.pts}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+/* ── ELIMINACIÓN DOBLE ── */
+function renderDobleView(el){
+  if(!comp.doble){ el.innerHTML='<p>No hay datos de eliminación doble.</p>'; return; }
+
+  function _renderDobleSection(label, rounds){
+    let h = `<div style="margin-bottom:28px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:12px">${label}</div>`;
+    /* Titles row */
+    h += '<div class="bracket-titles">';
+    rounds.forEach((round,ri) => {
+      if(ri > 0) h += '<div class="bracket-svg-spacer"></div>';
+      h += `<div class="bracket-col-title">${round.round}</div>`;
+    });
+    h += '</div>';
+    /* Bracket nodes */
+    h += '<div class="bracket-wrap">';
+    rounds.forEach((round,ri) => {
+      if(ri > 0) h += _buildSvgConnector();
+      h += '<div class="bracket-col">';
+      round.matches.forEach(m => { h += _renderBracketNode(m, false, round.round); });
+      h += '</div>';
+    });
+    h += '</div></div>';
+    return h;
+  }
+
+  let html = '<div class="bracket-header"><h3>Cuadro de Eliminación Doble</h3></div>';
+  html += _renderDobleSection('WINNERS BRACKET', comp.doble.winners);
+  html += _renderDobleSection('LOSERS BRACKET', comp.doble.losers);
+  html += _renderDobleSection('GRAN FINAL', comp.doble.granFinal);
+  el.innerHTML = html;
+  requestAnimationFrame(_drawBracketLines);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLA POSICIONES (standalone tab)
+═══════════════════════════════════════════════════════════ */
+function renderPosiciones(el){
+  if(comp.sisCls==='robin' && comp.jornadas){
+    let html = '<h3 style="font-size:16px;font-weight:600;margin-bottom:16px">Tabla de Posiciones</h3>';
+    html += '<table class="standings-table"><thead><tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th></tr></thead><tbody>';
+    comp.jornadas.tabla.forEach((t,i) => {
+      const posCls = i===0?'':i===1?'pos2':i===2?'pos3':'pos3';
+      html += `<tr>
+        <td><span class="standings-pos ${posCls}">${i+1}</span></td>
+        <td><div class="standings-team"><div class="team-avatar" style="background:${teamColor(t.equipo)};color:#fff;width:28px;height:28px;font-size:10px">${teamInit(t.equipo)}</div><div><div class="standings-team-name">${t.equipo}</div><div class="standings-team-sub">${t.equipo}</div></div></div></td>
+        <td>${t.pj}</td><td>${t.pg}</td><td>${t.pp}</td><td class="standings-pts">${t.pts}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } else if(comp.sisCls==='grupos' && comp.grupos){
+    let html = '<h3 style="font-size:16px;font-weight:600;margin-bottom:16px">Tabla de Posiciones</h3>';
+    comp.grupos.forEach(grupo => {
+      html += `<div class="standings-title">${grupo.nombre}</div>`;
+      html += '<table class="standings-table"><thead><tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th></tr></thead><tbody>';
+      grupo.tabla.forEach((t,i) => {
+        const posCls = i===0?'':i===1?'pos2':'pos3';
+        html += `<tr>
+          <td><span class="standings-pos ${posCls}">${i+1}</span></td>
+          <td><div class="standings-team"><div class="team-avatar" style="background:${teamColor(t.equipo)};color:#fff;width:28px;height:28px;font-size:10px">${teamInit(t.equipo)}</div><div><div class="standings-team-name">${t.equipo}</div><div class="standings-team-sub">${t.equipo}</div></div></div></td>
+          <td>${t.pj}</td><td>${t.pg}</td><td>${t.pp}</td><td class="standings-pts">${t.pts}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+    });
+    el.innerHTML = html;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MEDALLERÍA
+═══════════════════════════════════════════════════════════ */
+function renderMedalleria(el){
+  if(!comp.ranking || comp.ranking.length < 3){ el.innerHTML='<p>No hay datos de medallería</p>'; return; }
+  const medals = [
+    {cls:'gold',icon:'🥇',label:'ORO',data:comp.ranking[0]},
+    {cls:'silver',icon:'🥈',label:'PLATA',data:comp.ranking[1]},
+    {cls:'bronze',icon:'🥉',label:'BRONCE',data:comp.ranking[2]}
+  ];
+  let html = '<h3 style="font-size:16px;font-weight:600;margin-bottom:16px">Medallería</h3>';
+  html += '<div class="medal-grid">';
+  medals.forEach(m => {
+    html += `<div class="medal-card ${m.cls}">
+      <div class="medal-icon">${m.icon}</div>
+      <div class="medal-label">${m.label}</div>
+      <div class="medal-name">${m.data.nombre}</div>
+      <div class="medal-city">${m.data.ciudad}</div>
+      <div style="margin-top:6px;font-size:16px;font-weight:600;color:var(--accent)">${m.data.marca}</div>
+    </div>`;
+  });
+  html += '</div>';
+  // Full ranking below
+  html += '<h4 style="font-size:14px;font-weight:600;margin:16px 0 12px">Clasificación completa</h4>';
+  html += '<div class="ranking-list">';
+  comp.ranking.forEach(r => {
+    const cls = r.pos===1?'gold':r.pos===2?'silver':r.pos===3?'bronze':'';
+    const posCls = r.pos<=3?'p'+r.pos:'p4';
+    html += `<div class="ranking-row ${cls}">
+      <div class="ranking-pos ${posCls}">${r.pos}</div>
+      <div class="ranking-info"><div class="ranking-name">${r.nombre}</div><div class="ranking-city">${r.ciudad}</div></div>
+      <div class="ranking-mark">${r.marca}</div>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HISTORIAL
+═══════════════════════════════════════════════════════════ */
+/* ── Build dynamic historial from competition data ── */
+function _buildHistorial(c){
+  const events = [];
+  const baseDate = c.fecha || '2024-01-15';
+  let dayOffset = 0;
+  function _date(off, h, m){
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + off);
+    if(h!==undefined){ d.setHours(h); d.setMinutes(m||0); }
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+(h!==undefined?' '+String(h).padStart(2,'0')+':'+String(m||0).padStart(2,'0'):'');
+  }
+  function _winner(m){ return m.winner===1?m.t1:m.winner===2?m.t2:null; }
+  function _loser(m){ return m.winner===1?m.t2:m.winner===2?m.t1:null; }
+
+  /* 1. Competencia creada */
+  events.push({icon:'gray',type:'estado',title:'Competencia creada',desc:'Sistema: '+c.sistema+' · '+c.participantes+' participantes',date:_date(-5),sort:0});
+
+  /* 2. Coordinador asignado */
+  if(c.coordinador) events.push({icon:'blue',type:'asignacion',title:'Coordinador asignado',desc:c.coordinador,date:_date(-4),sort:1});
+
+  /* 3. Digitador asignado */
+  if(c.digitador) events.push({icon:'blue',type:'asignacion',title:'Digitador asignado',desc:c.digitador,date:_date(-3),sort:2});
+
+  /* 4. Digitación iniciada (if any match done) */
+  let hasDone = false;
+
+  /* === BRACKET (Eliminación Directa) === */
+  if(c.bracket){
+    let matchIdx = 0;
+    c.bracket.forEach(round => {
+      const isTercer = round.round === 'TERCER PUESTO';
+      let roundDone = 0;
+      round.matches.forEach(m => {
+        if(m.status==='done'){
+          if(!hasDone){ events.push({icon:'blue',type:'estado',title:'Digitación iniciada',desc:'Por '+c.digitador,date:_date(0,8,0),sort:10}); hasDone=true; }
+          const w = _winner(m);
+          const l = _loser(m);
+          events.push({
+            icon:'green', type:'resultado',
+            title: m.t1+' '+m.s1+' — '+m.s2+' '+m.t2,
+            desc: round.round+(w?' · Ganador: '+w:'')+(l?' · Perdedor: '+l:'')+' · Por '+c.digitador,
+            date: _date(dayOffset, 9+matchIdx, matchIdx*12%60),
+            sort: 100 + matchIdx
+          });
+          roundDone++;
+          matchIdx++;
+        }
+      });
+      if(roundDone > 0 && roundDone === round.matches.length && !isTercer){
+        events.push({icon:'green',type:'ronda',title:round.round+' completada',desc:roundDone+' enfrentamiento'+(roundDone>1?'s':'')+' finalizado'+(roundDone>1?'s':''),date:_date(dayOffset,14+Math.floor(dayOffset/2),30),sort:100+matchIdx+0.5});
+        dayOffset++;
+      }
+    });
+  }
+
+  /* === ROUND ROBIN === */
+  if(c.jornadas){
+    let matchIdx = 0;
+    const jornadas = [...new Set(c.jornadas.partidos.map(p=>p.jornada))];
+    jornadas.forEach((j, ji) => {
+      const partidos = c.jornadas.partidos.filter(p=>p.jornada===j);
+      let jDone = 0;
+      partidos.forEach(m => {
+        if(m.status==='done'){
+          if(!hasDone){ events.push({icon:'blue',type:'estado',title:'Digitación iniciada',desc:'Por '+c.digitador,date:_date(0,8,0),sort:10}); hasDone=true; }
+          const w = m.s1>m.s2?m.t1:m.s2>m.s1?m.t2:null;
+          const l = m.s1>m.s2?m.t2:m.s2>m.s1?m.t1:null;
+          events.push({
+            icon:'green', type:'resultado',
+            title: m.t1+' '+m.s1+' — '+m.s2+' '+m.t2,
+            desc: 'Jornada '+j+(w?' · Ganador: '+w:(m.s1===m.s2?' · Empate':''))+' · Por '+c.digitador,
+            date: _date(ji, 10+matchIdx, matchIdx*15%60),
+            sort: 100 + matchIdx
+          });
+          jDone++;
+          matchIdx++;
+        }
+      });
+      if(jDone > 0 && jDone === partidos.length){
+        events.push({icon:'green',type:'ronda',title:'Jornada '+j+' completada',desc:jDone+' partido'+(jDone>1?'s':'')+' finalizado'+(jDone>1?'s':''),date:_date(ji,18,0),sort:100+matchIdx+0.5});
+      }
+    });
+  }
+
+  /* === FASE DE GRUPOS === */
+  if(c.grupos){
+    let matchIdx = 0;
+    c.grupos.forEach((g, gi) => {
+      let gDone = 0;
+      g.partidos.forEach(m => {
+        if(m.status==='done'){
+          if(!hasDone){ events.push({icon:'blue',type:'estado',title:'Digitación iniciada',desc:'Por '+c.digitador,date:_date(0,8,0),sort:10}); hasDone=true; }
+          const w = m.s1>m.s2?m.t1:m.s2>m.s1?m.t2:null;
+          events.push({
+            icon:'green', type:'resultado',
+            title: m.t1+' '+m.s1+' — '+m.s2+' '+m.t2,
+            desc: g.nombre+(w?' · Ganador: '+w:' · Empate')+' · Por '+c.digitador,
+            date: _date(gi, 10+matchIdx, matchIdx*10%60),
+            sort: 100 + matchIdx
+          });
+          gDone++;
+          matchIdx++;
+        }
+      });
+    });
+  }
+
+  /* === DOBLE ELIMINACIÓN === */
+  if(c.doble){
+    let matchIdx = 0;
+    ['winners','losers','granFinal'].forEach(section => {
+      if(!c.doble[section]) return;
+      const label = section==='winners'?'Winners':section==='losers'?'Losers':'Gran Final';
+      c.doble[section].forEach(round => {
+        round.matches.forEach(m => {
+          if(m.status==='done'){
+            if(!hasDone){ events.push({icon:'blue',type:'estado',title:'Digitación iniciada',desc:'Por '+c.digitador,date:_date(0,8,0),sort:10}); hasDone=true; }
+            const w = _winner(m);
+            const l = _loser(m);
+            events.push({
+              icon:'green', type:'resultado',
+              title: (m.t1||'?')+' '+m.s1+' — '+m.s2+' '+(m.t2||'?'),
+              desc: round.round+' ('+label+')'+(w?' · Ganador: '+w:'')+' · Por '+c.digitador,
+              date: _date(Math.floor(matchIdx/3), 9+matchIdx%6, matchIdx*12%60),
+              sort: 100 + matchIdx
+            });
+            matchIdx++;
+          }
+        });
+      });
+    });
+  }
+
+  /* === FINAL DIRECTA === */
+  if(c.sisCls==='final' && c.ranking){
+    if(!hasDone && c.ranking.length>0){ events.push({icon:'blue',type:'estado',title:'Digitación iniciada',desc:'Por '+c.digitador,date:_date(0,8,0),sort:10}); hasDone=true; }
+    events.push({icon:'green',type:'resultado',title:'Resultados registrados',desc:c.ranking.length+' participantes clasificados · Por '+c.digitador,date:_date(0,16,30),sort:110});
+  }
+
+  /* 5. Estado actual */
+  if(c.estCls==='pausa') events.push({icon:'orange',type:'estado',title:'Competencia pausada',desc:'Pausada por coordinador',date:_date(dayOffset+1,14,0),sort:900});
+  if(c.estCls==='finalizada') events.push({icon:'green',type:'estado',title:'Competencia finalizada',desc:'Resultados oficiales registrados',date:_date(dayOffset+1,18,0),sort:999});
+
+  /* Sort by sort field (newest first) */
+  events.sort((a,b) => b.sort - a.sort);
+  return events;
+}
+
+/* ── Digitador Dropdown ── */
+const DIGITADORES = [
+  {name:'Carlos López',color:'#2c5f9b',init:'CL'},
+  {name:'Ana Martínez',color:'#e67e22',init:'AM'},
+  {name:'Pedro Rodríguez',color:'#9b59b6',init:'PR'},
+  {name:'Diego Ramírez',color:'#1f8923',init:'DR'},
+  {name:'María Gómez',color:'#e74c3c',init:'MG'}
+];
+
+function toggleDigiDD(){
+  const trigger = document.querySelector('.digi-dd-trigger');
+  const menu = document.getElementById('digiMenu');
+  const isOpen = menu.classList.contains('open');
+  if(!isOpen){
+    menu.innerHTML = DIGITADORES.map(d =>
+      `<div class="digi-dd-opt${d.name===comp.digitador?' selected':''}" onclick="pickDigitador('${d.name.replace(/'/g,"\\'")}')">
+        <div class="digi-dd-ava" style="background:${d.color}">${d.init}</div>
+        ${d.name}
+      </div>`
+    ).join('');
+  }
+  menu.classList.toggle('open');
+  trigger.classList.toggle('open');
+  if(!isOpen) setTimeout(()=>document.addEventListener('click',_closeDigiDD),0);
+}
+function _closeDigiDD(e){
+  if(!e.target.closest('#digiDD')){
+    document.getElementById('digiMenu').classList.remove('open');
+    document.querySelector('.digi-dd-trigger').classList.remove('open');
+    document.removeEventListener('click',_closeDigiDD);
+  }
+}
+function pickDigitador(name){
+  comp.digitador = name;
+  document.getElementById('digiLabel').textContent = name;
+  document.getElementById('digiMenu').classList.remove('open');
+  document.querySelector('.digi-dd-trigger').classList.remove('open');
+  document.removeEventListener('click',_closeDigiDD);
+}
+
+let _historialFilter = 'todos';
+
+function renderHistorial(el){
+  const iconSvg = {
+    green:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    blue:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5l2.5 1.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    orange:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="3.5" width="1.8" height="7" rx=".9" fill="white"/><rect x="7.7" y="3.5" width="1.8" height="7" rx=".9" fill="white"/></svg>',
+    gray:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2.5" stroke="white" stroke-width="1.5"/></svg>'
+  };
+
+  const events = _buildHistorial(comp);
+  const filtered = _historialFilter==='todos' ? events : events.filter(e => e.type===_historialFilter);
+
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">';
+  html += '<div><h3 style="font-size:16px;font-weight:600;margin:0">Historial de Eventos</h3><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Trazabilidad completa de la competencia</div></div>';
+  html += '<span style="font-size:11px;font-weight:500;color:var(--text-secondary);padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-full)">'+events.length+' eventos</span></div>';
+
+  /* Filters */
+  const filters = [
+    {id:'todos',label:'Todos'},
+    {id:'resultado',label:'Resultados'},
+    {id:'ronda',label:'Rondas'},
+    {id:'estado',label:'Estado'},
+    {id:'asignacion',label:'Asignaciones'}
+  ];
+  html += '<div class="filter-pills" style="margin-bottom:16px">';
+  filters.forEach(f => {
+    const count = f.id==='todos' ? events.length : events.filter(e=>e.type===f.id).length;
+    if(count===0 && f.id!=='todos') return;
+    html += `<button class="filter-pill${_historialFilter===f.id?' active':''}" onclick="_historialFilter='${f.id}';renderHistorial(document.getElementById('tabContent'))">${f.label} <span style="font-size:10px;opacity:.7">${count}</span></button>`;
+  });
+  html += '</div>';
+
+  /* Timeline */
+  html += '<div class="timeline">';
+  if(filtered.length===0){
+    html += '<div style="text-align:center;padding:32px 0;color:var(--text-secondary);font-size:13px">No hay eventos de este tipo</div>';
+  }
+  filtered.forEach((ev,i) => {
+    html += `<div class="timeline-item" style="animation-delay:${i*0.04}s">
+      <div class="timeline-dot ${ev.icon}">${iconSvg[ev.icon]||iconSvg.gray}</div>
+      <div class="timeline-content">
+        <div class="timeline-title">${ev.title}</div>
+        <div class="timeline-desc">${ev.desc}</div>
+      </div>
+      <div class="timeline-date"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M6 3.5v2.5l1.5 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg> ${ev.date}</div>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* SPORTS_DB + scoring-modal.js loaded externally */
+_onScoringModalSave = function(){
+  _advanceBracketWinners();
+  renderHeader();
+  renderTabContent();
+};
+
+/* Helper: get winner/loser from a done match */
+function _getWinnerLoser(m){
+  if(m.status !== 'done') return {winner:null, loser:null};
+  const w = m.winner === 1 ? m.t1 : m.winner === 2 ? m.t2 : (m.s1 > m.s2 ? m.t1 : m.s2 > m.s1 ? m.t2 : null);
+  const l = m.winner === 1 ? m.t2 : m.winner === 2 ? m.t1 : (m.s1 > m.s2 ? m.t2 : m.s2 > m.s1 ? m.t1 : null);
+  return {winner: w, loser: l};
+}
+
+function _advanceRounds(rounds){
+  for(let ri = 0; ri < rounds.length - 1; ri++){
+    const cur = rounds[ri], next = rounds[ri + 1];
+    cur.matches.forEach((m, mi) => {
+      const {winner} = _getWinnerLoser(m);
+      if(!winner) return;
+      const nextIdx = Math.floor(mi / 2);
+      const nextMatch = next.matches[nextIdx];
+      if(!nextMatch) return;
+      const slot = mi % 2 === 0 ? 't1' : 't2';
+      if(!nextMatch[slot]) nextMatch[slot] = winner;
+    });
+  }
+}
+
+/* Auto-advance winners through the bracket */
+function _advanceBracketWinners(){
+  /* Eliminación directa */
+  if(comp.bracket){
+    const mainRounds = comp.bracket.filter(r => r.round !== 'TERCER PUESTO');
+    const tercerRound = comp.bracket.find(r => r.round === 'TERCER PUESTO');
+    _advanceRounds(mainRounds);
+    /* Losers of semifinal → tercer puesto */
+    if(tercerRound){
+      const semis = mainRounds[mainRounds.length - 2];
+      if(semis) semis.matches.forEach((m, mi) => {
+        const {loser} = _getWinnerLoser(m);
+        if(loser && tercerRound.matches[0]){
+          const slot = mi % 2 === 0 ? 't1' : 't2';
+          if(!tercerRound.matches[0][slot]) tercerRound.matches[0][slot] = loser;
+        }
+      });
+    }
+  }
+
+  /* Eliminación doble */
+  if(comp.doble){
+    const w = comp.doble.winners;
+    const l = comp.doble.losers;
+    const gf = comp.doble.granFinal;
+
+    /* Advance winners bracket normally */
+    _advanceRounds(w);
+
+    /* Losers of Winners R1 → Losers R1 */
+    if(w[0] && l[0]){
+      w[0].matches.forEach((m, mi) => {
+        const {loser} = _getWinnerLoser(m);
+        if(loser && l[0].matches[0]){
+          /* For 4-team: both losers go to Losers R1 match */
+          const slot = mi % 2 === 0 ? 't1' : 't2';
+          if(!l[0].matches[0][slot]) l[0].matches[0][slot] = loser;
+        }
+      });
+    }
+
+    /* Advance losers bracket */
+    _advanceRounds(l);
+
+    /* Loser of Winners Final → Final Losers as t2 (plays against Losers R1 winner) */
+    if(w.length >= 2 && l.length >= 2){
+      const winFinal = w[w.length - 1].matches[0];
+      const loserFinal = l[l.length - 1].matches[0];
+      if(winFinal && loserFinal){
+        const {loser} = _getWinnerLoser(winFinal);
+        if(loser && !loserFinal.t2) loserFinal.t2 = loser;
+      }
+    }
+
+    /* Winner of Winners Final → Gran Final t1 */
+    if(w.length >= 2 && gf[0]){
+      const winFinal = w[w.length - 1].matches[0];
+      const {winner} = _getWinnerLoser(winFinal);
+      if(winner && !gf[0].matches[0].t1) gf[0].matches[0].t1 = winner;
+    }
+
+    /* Winner of Losers Final → Gran Final t2 */
+    if(l.length >= 2 && gf[0]){
+      const loserFinal = l[l.length - 1].matches[0];
+      const {winner} = _getWinnerLoser(loserFinal);
+      if(winner && !gf[0].matches[0].t2) gf[0].matches[0].t2 = winner;
+    }
+  }
+
+  /* Update progreso */
+  if(comp.matches){
+    comp.progreso = { done: comp.matches.filter(m=>m.status==='done').length, total: comp.matches.length };
+  }
+}
+
+function openDigitar(t1, t2, phase, matchId){
+  if(comp.estCls === 'finalizada') return;
+  if(!t1 && !t2) return;
+  /* Try to find the actual match in comp.matches by ID or by teams+phase */
+  let matchData = null;
+  if(matchId !== undefined && comp.matches) matchData = comp.matches.find(m => m.id === matchId);
+  if(!matchData && comp.matches) matchData = comp.matches.find(m => m.t1===t1 && m.t2===t2 && m._round===phase);
+  if(!matchData) matchData = { id:Date.now(), teams:[t1||'Por definir', t2||'Por definir'], phase: phase, participants:[t1||'Por definir', t2||'Por definir'] };
+  else matchData = { ...matchData, teams:[t1||'Por definir', t2||'Por definir'], phase: phase };
+  openScoringModal(comp.sportKey, matchData, comp.id);
+}
+
+function openDigitarFinal(matchId){
+  if(comp.estCls === 'finalizada') return;
+  const match = comp.matches ? comp.matches.find(m => m.id === matchId) : null;
+  if(!match) return;
+  openScoringModal(comp.sportKey, match, comp.id);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════════════════════════ */
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleProfileDD(){ document.getElementById('profileDropdown').classList.toggle('open'); }
+function fadeAndGo(url){document.body.style.transition='opacity .25s ease';document.body.style.opacity='0';setTimeout(()=>{window.location.href=url},260)}
+function switchProfile(profile){
+  document.getElementById('profileDropdown').classList.remove('open');
+  if(profile === 'coordinador') fadeAndGo('eventos.html');
+  else if(profile === 'digitador') fadeAndGo('digitador.html');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#profileSwitcher')) document.getElementById('profileDropdown')?.classList.remove('open');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+window.onload = function(){
+  buildSidebar();
+  renderHeader();
+
+  // Show finalized banner for digitador
+  if(comp.estCls === 'finalizada' && role === 'digitador'){
+    document.getElementById('tabBar').style.display = 'none';
+    document.getElementById('tabContent').innerHTML = `
+      <div class="finalized-banner">
+        <div class="finalized-banner-icon">✅</div>
+        <div class="finalized-banner-title">Competencia Finalizada</div>
+        <div class="finalized-banner-text">
+          Los resultados han sido sellados y registrados en el sistema. Tu trabajo como digitador ha concluido en esta competencia.<br><br>
+          Solo el <strong>Coordinador de Eventos</strong> puede reanudar o alterar cualquier resultado. Si detectas algún error, debes comunicarlo al coordinador responsable para que pueda hacer las correcciones.
+        </div>
+      </div>`;
+  } else {
+    renderTabs();
+    renderTabContent();
+  }
+
+  // Back link — coordinador vuelve al detalle del evento, digitador a su lista
+  const backLink = document.getElementById('backLink');
+  const backText = document.getElementById('backLinkText');
+  if(role==='coordinador'){
+    backLink.href = '#';
+    backLink.onclick = function(e){ e.preventDefault(); if(document.referrer && document.referrer.includes(window.location.origin)) history.back(); else window.location.href='lista.html'; };
+    backText.textContent = 'Volver a competencias del evento';
+  } else {
+    backLink.href = 'digitador.html';
+    backText.textContent = 'Volver a Competencias';
+  }
+};
+
+function changeCompStatus(newStatus){
+  const statusMap = {
+    'digitacion': {label:'En digitación', cls:'digitacion'},
+    'pausa': {label:'En pausa', cls:'pausa'},
+    'finalizada': {label:'Finalizada', cls:'finalizada'}
+  };
+  const s = statusMap[newStatus];
+  if(!s) return;
+  comp.estado = s.label;
+  comp.estCls = s.cls;
+  renderHeader();
+  renderTabContent();
+}
+
+function showFinalizeModal(){
+  /* Populate info */
+  document.getElementById('finCompName').textContent = comp.nombre;
+  document.getElementById('finCompProgress').textContent = comp.progreso.done + '/' + comp.progreso.total + ' enfrentamientos';
+  document.getElementById('finCompCoord').textContent = comp.coordinador || 'María García';
+  document.getElementById('finCompDigi').textContent = comp.digitador || 'Carlos López';
+  /* Reset input */
+  const inp = document.getElementById('finalizeConfirmInput');
+  inp.value = '';
+  inp.classList.remove('valid');
+  document.getElementById('finalizeBtn').disabled = true;
+  document.getElementById('finalizeOverlay').classList.add('open');
+}
+function closeFinalizeModal(){
+  document.getElementById('finalizeOverlay').classList.remove('open');
+}
+function validateFinalizeInput(){
+  const inp = document.getElementById('finalizeConfirmInput');
+  const match = inp.value.trim().toUpperCase() === 'FINALIZAR';
+  inp.classList.toggle('valid', match);
+  document.getElementById('finalizeBtn').disabled = !match;
+}
+function confirmFinalize(){
+  changeCompStatus('finalizada');
+  closeFinalizeModal();
+}
+</script>
+
+<!-- Finalize Confirmation Modal -->
+<style>
+.finalize-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.finalize-overlay.open{opacity:1;pointer-events:auto}
+.finalize-modal{background:var(--surface);border-radius:var(--radius-xl);max-width:520px;width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:scale(.92);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.finalize-overlay.open .finalize-modal{transform:scale(1)}
+.finalize-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.finalize-header-left{display:flex;align-items:center;gap:12px}
+.finalize-icon-wrap{width:40px;height:40px;border-radius:var(--radius-md);background:var(--red-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.finalize-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);transition:all .15s;flex-shrink:0}
+.finalize-close:hover{border-color:var(--accent);color:var(--accent)}
+.finalize-body{padding:20px 24px}
+.finalize-alert{background:var(--red-bg);border:1.5px solid var(--red-border);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;font-size:12px;line-height:1.6;color:#7f1d1d}
+.finalize-alert strong{display:block;margin-bottom:2px}
+.finalize-alert ul{margin:6px 0 0 16px;padding:0}
+.finalize-alert ul li{margin-bottom:3px}
+.finalize-info{background:var(--blue-bg);border:1.5px solid #b8daff;border-radius:var(--radius-md);padding:14px 16px;margin-bottom:20px;font-size:12px;line-height:1.6;color:#1e3a5f;display:flex;gap:10px}
+.finalize-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.finalize-info-grid span{font-weight:400;color:var(--text-secondary)}
+.finalize-info-grid strong{font-weight:500;color:var(--text-primary)}
+.finalize-confirm-section{text-align:center;margin-top:8px}
+.finalize-confirm-label{font-size:11px;font-weight:500;color:var(--text-secondary);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase}
+.finalize-confirm-input{width:100%;height:42px;border:1.5px solid var(--border-dark);border-radius:var(--radius-md);text-align:center;font-family:var(--font);font-size:14px;font-weight:500;color:var(--text-primary);outline:none;transition:border-color .15s;letter-spacing:1px}
+.finalize-confirm-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.1)}
+.finalize-confirm-input.valid{border-color:var(--green);box-shadow:0 0 0 3px rgba(31,137,35,.1)}
+.finalize-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid var(--border)}
+</style>
+<div class="finalize-overlay" id="finalizeOverlay" onclick="if(event.target===this)closeFinalizeModal()">
+  <div class="finalize-modal">
+    <div class="finalize-header">
+      <div class="finalize-header-left">
+        <div class="finalize-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.5L17.5 16H2.5L10 3.5z" stroke="#dc2626" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 9v3M10 14v.5" stroke="#dc2626" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary)">Finalizar competencia</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Esta acción requiere confirmación</div>
+        </div>
+      </div>
+      <button class="finalize-close" onclick="closeFinalizeModal()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="finalize-body">
+      <div class="finalize-alert">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px"><circle cx="8" cy="8" r="6" stroke="#dc2626" stroke-width="1.2"/><path d="M8 5v3.5M8 10.5v.5" stroke="#dc2626" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <div>
+          <strong>Acción irreversible</strong>
+          <ul>
+            <li>La competencia se marcará como <strong>finalizada oficialmente</strong></li>
+            <li>Los resultados quedarán registrados permanentemente</li>
+            <li>Solo un <strong>Coordinador de eventos</strong> podrá reabrir bajo decreto ministerial</li>
+            <li>No se podrán agregar ni modificar enfrentamientos</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="finalize-info" id="finalizeInfo">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px"><circle cx="8" cy="8" r="6" stroke="#1f78d1" stroke-width="1.2"/><path d="M8 7v4M8 5v.5" stroke="#1f78d1" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <div class="finalize-info-grid">
+          <span>Competencia</span><strong id="finCompName"></strong>
+          <span>Avance</span><strong id="finCompProgress"></strong>
+          <span>Coordinador</span><strong id="finCompCoord"></strong>
+          <span>Digitador</span><strong id="finCompDigi"></strong>
+        </div>
+      </div>
+
+      <div class="finalize-confirm-section">
+        <div class="finalize-confirm-label">Escribe FINALIZAR para confirmar</div>
+        <input type="text" class="finalize-confirm-input" id="finalizeConfirmInput" placeholder="FINALIZAR" oninput="validateFinalizeInput()" autocomplete="off"/>
+      </div>
+    </div>
+
+    <div class="finalize-footer">
+      <button class="btn btn-link btn-sm" onclick="closeFinalizeModal()" style="color:var(--text-secondary)">Cancelar</button>
+      <button class="btn btn-sm btn-red" id="finalizeBtn" disabled onclick="confirmFinalize()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 2.5h9v9h-9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Finalizar definitivamente
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ═══ Reapertura Especial Modal ═══ -->
+<style>
+.reabrir-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.reabrir-overlay.open{opacity:1;pointer-events:auto}
+.reabrir-modal{background:var(--surface);border-radius:var(--radius-xl);width:95vw;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:scale(.92);transition:transform .25s;animation:scaleIn .3s cubic-bezier(.4,0,.2,1)}
+.reabrir-overlay.open .reabrir-modal{transform:scale(1)}
+.reabrir-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2;border-radius:var(--radius-xl) var(--radius-xl) 0 0}
+.reabrir-icon-wrap{width:44px;height:44px;border-radius:12px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.reabrir-close{width:36px;height:36px;border-radius:var(--radius-sm);border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;color:var(--text-secondary)}
+.reabrir-close:hover{background:rgba(0,0,0,.06);color:var(--text-primary)}
+.reabrir-body{padding:20px 24px}
+.reabrir-info-box{border-radius:var(--radius-md);padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.6}
+.reabrir-info-box.purple{background:var(--orange-bg);border:1.5px solid var(--orange-border);color:#92400e}
+.reabrir-info-box.warning{background:var(--red-bg);border:1.5px solid var(--red-border);color:#7f1d1d}
+.reabrir-field{margin-bottom:18px}
+.reabrir-field label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:8px}
+.reabrir-field label .req{color:#dc2626;font-weight:600}
+.reabrir-field input,.reabrir-field textarea{width:100%;border:1.5px solid var(--border-dark);border-radius:var(--radius-md);padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none;transition:border-color .15s;box-sizing:border-box}
+.reabrir-field input:focus,.reabrir-field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.1)}
+.reabrir-field input::placeholder,.reabrir-field textarea::placeholder{color:var(--text-secondary);font-weight:400}
+.reabrir-field textarea{height:80px;resize:vertical}
+.reabrir-field .hint{font-size:11px;color:var(--accent);margin-top:6px;line-height:1.4}
+.reabrir-validation{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.reabrir-val-pill{font-size:11px;font-weight:500;padding:4px 12px;border-radius:var(--radius-full);border:1.5px solid var(--border);color:var(--text-secondary);display:inline-flex;align-items:center;gap:4px;transition:all .2s}
+.reabrir-val-pill.valid{border-color:var(--green-border);color:var(--green);background:var(--green-bg)}
+.btn-red{background:#dc2626;color:#fff;border:none}
+.btn-red:disabled{background:#c8cce0;color:#8a90a8;cursor:not-allowed;pointer-events:none}
+.reabrir-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface);border-radius:0 0 var(--radius-xl) var(--radius-xl)}
+
+/* Toast */
+.reabrir-toast{position:fixed;bottom:32px;right:32px;background:var(--orange-bg);border:1.5px solid var(--orange-border);border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:flex-start;gap:12px;min-width:320px;max-width:420px;z-index:3000;box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateY(20px);opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.reabrir-toast.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.reabrir-toast-icon{width:28px;height:28px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.reabrir-toast-title{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:2px}
+.reabrir-toast-desc{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.reabrir-toast-close{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:0;font-size:16px;line-height:1;flex-shrink:0}
+</style>
+
+<div class="reabrir-overlay" id="reabrirOverlay" onclick="if(event.target===this)closeReabrirModal()">
+  <div class="reabrir-modal">
+    <div class="reabrir-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="reabrir-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="8" width="14" height="10" rx="2" stroke="#dc2626" stroke-width="1.5"/><path d="M7 8V6a4 4 0 018 0v2" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary)">Reapertura Especial</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Autorización vía decreto o resolución ministerial</div>
+        </div>
+      </div>
+      <button class="reabrir-close" onclick="closeReabrirModal()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="reabrir-body">
+      <div class="reabrir-info-box purple">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z" stroke="currentColor" stroke-width="1.2"/><path d="M8 5v3M8 10v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span><strong>Coordinador:</strong> <span id="reabrirCoordName">María García Ruiz</span> · Solo proceder ante instrucciones ministeriales oficiales.</span>
+      </div>
+
+      <div class="reabrir-info-box warning">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="8" cy="8" r="6" stroke="#dc2626" stroke-width="1.2"/><path d="M8 5v3.5M8 10.5v.5" stroke="#dc2626" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span>⚠️ <strong>Acción de alto impacto.</strong> La reapertura requiere soporte documental del Ministerio del Deporte. Todos los campos son obligatorios y quedan en auditoría permanente.</span>
+      </div>
+
+      <div class="reabrir-field">
+        <label>N° Decreto / Resolución Ministerial <span class="req">*</span></label>
+        <input type="text" id="reabrirDecreto" placeholder="Ej: Resolución 0254-2025-MD · Decreto 1873 de 2025" oninput="validateReabrir()"/>
+      </div>
+
+      <div class="reabrir-field">
+        <label>Funcionario del Ministerio del Deporte <span class="req">*</span></label>
+        <input type="text" id="reabrirFuncionario" placeholder="Nombre completo y cargo del funcionario que autoriza" oninput="validateReabrir()"/>
+      </div>
+
+      <div class="reabrir-field">
+        <label>Motivo de reapertura <span class="req">*</span></label>
+        <textarea id="reabrirMotivo" placeholder="Describa la causal que justifica la reapertura..." oninput="validateReabrir()"></textarea>
+      </div>
+
+      <div class="reabrir-field">
+        <label>Evidencias y pruebas salvatorias <span class="req">*</span></label>
+        <textarea id="reabrirEvidencias" placeholder="Liste los documentos, radicados o URLs de soporte. Ej: Oficio MD-2025-3421 radicado ante SUID, acta de reunión ministerial del 15/03/2025, copia de decreto firmado..." oninput="validateReabrir()"></textarea>
+        <div class="hint">Sea específico. Esta información respalda la legalidad del proceso.</div>
+      </div>
+
+      <div class="reabrir-validation" id="reabrirValidation">
+        <span class="reabrir-val-pill" id="valDecreto">○ Decreto</span>
+        <span class="reabrir-val-pill" id="valFuncionario">○ Funcionario</span>
+        <span class="reabrir-val-pill" id="valMotivo">○ Motivo</span>
+        <span class="reabrir-val-pill" id="valEvidencias">○ Evidencias</span>
+      </div>
+    </div>
+
+    <div class="reabrir-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeReabrirModal()">Cancelar</button>
+      <button class="btn btn-red btn-sm" id="reabrirBtn" disabled onclick="confirmReabrir()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="4.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 4.5V3.5a2 2 0 014 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Reabrir Competencia
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reabrir Toast -->
+<div class="reabrir-toast" id="reabrirToast">
+  <div class="reabrir-toast-icon">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="flex:1">
+    <div class="reabrir-toast-title" id="reabrirToastTitle">Competencia reabierta</div>
+    <div class="reabrir-toast-desc" id="reabrirToastDesc">Se ha habilitado la redigitación de resultados.</div>
+  </div>
+  <button class="reabrir-toast-close" onclick="hideReabrirToast()">×</button>
+</div>
+
+<script>
+function showReabrirModal(){
+  document.getElementById('reabrirCoordName').textContent = comp.coordinador || 'Coordinador';
+  document.getElementById('reabrirDecreto').value = '';
+  document.getElementById('reabrirFuncionario').value = '';
+  document.getElementById('reabrirMotivo').value = '';
+  document.getElementById('reabrirEvidencias').value = '';
+  document.getElementById('reabrirBtn').disabled = true;
+  ['valDecreto','valFuncionario','valMotivo','valEvidencias'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('valid');
+    el.textContent = '○ ' + el.textContent.replace(/^[○●]\s*/,'');
+  });
+  document.getElementById('reabrirOverlay').classList.add('open');
+}
+
+function closeReabrirModal(){
+  document.getElementById('reabrirOverlay').classList.remove('open');
+}
+
+function validateReabrir(){
+  const decreto = document.getElementById('reabrirDecreto').value.trim();
+  const funcionario = document.getElementById('reabrirFuncionario').value.trim();
+  const motivo = document.getElementById('reabrirMotivo').value.trim();
+  const evidencias = document.getElementById('reabrirEvidencias').value.trim();
+
+  const fields = [
+    {id:'valDecreto', label:'Decreto', valid: decreto.length >= 3},
+    {id:'valFuncionario', label:'Funcionario', valid: funcionario.length >= 3},
+    {id:'valMotivo', label:'Motivo', valid: motivo.length >= 10},
+    {id:'valEvidencias', label:'Evidencias', valid: evidencias.length >= 10}
+  ];
+
+  let allValid = true;
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if(f.valid){
+      el.classList.add('valid');
+      el.textContent = '● ' + f.label;
+    } else {
+      el.classList.remove('valid');
+      el.textContent = '○ ' + f.label;
+      allValid = false;
+    }
+  });
+
+  document.getElementById('reabrirBtn').disabled = !allValid;
+}
+
+function confirmReabrir(){
+  closeReabrirModal();
+  changeCompStatus('digitacion');
+
+  /* Re-render for coordinador — show tabs and content again */
+  renderTabs();
+  renderTabContent();
+  document.getElementById('tabBar').style.display = '';
+
+  showReabrirToast(
+    '🔓 Competencia reabierta exitosamente',
+    `Se ha habilitado la redigitación de <strong>${comp.nombre}</strong>. Los cambios quedan registrados en auditoría con el decreto proporcionado.`
+  );
+}
+
+function showReabrirToast(title, desc){
+  const t = document.getElementById('reabrirToast');
+  document.getElementById('reabrirToastTitle').textContent = title;
+  document.getElementById('reabrirToastDesc').innerHTML = desc;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 5000);
+}
+function hideReabrirToast(){
+  document.getElementById('reabrirToast').classList.remove('show');
+}
+
+document.getElementById('btnLogout')?.addEventListener('click', () => {
+  fadeAndGo('../escenarios/escenario-01-login.html');
+});
+</script>
+</body>
+</html>

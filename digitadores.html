@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee – Digitadores</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="design-system.css"/>
+<style>
+:root {
+  --naranja:#FF7500; --azul:#002B5B;
+  --accent:#d74009;
+  --text-primary:#282834; --text-secondary:#646587;
+  --green:#1f8923; --green-bg:#e6f4e7; --green-border:#b7dfb9;
+  --blue-info:#1f78d1; --blue-bg:#eef5ff;
+  --orange-bg:#fff3e6; --orange-border:#ffbf75;
+  --red-bg:#fff0ee; --red-border:#ffc4bb;
+  --purple:#7c3aed; --purple-bg:#f3eeff;
+  --surface:#ffffff; --bg:#ffffff;
+  --border:#e7e9f3; --border-dark:#d0d4e6;
+  --sidebar-w:274px; --header-h:88px;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+  --font:'Inter',sans-serif;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.12);
+  --shadow-card:0 0 2px rgba(145,158,171,.2),0 12px 24px -4px rgba(145,158,171,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font-size:14px}
+
+/* SHELL */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:width .2s,min-width .2s}
+.sidebar-logo{height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+.burger-btn{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;border-radius:var(--radius-sm);transition:background .15s,transform .2s}
+.burger-btn:hover{background:rgba(0,0,0,.06)}
+.burger-btn:active{transform:scale(.9)}
+.burger-btn svg{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed .burger-btn svg{transform:rotate(180deg)}
+.naowee-logo{height:33px;flex-shrink:0}
+.sidebar-nav{flex:1;padding:24px 0 10px;display:flex;flex-direction:column;gap:10px}
+.nav-section{font-size:12px;font-weight:600;color:#b5b9d4;letter-spacing:0;padding:0 12px;line-height:16px}
+.nav-row{display:flex;align-items:center;gap:12px;height:44px;padding:0 20px 0 0;border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;position:relative;text-decoration:none}
+.nav-row:hover{background:#f5f6fa}
+.nav-row .icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-left:28px}
+.nav-row .lbl{flex:1;font-size:14px;font-weight:600;color:var(--text-primary)}
+.nav-row .nav-arrow{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.7;transition:transform .2s}
+.nav-row.expanded .nav-arrow{transform:rotate(180deg)}
+.active-bar{position:absolute;left:4px;top:8px;width:4px;height:28px;background:var(--accent);border-radius:25px}
+.nav-row.active{background:transparent}
+.nav-row.active:hover{background:transparent}
+.nav-row.active .lbl{color:var(--accent)}
+.subnav{padding-left:0;overflow:hidden;max-height:0;transition:max-height .25s ease}
+.subnav.open{max-height:200px}
+.sub-row{display:flex;align-items:center;gap:8px;height:36px;padding:0 8px 0 64px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:background .12s;text-decoration:none}
+.sub-row:hover{background:#f5f6fa}
+.sub-row .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:transparent}
+.sub-row.active-sub{color:var(--accent);font-weight:600}
+.sub-row.active-sub .dot{background:var(--accent)}
+.sidebar-bottom{padding:8px 0;border-top:1px solid var(--border)}
+.sidebar.collapsed{width:72px;min-width:72px;overflow:hidden}
+.sidebar.collapsed .naowee-logo,.sidebar.collapsed .lbl,.sidebar.collapsed .nav-arrow,.sidebar.collapsed .nav-section,.sidebar.collapsed .subnav,.sidebar.collapsed .sidebar-bottom .lbl{display:none}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row .icon{margin-left:0}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOP HEADER */
+.top-header{height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:0 32px;flex-shrink:0}
+.user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--radius-full);padding:8px 12px 8px 8px;cursor:pointer;max-width:200px}
+.ava{position:relative}
+.ava-ring{width:40px;height:40px;border-radius:50%;background:#ffb8c1;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#672834}
+.ava-dot{position:absolute;bottom:0;right:0;width:8px;height:8px;background:var(--green);border:2px solid #fff;border-radius:50%}
+.user-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.user-name{font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* PAGE */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 40px}
+
+/* PROFILE SWITCHER */
+.profile-switcher{position:relative}
+.profile-current{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-full);cursor:pointer;font-size:13px;font-weight:600;color:var(--text-primary);transition:all .15s;background:var(--surface)}
+.profile-current:hover{border-color:var(--accent);background:#fff8f4}
+.profile-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:260px;z-index:100;display:none;overflow:hidden}
+.profile-dropdown.open{display:block}
+.profile-option{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;transition:background .12s;color:var(--text-secondary)}
+.profile-option:hover{background:#f5f6fa}
+.profile-option.active{background:#fff3e6;color:var(--accent)}
+.po-name{font-size:13px;font-weight:600;color:inherit}
+.po-desc{font-size:11px;color:var(--text-secondary);margin-top:1px}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.page-sub{font-size:14px;color:var(--text-secondary)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;border-radius:var(--radius-md);font-size:13px;font-weight:700;font-family:var(--font);border:none;cursor:pointer;transition:opacity .15s,transform .1s}
+.btn:hover{opacity:.88}
+.btn:active{transform:scale(.97)}
+.btn-accent{background:var(--accent);color:#fff;border-radius:var(--radius-lg)}
+.btn-outline{background:var(--surface);color:var(--text-primary);border:1px solid var(--border-dark);transition:all .15s}
+.btn-outline:hover{border-radius:var(--radius-lg)}
+.btn-link{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font);padding:8px 14px;height:40px;display:inline-flex;align-items:center;border-radius:var(--radius-md);transition:background .15s}
+.btn-link:hover{background:var(--orange-bg)}
+
+/* STAT CARDS */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px;display:flex;align-items:center;gap:16px;border-left:3px solid transparent;animation:fadeInUp .4s ease both}
+.stat-card:nth-child(1){animation-delay:.05s}
+.stat-card:nth-child(2){animation-delay:.1s}
+.stat-card:nth-child(3){animation-delay:.15s}
+.stat-card:nth-child(4){animation-delay:.2s}
+.stat-icon-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-number{font-size:24px;font-weight:800;color:var(--text-primary);line-height:1}
+.stat-label{font-size:12px;color:var(--text-secondary);margin-top:2px}
+
+/* SEARCH */
+.search-bar{position:relative;margin-bottom:24px}
+.search-bar svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
+.search-bar input{width:100%;height:42px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 14px 0 40px;outline:none;transition:border-color .15s}
+.search-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
+.search-bar input::placeholder{color:var(--text-secondary)}
+
+/* DIGITADORES GRID */
+.digi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.digi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp .4s ease both;transition:box-shadow .15s}
+.digi-card:hover{box-shadow:var(--shadow-card)}
+.digi-card:nth-child(1){animation-delay:.1s}
+.digi-card:nth-child(2){animation-delay:.15s}
+.digi-card:nth-child(3){animation-delay:.2s}
+.digi-card:nth-child(4){animation-delay:.25s}
+.digi-card:nth-child(5){animation-delay:.3s}
+.digi-card.inactive{opacity:.6}
+.digi-card-header{display:flex;align-items:flex-start;gap:12px;padding:20px 20px 16px;position:relative}
+.digi-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;position:relative}
+.digi-online-dot{position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;border:2px solid #fff}
+.digi-online-dot.online{background:var(--green)}
+.digi-online-dot.offline{background:var(--border-dark)}
+.digi-header-info{flex:1;min-width:0}
+.digi-header-name{font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.digi-header-email{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.digi-card-actions{display:flex;gap:4px;flex-shrink:0}
+.digi-card-actions button{width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all .15s}
+.digi-card-actions button:hover{border-color:var(--accent);color:var(--accent);background:#fff8f4}
+
+/* CARD STATS */
+.digi-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0 20px 16px;text-align:center}
+.digi-stat{padding:10px 0;border-right:1px solid var(--border)}
+.digi-stat:last-child{border-right:none}
+.digi-stat-num{font-size:20px;font-weight:800;color:var(--text-primary);line-height:1}
+.digi-stat-label{font-size:11px;color:var(--text-secondary);margin-top:4px}
+
+/* CARD COMPETITIONS LIST */
+.digi-comps{padding:0 20px 16px}
+.digi-comp-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.digi-comp-item:last-child{border-bottom:none}
+.digi-comp-name{font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px}
+.digi-comp-more{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;padding:6px 0}
+.digi-comp-more:hover{text-decoration:underline}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;white-space:nowrap;border:1px solid transparent;flex-shrink:0}
+.badge.en-digitacion{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.badge.en-pausa{background:var(--orange-bg);color:var(--naranja);border-color:var(--orange-border)}
+.badge.finalizada{background:var(--blue-bg);color:var(--blue-info);border-color:#c5deff}
+.badge.asignada{background:#f0f1f7;color:var(--text-secondary);border-color:var(--border-dark)}
+
+/* CARD FOOTER */
+.digi-card-footer{display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid var(--border);color:var(--text-secondary);font-size:13px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border-radius:var(--radius-xl);width:95vw;max-width:520px;max-height:90vh;display:flex;flex-direction:column;transform:scale(.92);opacity:0;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s}
+.modal-overlay.open .modal{transform:scale(1);opacity:1}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 18px;border-bottom:1px solid var(--border)}
+.modal-header h2{font-size:18px;font-weight:700;color:var(--text-primary)}
+.modal-close{width:32px;height:32px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);color:var(--text-secondary);transition:background .12s}
+.modal-close:hover{background:var(--orange-bg);color:var(--text-secondary)}
+.modal-body{padding:24px 28px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:13px;font-weight:600;color:var(--text-primary)}
+.form-group label .req{color:var(--accent)}
+.form-group input,.form-group select{height:42px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 12px;outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
+.form-group input::placeholder{color:var(--text-secondary)}
+.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:18px 28px;border-top:1px solid var(--border)}
+.modal-footer .btn-accent:disabled{opacity:.5;cursor:not-allowed}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:1100;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-lg);padding:16px 20px;display:flex;align-items:flex-start;gap:12px;max-width:420px;box-shadow:var(--shadow-md);transform:translateY(20px);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s}
+.toast.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.toast-icon{width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast-content{flex:1;min-width:0}
+.toast-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.toast-desc{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.toast-desc strong{color:var(--text-primary);font-weight:600}
+.toast-close{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast-close:hover{color:var(--text-primary)}
+
+/* NO RESULTS */
+.no-results{text-align:center;padding:60px 20px;color:var(--text-secondary);font-size:14px;display:none}
+
+/* ANIMATIONS */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .stat-row{grid-template-columns:1fr 1fr}
+  .digi-grid{grid-template-columns:1fr}
+  .sidebar{width:72px;min-width:72px}
+  .sidebar .naowee-logo,.sidebar .lbl,.sidebar .nav-arrow,.sidebar .nav-section,.sidebar .subnav{display:none}
+  .sidebar .sidebar-logo{justify-content:center;padding:0}
+  .sidebar .nav-row{justify-content:center;padding:0}
+  .sidebar .nav-row .icon{margin-left:0}
+  .page{padding:20px 16px 32px}
+  .page-header{flex-direction:column;gap:16px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <button class="burger-btn" onclick="toggleSidebar()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.5 12H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 16H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 8H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <svg class="naowee-logo" viewBox="0 0 177 33.22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28.11 33.21c-1.25 0-2.42-.48-3.31-1.36a4.67 4.67 0 01-1.37-3.29l.02-16.73-5.92 5.91a1.6 1.6 0 01-1.75.35 1.6 1.6 0 01-.99-1.47V1.6c0-.88.72-1.6 1.6-1.6h8.59c4.3 0 7.8 3.48 7.8 7.76v20.8c0 2.56-2.1 4.65-4.67 4.65zm-3.05-26.85c.2 0 .41.04.61.12.6.25.99.83.99 1.48l-.02 20.6c0 .39.15.76.43 1.03.28.28.64.43 1.04.43.8 0 1.46-.65 1.46-1.46V7.76c0-2.52-2.06-4.57-4.59-4.57H18v9.56l5.92-5.92c.31-.31.72-.47 1.14-.47" fill="#F49C1C"/>
+      <path d="M16.39 33.21H7.8C3.5 33.21 0 29.73 0 25.45V4.65C0 2.09 2.1 0 4.67 0c1.25 0 2.42.49 3.31 1.36.88.88 1.37 2.05 1.36 3.29L9.33 21.38l5.92-5.91c.46-.46 1.15-.6 1.75-.35.6.25.99.83.99 1.47v15.02c0 .88-.72 1.6-1.6 1.6M4.67 3.19c-.81 0-1.47.65-1.47 1.46v20.8c0 2.52 2.06 4.57 4.59 4.57h7V20.46l-5.92 5.92c-.46.46-1.15.6-1.75.35a1.6 1.6 0 01-.99-1.47L6.14 4.65c0-.39-.15-.76-.43-1.03a1.45 1.45 0 00-1.04-.43" fill="#FF7500"/>
+      <path d="M71.59 24.93h-.31c-.6.72-1.32 1.34-2.16 1.86-.84.52-1.93.77-3.25.77-3.95 0-7.12-2.37-7.12-6.5 0-4.68 3.49-6.42 7.78-6.42 1.25 0 2.27.1 3.07.29.81.19 1.47.39 1.99.6v-.58c0-1.01-.4-1.84-1.21-2.49-.8-.66-1.8-.99-2.99-.99-1.77 0-3.26.73-4.48 2.21l-3.7-2.52c2.03-2.53 4.79-3.79 8.29-3.79 2.96 0 5.22.69 6.77 2.07 1.56 1.38 2.34 3.42 2.34 6.13v11.88h-5.02v-2.52zm0-5.69c-.6-.28-1.21-.51-1.85-.68-.64-.17-1.33-.25-2.08-.25-1.22 0-2.16.26-2.82.79-.66.53-1 1.18-1 1.95 0 .78.32 1.39.96 1.86.64.47 1.37.7 2.2.7.67 0 1.3-.12 1.87-.37.57-.24 1.06-.57 1.46-.97.4-.4.71-.86.93-1.39.22-.53.33-1.08.33-1.65" fill="#002B5B"/>
+      <path d="M89.28 7.37c5.06 0 10.12 3.57 10.12 10.1 0 6.52-5.06 10.1-10.12 10.1-5.06 0-10.11-3.58-10.11-10.1 0-6.53 5.05-10.1 10.11-10.1zm0 15.51c2.41 0 5.02-1.67 5.02-5.42 0-3.74-2.61-5.42-5.02-5.42s-5.02 1.68-5.02 5.42c0 3.75 2.61 5.42 5.02 5.42z" fill="#002B5B"/>
+      <path d="M101.96 7.37h5.72l3.15 12.65h.27l3.78-12.65h5.25l3.82 12.65h.27l3.11-12.65h5.64l-6.11 20.2h-5.49l-3.81-12.74h-.27l-3.81 12.74h-5.41l-6.11-20.2z" fill="#002B5B"/>
+      <path d="M154.68 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.12-4.24-10.12-10.1 0-5.71 4.23-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.1.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.15 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
+      <path d="M176.69 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.11-4.24-10.11-10.1 0-5.71 4.22-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.09.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.14 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
+      <path d="M53.69 27.57c-1.38 0-2.5-1.02-2.5-2.29V15.66c0-2.05-1.82-3.72-4.07-3.72-2.24 0-4.07 1.67-4.07 3.72v9.62c0 1.26-1.12 2.29-2.5 2.29s-2.5-1.02-2.5-2.29V15.66c0-4.57 4.07-8.29 9.07-8.29s9.07 3.72 9.07 8.29v9.62c0 1.26-1.12 2.29-2.5 2.29" fill="#002B5B"/>
+    </svg>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">DASHBOARD</div>
+    <div class="nav-row" onclick="window.location.href='eventos.html'">
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/></svg></div>
+      <span class="lbl">Inicio</span>
+    </div>
+    <div class="nav-section">GESTI&Oacute;N</div>
+    <div class="nav-row expanded" id="navComp" onclick="toggleCompMenu()">
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 19.5 19.5" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.75.75h8a1 1 0 011 1v6a5 5 0 01-10 0v-6a1 1 0 011-1z" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.17 9.75H4.75a4 4 0 01-4-4v-2a1 1 0 011-1h3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.33 9.75h.42a4 4 0 004-4v-2a1 1 0 00-1-1h-3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.42 15.75H6.08a1.25 1.25 0 01-1.18-1.68l.33-1a1.25 1.25 0 011.18-.82h7.33c.54 0 1.02.34 1.18.82l.33 1a1.25 1.25 0 01-1.18 1.68z" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75 12.75v3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="lbl">Competencias</span>
+      <span class="nav-arrow"><svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M7.33 9.17L11 12.83l3.67-3.67" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="subnav open" id="subnavComp">
+      <a class="sub-row" href="lista.html"><span class="dot"></span>Lista de competencias</a>
+      <a class="sub-row" href="stepper.html"><span class="dot" style="background:transparent"></span>Nueva competencia</a>
+    </div>
+    <div class="nav-row active" onclick="window.location.href='digitadores.html'">
+      <div class="active-bar"></div>
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16 20v-1a4 4 0 00-4-4H6a4 4 0 00-4 4v1" stroke="#d74009" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#d74009" stroke-width="1.5"/><path d="M22 20v-1a4 4 0 00-4-4" stroke="#d74009" stroke-width="1.5" stroke-linecap="round"/><path d="M15 3a4 4 0 010 8" stroke="#d74009" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <span class="lbl">Digitadores</span>
+    </div>
+    <div class="nav-row" onclick="window.location.href='coordinadores.html'"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="16.75" cy="17.75" r="4.25" stroke="#B5B9D4" stroke-width="1.5"/><path d="M18.18 16.91l-1.79 1.78-1.07-1.07" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M10 15H7a4 4 0 00-4 4v1" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="7" r="4" stroke="#B5B9D4" stroke-width="1.5"/></svg></div><span class="lbl">Coordinadores</span></div>
+    <div class="nav-row"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 20H5a2 2 0 01-2-2v-2a2 2 0 012-2h16" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M20 17H6" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="7.29" cy="7" rx="3" ry="3" stroke="#B5B9D4" stroke-width="1.5"/><ellipse cx="16.72" cy="7" rx="3" ry="3" stroke="#B5B9D4" stroke-width="1.5"/><path d="M10.29 7a2.72 2.72 0 013.43 0" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M3 7h1.29M19.72 7H21" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="lbl">Auditor&iacute;a</span></div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="nav-row" id="btnLogout"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="lbl">Cerrar sesi&oacute;n</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="top-header">
+    <div class="profile-switcher" id="profileSwitcher">
+      <div class="profile-current" onclick="toggleProfileDD()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" stroke="currentColor" stroke-width="1.2"/></svg>
+        <span id="profileLabel">Coordinador de eventos</span>
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="profile-option active" onclick="switchProfile('coordinador')">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" stroke="currentColor" stroke-width="1.2"/></svg>
+          <div><div class="po-name">Coordinador de eventos</div><div class="po-desc">Crear y configurar competencias</div></div>
+        </div>
+        <div class="profile-option" onclick="switchProfile('digitador')">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 2h10v12H3z" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h6M5 7.5h6M5 10h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+          <div><div class="po-name">Digitador</div><div class="po-desc">Digitar enfrentamientos asignados</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="user-chip">
+      <div class="ava"><div class="ava-ring">AS</div><div class="ava-dot"></div></div>
+      <div class="user-info"><span class="user-name">Ana Maria S...</span><span class="user-role">Coordinador d...</span></div>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#282834" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Gesti&oacute;n de digitadores</h1>
+        <p class="page-sub">4 activos de 5 registrados</p>
+      </div>
+      <button class="btn btn-accent" onclick="openModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.5"/><line x1="19" y1="8" x2="19" y2="14" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="22" y1="11" x2="16" y2="11" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Crear digitador
+      </button>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card" style="border-left-color:#2c5f9b">
+        <div class="stat-icon-circle" style="background:#eef2f8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 20v-1a4 4 0 00-4-4H6a4 4 0 00-4 4v1" stroke="#2c5f9b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#2c5f9b" stroke-width="1.5"/><path d="M22 20v-1a4 4 0 00-4-4" stroke="#2c5f9b" stroke-width="1.5" stroke-linecap="round"/><path d="M15 3a4 4 0 010 8" stroke="#2c5f9b" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div class="stat-number">5</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--green)">
+        <div class="stat-icon-circle" style="background:var(--green-bg)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="stat-number">4</div>
+          <div class="stat-label">Activos</div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--naranja)">
+        <div class="stat-icon-circle" style="background:var(--orange-bg)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--naranja)" stroke-width="1.5"/><path d="M12 7v5l3 3" stroke="var(--naranja)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="stat-number">2</div>
+          <div class="stat-label">En digitaci&oacute;n</div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--text-secondary)">
+        <div class="stat-icon-circle" style="background:#f0f1f7">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12h2l2-3 2 3h2" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 10h2l1.5-2L19 10h2" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 18h20" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div class="stat-number">1</div>
+          <div class="stat-label">Inactivos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar digitador por nombre, email, zona" oninput="filterCards()"/>
+    </div>
+
+    <!-- DIGITADORES GRID -->
+    <div class="digi-grid" id="digiGrid">
+    </div>
+
+    <div class="no-results" id="noResults">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="margin-bottom:12px"><circle cx="11" cy="11" r="7" stroke="var(--border-dark)" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="var(--border-dark)" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <p>No se encontraron digitadores con ese criterio.</p>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- CREATE MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Crear nuevo digitador</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre completo <span class="req">*</span></label>
+        <input type="text" id="formName" placeholder="Ej: Juan David Lopez" oninput="validateForm()"/>
+      </div>
+      <div class="form-group">
+        <label>Correo electr&oacute;nico <span class="req">*</span></label>
+        <input type="email" id="formEmail" placeholder="Ej: juan.lopez@gmail.com" oninput="validateForm()"/>
+      </div>
+      <div class="form-group">
+        <label>Tel&eacute;fono</label>
+        <input type="tel" id="formPhone" placeholder="Ej: 315 092 0923"/>
+      </div>
+      <div class="form-group">
+        <label>Zona asignada</label>
+        <select id="formZona">
+          <option value="">Seleccionar zona</option>
+          <option value="Centro">Centro</option>
+          <option value="Norte">Norte</option>
+          <option value="Sur">Sur</option>
+          <option value="Oriente">Oriente</option>
+          <option value="Occidente">Occidente</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-link" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-accent" id="btnSubmit" disabled onclick="submitForm()">Crear digitador</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="toast-content">
+    <div class="toast-title">Creaci&oacute;n exitosa</div>
+    <div class="toast-desc" id="toastDesc"></div>
+  </div>
+  <button class="toast-close" onclick="hideToast()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<script>
+// DATA
+var digitadores = [
+  {
+    id: 1,
+    name: 'Carlos Perez Jimenez',
+    email: 'carlos.perez@gmail.com',
+    phone: '315 092 0923',
+    avatar: '#3b82f6',
+    initials: 'CP',
+    online: true,
+    active: true,
+    asignadas: 4,
+    activas: 19,
+    finalizadas: 1,
+    comps: [
+      { name: 'Futbol sala masculino', status: 'en-digitacion', label: 'En digitaci\u00f3n' },
+      { name: 'Atletismo 100m Masculino - Sub 17', status: 'finalizada', label: 'Finalizada' }
+    ],
+    moreCount: 18
+  },
+  {
+    id: 2,
+    name: 'Samuel Torres Ramirez',
+    email: 'samuel.torres@gmail.com',
+    phone: '316 654 3210',
+    avatar: '#8b5cf6',
+    initials: 'ST',
+    online: true,
+    active: true,
+    asignadas: 2,
+    activas: 0,
+    finalizadas: 1,
+    comps: [
+      { name: 'Voleibol Femenino Mayor', status: 'en-pausa', label: 'En pausa' },
+      { name: 'Voleibol Masculino Mayor', status: 'finalizada', label: 'Finalizada' }
+    ],
+    moreCount: 0
+  },
+  {
+    id: 3,
+    name: 'Sofia Vargas Mendoza',
+    email: 'sofia.vargas@gmail.com',
+    phone: '317 321 0987',
+    avatar: '#ec4899',
+    initials: 'SV',
+    online: true,
+    active: true,
+    asignadas: 1,
+    activas: 0,
+    finalizadas: 0,
+    comps: [
+      { name: 'Baloncesto Masculino Su', status: 'asignada', label: 'Asignada' }
+    ],
+    moreCount: 0
+  },
+  {
+    id: 4,
+    name: 'Ana Torres Martinez',
+    email: 'ana.torres@gmail.com',
+    phone: '318 555 1234',
+    avatar: '#f59e0b',
+    initials: 'AT',
+    online: true,
+    active: true,
+    asignadas: 3,
+    activas: 2,
+    finalizadas: 0,
+    comps: [
+      { name: 'B\u00e1dminton Individual', status: 'en-digitacion', label: 'En digitaci\u00f3n' },
+      { name: 'Nataci\u00f3n 200m Libre', status: 'en-digitacion', label: 'En digitaci\u00f3n' }
+    ],
+    moreCount: 0
+  },
+  {
+    id: 5,
+    name: 'Diego Ramirez Luna',
+    email: 'diego.ramirez@gmail.com',
+    phone: '319 444 5678',
+    avatar: '#6b7280',
+    initials: 'DR',
+    online: false,
+    active: false,
+    asignadas: 1,
+    activas: 0,
+    finalizadas: 0,
+    comps: [
+      { name: 'Ajedrez Cl\u00e1sico', status: 'asignada', label: 'Asignada' }
+    ],
+    moreCount: 0
+  }
+];
+
+function renderCards(list) {
+  var grid = document.getElementById('digiGrid');
+  var noResults = document.getElementById('noResults');
+  grid.innerHTML = '';
+
+  if (list.length === 0) {
+    noResults.style.display = 'block';
+    return;
+  }
+  noResults.style.display = 'none';
+
+  list.forEach(function(d, i) {
+    var compsHtml = '';
+    d.comps.forEach(function(c) {
+      compsHtml += '<div class="digi-comp-item"><span class="digi-comp-name">' + c.name + '</span><span class="badge ' + c.status + '">' + c.label + '</span></div>';
+    });
+    if (d.moreCount > 0) {
+      compsHtml += '<div class="digi-comp-more">+ ' + d.moreCount + ' m\u00e1s</div>';
+    }
+
+    var card = document.createElement('div');
+    card.className = 'digi-card' + (d.active ? '' : ' inactive');
+    card.setAttribute('data-name', d.name.toLowerCase());
+    card.setAttribute('data-email', d.email.toLowerCase());
+    card.style.animationDelay = (0.1 + i * 0.05) + 's';
+
+    card.innerHTML =
+      '<div class="digi-card-header">' +
+        '<div class="digi-avatar" style="background:' + d.avatar + '">' +
+          d.initials +
+          '<span class="digi-online-dot ' + (d.online ? 'online' : 'offline') + '"></span>' +
+        '</div>' +
+        '<div class="digi-header-info">' +
+          '<div class="digi-header-name">' + d.name + '</div>' +
+          '<div class="digi-header-email">' + d.email + '</div>' +
+        '</div>' +
+        '<div class="digi-card-actions">' +
+          '<button title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+          '<button title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-.867 12.142A2 2 0 0116.138 20H7.862a2 2 0 01-1.995-1.858L5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="digi-card-stats">' +
+        '<div class="digi-stat"><div class="digi-stat-num">' + d.asignadas + '</div><div class="digi-stat-label">Asignadas</div></div>' +
+        '<div class="digi-stat"><div class="digi-stat-num">' + d.activas + '</div><div class="digi-stat-label">Activas</div></div>' +
+        '<div class="digi-stat"><div class="digi-stat-num">' + d.finalizadas + '</div><div class="digi-stat-label">Finalizadas</div></div>' +
+      '</div>' +
+      '<div class="digi-comps">' + compsHtml + '</div>' +
+      '<div class="digi-card-footer">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '<span>' + d.phone + '</span>' +
+      '</div>';
+
+    grid.appendChild(card);
+  });
+}
+
+// SEARCH FILTER
+function filterCards() {
+  var q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (!q) {
+    renderCards(digitadores);
+    return;
+  }
+  var filtered = digitadores.filter(function(d) {
+    return d.name.toLowerCase().indexOf(q) !== -1 ||
+           d.email.toLowerCase().indexOf(q) !== -1;
+  });
+  renderCards(filtered);
+}
+
+// SIDEBAR
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+function toggleCompMenu() {
+  var nav = document.getElementById('navComp');
+  var sub = document.getElementById('subnavComp');
+  nav.classList.toggle('expanded');
+  sub.classList.toggle('open');
+}
+
+// PROFILE SWITCHER
+function toggleProfileDD() {
+  document.getElementById('profileDropdown').classList.toggle('open');
+}
+function fadeAndGo(url){document.body.style.transition='opacity .25s ease';document.body.style.opacity='0';setTimeout(()=>{window.location.href=url},260)}
+function switchProfile(p) {
+  document.getElementById('profileDropdown').classList.remove('open');
+  if (p === 'digitador') fadeAndGo('digitador.html');
+}
+document.addEventListener('click', function(e) {
+  var sw = document.getElementById('profileSwitcher');
+  if (!sw.contains(e.target)) {
+    document.getElementById('profileDropdown').classList.remove('open');
+  }
+});
+
+// MODAL
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('formName').value = '';
+  document.getElementById('formEmail').value = '';
+  document.getElementById('formPhone').value = '';
+  document.getElementById('formZona').value = '';
+  document.getElementById('btnSubmit').disabled = true;
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+function validateForm() {
+  var name = document.getElementById('formName').value.trim();
+  var email = document.getElementById('formEmail').value.trim();
+  document.getElementById('btnSubmit').disabled = !(name && email);
+}
+function submitForm() {
+  var name = document.getElementById('formName').value.trim();
+  var email = document.getElementById('formEmail').value.trim();
+  if (!name || !email) return;
+  closeModal();
+  showToast(name, email);
+}
+
+// TOAST
+var toastTimer = null;
+function showToast(name, email) {
+  var desc = document.getElementById('toastDesc');
+  desc.innerHTML = 'El usuario <strong>' + name + '</strong> ha sido asignado de forma exitosa como digitador y se ha enviado al correo <strong>' + email + '</strong> las instrucciones.';
+  var toast = document.getElementById('toast');
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 5000);
+}
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
+  if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+}
+
+// INIT
+renderCards(digitadores);
+
+document.getElementById('btnLogout')?.addEventListener('click', () => {
+  fadeAndGo('../escenarios/escenario-01-login.html');
+});
+</script>
+</body>
+</html>

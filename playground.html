@@ -1,0 +1,2859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naowee Design System — Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system.css">
+<style>
+/* ── PLAYGROUND SHELL ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#282834;display:flex;min-height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ──────────────────────────────────────────── */
+#pg-sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:260px;
+  background:#282834;color:#fff;display:flex;flex-direction:column;
+  z-index:100;transition:width .2s ease;overflow:hidden;
+}
+.pg-sidebar-header{
+  padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+}
+.pg-sidebar-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.pg-sidebar-logo svg{width:28px;height:28px;color:#FF7500}
+.pg-sidebar-logo span{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.pg-sidebar-logo small{font-size:10px;font-weight:600;color:#9C9EBF;margin-left:4px;background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px}
+.pg-sidebar-search{position:relative}
+.pg-sidebar-search input{
+  width:100%;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:#fff;padding:0 12px 0 32px;
+  font-size:12px;font-family:inherit;outline:none;transition:border .15s;
+}
+.pg-sidebar-search input::placeholder{color:#646587}
+.pg-sidebar-search input:focus{border-color:rgba(255,117,0,.5)}
+.pg-sidebar-search svg{position:absolute;left:10px;top:9px;width:14px;height:14px;color:#646587;pointer-events:none}
+
+.pg-sidebar-nav{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.pg-sidebar-nav::-webkit-scrollbar{width:4px}
+.pg-sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+.pg-nav-group{}
+.pg-nav-group-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 20px;cursor:pointer;user-select:none;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  color:#9C9EBF;transition:color .15s;
+}
+.pg-nav-group-header:hover{color:#fff}
+.pg-nav-group-header svg{width:12px;height:12px;transition:transform .2s}
+.pg-nav-group.collapsed .pg-nav-group-header svg{transform:rotate(-90deg)}
+.pg-nav-group.collapsed .pg-nav-group-items{display:none}
+
+.pg-nav-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 20px 6px 28px;cursor:pointer;
+  font-size:13px;font-weight:500;color:#A3A3BD;
+  border-left:2px solid transparent;transition:all .12s;
+}
+.pg-nav-item:hover{color:#fff;background:rgba(255,255,255,.04)}
+.pg-nav-item.active{color:#FF7500;border-left-color:#FF7500;background:rgba(255,117,0,.06);font-weight:600}
+.pg-nav-item.hidden{display:none}
+
+/* ── MAIN CONTENT ─────────────────────────────────────── */
+#pg-main{margin-left:260px;flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+.pg-topbar{
+  height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;background:#fff;border-bottom:1px solid #E7E9F3;
+}
+.pg-topbar-title{font-size:16px;font-weight:700;color:#282834}
+.pg-topbar-desc{font-size:12px;color:#646587;margin-left:12px;font-weight:400}
+.pg-topbar-actions{display:flex;gap:8px;align-items:center}
+.pg-topbar-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;background:#FFEDC7;color:#D74009}
+
+.pg-body{flex:1;overflow-y:auto;padding:32px}
+
+/* ── COMPONENT VIEW ───────────────────────────────────── */
+.pg-component-layout{display:flex;gap:24px;align-items:flex-start}
+.pg-preview-wrap{
+  flex:1;min-width:0;background:#fff;border:1px solid #E7E9F3;
+  border-radius:16px;padding:40px;display:flex;align-items:center;
+  justify-content:center;min-height:240px;position:relative;
+}
+.pg-preview-wrap[data-bg="dark"]{background:#282834}
+.pg-preview-wrap[data-bg="gray"]{background:#f5f6fa}
+
+/* ── CONTROLS PANEL ───────────────────────────────────── */
+.pg-controls{
+  width:280px;flex-shrink:0;background:#fff;border:1px solid #E7E9F3;
+  border-radius:16px;padding:20px;max-height:calc(100vh - 150px);
+  overflow-y:auto;scrollbar-width:thin;
+}
+.pg-controls::-webkit-scrollbar{width:4px}
+.pg-controls::-webkit-scrollbar-thumb{background:#E7E9F3;border-radius:2px}
+.pg-controls-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#9C9EBF;margin-bottom:16px}
+.pg-controls-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#282834;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #e7e9f3}
+.pg-controls-section:first-child{margin-top:0}
+
+.pg-control{margin-bottom:16px}
+.pg-control:last-child{margin-bottom:0}
+.pg-control-label{font-size:11px;font-weight:600;color:#646587;margin-bottom:6px;display:block}
+
+/* Segmented control for options */
+.pg-segmented{display:flex;gap:2px;background:#f5f6fa;border-radius:8px;padding:2px;flex-wrap:wrap}
+.pg-segmented-btn{
+  flex:1 1 auto;min-width:fit-content;padding:5px 10px;border:none;background:none;
+  font-size:11px;font-weight:500;font-family:inherit;color:#646587;
+  border-radius:6px;cursor:pointer;transition:all .12s;text-align:center;
+  white-space:nowrap;
+}
+.pg-segmented-btn:hover{color:#282834}
+.pg-segmented-btn.active{background:#fff;color:#282834;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* Toggle switch for controls */
+.pg-toggle{display:flex;align-items:center;gap:8px;cursor:pointer}
+.pg-toggle-track{
+  width:32px;height:18px;border-radius:9px;background:#D0D4E6;
+  position:relative;transition:background .15s;flex-shrink:0;
+}
+.pg-toggle-track.on{background:#D74009}
+.pg-toggle-track::after{
+  content:'';position:absolute;width:14px;height:14px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:transform .15s;
+}
+.pg-toggle-track.on::after{transform:translateX(14px)}
+.pg-toggle-label{font-size:12px;color:#434565}
+
+/* Text input for controls */
+.pg-control input[type="text"]{
+  width:100%;height:32px;border:1px solid #D0D4E6;border-radius:6px;
+  padding:0 10px;font-size:12px;font-family:inherit;color:#282834;outline:none;
+}
+.pg-control input[type="text"]:focus{border-color:#D74009}
+
+/* Range slider for controls */
+.pg-control input[type="range"]{width:100%;accent-color:#D74009}
+.pg-control .pg-range-val{font-size:11px;color:#9C9EBF;margin-top:2px}
+
+/* ── CODE OUTPUT ──────────────────────────────────────── */
+.pg-code-wrap{margin-top:16px}
+.pg-code-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.pg-code-bar span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9C9EBF}
+.pg-copy-btn{
+  border:none;background:none;font-size:11px;font-weight:600;color:#D74009;
+  cursor:pointer;font-family:inherit;padding:2px 6px;border-radius:4px;
+}
+.pg-copy-btn:hover{background:#FFEDC7}
+.pg-code{
+  background:#282834;color:#A3A3BD;border-radius:8px;padding:12px 14px;
+  font-family:'SF Mono','Fira Code',monospace;font-size:11px;line-height:1.6;
+  white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;
+}
+
+/* ── FOUNDATION SECTIONS ──────────────────────────────── */
+.pg-foundation{max-width:960px}
+.pg-foundation h3{font-size:14px;font-weight:700;color:#282834;margin:24px 0 12px}
+.pg-foundation h3:first-child{margin-top:0}
+
+/* Color swatches */
+.pg-palette{margin-bottom:20px}
+.pg-palette-name{font-size:12px;font-weight:600;color:#646587;margin-bottom:6px}
+.pg-swatches{display:flex;gap:2px;border-radius:10px;overflow:hidden}
+.pg-swatch{
+  flex:1;height:48px;display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:4px;font-size:8px;font-weight:600;cursor:pointer;position:relative;
+  transition:transform .1s;
+}
+.pg-swatch:hover{transform:scaleY(1.15);z-index:1}
+.pg-swatch span{opacity:.7}
+.pg-swatch[data-light] span{color:#282834}
+.pg-swatch[data-dark] span{color:#fff}
+.pg-swatch-tip{
+  display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:#282834;color:#fff;padding:4px 8px;border-radius:4px;font-size:10px;
+  white-space:nowrap;z-index:10;pointer-events:none;
+}
+.pg-swatch:hover .pg-swatch-tip{display:block}
+
+/* Semantic colors */
+.pg-semantic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px}
+.pg-semantic-item{
+  display:flex;align-items:center;gap:8px;padding:6px 10px;
+  background:#fff;border:1px solid #E7E9F3;border-radius:8px;font-size:11px;
+}
+.pg-semantic-dot{width:20px;height:20px;border-radius:6px;flex-shrink:0;border:1px solid rgba(0,0,0,.06)}
+.pg-semantic-label{color:#434565;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Typography specimens */
+.pg-type-row{display:flex;align-items:baseline;gap:16px;padding:8px 0;border-bottom:1px solid #f5f6fa}
+.pg-type-meta{width:100px;flex-shrink:0;font-size:11px;color:#9C9EBF;font-weight:500}
+.pg-type-sample{flex:1;color:#282834;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Spacing bars */
+.pg-space-row{display:flex;align-items:center;gap:12px;padding:4px 0}
+.pg-space-label{width:80px;flex-shrink:0;font-size:11px;color:#646587;font-weight:500;text-align:right}
+.pg-space-bar{height:20px;background:linear-gradient(90deg,#FF7500,#D74009);border-radius:4px;transition:width .3s}
+.pg-space-val{font-size:10px;color:#9C9EBF;font-weight:500;min-width:36px}
+
+/* Shadow cards */
+.pg-shadow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.pg-shadow-card{
+  background:#fff;border-radius:12px;padding:24px 16px;text-align:center;
+  font-size:11px;color:#646587;font-weight:500;
+}
+
+/* Radius demo */
+.pg-radius-grid{display:flex;gap:12px;flex-wrap:wrap}
+.pg-radius-item{
+  width:64px;height:64px;background:#FFEDC7;border:2px solid #FF7500;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:600;color:#D74009;text-align:center;line-height:1.3;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media(max-width:960px){
+  #pg-sidebar{width:56px}
+  #pg-sidebar .pg-sidebar-logo span,
+  #pg-sidebar .pg-sidebar-logo small,
+  #pg-sidebar .pg-sidebar-search,
+  #pg-sidebar .pg-nav-group-header span,
+  #pg-sidebar .pg-nav-item span{display:none}
+  #pg-sidebar .pg-nav-item{padding:8px 0;justify-content:center}
+  #pg-sidebar .pg-nav-group-header{justify-content:center;padding:8px 0}
+  #pg-main{margin-left:56px}
+  .pg-component-layout{flex-direction:column}
+  .pg-controls{width:100%}
+}
+
+/* ── MISC ─────────────────────────────────────────────── */
+/* Icon grid */
+.pg-icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:20px}
+.pg-icon-card{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:12px 8px;border-radius:10px;cursor:pointer;
+  border:1px solid transparent;transition:all .12s;
+}
+.pg-icon-card:hover{background:#fff;border-color:#E7E9F3;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pg-icon-preview{color:#282834;display:flex;align-items:center;justify-content:center}
+.pg-icon-name{font-size:9px;color:#9C9EBF;font-weight:500;text-align:center;word-break:break-all;line-height:1.2}
+
+.pg-tag-figma{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#E9F1FF;color:#5C70FA;margin-left:6px;vertical-align:middle}
+.pg-tag-custom{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#DEFADE;color:#1F8923;margin-left:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="pg-sidebar">
+  <div class="pg-sidebar-header">
+    <div class="pg-sidebar-logo">
+      <svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="2"/><path d="M8 14l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Naowee DS</span>
+      <small>v1.8</small>
+    </div>
+    <div class="pg-sidebar-search">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input type="text" id="pg-search" placeholder="Buscar componente..." autocomplete="off">
+    </div>
+  </div>
+  <nav class="pg-sidebar-nav" id="pg-nav"></nav>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main id="pg-main">
+  <div class="pg-topbar">
+    <div style="display:flex;align-items:center">
+      <span class="pg-topbar-title" id="pg-title">Colors</span>
+      <span class="pg-topbar-desc" id="pg-desc"></span>
+    </div>
+    <div class="pg-topbar-actions">
+      <span class="pg-topbar-badge">38 Components</span>
+    </div>
+  </div>
+  <div class="pg-body" id="pg-body"></div>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   NAOWEE DESIGN SYSTEM — Interactive Playground Engine
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── SVG Icon Library ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   NAOWEE ICON LIBRARY — from Figma "02 - Iconography [NT]"
+   All icons: 24x24 viewBox, stroke-based, currentColor
+   Stroke: 1.5px, round linecap/linejoin
+   ═══════════════════════════════════════════════════════════════ */
+const NAOWEE_ICONS = {
+  /* ── Navigation ── */
+  'chevron-right':  {cat:'Navigation', tags:'arrow,right,next,east,>', d:'<path d="M9 6l6 6-6 6"/>'},
+  'chevron-left':   {cat:'Navigation', tags:'arrow,left,back,west,<', d:'<path d="M15 6l-6 6 6 6"/>'},
+  'chevron-down':   {cat:'Navigation', tags:'arrow,down,expand,south', d:'<path d="M6 9l6 6 6-6"/>'},
+  'chevron-up':     {cat:'Navigation', tags:'arrow,up,collapse,north', d:'<path d="M6 15l6-6 6 6"/>'},
+  'arrow-right':    {cat:'Navigation', tags:'direction,east,forward,>', d:'<path d="M4 12h16M14 6l6 6-6 6"/>'},
+  'arrow-left':     {cat:'Navigation', tags:'direction,west,back,<', d:'<path d="M20 12H4M10 6l-6 6 6 6"/>'},
+  'arrow-up':       {cat:'Navigation', tags:'direction,north,upload', d:'<path d="M12 20V4M6 10l6-6 6 6"/>'},
+  'arrow-down':     {cat:'Navigation', tags:'direction,south,download', d:'<path d="M12 4v16M6 14l6 6 6-6"/>'},
+  'arrow-right-up': {cat:'Navigation', tags:'diagonal,northeast,external', d:'<path d="M7 17L17 7M10 7h7v7"/>'},
+  'sort':           {cat:'Navigation', tags:'order,reorder,arrows', d:'<path d="M8 4v16M8 4l-4 4M8 4l4 4M16 20V4M16 20l-4-4M16 20l4-4"/>'},
+
+  /* ── Actions ── */
+  'add':            {cat:'Actions', tags:'plus,new,create,+', d:'<path d="M12 5v14M5 12h14"/>'},
+  'close':          {cat:'Actions', tags:'x,dismiss,remove,cancel', d:'<path d="M6 6l12 12M18 6L6 18"/>'},
+  'check':          {cat:'Actions', tags:'done,confirm,tick,success', d:'<path d="M5 12l5 5 9-10"/>'},
+  'negative':       {cat:'Actions', tags:'minus,subtract,remove,-', d:'<path d="M5 12h14"/>'},
+  'edit':           {cat:'Actions', tags:'pencil,modify,write', d:'<path d="M4 20h4l10.5-10.5a2.1 2.1 0 00-3-3L5 17v3zM13.5 6.5l3 3"/>'},
+  'delete':         {cat:'Actions', tags:'trash,remove,bin,recycle', d:'<path d="M5 7h14M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/>'},
+  'search':         {cat:'Actions', tags:'find,magnifier,lookup', d:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>'},
+  'download':       {cat:'Actions', tags:'save,export,arrow-down', d:'<path d="M12 4v12M8 12l4 4 4-4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"/>'},
+  'upload':         {cat:'Actions', tags:'import,arrow-up', d:'<path d="M12 16V4M8 8l4-4 4 4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"/>'},
+  'copy':           {cat:'Actions', tags:'duplicate,clipboard', d:'<rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15H4.5A1.5 1.5 0 013 13.5v-9A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5V5"/>'},
+  'share':          {cat:'Actions', tags:'send,forward,export', d:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 13.3l7.6 4.4M15.8 6.3l-7.6 4.4"/>'},
+  'filter':         {cat:'Actions', tags:'funnel,sort,refine', d:'<path d="M3 4h18M6 9h12M9 14h6M11 19h2"/>'},
+  'overflow-v':     {cat:'Actions', tags:'more,dots,menu,kebab', d:'<circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/>'},
+  'overflow-h':     {cat:'Actions', tags:'more,dots,menu,meatball', d:'<circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/>'},
+
+  /* ── Feedback (filled icons from Figma Iconography NT, viewBox 0 0 16 16) ── */
+  'feedback-positive':    {cat:'Feedback', tags:'success,check,green', filled:true, vb:16, d:'<path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>'},
+  'feedback-caution':     {cat:'Feedback', tags:'warning,alert,exclamation,orange', filled:true, vb:16, d:'<path d="M7.34297 10.9206C7.71038 10.599 8.25582 10.5905 8.63138 10.8971L8.70755 10.9661L8.77591 11.0417C9.09595 11.4345 9.07287 12.0136 8.7069 12.3796C8.31663 12.7697 7.68407 12.77 7.29349 12.3802C6.91874 12.0059 6.90362 11.4087 7.24727 11.0156C7.2613 10.9985 7.27619 10.9815 7.29219 10.9655L7.29284 10.9648C7.30867 10.9491 7.32603 10.9344 7.34297 10.9206Z"/><path d="M7.99987 3C8.36806 3 8.66654 3.29848 8.66654 3.66667V7.66667C8.66654 8.03486 8.36806 8.33333 7.99987 8.33333C7.6317 8.33331 7.3332 8.03484 7.3332 7.66667V3.66667C7.3332 3.29849 7.6317 3.00002 7.99987 3Z"/>'},
+  'feedback-negative':    {cat:'Feedback', tags:'error,minus,dash,red', filled:true, vb:16, d:'<path d="M11.8103 7.33301C12.1783 7.33318 12.477 7.63159 12.477 7.99967C12.477 8.36776 12.1783 8.66617 11.8103 8.66634H4.18986C3.82167 8.66634 3.52319 8.36786 3.52319 7.99967C3.52319 7.63148 3.82167 7.33301 4.18986 7.33301H11.8103Z"/>'},
+  'feedback-informative': {cat:'Feedback', tags:'info,i,blue', filled:true, vb:16, d:'<path d="M8.06836 7.00329C8.40443 7.03751 8.66664 7.32161 8.66667 7.6667V12.3334C8.66667 12.7016 8.36819 13 8 13C7.63181 13 7.33333 12.7016 7.33333 12.3334V8.33337H6.66667C6.29848 8.33337 6 8.03489 6 7.6667C6.00003 7.29854 6.2985 7.00004 6.66667 7.00004H8L8.06836 7.00329Z"/><path d="M7.3431 3.58142C7.7105 3.25984 8.25596 3.25139 8.63151 3.55798L8.70768 3.62699L8.77604 3.70251C9.09613 4.0953 9.073 4.6744 8.70703 5.0404C8.31675 5.43068 7.68423 5.43095 7.29362 5.04105C6.91887 4.66673 6.90365 4.06951 7.2474 3.67647C7.26145 3.65928 7.27629 3.64237 7.29232 3.62634L7.29297 3.62569C7.30882 3.6099 7.32613 3.59528 7.3431 3.58142Z"/>'},
+
+  /* ── Objects ── */
+  'user':           {cat:'Objects', tags:'person,profile,avatar,contact', d:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>'},
+  'contact-new':    {cat:'Objects', tags:'user,add,person,+', d:'<circle cx="10" cy="8" r="4"/><path d="M2 21c0-4 3.6-7 8-7s8 3 8 7M18 8v6M15 11h6"/>'},
+  'home':           {cat:'Objects', tags:'house,main,inicio', d:'<path d="M3 12l9-8 9 8M5 10v9a1 1 0 001 1h3v-5h6v5h3a1 1 0 001-1v-9"/>'},
+  'settings':       {cat:'Objects', tags:'gear,config,preferences', d:'<circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>'},
+  'notification':   {cat:'Objects', tags:'bell,alert,ring', d:'<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/>'},
+  'calendar':       {cat:'Objects', tags:'date,schedule,event', d:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
+  'mail':           {cat:'Objects', tags:'email,envelope,message,@', d:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 4l10 8 10-8"/>'},
+  'file':           {cat:'Objects', tags:'document,page,paper', d:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/>'},
+  'megaphone':      {cat:'Objects', tags:'announce,promo,speaker', d:'<path d="M18 8A6 6 0 006 8c0 4-2 6-2 6h8M18 8v6M18 8l4-3v12l-4-3M9 20h2a2 2 0 002-2v-4"/>'},
+  'question':       {cat:'Objects', tags:'help,faq,?', d:'<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.1 1.7c0 2-3.1 2-3.1 3.8M12 17.5v.5"/>'},
+  'padlock':        {cat:'Objects', tags:'lock,security,closed', d:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'},
+  'visibility-on':  {cat:'Objects', tags:'eye,show,visible,password', d:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>'},
+  'visibility-off': {cat:'Objects', tags:'eye,hide,hidden', d:'<path d="M17.9 17.9C16.2 19.2 14.2 20 12 20c-7 0-11-8-11-8a18.5 18.5 0 015.1-5.9M9.9 4.2A9.1 9.1 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.2 3.1M14.1 14.1A3 3 0 009.9 9.9M1 1l22 22"/>'},
+  'protected':      {cat:'Objects', tags:'shield,check,verified', d:'<path d="M12 2l8 4v5c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4z"/><path d="M9 12l2 2 4-4"/>'},
+  'link':           {cat:'Objects', tags:'chain,url,href', d:'<path d="M10 13a5 5 0 007.5.5l1.5-1.5a5 5 0 00-7-7l-1.2 1.1M14 11a5 5 0 00-7.5-.5L5 12a5 5 0 007 7l1.1-1.1"/>'},
+  'star':           {cat:'Objects', tags:'favorite,rating,bookmark', d:'<path d="M12 2l3 6.2 6.8 1-4.9 4.8 1.2 6.8L12 17.3 5.9 20.8l1.2-6.8L2.2 9.2 9 8.2 12 2z"/>'},
+  'image':          {cat:'Objects', tags:'photo,picture,gallery', d:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'},
+  'clock':          {cat:'Objects', tags:'time,schedule,timer', d:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>'},
+  'pin':            {cat:'Objects', tags:'location,map,marker', d:'<path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7z"/><circle cx="12" cy="9" r="2.5"/>'},
+};
+
+/* Helper: render icon as SVG string */
+function naoIcon(name, size) {
+  var s = size || 24;
+  var icon = NAOWEE_ICONS[name];
+  if (!icon) return '';
+  var vb = icon.vb || 24;
+  if (icon.filled) {
+    return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 '+vb+' '+vb+'" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' + icon.d + '</svg>';
+  }
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 '+vb+' '+vb+'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + icon.d + '</svg>';
+}
+
+/* Backward-compatible ICO object for component renders */
+var ICO = {
+  chevron: naoIcon('chevron-right', 16),
+  search: naoIcon('search', 16),
+  check: naoIcon('check', 16),
+  close: naoIcon('close', 16),
+  info: naoIcon('feedback-informative', 16),
+  alert: naoIcon('feedback-caution', 16),
+  star: naoIcon('star', 16),
+  user: naoIcon('user', 16),
+  upload: naoIcon('upload', 16),
+  link: naoIcon('link', 16),
+  minus: naoIcon('negative', 16),
+};
+
+/* ── Foundation Configs ───────────────────────────────── */
+const FOUNDATIONS = [
+  { id:'colors', label:'Colors', desc:'Paletas de color core + aliases semanticos' },
+  { id:'icons', label:'Icons', desc:'Libreria de iconos stroke-based (Figma Iconography NT)' },
+  { id:'typography', label:'Typography', desc:'Font sizes, weights, line heights' },
+  { id:'spacing', label:'Spacing', desc:'Padding y gap scales (17 steps)' },
+  { id:'sizing', label:'Sizing', desc:'Action, input, icon sizes' },
+  { id:'shadows', label:'Shadows', desc:'Elevation tokens' },
+  { id:'border-radius', label:'Border Radius', desc:'Radius scale' },
+];
+
+/* ── Color palette data ── */
+const PALETTES = [
+  { name:'Blue', prefix:'blue', steps:[100,200,300,400,500,600,700,800,900], lightUntil:400 },
+  { name:'Dark Blue', prefix:'dark-blue', steps:[100,200,300,400,500,600,700,800,900], lightUntil:0 },
+  { name:'Green', prefix:'green', steps:[100,200,300,400,500,600,700,800], lightUntil:300 },
+  { name:'Dark Green', prefix:'dark-green', steps:[100,200,300,400,500,600,700,800,900], lightUntil:0 },
+  { name:'Orange (Brand)', prefix:'orange', steps:[100,200,300,400,500,600,700,800,900], lightUntil:400 },
+  { name:'Dark Orange', prefix:'dark-orange', steps:[100,200,300,400,500,600,700,800,900], lightUntil:0 },
+  { name:'Red', prefix:'red', steps:[100,200,300,400,500,600,700,800,900], lightUntil:300 },
+  { name:'Dark Red', prefix:'dark-red', steps:[100,200,300,400,500,600,700,800,900], lightUntil:0 },
+  { name:'Yellow', prefix:'yellow', steps:[100,200,300,400,500,600,700,800,900], lightUntil:700 },
+  { name:'Dark Yellow', prefix:'dark-yellow', steps:[100,200,300,400,500,600,700,800,900], lightUntil:0 },
+  { name:'Gray', prefix:'gray', steps:[100,200,300,400,500,600,700,800,900], lightUntil:400 },
+  { name:'Dark Gray', prefix:'dark-gray', steps:[50,100,200,300,400,500,600,700,800,900], lightUntil:0 },
+];
+
+const SEMANTIC_COLORS = [
+  { label:'Brand Fill Loud', v:'--naowee-color-brand-fill-loud' },
+  { label:'Brand Fill Quiet', v:'--naowee-color-brand-fill-quiet' },
+  { label:'Interactive Loud', v:'--naowee-color-interactive-fill-loud-idle' },
+  { label:'Interactive Quiet', v:'--naowee-color-interactive-fill-quiet-idle' },
+  { label:'Interactive Mute', v:'--naowee-color-interactive-fill-mute-hover' },
+  { label:'Text Primary', v:'--naowee-color-text-primary' },
+  { label:'Text Secondary', v:'--naowee-color-text-secondary' },
+  { label:'Text Accent', v:'--naowee-color-text-accent' },
+  { label:'Text Disabled', v:'--naowee-color-text-disabled' },
+  { label:'Text Link', v:'--naowee-color-text-link-idle' },
+  { label:'Icon Primary', v:'--naowee-color-icon-primary' },
+  { label:'Icon Accent', v:'--naowee-color-icon-accent' },
+  { label:'Fill Primary', v:'--naowee-color-fill-primary' },
+  { label:'Fill Secondary', v:'--naowee-color-fill-secondary' },
+  { label:'Fill Inverse', v:'--naowee-color-fill-inverse' },
+  { label:'Background Primary', v:'--naowee-color-background-primary' },
+  { label:'Background Secondary', v:'--naowee-color-background-secondary' },
+  { label:'Border Default', v:'--naowee-color-border-default' },
+  { label:'Border Dark', v:'--naowee-color-border-dark' },
+  { label:'Border Accent', v:'--naowee-color-border-accent' },
+  { label:'Feedback Success', v:'--naowee-color-feedback-success' },
+  { label:'Feedback Success BG', v:'--naowee-color-feedback-success-bg' },
+  { label:'Feedback Warning', v:'--naowee-color-feedback-warning' },
+  { label:'Feedback Warning BG', v:'--naowee-color-feedback-warning-bg' },
+  { label:'Feedback Error', v:'--naowee-color-feedback-error' },
+  { label:'Feedback Error BG', v:'--naowee-color-feedback-error-bg' },
+  { label:'Feedback Info', v:'--naowee-color-feedback-info' },
+  { label:'Feedback Info BG', v:'--naowee-color-feedback-info-bg' },
+];
+
+const TYPE_SIZES = [
+  {size:56,weight:700,lh:66,name:'Display'},{size:48,weight:700,lh:56,name:'H1'},
+  {size:40,weight:700,lh:48,name:'H2'},{size:32,weight:700,lh:40,name:'H3'},
+  {size:28,weight:700,lh:36,name:'H4'},{size:24,weight:700,lh:32,name:'H5'},
+  {size:20,weight:600,lh:28,name:'H6'},{size:18,weight:600,lh:26,name:'Subtitle'},
+  {size:16,weight:400,lh:24,name:'Body LG'},{size:14,weight:400,lh:20,name:'Body'},
+  {size:12,weight:500,lh:16,name:'Caption'},{size:10,weight:600,lh:12,name:'Overline'},
+];
+
+const SPACING = [
+  {name:'none',px:0},{name:'pico',px:2},{name:'xnano',px:3},{name:'nano',px:4},
+  {name:'xmicro',px:6},{name:'micro',px:8},{name:'xtiny',px:10},{name:'tiny',px:12},
+  {name:'xsmall',px:16},{name:'small',px:20},{name:'medium',px:24},{name:'large',px:32},
+  {name:'xlarge',px:40},{name:'huge',px:48},{name:'xhuge',px:56},{name:'mega',px:72},
+  {name:'xmega',px:88},
+];
+
+const SIZING = {
+  action: [{name:'Small',px:32},{name:'Medium',px:40},{name:'Large',px:48}],
+  input: [{name:'Small',px:32},{name:'Medium',px:40},{name:'Large',px:48}],
+  icon: [{name:'Micro',px:12},{name:'Tiny',px:16},{name:'Small',px:20},{name:'Medium',px:24},{name:'Large',px:32},{name:'XLarge',px:48}],
+};
+
+const SHADOWS = [
+  {name:'Small',v:'--naowee-shadow-small',val:'0 1px 4px rgba(0,0,0,.08)'},
+  {name:'Medium',v:'--naowee-shadow-medium',val:'0 4px 16px rgba(0,0,0,.12)'},
+  {name:'Card',v:'--naowee-shadow-card',val:'0 0 2px rgba(145,158,171,.2), 0 12px 24px -4px rgba(145,158,171,.12)'},
+  {name:'Modal',v:'--naowee-shadow-modal',val:'0 20px 60px rgba(0,0,0,.25)'},
+  {name:'Focus Accent',v:'--naowee-shadow-focus-accent',val:'0 0 0 3px rgba(215,64,9,.15)'},
+  {name:'Highlight',v:'--naowee-shadow-highlight-accent',val:'0 0 0 2px var(--naowee-color-orange-200)'},
+];
+
+const RADII = [
+  {name:'none',px:'0px'},{name:'tiny',px:'4px'},{name:'xsmall',px:'6px'},
+  {name:'small',px:'8px'},{name:'medium',px:'12px'},{name:'large',px:'16px'},
+  {name:'xlarge',px:'20px'},{name:'full',px:'9999px'},
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENT CONFIGS
+   ═══════════════════════════════════════════════════════════════ */
+const COMPONENTS = {
+  button: {
+    id:'button', label:'Button', desc:'Button, Icon Button, Button Split — acciones primarias, secundarias y terciarias', tag:'figma',
+    controls: [
+      { type:'select', label:'Type', prop:'type', options:[
+        {l:'Button',v:'button'},{l:'Icon Button',v:'icon'},{l:'Split',v:'split'}
+      ], default:0 },
+      { type:'select', label:'Hierarchy', prop:'hierarchy', options:[
+        {l:'Loud',v:'loud'},{l:'Quiet',v:'quiet'},{l:'Mute',v:'mute'}
+      ], default:0 },
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:'large'},{l:'Medium',v:''},{l:'Small',v:'small'}
+      ], default:1 },
+      { type:'select', label:'Show icon', prop:'showIcon', options:[
+        {l:'None',v:'none'},{l:'Left',v:'left'},{l:'Right',v:'right'}
+      ], default:0 },
+      { type:'select', label:'Bg type', prop:'bgType', options:[
+        {l:'Default',v:''},{l:'On fill',v:'on-fill'},{l:'On fill inverse',v:'on-fill-inverse'}
+      ], default:0 },
+      { type:'toggle', label:'Disabled', prop:'disabled' },
+      { type:'toggle', label:'Loading', prop:'loading' },
+      { type:'toggle', label:'Full width', prop:'full' },
+      { type:'text', label:'Label', prop:'text', default:'Button' },
+    ],
+    render(s) {
+      var h = 'naowee-btn--' + s.hierarchy;
+      var sz = s.size ? 'naowee-btn--' + s.size : '';
+      var bg = s.bgType ? 'naowee-btn--' + s.bgType : '';
+      var dis = s.disabled ? ' disabled' : '';
+      /* Icon Button */
+      if (s.type === 'icon') {
+        var icoSz = s.size === 'large' ? 24 : s.size === 'small' ? 16 : 20;
+        var cls = ['naowee-btn', h, sz, bg, 'naowee-btn--icon'].filter(Boolean).join(' ');
+        return '<button class="' + cls + '"' + dis + '>' + naoIcon('add', icoSz) + '</button>';
+      }
+      /* Button Split */
+      if (s.type === 'split') {
+        var clsMain = ['naowee-btn', h, sz, bg, s.full?'naowee-btn--full':''].filter(Boolean).join(' ');
+        var clsIcon = ['naowee-btn', h, sz, bg, 'naowee-btn--icon'].filter(Boolean).join(' ');
+        var splitH = 'naowee-btn-split--' + s.hierarchy;
+        var icoSz2 = s.size === 'large' ? 24 : s.size === 'small' ? 16 : 20;
+        return '<div class="naowee-btn-split ' + splitH + '">' +
+          '<button class="' + clsMain + '"' + dis + '>' + s.text + '</button>' +
+          '<span class="naowee-btn-split__divider"></span>' +
+          '<button class="' + clsIcon + '"' + dis + '>' + naoIcon('chevron-down', icoSz2) + '</button></div>';
+      }
+      /* Standard Button */
+      var cls2 = ['naowee-btn', h, sz, bg,
+        s.loading?'naowee-btn--loading':'',
+        s.full?'naowee-btn--full':''
+      ].filter(Boolean).join(' ');
+      var icoL = s.showIcon==='left' ? naoIcon('add', s.size==='small'?16:20) : '';
+      var icoR = s.showIcon==='right' ? naoIcon('chevron-right', s.size==='small'?16:20) : '';
+      return '<button class="' + cls2 + '"' + dis + '>' + icoL + s.text + icoR + '</button>';
+    }
+  },
+
+  tabs: {
+    id:'tabs', label:'Tabs', desc:'Navegación por pestañas (hasta 8)', tag:'figma',
+    controls: [
+      { type:'select', label:'Tab count', prop:'tabCount', options:[
+        {l:'2',v:'2'},{l:'3',v:'3'},{l:'4',v:'4'},{l:'5',v:'5'},{l:'6',v:'6'},{l:'7',v:'7'},{l:'8',v:'8'}
+      ], default:2 },
+      { type:'select', label:'Width', prop:'width', options:[
+        {l:'Variable',v:''},{l:'Proportional',v:'naowee-tabs--proportional'}
+      ], default:0 },
+      { type:'toggle', label:'Show count', prop:'count' },
+    ],
+    render(s) {
+      const cls = ['naowee-tabs', s.width].filter(Boolean).join(' ');
+      const cnt = s.count ? '<span class="naowee-tab__count">3</span>' : '';
+      var n = parseInt(s.tabCount) || 4;
+      var tabs = '';
+      for (var i = 0; i < n; i++) {
+        var sel = i === 0 ? ' naowee-tab--selected' : '';
+        var label = i === 0 ? 'Label' : 'Label';
+        tabs += '<button class="naowee-tab' + sel + '">' + label + (i === 0 ? cnt : '') + '</button>';
+      }
+      return '<div class="' + cls + '" style="width:100%">' + tabs + '</div>';
+    }
+  },
+
+  badge: {
+    id:'badge', label:'Badge', desc:'Pill, Dot e Icon — etiquetas de estado y notificacion', tag:'figma',
+    controls: [
+      { type:'select', label:'Type', prop:'type', options:[
+        {l:'Pill',v:'pill'},{l:'Dot',v:'dot'},{l:'Icon',v:'icon'}
+      ], default:0 },
+      { type:'select', label:'Color', prop:'color', options:[
+        {l:'Informative',v:'informative'},{l:'Brand',v:'brand'},
+        {l:'Positive',v:'positive'},{l:'Caution',v:'caution'},
+        {l:'Negative',v:'negative'},{l:'Neutral',v:'neutral'}
+      ], default:0 },
+      { type:'select', label:'Hierarchy', prop:'hierarchy', options:[
+        {l:'Loud',v:''},{l:'Quiet',v:'quiet'}
+      ], default:0 },
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:'large'},{l:'Medium',v:''},{l:'Small',v:'small'}
+      ], default:1 },
+      { type:'select', label:'Show icon', prop:'showIcon', options:[
+        {l:'None',v:'none'},{l:'Left',v:'left'},{l:'Right',v:'right'}
+      ], default:0 },
+      { type:'select', label:'Bg type', prop:'bgType', options:[
+        {l:'Default',v:''},{l:'On fill',v:'on-fill'},{l:'On fill inverse',v:'on-fill-inverse'}
+      ], default:0 },
+      { type:'text', label:'Label', prop:'text', default:'Label' },
+    ],
+    render(s) {
+      if (s.type === 'dot') {
+        return '<span class="naowee-badge-dot naowee-badge-dot--' + s.color + '"></span>';
+      }
+      if (s.type === 'icon') {
+        var icoCls = 'naowee-badge-icon naowee-badge-icon--' + s.color;
+        if (s.hierarchy) icoCls += ' naowee-badge--' + s.hierarchy;
+        if (s.size === 'large') icoCls += ' naowee-badge-icon--large';
+        if (s.size === 'small') icoCls += ' naowee-badge-icon--small';
+        /* Each color has its own specific internal icon per Figma spec */
+        var badgeIcoMap = {informative:'feedback-informative', positive:'feedback-positive', caution:'feedback-caution', negative:'feedback-negative', brand:'image', neutral:'image'};
+        var icoName = badgeIcoMap[s.color] || 'image';
+        var icoSize = s.size === 'large' ? 16 : s.size === 'small' ? 8 : 12;
+        return '<span class="' + icoCls + '">' + naoIcon(icoName, icoSize) + '</span>';
+      }
+      /* Pill */
+      var cls = 'naowee-badge naowee-badge--' + s.color;
+      if (s.hierarchy) cls += ' naowee-badge--' + s.hierarchy;
+      if (s.size === 'large') cls += ' naowee-badge--large';
+      if (s.size === 'small') cls += ' naowee-badge--small';
+      if (s.bgType) cls += ' naowee-badge--' + s.bgType;
+      var icoL = (s.showIcon === 'left' && s.type === 'pill') ? naoIcon('feedback-positive', 10) : '';
+      var icoR = (s.showIcon === 'right' && s.type === 'pill') ? naoIcon('chevron-right', 10) : '';
+      return '<span class="' + cls + '">' + icoL + s.text + icoR + '</span>';
+    }
+  },
+
+  thumbnail: {
+    id:'thumbnail', label:'Thumbnail / Avatar', desc:'Thumbnail, Addon, Stacked, Grid', tag:'figma',
+    controls: [
+      { type:'select', label:'Variant', prop:'variant', options:[
+        {l:'Single',v:'single'},{l:'Addon',v:'addon'},{l:'Stacked',v:'stacked'},{l:'Grid',v:'grid'}
+      ], default:0 },
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'XSmall',v:'naowee-thumbnail--xsmall'},{l:'Small',v:'naowee-thumbnail--small'},
+        {l:'Medium',v:''},{l:'Large',v:'naowee-thumbnail--large'},
+        {l:'XLarge',v:'naowee-thumbnail--xlarge'},{l:'Huge',v:'naowee-thumbnail--huge'},
+      ], default:3 },
+      { type:'select', label:'Shape', prop:'shape', options:[
+        {l:'Circle',v:''},{l:'Square',v:'naowee-thumbnail--squared'}
+      ], default:0 },
+      { type:'select', label:'Hierarchy', prop:'hierarchy', options:[
+        {l:'Loud',v:''},{l:'Quiet',v:'naowee-thumbnail--quiet'},{l:'Mute',v:'naowee-thumbnail--mute'}
+      ], default:0 },
+      { type:'select', label:'Content', prop:'content', options:[
+        {l:'Icon',v:'icon'},{l:'Text',v:'text'},{l:'Image',v:'image'}
+      ], default:0 },
+      { type:'select', label:'Badge color', prop:'badge', options:[
+        {l:'Informative',v:'informative'},{l:'Positive',v:'positive'},
+        {l:'Caution',v:'caution'},{l:'Negative',v:'negative'}
+      ], default:0 },
+      { type:'toggle', label:'Show border', prop:'bordered' },
+      { type:'toggle', label:'Overflow (+4)', prop:'overflow' },
+      { type:'text', label:'Initials', prop:'initials', default:'AB' },
+    ],
+    render(s) {
+      var imgIcon = naoIcon('image', 24);
+      var cls = ['naowee-thumbnail', s.size, s.shape, s.hierarchy].filter(Boolean).join(' ');
+      if (s.bordered) cls += ' naowee-thumbnail--bordered';
+      var innerContent = s.content === 'text' ? (s.initials || 'AB') : s.content === 'image' ? '<div style="width:100%;height:100%;background:#E7E9F3;border-radius:inherit"></div>' : imgIcon;
+      var badgeIcons = {
+        informative: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5.25 5.25h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="3.75" r=".75" fill="#fff"/></svg>',
+        positive: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 6l1.2 1.2L8 5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+        caution: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5.25 3.75h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="8.25" r=".75" fill="#fff"/></svg>',
+        negative: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3.75 6h4.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>'
+      };
+      if (s.variant === 'addon') {
+        var badge = '<span class="naowee-thumbnail-addon__badge">' + badgeIcons[s.badge] + '</span>';
+        return '<span class="naowee-thumbnail-addon naowee-thumbnail-addon--' + s.badge + '"><span class="' + cls + '">' + innerContent + '</span>' + badge + '</span>';
+      }
+      if (s.variant === 'stacked') {
+        var stackCls = 'naowee-thumbnail-stack naowee-thumbnail-stack--large';
+        var thumbItem = '<span class="' + cls + '">' + innerContent + '</span>';
+        var count = s.overflow ? 3 : 4;
+        var items = ''; for (var i = 0; i < count; i++) items += thumbItem;
+        var overflowEl = s.overflow ? '<span class="' + cls + ' naowee-thumbnail--overflow">+4</span>' : '';
+        return '<span class="' + stackCls + '">' + items + overflowEl + '</span>';
+      }
+      if (s.variant === 'grid') {
+        var thumbItem2 = '<span class="' + cls + '">' + innerContent + '</span>';
+        var count2 = s.overflow ? 3 : 4;
+        var gridItems = ''; for (var j = 0; j < count2; j++) gridItems += thumbItem2;
+        var overflowGrid = s.overflow ? '<span class="' + cls + ' naowee-thumbnail--overflow">+4</span>' : '';
+        return '<span class="naowee-thumbnail-grid">' + gridItems + overflowGrid + '</span>';
+      }
+      return '<span class="' + cls + '">' + innerContent + '</span>';
+    }
+  },
+
+  textfield: {
+    id:'textfield', label:'Textfield', desc:'Campo de texto con todos los estados y helper integrado', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Active',v:'active'},{l:'Loading',v:'loading'},{l:'Validated',v:'validated'},
+        {l:'Caution',v:'caution'},{l:'Caution active',v:'caution-active'},
+        {l:'Error',v:'error'},{l:'Error active',v:'error-active'},
+        {l:'Disabled',v:'disabled'},{l:'Read only',v:'readonly'}
+      ], default:0 },
+      /* ── Content slots ── */
+      { section:'Content', type:'select', label:'Prefix', prop:'prefix', options:[
+        {l:'None',v:'none'},{l:'Text',v:'text'},{l:'Icon',v:'icon'}
+      ], default:0,
+        showIf: function(s){ return s.state !== 'readonly'; } },
+      { section:'Content', type:'select', label:'Suffix', prop:'suffix', options:[
+        {l:'None',v:'none'},{l:'Text',v:'text'},{l:'Icon',v:'icon'}
+      ], default:0,
+        showIf: function(s){ return s.state !== 'readonly'; } },
+      { section:'Content', type:'toggle', label:'Show clear', prop:'showClear', cls:'show-clear',
+        showIf: function(s){ return s.state !== 'disabled' && s.state !== 'readonly' && s.state !== 'loading' && s.state !== 'validated'; } },
+      /* ── Label + Helper ── */
+      { section:'Label & Helper', type:'toggle', label:'Show label', prop:'showLabel', cls:'show-label' },
+      { section:'Label & Helper', type:'text', label:'Label', prop:'label', default:'Label',
+        showIf: function(s){ return s.showLabel; } },
+      { section:'Label & Helper', type:'select', label:'Helper type', prop:'helperType', options:[
+        {l:'None',v:'none'},{l:'Default',v:''},{l:'Caution',v:'caution'},{l:'Negative',v:'negative'},{l:'Positive',v:'positive'},{l:'Informative',v:'informative'}
+      ], default:1 },
+      { section:'Label & Helper', type:'text', label:'Helper text', prop:'helperText', default:'Helper text',
+        showIf: function(s){ return s.helperType !== 'none'; } },
+      { section:'Label & Helper', type:'toggle', label:'Show counter', prop:'showCounter', cls:'show-counter' },
+      { section:'Label & Helper', type:'text', label:'Max chars', prop:'maxChars', default:'100',
+        showIf: function(s){ return s.showCounter; } },
+      /* ── Text ── */
+      { section:'Text', type:'text', label:'Placeholder', prop:'placeholder', default:'Placeholder' },
+    ],
+    render(s) {
+      var cls = ['naowee-textfield'];
+      if (s.size === 'small') cls.push('naowee-textfield--small');
+      var stateMap = {
+        'active': 'active', 'loading': 'active loading', 'validated': 'validated',
+        'caution': 'caution', 'caution-active': 'caution active',
+        'error': 'error', 'error-active': 'error active',
+        'disabled': 'disabled', 'readonly': 'readonly'
+      };
+      if (stateMap[s.state]) {
+        stateMap[s.state].split(' ').forEach(function(st) {
+          cls.push('naowee-textfield--' + st);
+        });
+      }
+      var iconImg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+      var iconClose = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      var iconSpinner = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>';
+
+      var prefix = '';
+      if (s.prefix === 'text') prefix = '<span class="naowee-textfield__prefix">R$</span>';
+      else if (s.prefix === 'icon') prefix = '<span class="naowee-textfield__prefix">' + iconImg + '</span>';
+
+      var suffix = '';
+      if (s.suffix === 'text') suffix = '<span class="naowee-textfield__suffix">.00</span>';
+      else if (s.suffix === 'icon') suffix = '<span class="naowee-textfield__suffix">' + iconImg + '</span>';
+
+      var rightSlot = '';
+      if (s.state === 'loading') rightSlot = '<span class="naowee-textfield__spinner">' + iconSpinner + '</span>';
+      else if (s.state === 'validated') rightSlot = '<span class="naowee-textfield__check">' + iconCheck + '</span>';
+      else if (s.showClear && s.state !== 'disabled' && s.state !== 'readonly') rightSlot = '<button class="naowee-textfield__clear" onclick="textfieldClear(this)">' + iconClose + '</button>';
+
+      var dis = (s.state === 'disabled') ? ' disabled' : '';
+      var ro = (s.state === 'readonly') ? ' readonly value="Input text"' : '';
+      var maxAttr = s.showCounter ? ' maxlength="' + s.maxChars + '"' : '';
+      var oninput = ' oninput="textfieldInput(this)"';
+      var inp = '<input class="naowee-textfield__input" placeholder="' + s.placeholder + '"' + dis + ro + maxAttr + oninput + '>';
+
+      var label = s.showLabel ? '<label class="naowee-textfield__label">' + s.label + '</label>' : '';
+
+      // Helper (using reusable Helper component)
+      var helper = '';
+      if (s.helperType !== 'none' || s.showCounter) {
+        var badgeSvg = {
+          'caution': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+          'negative': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+          'positive': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+          'informative': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+          'disabled': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+        };
+        var helperCls = 'naowee-helper';
+        var effectiveType = s.helperType;
+        // Auto-type based on state if helper is default
+        if (s.state === 'disabled') effectiveType = 'disabled';
+        else if (s.state === 'error' || s.state === 'error-active') effectiveType = 'negative';
+        else if (s.state === 'caution' || s.state === 'caution-active') effectiveType = 'caution';
+        if (effectiveType && effectiveType !== 'none') helperCls += ' naowee-helper--' + effectiveType;
+        var badge = badgeSvg[effectiveType] ? '<span class="naowee-helper__badge">' + badgeSvg[effectiveType] + '</span>' : '';
+        var textHtml = s.helperType !== 'none' ? ('<span class="naowee-helper__text">' + badge + '<span>' + s.helperText + '</span></span>') : '<span class="naowee-helper__text"></span>';
+        var counterHtml = s.showCounter ? '<span class="naowee-helper__counter" data-max="' + s.maxChars + '">0/' + s.maxChars + '</span>' : '';
+        helper = '<div class="' + helperCls + '">' + textHtml + counterHtml + '</div>';
+      }
+
+      return '<div class="' + cls.join(' ') + '" style="width:360px">' + label +
+        '<div class="naowee-textfield__input-wrap">' + prefix + inp + rightSlot + suffix + '</div>' + helper + '</div>';
+    }
+  },
+
+  searchbox: {
+    id:'searchbox', label:'Searchbox', desc:'Campo de búsqueda con icono, shape y collapsed', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Medium',v:'medium'},{l:'Small',v:'small'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Shape', prop:'shape', options:[
+        {l:'Rounded',v:'rounded'},{l:'Squared',v:'squared'}
+      ], default:0 },
+      { section:'Variant', type:'toggle', label:'Split', prop:'split' },
+      { section:'Variant', type:'toggle', label:'Collapsed', prop:'collapsed' },
+      { section:'Variant', type:'toggle', label:'Has value', prop:'hasValue' },
+    ],
+    render(s) {
+      var cls = ['naowee-searchbox'];
+      if (s.size) cls.push('naowee-searchbox--' + s.size);
+      if (s.shape === 'squared') cls.push('naowee-searchbox--squared');
+      if (s.collapsed) cls.push('naowee-searchbox--collapsed');
+      if (s.hasValue) cls.push('naowee-searchbox--has-value');
+      var val = s.hasValue ? ' value="Search term"' : '';
+      var searchIcon = '<span class="naowee-searchbox__icon">' + naoIcon('search', s.size === 'small' ? 20 : 24) + '</span>';
+      var clearBtn = '<button class="naowee-searchbox__clear" onclick="this.parentElement.querySelector(\'input\').value=\'\';this.parentElement.querySelector(\'input\').focus()">' + naoIcon('close', s.size === 'small' ? 16 : 20) + '</button>';
+      var chevDown = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+      var splitSection = s.split ? '<div class="naowee-searchbox__split"><span class="naowee-searchbox__split-label">Select</span><span class="naowee-searchbox__split-chevron">' + chevDown + '</span></div>' : '';
+      return '<div class="' + cls.join(' ') + '" style="width:320px"><div class="naowee-searchbox__input-wrap">' + splitSection + searchIcon + '<input class="naowee-searchbox__input" placeholder="Placeholder"' + val + '>' + clearBtn + '</div></div>';
+    }
+  },
+
+  dropdown: {
+    id:'dropdown', label:'Dropdown', desc:'Single, Multiple, Standalone — selección desde menu desplegable', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Type', prop:'type', options:[
+        {l:'Single',v:'single'},{l:'Multiple',v:'multiple'},{l:'Standalone',v:'standalone'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Open',v:'open'},{l:'Error',v:'error'},{l:'Disabled',v:'disabled'},{l:'Read only',v:'readonly'}
+      ], default:0 },
+      /* ── Content ── */
+      { section:'Content', type:'toggle', label:'Show label', prop:'showLabel',
+        showIf: function(s){ return s.type !== 'standalone'; } },
+      { section:'Content', type:'toggle', label:'Left icon', prop:'leftIcon' },
+      { section:'Content', type:'toggle', label:'Show clear', prop:'showClear',
+        showIf: function(s){ return s.state !== 'disabled' && s.state !== 'readonly'; } },
+      { section:'Content', type:'toggle', label:'Show helper', prop:'showHelper',
+        showIf: function(s){ return s.type !== 'standalone' && s.state !== 'disabled' && s.state !== 'readonly'; } },
+    ],
+    render(s) {
+      var cls = ['naowee-dropdown'];
+      if (s.size) cls.push('naowee-dropdown--' + s.size);
+      if (s.state) cls.push('naowee-dropdown--' + s.state);
+      if (s.type === 'standalone') cls.push('naowee-dropdown--standalone');
+      var chevSize = s.size === 'small' ? 16 : 20;
+      var label = (s.showLabel && s.type !== 'standalone') ? '<label class="naowee-dropdown__label">Label</label>' : '';
+      var leftIco = s.leftIcon ? '<span class="naowee-dropdown__icon">' + naoIcon('image',24) + '</span>' : '';
+      /* Controls group (clear + chevron) */
+      var controls = '<span class="naowee-dropdown__controls">';
+      if (s.showClear) controls += '<span class="naowee-dropdown__clear" role="button">' + naoIcon('close', s.size==='small'?12:16) + '</span>';
+      controls += '<span class="naowee-dropdown__chevron">' + naoIcon('chevron-down', chevSize) + '</span></span>';
+      /* Helper */
+      var helper = '';
+      if (s.showHelper && s.type !== 'standalone' && s.state !== 'disabled' && s.state !== 'readonly') {
+        var helperCls = s.state === 'error' ? 'naowee-helper naowee-helper--negative' : 'naowee-helper';
+        var helperIco = s.state === 'error' ? naoIcon('feedback-negative',12) + ' ' : '';
+        helper = '<div class="naowee-dropdown__helper"><span class="' + helperCls + '">' + helperIco + 'Helper text</span></div>';
+      }
+      /* Content inside trigger */
+      var content;
+      if (s.type === 'multiple') {
+        content = '<span class="naowee-dropdown__tags"><span class="naowee-tag naowee-tag--accent naowee-tag--small">Label<span class="naowee-tag__active-area"><span class="naowee-tag__close">' + naoIcon('close',12) + '</span></span></span><span class="naowee-tag naowee-tag--accent naowee-tag--small">Label<span class="naowee-tag__active-area"><span class="naowee-tag__close">' + naoIcon('close',12) + '</span></span></span><span class="naowee-tag naowee-tag--accent naowee-tag--small">+3</span></span>';
+      } else {
+        content = '<span class="naowee-dropdown__placeholder">Placeholder</span>';
+      }
+      /* Dropdown menu with options (always rendered, shown via CSS when open) */
+      var menuItems = '';
+      for (var i = 1; i <= 5; i++) {
+        menuItems += '<div class="naowee-dropdown__option" onclick="dropdownSelectOption(this, event)">Option ' + i + '</div>';
+      }
+      var menuHtml = '<div class="naowee-dropdown__menu">' + menuItems + '</div>';
+      /* Interactive click toggles open state */
+      var interactive = (s.state === 'disabled' || s.state === 'readonly') ? '' : ' onclick="dropdownToggleOpen(this, event)"';
+      return '<div class="' + cls.join(' ') + '" style="width:320px;position:relative">' + label +
+        '<button class="naowee-dropdown__trigger"' + interactive + '>' + leftIco + content + controls + '</button>' + menuHtml + helper + '</div>';
+    }
+  },
+
+  switch: {
+    id:'switch', label:'Switch', desc:'Toggle on/off con animación suave', tag:'figma',
+    controls: [
+      { type:'toggle', label:'On', prop:'on', cls:'naowee-switch--on' },
+      { type:'toggle', label:'Disabled', prop:'disabled', cls:'naowee-switch--disabled' },
+      { type:'toggle', label:'Label left', prop:'labelLeft', cls:'naowee-switch--label-left' },
+      { type:'text', label:'Label', prop:'text', default:'Enable feature' },
+    ],
+    render(s) {
+      const cls = ['naowee-switch', s.on, s.disabled, s.labelLeft].filter(Boolean).join(' ');
+      return '<label class="' + cls + '" onclick="toggleSwitchInteractive(this, event)"><span class="naowee-switch__track"><span class="naowee-switch__handle"></span></span><span class="naowee-switch__label">' + s.text + '</span></label>';
+    }
+  },
+
+  checkbox: {
+    id:'checkbox', label:'Checkbox', desc:'Selección múltiple con animación pop', tag:'figma',
+    controls: [
+      { type:'select', label:'Selected', prop:'selected', options:[
+        {l:'Unselected',v:''},{l:'Selected',v:'checked'},{l:'Indeterminate',v:'indeterminate'}
+      ], default:0 },
+      { type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Error',v:'error'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      { type:'select', label:'Label position', prop:'labelPos', options:[
+        {l:'Right',v:'right'},{l:'Left',v:'left'},{l:'None',v:'none'}
+      ], default:0 },
+      { type:'toggle', label:'Highlight', prop:'highlight', cls:'naowee-checkbox--highlight' },
+      { type:'text', label:'Label', prop:'text', default:'Option' },
+    ],
+    render(s) {
+      var cls = ['naowee-checkbox'];
+      if (s.selected === 'checked') cls.push('naowee-checkbox--checked');
+      if (s.selected === 'indeterminate') cls.push('naowee-checkbox--indeterminate');
+      if (s.state === 'error') cls.push('naowee-checkbox--error');
+      if (s.state === 'disabled') cls.push('naowee-checkbox--disabled');
+      if (s.highlight) cls.push('naowee-checkbox--highlight');
+      if (s.labelPos === 'left') cls.push('naowee-checkbox--label-left');
+      var icon = naoIcon('feedback-positive',16);
+      var label = s.labelPos !== 'none' ? '<span class="naowee-checkbox__label">' + s.text + '</span>' : '';
+      return '<label class="' + cls.join(' ') + '" onclick="toggleCheckboxInteractive(this, event)"><span class="naowee-checkbox__box">' + icon + '</span>' + label + '</label>';
+    }
+  },
+
+  radio: {
+    id:'radio', label:'Radio Button', desc:'Botón de opción con animación fade', tag:'figma',
+    controls: [
+      { type:'toggle', label:'Selected', prop:'selected', cls:'naowee-radio--selected' },
+      { type:'toggle', label:'Error', prop:'error', cls:'naowee-radio--error' },
+      { type:'toggle', label:'Disabled', prop:'disabled', cls:'naowee-radio--disabled' },
+      { type:'text', label:'Label', prop:'text', default:'Radio option' },
+    ],
+    render(s) {
+      const cls = ['naowee-radio', s.selected, s.error, s.disabled].filter(Boolean).join(' ');
+      return '<label class="' + cls + '" onclick="toggleRadioInteractive(this, event)"><span class="naowee-radio__circle"></span><span class="naowee-radio__label">' + s.text + '</span></label>';
+    }
+  },
+
+  message: {
+    id:'message', label:'Message', desc:'Bloque de feedback con icon/thumbnail, title, action', tag:'figma',
+    controls: [
+      { type:'select', label:'Color', prop:'color', options:[
+        {l:'Informative',v:'informative'},{l:'Positive',v:'positive'},
+        {l:'Caution',v:'caution'},{l:'Negative',v:'negative'}
+      ], default:0 },
+      { type:'select', label:'Hierarchy', prop:'hierarchy', options:[
+        {l:'Quiet',v:'quiet'},{l:'Loud (negative only)',v:'loud'}
+      ], default:0 },
+      { type:'toggle', label:'Show title', prop:'showTitle' },
+      { type:'toggle', label:'Show thumbnail', prop:'showThumbnail' },
+      { type:'toggle', label:'Show action', prop:'showAction' },
+      { type:'toggle', label:'Show dismiss', prop:'showDismiss' },
+    ],
+    render(s) {
+      var cls = ['naowee-message', 'naowee-message--' + s.color];
+      if (s.hierarchy === 'loud') cls.push('naowee-message--loud');
+      /* Badge icons per color */
+      var badgeIcons = {
+        informative: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7 7h2v4H7z" fill="#fff"/><circle cx="8" cy="5" r="1" fill="#fff"/></svg>',
+        positive: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 8l1.6 1.6L10.5 6.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+        caution: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7 5h2v4H7z" fill="#fff"/><circle cx="8" cy="11" r="1" fill="#fff"/></svg>',
+        negative: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 8h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>'
+      };
+      var icon = '<span class="naowee-message__icon">' + badgeIcons[s.color] + '</span>';
+      /* Thumbnail with badge overlay */
+      var thumb = s.showThumbnail ? '<span class="naowee-message__thumbnail"><div style="width:100%;height:100%;background:#E7E9F3"></div>' + icon + '</span>' : '';
+      var iconOrThumb = s.showThumbnail ? thumb : icon;
+      var dismiss = s.showDismiss ? '<button class="naowee-message__dismiss">' + naoIcon('close', 20) + '</button>' : '';
+      var action = s.showAction ? '<button class="naowee-message__action">Label</button>' : '';
+      if (s.showTitle) {
+        var header = '<div class="naowee-message__header">' + iconOrThumb + '<span class="naowee-message__title">Title</span>' + dismiss + '</div>';
+        if (s.showAction) {
+          return '<div class="' + cls.join(' ') + '" style="width:388px">' + header + '<div class="naowee-message__content"><p class="naowee-message__text">This can be a single or multiline text</p>' + action + '</div></div>';
+        }
+        return '<div class="' + cls.join(' ') + '" style="width:388px">' + header + '<p class="naowee-message__text">This can be a single or multiline text</p></div>';
+      }
+      /* No title — inline layout */
+      return '<div class="' + cls.join(' ') + '" style="width:388px"><div class="naowee-message__header">' + iconOrThumb + '<span class="naowee-message__body">This can be a single or multiline text</span>' + dismiss + '</div>' + (s.showAction ? action : '') + '</div>';
+    }
+  },
+
+  snackbar: {
+    id:'snackbar', label:'Snackbar', desc:'Notificación temporal inferior con acción opcional', tag:'figma',
+    controls: [
+      { type:'toggle', label:'With action', prop:'withAction', cls:'with-action' },
+      { type:'toggle', label:'With badge icon', prop:'withBadge', cls:'with-badge' },
+      { type:'text', label:'Text', prop:'text', default:'This is a single or two line snackbar.' },
+      { type:'text', label:'Action label', prop:'actionLabel', default:'Action' },
+    ],
+    render(s) {
+      var badge = s.withBadge ? '<span class="naowee-snackbar__badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>' : '';
+      var action = s.withAction ? '<button class="naowee-snackbar__action">' + (s.actionLabel || 'Action') + '</button>' : '';
+      return '<div class="naowee-snackbar">' +
+        '<div class="naowee-snackbar__content">' + badge +
+          '<span class="naowee-snackbar__text">' + s.text + '</span>' +
+        '</div>' + action +
+      '</div>';
+    }
+  },
+
+  progress: {
+    id:'progress', label:'Progress', desc:'Indicador de progreso: linear, circular o segmented', tag:'figma',
+    controls: [
+      { type:'select', label:'Type', prop:'type', options:[
+        {l:'Linear',v:'linear'},{l:'Circular',v:'circular'},{l:'Segments',v:'segments'}
+      ], default:0 },
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'XS',v:'xs'},{l:'S',v:'sm'},{l:'M',v:'md'},{l:'L',v:'lg'},{l:'XL',v:'xl'}
+      ], default:2 },
+      { type:'select', label:'Color', prop:'color', options:[
+        {l:'Accent',v:'accent'},{l:'Positive',v:'positive'},{l:'Negative',v:'negative'}
+      ], default:0 },
+      { type:'toggle', label:'Show label', prop:'showLabel', cls:'show-label' },
+      { type:'toggle', label:'Indeterminate', prop:'indeterminate', cls:'indeterminate' },
+      { type:'range', label:'Value', prop:'value', min:0, max:100, default:65 },
+    ],
+    render(s) {
+      var type = s.type || 'linear';
+      var val = parseInt(s.value);
+      // Linear: only S/L → map xs/sm → sm, md/lg/xl → lg
+      if (type === 'linear') {
+        var isLg = ['lg','xl'].indexOf(s.size) !== -1;
+        var colorCls = s.color === 'positive' ? 'naowee-progress--positive' : s.color === 'negative' ? 'naowee-progress--negative' : '';
+        var indeterminateCls = s.indeterminate ? 'naowee-progress--indeterminate' : '';
+        var barCls = ['naowee-progress', isLg ? 'naowee-progress--lg' : '', colorCls, indeterminateCls].filter(Boolean).join(' ');
+        var fillStyle = s.indeterminate ? '' : ' style="width:' + val + '%"';
+        var bar = '<div class="' + barCls + '"><div class="naowee-progress__fill"' + fillStyle + '></div></div>';
+        if (s.showLabel) {
+          var wrapCls = 'naowee-progress-wrap' + (isLg ? ' naowee-progress-wrap--lg' : '');
+          return '<div class="' + wrapCls + '" style="width:360px">' +
+            '<div class="naowee-progress-wrap__header">' +
+              '<span class="naowee-progress-wrap__label">Label</span>' +
+              '<span class="naowee-progress-wrap__value">' + val + '</span>' +
+            '</div>' + bar + '</div>';
+        }
+        return '<div style="width:360px">' + bar + '</div>';
+      }
+      // Circular: full 5 sizes
+      if (type === 'circular') {
+        var sizes = {xs:{d:16,sw:1},sm:{d:24,sw:1},md:{d:32,sw:2},lg:{d:48,sw:3},xl:{d:64,sw:4}};
+        var cfg = sizes[s.size] || sizes.md;
+        var d = cfg.d, sw = cfg.sw;
+        var r = (d / 2) - (sw / 2);
+        var circ = 2 * Math.PI * r;
+        var useVal = s.indeterminate ? 25 : val;
+        var offset = circ - (circ * useVal / 100);
+        var colorCls = s.color === 'positive' ? 'naowee-progress-circular--positive' : s.color === 'negative' ? 'naowee-progress-circular--negative' : '';
+        var indeterminateCls = s.indeterminate ? 'naowee-progress-circular--indeterminate' : '';
+        var cls = ['naowee-progress-circular', 'naowee-progress-circular--' + s.size, colorCls, indeterminateCls].filter(Boolean).join(' ');
+        var counterHtml = '';
+        if (s.showLabel && ['md','lg','xl'].indexOf(s.size) !== -1) {
+          counterHtml = '<span class="naowee-progress-circular__counter">' + String(useVal).padStart(2,'0') + '</span>';
+        }
+        return '<div class="' + cls + '">' +
+          '<div class="naowee-progress-circular__ring" style="width:' + d + 'px;height:' + d + 'px">' +
+            '<svg width="' + d + '" height="' + d + '" viewBox="0 0 ' + d + ' ' + d + '">' +
+              '<circle class="naowee-progress-circular__track" cx="' + d/2 + '" cy="' + d/2 + '" r="' + r + '"/>' +
+              '<circle class="naowee-progress-circular__fill" cx="' + d/2 + '" cy="' + d/2 + '" r="' + r + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>' +
+            '</svg>' +
+            counterHtml +
+          '</div>' +
+          '<span class="naowee-progress-circular__text">Loading</span>' +
+        '</div>';
+      }
+      // Segments: S/L sizes, use value as "% of 5 segments completed"
+      var isLg2 = ['lg','xl'].indexOf(s.size) !== -1;
+      var total = 5;
+      var completed = Math.round(val / 100 * total);
+      var colorCls2 = s.color === 'positive' ? 'naowee-progress-segments--positive' : s.color === 'negative' ? 'naowee-progress-segments--negative' : '';
+      var segCls = ['naowee-progress-segments', isLg2 ? 'naowee-progress-segments--lg' : '', colorCls2].filter(Boolean).join(' ');
+      var items = '';
+      for (var i = 0; i < total; i++) {
+        items += '<div class="naowee-progress-segments__item' + (i < completed ? ' naowee-progress-segments__item--active' : '') + '"></div>';
+      }
+      var bar2 = '<div class="' + segCls + '">' + items + '</div>';
+      if (s.showLabel) {
+        var wrapCls2 = 'naowee-progress-segments-wrap' + (isLg2 ? ' naowee-progress-segments-wrap--lg' : '');
+        return '<div class="' + wrapCls2 + '" style="width:360px">' +
+          '<div class="naowee-progress-segments-wrap__header">' +
+            '<span class="naowee-progress-segments-wrap__label">Label</span>' +
+            '<span class="naowee-progress-segments-wrap__value">' + completed + ' of ' + total + '</span>' +
+          '</div>' + bar2 + '</div>';
+      }
+      return '<div style="width:360px">' + bar2 + '</div>';
+    }
+  },
+
+  slider: {
+    id:'slider', label:'Slider', desc:'Control deslizante con tooltip y estados', tag:'figma',
+    controls: [
+      { type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Active',v:'active'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      { type:'select', label:'Content', prop:'content', options:[
+        {l:'None',v:'none'},{l:'Text',v:'text'},{l:'Icon',v:'icon'}
+      ], default:0 },
+      { type:'toggle', label:'Show label', prop:'showLabel', cls:'show-label' },
+      { type:'range', label:'Value', prop:'value', min:0, max:100, default:50 },
+    ],
+    render(s) {
+      var val = parseInt(s.value);
+      var isActive = s.state === 'active';
+      var isDisabled = s.state === 'disabled';
+      var rootCls = ['naowee-slider', isActive ? 'is-active' : '', isDisabled ? 'is-disabled' : ''].filter(Boolean).join(' ');
+      var thumbCls = 'naowee-slider__thumb' + (isActive ? ' is-active' : '');
+      var label = s.showLabel ? '<span class="naowee-slider__label">Label</span>' : '';
+      var iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+      var leftEnd = '', rightEnd = '';
+      if (s.content === 'text') {
+        leftEnd = '<span class="naowee-slider__end">0%</span>';
+        rightEnd = '<span class="naowee-slider__end">100%</span>';
+      } else if (s.content === 'icon') {
+        leftEnd = '<span class="naowee-slider__end-icon">' + iconSvg + '</span>';
+        rightEnd = '<span class="naowee-slider__end-icon">' + iconSvg + '</span>';
+      }
+      return '<div class="' + rootCls + '" style="width:420px">' +
+        label +
+        '<div class="naowee-slider__body">' + leftEnd +
+          '<div class="naowee-slider__track-area">' +
+            '<div class="naowee-slider__track">' +
+              '<div class="naowee-slider__fill" style="width:' + val + '%"></div>' +
+            '</div>' +
+            '<div class="' + thumbCls + '" style="left:' + val + '%"></div>' +
+            '<span class="naowee-slider__ref" style="left:' + val + '%">' + val + '</span>' +
+            '<div class="naowee-slider__tooltip" style="left:' + val + '%">' + val + '</div>' +
+          '</div>' + rightEnd +
+        '</div>' +
+      '</div>';
+    }
+  },
+
+  slider_range: {
+    id:'slider_range', label:'Slider Range', desc:'Doble slider con rango mínimo/máximo', tag:'figma',
+    controls: [
+      { type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Active L',v:'active-l'},{l:'Active R',v:'active-r'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      { type:'select', label:'Content', prop:'content', options:[
+        {l:'None',v:'none'},{l:'Text',v:'text'}
+      ], default:0 },
+      { type:'toggle', label:'Show label', prop:'showLabel', cls:'show-label' },
+      { type:'range', label:'Min value', prop:'minValue', min:0, max:100, default:35 },
+      { type:'range', label:'Max value', prop:'maxValue', min:0, max:100, default:60 },
+    ],
+    render(s) {
+      var minV = parseInt(s.minValue);
+      var maxV = parseInt(s.maxValue);
+      if (minV > maxV) { var tmp = minV; minV = maxV; maxV = tmp; }
+      var isDisabled = s.state === 'disabled';
+      var activeL = s.state === 'active-l';
+      var activeR = s.state === 'active-r';
+      var rootCls = ['naowee-slider', 'naowee-slider--range', isDisabled ? 'is-disabled' : ''].filter(Boolean).join(' ');
+      var thumbLCls = 'naowee-slider__thumb' + (activeL ? ' is-active' : '');
+      var thumbRCls = 'naowee-slider__thumb' + (activeR ? ' is-active' : '');
+      var label = s.showLabel ? '<span class="naowee-slider__label">Label</span>' : '';
+      var leftEnd = '', rightEnd = '';
+      if (s.content === 'text') {
+        leftEnd = '<span class="naowee-slider__end">0%</span>';
+        rightEnd = '<span class="naowee-slider__end">100%</span>';
+      }
+      var fillWidth = maxV - minV;
+      return '<div class="' + rootCls + '" style="width:420px">' +
+        label +
+        '<div class="naowee-slider__body">' + leftEnd +
+          '<div class="naowee-slider__track-area">' +
+            '<div class="naowee-slider__track">' +
+              '<div class="naowee-slider__fill" style="left:' + minV + '%;width:' + fillWidth + '%"></div>' +
+            '</div>' +
+            '<div class="' + thumbLCls + '" style="left:' + minV + '%"></div>' +
+            '<span class="naowee-slider__ref" style="left:' + minV + '%' + (activeL ? ';opacity:0' : '') + '">' + minV + '</span>' +
+            (activeL ? '<div class="naowee-slider__tooltip" style="left:' + minV + '%;opacity:1">' + minV + '</div>' : '') +
+            '<div class="' + thumbRCls + '" style="left:' + maxV + '%"></div>' +
+            '<span class="naowee-slider__ref" style="left:' + maxV + '%' + (activeR ? ';opacity:0' : '') + '">' + maxV + '</span>' +
+            (activeR ? '<div class="naowee-slider__tooltip" style="left:' + maxV + '%;opacity:1">' + maxV + '</div>' : '') +
+          '</div>' + rightEnd +
+        '</div>' +
+      '</div>';
+    }
+  },
+
+  pagination: {
+    id:'pagination', label:'Pagination', desc:'Navegación interactiva por páginas', tag:'figma',
+    controls: [
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { type:'text', label:'Page', prop:'page', default:'2' },
+      { type:'text', label:'Total', prop:'total', default:'20' },
+    ],
+    render(s) {
+      var cls = 'naowee-pagination' + (s.size === 'small' ? ' naowee-pagination--small' : '');
+      var chevL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+      var chevR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+      var page = s.page || '1';
+      var total = s.total || '20';
+      return '<nav class="' + cls + '">' +
+        '<div class="naowee-pagination__pages">' +
+          '<span class="naowee-pagination__label">Página</span>' +
+          '<input class="naowee-pagination__input" type="text" value="' + page + '" data-comp="pagination" oninput="paginationInput(this)" />' +
+          '<span class="naowee-pagination__total">de <strong>' + total + '</strong></span>' +
+        '</div>' +
+        '<div class="naowee-pagination__controls">' +
+          '<button class="naowee-pagination__btn" onclick="paginationChange(\'pagination\',-1)">' + chevL + '</button>' +
+          '<button class="naowee-pagination__btn" onclick="paginationChange(\'pagination\',1)">' + chevR + '</button>' +
+        '</div>' +
+      '</nav>';
+    }
+  },
+
+  stepper: {
+    id:'stepper', label:'Stepper', desc:'Indicador de pasos del proceso', tag:'figma',
+    controls: [
+      { type:'select', label:'Active step', prop:'active', options:[
+        {l:'Step 1',v:'0'},{l:'Step 2',v:'1'},{l:'Step 3',v:'2'},{l:'Step 4',v:'3'}
+      ], default:1 },
+    ],
+    render(s) {
+      const active = parseInt(s.active);
+      const steps = ['Datos','Equipos','Formato','Confirmar'];
+      return '<div class="naowee-stepper">' + steps.map(function(st,i) {
+        var done = i < active ? ' naowee-stepper__step--done' : '';
+        var act = i === active ? ' naowee-stepper__step--active' : '';
+        var conn = i > 0 ? '<div class="naowee-stepper__connector' + (i <= active ? ' naowee-stepper__connector--done' : '') + '"></div>' : '';
+        return conn + '<div class="naowee-stepper__step' + done + act + '"><span class="naowee-stepper__number">' + (done ? ICO.check : i+1) + '</span><span class="naowee-stepper__label">' + st + '</span></div>';
+      }).join('') + '</div>';
+    }
+  },
+
+  breadcrumb: {
+    id:'breadcrumb', label:'Breadcrumb', desc:'Navegacion por niveles con chevron separador', tag:'figma',
+    controls: [
+      { type:'select', label:'Levels', prop:'levels', options:[
+        {l:'2',v:'2'},{l:'3',v:'3'},{l:'4',v:'4'},{l:'5',v:'5'},{l:'6',v:'6'}
+      ], default:1 },
+      { type:'toggle', label:'Current level (accent)', prop:'current' },
+    ],
+    render(s) {
+      var count = parseInt(s.levels);
+      var labels = ['Level 1','Level 2','Level 3','Level 4','Level 5','Level 6'];
+      var chevSep = '<span class="naowee-breadcrumb__sep">' + naoIcon('chevron-right', 16) + '</span>';
+      var items = [];
+      for (var i = 0; i < count; i++) {
+        if (i > 0) items.push(chevSep);
+        var isLast = i === count - 1;
+        if (isLast && s.current) {
+          items.push('<span class="naowee-breadcrumb__current">' + labels[i] + '</span>');
+        } else {
+          items.push('<a class="naowee-breadcrumb__item">' + labels[i] + '</a>');
+        }
+      }
+      return '<nav class="naowee-breadcrumb">' + items.join('') + '</nav>';
+    }
+  },
+
+  tag: {
+    id:'tag', label:'Tag / Chip', desc:'Tag (dismissible), Tag Choice (selectable), Tag Input', tag:'figma',
+    controls: [
+      { type:'select', label:'Type', prop:'type', options:[
+        {l:'Tag',v:'tag'},{l:'Tag Choice',v:'choice'},{l:'Tag Input',v:'input'}
+      ], default:0 },
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { type:'select', label:'Color', prop:'color', options:[
+        {l:'Accent',v:'accent'},{l:'Positive',v:'positive'},{l:'Caution',v:'caution'},{l:'Negative',v:'negative'}
+      ], default:0 },
+      { type:'select', label:'Content', prop:'content', options:[
+        {l:'None',v:'none'},{l:'Thumbnail',v:'thumbnail'},{l:'Icon',v:'icon'}
+      ], default:0 },
+      { type:'toggle', label:'Show dismiss', prop:'dismiss' },
+      { type:'toggle', label:'Selected (Choice)', prop:'selected' },
+      { type:'toggle', label:'Disabled', prop:'disabled' },
+      { type:'text', label:'Label', prop:'text', default:'Label' },
+    ],
+    render(s) {
+      if (s.type === 'input') {
+        var tiCls = ['naowee-tag-input'];
+        if (s.size) tiCls.push('naowee-tag-input--' + s.size);
+        if (s.disabled) tiCls.push('naowee-tag-input--disabled');
+        var tagSz = s.size ? ' naowee-tag--small' : '';
+        var tagRemove = '<span class="naowee-tag__active-area"><span class="naowee-tag__close">' + naoIcon('close',12) + '</span></span>';
+        var tags = '<span class="naowee-tag naowee-tag--accent' + tagSz + '">Label' + tagRemove + '</span>' +
+          '<span class="naowee-tag naowee-tag--accent' + tagSz + '">Label' + tagRemove + '</span>' +
+          '<span class="naowee-tag naowee-tag--accent' + tagSz + '">+3</span>';
+        var clear = '<span class="naowee-tag-input__clear">' + naoIcon('close',16) + '</span>';
+        var label = '<label class="naowee-textfield__label">Label</label>';
+        var helperBadge = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-informative-loud,#006aff)"/><path d="M5.25 5.25h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="3.75" r=".75" fill="#fff"/></svg>';
+        var helper = '<div class="naowee-dropdown__helper"><span class="naowee-helper naowee-helper--informative"><span class="naowee-helper__badge">' + helperBadge + '</span>Helper text</span></div>';
+        return '<div class="naowee-tag-input-wrap" style="width:320px">' + label +
+          '<div class="' + tiCls.join(' ') + '">' + tags + clear + '</div>' + helper + '</div>';
+      }
+      var cls = ['naowee-tag'];
+      if (s.size) cls.push('naowee-tag--' + s.size);
+      if (s.type === 'tag') cls.push('naowee-tag--' + s.color);
+      if (s.type === 'choice') cls.push('naowee-tag--choice');
+      if (s.selected && s.type === 'choice') cls.push('naowee-tag--selected');
+      if (s.disabled) cls.push('naowee-tag--disabled');
+      /* Content left */
+      var leftContent = '';
+      if (s.content === 'thumbnail') leftContent = '<span class="naowee-tag__thumbnail"><div style="width:100%;height:100%;background:#E7E9F3"></div></span>';
+      if (s.content === 'icon') leftContent = '<span class="naowee-tag__icon">' + naoIcon('image', 16) + '</span>';
+      /* Dismiss / Check */
+      var rightContent = '';
+      if (s.type === 'tag' && s.dismiss) rightContent = '<span class="naowee-tag__active-area"><span class="naowee-tag__close">' + naoIcon('close', 12) + '</span></span>';
+      if (s.type === 'choice') rightContent = '<span class="naowee-tag__check">' + naoIcon('feedback-positive', 16) + '</span>';
+      return '<span class="' + cls.join(' ') + '">' + leftContent + s.text + rightContent + '</span>';
+    }
+  },
+
+  tagInput: {
+    id:'tagInput', label:'Tag Input', desc:'Input con tags seleccionados + helper (hereda label, estados y clear de Textfield)', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Active',v:'active'},{l:'Loading',v:'loading'},
+        {l:'Caution',v:'caution'},{l:'Caution active',v:'caution-active'},
+        {l:'Error',v:'error'},{l:'Error active',v:'error-active'},
+        {l:'Disabled',v:'disabled'},{l:'Read only',v:'readonly'}
+      ], default:0 },
+      /* ── Content ── */
+      { section:'Content', type:'select', label:'Tags', prop:'tagCount', options:[
+        {l:'None',v:'0'},{l:'1 tag',v:'1'},{l:'2 tags',v:'2'},{l:'2 tags + counter',v:'counter'}
+      ], default:3 },
+      { section:'Content', type:'toggle', label:'Show clear', prop:'showClear',
+        showIf:function(s){ return s.state !== 'disabled' && s.state !== 'readonly'; } },
+      /* ── Label & Helper ── */
+      { section:'Label & Helper', type:'text', label:'Label', prop:'label', default:'Label' },
+      { section:'Label & Helper', type:'select', label:'Helper type', prop:'helperType', options:[
+        {l:'None',v:'none'},{l:'Default',v:''},{l:'Caution',v:'caution'},{l:'Negative',v:'negative'},{l:'Positive',v:'positive'},{l:'Informative',v:'informative'}
+      ], default:1 },
+      { section:'Label & Helper', type:'text', label:'Helper text', prop:'helperText', default:'Helper text',
+        showIf:function(s){ return s.helperType !== 'none'; } },
+      /* ── Text ── */
+      { section:'Text', type:'text', label:'Placeholder', prop:'placeholder', default:'' },
+    ],
+    render(s) {
+      /* Wrap + state classes */
+      var wrapCls = ['naowee-tag-input-wrap'];
+      if (s.state === 'disabled') wrapCls.push('naowee-tag-input-wrap--disabled');
+      if (s.state === 'readonly') wrapCls.push('naowee-tag-input-wrap--readonly');
+
+      var inputCls = ['naowee-tag-input'];
+      if (s.size === 'small') inputCls.push('naowee-tag-input--small');
+      var stateMap = {
+        'active':'active','loading':'loading',
+        'caution':'caution','caution-active':'caution active',
+        'error':'error','error-active':'error active',
+        'disabled':'disabled','readonly':'readonly'
+      };
+      if (stateMap[s.state]) {
+        stateMap[s.state].split(' ').forEach(function(st){ inputCls.push('naowee-tag-input--' + st); });
+      }
+
+      /* Tags */
+      var tagSz = s.size === 'small' ? ' naowee-tag--small' : '';
+      var dismiss = '<span class="naowee-tag__active-area"><span class="naowee-tag__close">' + naoIcon('close',12) + '</span></span>';
+      var tagDisabled = (s.state === 'disabled') ? ' naowee-tag--disabled' : '';
+      function tag(text, withClose){
+        return '<span class="naowee-tag naowee-tag--accent' + tagSz + tagDisabled + '">' + text + (withClose ? dismiss : '') + '</span>';
+      }
+      var tags = '';
+      if (s.tagCount === '1') tags = tag('Label', true);
+      else if (s.tagCount === '2') tags = tag('Label', true) + tag('Label', true);
+      else if (s.tagCount === 'counter') tags = tag('Label', true) + tag('Label', true) + tag('+3', false);
+
+      /* Right slot: spinner (loading) + clear */
+      var rightSlot = '';
+      if (s.state === 'loading') {
+        var iconSpinner = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>';
+        rightSlot += '<span class="naowee-tag-input__spinner">' + iconSpinner + '</span>';
+      }
+      if (s.showClear && s.state !== 'disabled' && s.state !== 'readonly') {
+        var clearCls = s.state === 'loading' ? 'naowee-tag-input__clear' : 'naowee-tag-input__clear';
+        var clearStyle = s.state === 'loading' ? '' : ' style="margin-left:auto"';
+        rightSlot += '<span class="' + clearCls + '"' + clearStyle + '>' + naoIcon('close',16) + '</span>';
+      }
+
+      /* Input field */
+      var phAttr = s.placeholder ? ' placeholder="' + s.placeholder + '"' : '';
+      var disAttr = (s.state === 'disabled') ? ' disabled' : '';
+      var inputEl = (s.tagCount === '0') ? '<input type="text"' + phAttr + disAttr + '>' : '';
+
+      /* Label (always rendered — Figma shows it) */
+      var label = '<label class="naowee-textfield__label">' + (s.label || 'Label') + '</label>';
+
+      /* Helper (reuse naowee-helper component) */
+      var helper = '';
+      if (s.helperType !== 'none') {
+        var badgeSvg = {
+          'caution': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+          'negative': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+          'positive': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+          'informative': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+          'disabled': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+        };
+        var effectiveType = s.helperType;
+        if (s.state === 'disabled') effectiveType = 'disabled';
+        else if (s.state === 'error' || s.state === 'error-active') effectiveType = 'negative';
+        else if (s.state === 'caution' || s.state === 'caution-active') effectiveType = 'caution';
+        var helperCls = 'naowee-helper';
+        if (effectiveType && effectiveType !== 'none') helperCls += ' naowee-helper--' + effectiveType;
+        var badge = badgeSvg[effectiveType] ? '<span class="naowee-helper__badge">' + badgeSvg[effectiveType] + '</span>' : '';
+        helper = '<div class="' + helperCls + '"><span class="naowee-helper__text">' + badge + '<span>' + (s.helperText || 'Helper text') + '</span></span></div>';
+      }
+
+      return '<div class="' + wrapCls.join(' ') + '" style="width:360px">' + label +
+        '<div class="' + inputCls.join(' ') + '">' + tags + inputEl + rightSlot + '</div>' +
+        helper + '</div>';
+    }
+  },
+
+  accordion: {
+    id:'accordion', label:'Accordion', desc:'Secciones colapsables', tag:'figma',
+    controls: [
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Medium',v:''},{l:'Small',v:'naowee-accordion--small'}
+      ], default:0 },
+    ],
+    render(s) {
+      const cls = ['naowee-accordion', s.size].filter(Boolean).join(' ');
+      return '<div class="' + cls + '" style="width:400px">' +
+        '<div class="naowee-accordion__item naowee-accordion__item--open"><button class="naowee-accordion__header"><div><div class="naowee-accordion__title">Section 1</div><div class="naowee-accordion__description">Description text</div></div><span class="naowee-accordion__chevron">' + ICO.chevron + '</span></button><div class="naowee-accordion__body"><div class="naowee-accordion__content">Content of the first section goes here.</div></div></div>' +
+        '<div class="naowee-accordion__item"><button class="naowee-accordion__header"><div><div class="naowee-accordion__title">Section 2</div></div><span class="naowee-accordion__chevron">' + ICO.chevron + '</span></button></div>' +
+        '<div class="naowee-accordion__item"><button class="naowee-accordion__header"><div><div class="naowee-accordion__title">Section 3</div></div><span class="naowee-accordion__chevron">' + ICO.chevron + '</span></button></div>' +
+      '</div>';
+    }
+  },
+
+  textlink: {
+    id:'textlink', label:'Text Link', desc:'Enlaces de texto inline', tag:'figma',
+    controls: [
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'XSmall',v:'naowee-textlink--xsmall'},{l:'Small',v:'naowee-textlink--small'},
+        {l:'Medium',v:''},{l:'Large',v:'naowee-textlink--large'}
+      ], default:2 },
+      { type:'toggle', label:'Disabled', prop:'disabled', cls:'naowee-textlink--disabled' },
+      { type:'text', label:'Text', prop:'text', default:'Click here' },
+    ],
+    render(s) {
+      const cls = ['naowee-textlink', s.size, s.disabled].filter(Boolean).join(' ');
+      return '<a class="' + cls + '" href="javascript:void(0)">' + s.text + '</a>';
+    }
+  },
+
+  tooltip: {
+    id:'tooltip', label:'Tooltip', desc:'Informacion contextual al hover', tag:'figma',
+    controls: [
+      { type:'select', label:'Position', prop:'pos', options:[
+        {l:'Top',v:''},{l:'Bottom',v:'naowee-tooltip--bottom'}
+      ], default:0 },
+      { type:'text', label:'Text', prop:'text', default:'Tooltip text' },
+    ],
+    render(s) {
+      const cls = ['naowee-tooltip', s.pos].filter(Boolean).join(' ');
+      return '<span class="' + cls + '" style="position:relative;display:inline-block"><button class="naowee-btn naowee-btn--quiet naowee-btn--small">Hover me</button><span class="naowee-tooltip__content" style="visibility:visible;opacity:1">' + s.text + '</span></span>';
+    }
+  },
+
+  popover: {
+    id:'popover', label:'Popover', desc:'Contenido flotante con acciones', tag:'figma',
+    controls: [
+      { type:'select', label:'Position', prop:'pos', options:[
+        {l:'Bottom',v:'naowee-popover--bottom'},{l:'Top',v:'naowee-popover--top'},
+        {l:'Left',v:'naowee-popover--left'},{l:'Right',v:'naowee-popover--right'}
+      ], default:0 },
+    ],
+    render(s) {
+      const cls = ['naowee-popover naowee-popover--open', s.pos].filter(Boolean).join(' ');
+      return '<div class="' + cls + '" style="position:relative;display:inline-block"><button class="naowee-btn naowee-btn--quiet naowee-btn--small">Trigger</button><div class="naowee-popover__content"><div class="naowee-popover__title">Popover title</div><div class="naowee-popover__body">Some content here.</div><div class="naowee-popover__action"><button class="naowee-btn naowee-btn--loud naowee-btn--small">Action</button></div></div></div>';
+    }
+  },
+
+  card: {
+    id:'card', label:'Card', desc:'Contenedores de contenido', tag:'figma',
+    controls: [
+      { type:'select', label:'Variant', prop:'variant', options:[
+        {l:'Outline',v:'naowee-card--outline'},{l:'Filled',v:'naowee-card--filled'},
+        {l:'Flat',v:'naowee-card--flat'},{l:'Flush',v:'naowee-card--flush'},
+        {l:'Compact',v:'naowee-card--compact'}
+      ], default:0 },
+      { type:'toggle', label:'Clickable', prop:'clickable', cls:'naowee-card--clickable' },
+      { type:'toggle', label:'Disabled', prop:'disabled', cls:'naowee-card--disabled' },
+    ],
+    render(s) {
+      const cls = ['naowee-card', s.variant, s.clickable, s.disabled].filter(Boolean).join(' ');
+      return '<div class="' + cls + '" style="width:300px"><div class="naowee-card__header"><div class="naowee-card__title">Card title</div><div class="naowee-card__subtitle">Subtitle text</div></div><div class="naowee-card__body">Card content goes here.</div><div class="naowee-card__footer"><button class="naowee-btn naowee-btn--quiet naowee-btn--small">Action</button></div></div>';
+    }
+  },
+
+  menu: {
+    id:'menu', label:'Menu', desc:'Menu con 4 tipos: default, autosuggest, multiple, single', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Type', prop:'type', options:[
+        {l:'Default',v:'default'},{l:'Autosuggest',v:'autosuggest'},
+        {l:'Multiple',v:'multiple'},{l:'Single',v:'single'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Medium',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { section:'Variant', type:'toggle', label:'Scroll', prop:'scroll', cls:'scroll' },
+      { section:'Variant', type:'toggle', label:'Loading', prop:'loading', cls:'loading' },
+      /* ── Default items only ── */
+      { section:'Default items', type:'select', label:'Media', prop:'media', options:[
+        {l:'None',v:'none'},{l:'Icon',v:'icon'},{l:'Thumbnail',v:'thumbnail'},{l:'Avatar',v:'avatar'}
+      ], default:0,
+        showIf: function(s){ return (s.type || 'default') === 'default'; } },
+      { section:'Default items', type:'select', label:'Right slot', prop:'rightSlot', options:[
+        {l:'None',v:'none'},{l:'Text',v:'text'},{l:'Chevron',v:'chevron'}
+      ], default:0,
+        showIf: function(s){ return (s.type || 'default') === 'default'; } },
+      { section:'Default items', type:'toggle', label:'Show description', prop:'showDescription', cls:'show-description',
+        showIf: function(s){ return (s.type || 'default') === 'default'; } },
+    ],
+    render(s) {
+      var type = s.type || 'default';
+      var cls = ['naowee-menu'];
+      if (s.size === 'small') cls.push('naowee-menu--small');
+      if (s.scroll) cls.push('naowee-menu--scroll');
+      if (s.loading) cls.push('naowee-menu--loading');
+
+      var iconSearch = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+      var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      var iconSpinner = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>';
+      var iconChevron = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+      var iconStar = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+      var iconThumb = '<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="#e7e9f3"/><path d="M8 28l6-6 4 4 8-8 6 6" stroke="#8788ab" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="14" r="2" fill="#8788ab"/></svg>';
+
+      // Loading state
+      if (s.loading) {
+        return '<div class="' + cls.join(' ') + '"><div class="naowee-menu__list"><span class="naowee-menu__loader">' + iconSpinner + '</span></div></div>';
+      }
+
+      // Top slot (search) for multi and single
+      var topSlot = '';
+      if (type === 'multiple' || type === 'single') {
+        topSlot = '<div class="naowee-menu__top-slot">' +
+          '<div class="naowee-menu__search">' +
+            '<span class="naowee-menu__search-icon">' + iconSearch + '</span>' +
+            '<input class="naowee-menu__search-input" placeholder="Search" />' +
+          '</div>' +
+        '</div>';
+      }
+
+      // Build list items using renderListRow() internally
+      var items = '';
+      var count = 5;
+      var initialsMap = ['JD','MK','RS','AL','CB'];
+      for (var i = 1; i <= count; i++) {
+        if (type === 'default') {
+          var rowState = {
+            rowType: 'default',
+            size: s.size === 'small' ? 'small' : '',
+            media: s.media || 'none',
+            showDescription: s.showDescription,
+            title: 'Option ' + i,
+            description: 'Description text for option ' + i,
+            showTopRight: s.rightSlot === 'text',
+            topRight: '⌘' + i,
+          };
+          // Use chevron row type if right slot is chevron
+          if (s.rightSlot === 'chevron') rowState.rowType = 'chevron';
+          items += window.renderListRow(rowState, { initials: initialsMap[i - 1] });
+        } else if (type === 'autosuggest') {
+          items += '<div class="naowee-list-row naowee-list-row--default"><div class="naowee-list-row__content"><div class="naowee-list-row__title-row"><span class="naowee-list-row__title" style="font-weight:400">Input text <em style="font-style:normal;font-weight:600">suggestion ' + i + '</em></span></div></div></div>';
+        } else if (type === 'multiple') {
+          items += window.renderListRow({
+            rowType: 'checkbox',
+            media: 'none',
+            title: 'Option ' + i,
+          });
+        } else if (type === 'single') {
+          var selected = i === 2;
+          items += window.renderListRow({
+            rowType: 'pick',
+            media: 'none',
+            title: 'Option ' + i,
+            selected: selected,
+          });
+        }
+      }
+      var list = '<div class="naowee-menu__list">' + items + '</div>';
+
+      // Bottom slot (button) for multiple
+      var bottomSlot = '';
+      if (type === 'multiple') {
+        bottomSlot = '<div class="naowee-menu__bottom-slot"><button class="naowee-menu__footer-btn">Label</button></div>';
+      }
+
+      return '<div class="' + cls.join(' ') + '">' + topSlot + list + bottomSlot + '</div>';
+    }
+  },
+
+  'input-stepper': {
+    id:'input-stepper', label:'Input Stepper', desc:'Stepper numérico +/- interactivo', tag:'figma',
+    controls: [
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Active',v:'active'},{l:'Caution',v:'caution'},
+        {l:'Error',v:'error'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      { type:'text', label:'Value', prop:'value', default:'1' },
+      { type:'text', label:'Complementary', prop:'comp', default:'un.' },
+      { type:'text', label:'Label', prop:'label', default:'Cantidad' },
+      { type:'text', label:'Helper', prop:'helper', default:'Helper text' },
+      { type:'toggle', label:'Show label', prop:'showLabel' },
+      { type:'toggle', label:'Show helper', prop:'showHelper' },
+    ],
+    render(s) {
+      var cls = ['naowee-input-stepper'];
+      if (s.size === 'small') cls.push('naowee-input-stepper--small');
+      if (s.state) cls.push('naowee-input-stepper--' + s.state);
+      var minusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+      var plusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+      var dis = s.state === 'disabled';
+      var val = parseInt(s.value) || 0;
+      var minusDisabled = dis || val <= 0;
+      var plusDisabled = dis;
+      var minusBtnCls = 'naowee-input-stepper__btn' + (minusDisabled ? ' naowee-input-stepper__btn--disabled' : '');
+      var plusBtnCls = 'naowee-input-stepper__btn' + (plusDisabled ? ' naowee-input-stepper__btn--disabled' : '');
+      var label = s.showLabel ? '<label class="naowee-input-stepper__label">' + s.label + '</label>' : '';
+      var comp = s.comp ? '<span class="naowee-input-stepper__value-comp">' + s.comp + '</span>' : '';
+      var minusClick = minusDisabled ? '' : ' onclick="stepperChange(\'input-stepper\',-1)"';
+      var plusClick = plusDisabled ? '' : ' onclick="stepperChange(\'input-stepper\',1)"';
+      var inputAttrs = dis ? ' disabled' : '';
+      var helper = '';
+      if (s.showHelper) {
+        if (s.state === 'error') {
+          helper = '<div class="naowee-textfield__assistance"><span class="naowee-helper naowee-helper--negative naowee-helper--loud"><span class="naowee-helper__badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="#c4031d"/><path d="M3.75 6h4.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg></span>' + s.helper + '</span></div>';
+        } else if (s.state === 'caution') {
+          helper = '<div class="naowee-textfield__assistance"><span class="naowee-helper naowee-helper--caution naowee-helper--loud"><span class="naowee-helper__badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="#d74009"/><path d="M5.25 3.75h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="8.25" r=".75" fill="#fff"/></svg></span>' + s.helper + '</span></div>';
+        } else {
+          helper = '<div class="naowee-textfield__assistance"><span class="naowee-helper naowee-helper--informative">' + s.helper + '</span></div>';
+        }
+      }
+      return '<div class="' + cls.join(' ') + '" style="width:320px">' + label +
+        '<div class="naowee-input-stepper__content"><div class="naowee-input-stepper__input">' +
+          '<button class="' + minusBtnCls + '"' + minusClick + '>' + minusIcon + '</button>' +
+          '<div class="naowee-input-stepper__value"><input type="number" class="naowee-input-stepper__value-input" value="' + val + '" min="0" oninput="stepperInput(this)"' + inputAttrs + '>' + comp + '</div>' +
+          '<button class="' + plusBtnCls + '"' + plusClick + '>' + plusIcon + '</button>' +
+        '</div></div>' + helper + '</div>';
+    }
+  },
+
+  'segmented-control': {
+    id:'segmented-control', label:'Segmented Control', desc:'Selector de opciones mutuamente excluyentes', tag:'figma',
+    controls: [
+      { type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { type:'select', label:'Configuration', prop:'config', options:[
+        {l:'Text',v:'text'},{l:'Icon + Text',v:'icon-text'},{l:'Icon',v:'icon'},{l:'Thumbnail + Text',v:'thumb-text'}
+      ], default:0 },
+      { type:'toggle', label:'Proportional', prop:'proportional' },
+      { type:'select', label:'Active', prop:'active', options:[
+        {l:'Item 1',v:'0'},{l:'Item 2',v:'1'},{l:'Item 3',v:'2'},{l:'Item 4',v:'3'},{l:'Item 5',v:'4'}
+      ], default:0 },
+    ],
+    render(s) {
+      var cls = ['naowee-segment'];
+      if (s.size === 'small') cls.push('naowee-segment--small');
+      if (s.proportional) cls.push('naowee-segment--proportional');
+      var labels = ['Label','Label','Label','Label','Label'];
+      var active = parseInt(s.active);
+      var iconSz = s.size === 'small' ? 16 : 20;
+      return '<div class="' + cls.join(' ') + '" style="' + (s.proportional ? 'width:380px' : '') + '">' + labels.map(function(lbl,i){
+        var actCls = i === active ? ' naowee-segment__item--active' : '';
+        var content = '';
+        if (s.config === 'icon-text') content = naoIcon('image', iconSz) + lbl;
+        else if (s.config === 'icon') content = naoIcon('image', iconSz);
+        else if (s.config === 'thumb-text') content = '<span class="naowee-segment__thumb"></span>' + lbl;
+        else content = lbl;
+        return '<button class="naowee-segment__item' + actCls + '">' + content + '</button>';
+      }).join('') + '</div>';
+    }
+  },
+
+  shortcuts: {
+    id:'shortcuts', label:'Shortcuts', desc:'Accesos rapidos seleccionables', tag:'custom',
+    controls: [],
+    render() {
+      return '<div class="naowee-shortcuts"><button class="naowee-shortcut naowee-shortcut--selected">All</button><button class="naowee-shortcut">Recent</button><button class="naowee-shortcut">Favorites</button></div>';
+    }
+  },
+
+  'date-picker': {
+    id:'date-picker', label:'Date Picker', desc:'Calendario con selección single/range/multiple + field', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'View', prop:'view', options:[
+        {l:'Calendar',v:'calendar'},{l:'Field',v:'field'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Selection', prop:'selection', options:[
+        {l:'Single',v:'single'},{l:'Range',v:'range'},{l:'Multiple',v:'multiple'}
+      ], default:0,
+        showIf: function(s){ return (s.view || 'calendar') === 'calendar'; } },
+      { section:'Variant', type:'select', label:'Week start', prop:'weekstart', options:[
+        {l:'Monday',v:'mon'},{l:'Sunday',v:'sun'}
+      ], default:0,
+        showIf: function(s){ return (s.view || 'calendar') === 'calendar'; } },
+      /* ── Field only ── */
+      { section:'Field', type:'toggle', label:'Show label', prop:'showLabel', cls:'show-label',
+        showIf: function(s){ return s.view === 'field'; } },
+      { section:'Field', type:'toggle', label:'Show helper', prop:'showHelper', cls:'show-helper',
+        showIf: function(s){ return s.view === 'field'; } },
+      { section:'Field', type:'text', label:'Value', prop:'fieldValue', default:'16 de Junio de 2025',
+        showIf: function(s){ return s.view === 'field'; } },
+    ],
+    render(s) {
+      var chevL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+      var chevR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+      var chevDown = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+      if (s.view === 'field') {
+        var calIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+        var labelHtml = s.showLabel ? '<label class="naowee-textfield__label">Label</label>' : '';
+        var helperHtml = s.showHelper ? '<div class="naowee-helper"><span class="naowee-helper__text"><span>Helper text</span></span></div>' : '';
+        return '<div class="naowee-datepicker-field" style="width:380px">' + labelHtml + '<div class="naowee-datepicker-field__input"><span class="naowee-datepicker-field__icon">' + calIcon + '</span><span class="naowee-datepicker-field__value">' + (s.fieldValue || '16 de Junio de 2025') + '</span><div class="naowee-datepicker-field__controls"><button class="naowee-datepicker-field__clear">' + naoIcon('close',20) + '</button><span class="naowee-datepicker-field__chevron">' + chevDown + '</span></div></div>' + helperHtml + '</div>';
+      }
+      /* Calendar view — dynamic with days/months/years toggle */
+      var MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      var MONTH_DAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+      var curMonth = typeof s._month === 'number' ? s._month : 5; /* 0-indexed, default June */
+      var curYear = s._year || 2025;
+      var calView = s._calView || 'days';
+      var chevUp = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+      var headerChev = calView === 'days' ? chevDown : chevUp;
+      var headerTitle = calView === 'years' ? curYear : MONTH_NAMES[curMonth] + ' de ' + curYear;
+      var header = '<div class="naowee-datepicker__header"><div class="naowee-datepicker__month-selector" onclick="calendarToggleView()"><span class="naowee-datepicker__month">' + headerTitle + '</span><span class="naowee-datepicker__month-chevron">' + headerChev + '</span></div>';
+      if (calView === 'days') {
+        header += '<div class="naowee-datepicker__controls"><button class="naowee-datepicker__nav" onclick="calendarNav(-1)">' + chevL + '</button><button class="naowee-datepicker__nav" onclick="calendarNav(1)">' + chevR + '</button></div>';
+      }
+      header += '</div>';
+
+      var body = '';
+      if (calView === 'months') {
+        body = '<div class="naowee-datepicker__month-grid">';
+        MONTH_NAMES.forEach(function(m, i) {
+          var sel = i === curMonth ? ' naowee-datepicker__month-item--selected' : '';
+          body += '<button class="naowee-datepicker__month-item' + sel + '" onclick="calendarSelectMonth(' + i + ')">' + m + '</button>';
+        });
+        body += '</div>';
+      } else if (calView === 'years') {
+        var startY = curYear - (curYear % 4) - 4;
+        body = '<div class="naowee-datepicker__month-grid">';
+        for (var yi = 0; yi < 12; yi++) {
+          var y = startY + yi;
+          var sel = y === curYear ? ' naowee-datepicker__month-item--selected' : '';
+          body += '<button class="naowee-datepicker__month-item' + sel + '" onclick="calendarSelectYear(' + y + ')">' + y + '</button>';
+        }
+        body += '</div>';
+      } else {
+        /* Days grid */
+        var wkdays = s.weekstart === 'sun' ? ['Dom','Lun','Mar','Mié','Jue','Vie','Sab'] : ['Lun','Mar','Mié','Jue','Vie','Sab','Dom'];
+        var daysInMonth = MONTH_DAYS[curMonth];
+        if (curMonth === 1 && curYear % 4 === 0) daysInMonth = 29;
+        var firstDay = new Date(curYear, curMonth, 1).getDay();
+        var startOffset = s.weekstart === 'sun' ? firstDay : (firstDay === 0 ? 6 : firstDay - 1);
+        var prevMonth = curMonth === 0 ? 11 : curMonth - 1;
+        var prevDays = MONTH_DAYS[prevMonth];
+
+        var all = [];
+        for (var pi = startOffset - 1; pi >= 0; pi--) all.push({d: prevDays - pi, other: true});
+        for (var ci = 1; ci <= daysInMonth; ci++) all.push({d: ci, other: false});
+        var remaining = 42 - all.length;
+        for (var ni = 1; ni <= remaining; ni++) all.push({d: ni, other: true});
+
+        var wkHtml = '<div class="naowee-datepicker__week">' + wkdays.map(function(w){return '<span class="naowee-datepicker__weekday">' + w + '</span>';}).join('') + '</div>';
+        var weeksHtml = '';
+        for (var w = 0; w < 6; w++) {
+          weeksHtml += '<div class="naowee-datepicker__week">';
+          for (var di = 0; di < 7; di++) {
+            var cell = all[w * 7 + di];
+            var cls = 'naowee-datepicker__day';
+            if (cell.other) cls += ' naowee-datepicker__day--other-month';
+            else if (s.selection === 'single') {
+              if (cell.d === (s._selectedDay || 16)) cls += ' naowee-datepicker__day--selected';
+            } else if (s.selection === 'range') {
+              var rs = s._rangeStart || 8, re = s._rangeEnd || 18;
+              if (cell.d === rs) cls += ' naowee-datepicker__day--range-start';
+              else if (re && cell.d === re) cls += ' naowee-datepicker__day--range-end';
+              else if (re && cell.d > rs && cell.d < re) cls += ' naowee-datepicker__day--in-range';
+            } else if (s.selection === 'multiple') {
+              var md = s._multiDays || [2,15,16,21,26];
+              if (md.indexOf(cell.d) !== -1) cls += ' naowee-datepicker__day--selected';
+            }
+            /* Today */
+            var today = new Date();
+            if (cell.d === today.getDate() && curMonth === today.getMonth() && curYear === today.getFullYear() && !cell.other) cls += ' naowee-datepicker__day--today';
+            weeksHtml += '<button class="' + cls + '" onclick="calendarDayClick(this)">' + cell.d + '</button>';
+          }
+          weeksHtml += '</div>';
+        }
+        body = '<div class="naowee-datepicker__content">' + wkHtml + weeksHtml + '</div>';
+      }
+      return '<div class="naowee-datepicker"><div class="naowee-datepicker__calendar">' + header + body + '</div></div>';
+    }
+  },
+
+  'time-picker': {
+    id:'time-picker', label:'Time Picker', desc:'Time picker con granular (free) e intervals (dropdown)', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Type', prop:'type', options:[
+        {l:'Granular',v:'granular'},{l:'Intervals',v:'intervals'}
+      ], default:1 },
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Large',v:''},{l:'Small',v:'small'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Format', prop:'format', options:[
+        {l:'24 h',v:'24'},{l:'12 h',v:'12'}
+      ], default:1 },
+      { section:'Variant', type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Open',v:'open'},{l:'Error',v:'error'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      /* ── Label & Helper ── */
+      { section:'Label & Helper', type:'toggle', label:'Show label', prop:'showLabel', cls:'show-label' },
+      { section:'Label & Helper', type:'text', label:'Label', prop:'label', default:'Label',
+        showIf: function(s){ return s.showLabel; } },
+      { section:'Label & Helper', type:'select', label:'Helper type', prop:'helperType', options:[
+        {l:'None',v:'none'},{l:'Default',v:''},{l:'Caution',v:'caution'},{l:'Negative',v:'negative'}
+      ], default:1 },
+      { section:'Label & Helper', type:'text', label:'Helper text', prop:'helperText', default:'Helper text',
+        showIf: function(s){ return s.helperType !== 'none'; } },
+    ],
+    render(s) {
+      var type = s.type || 'intervals';
+      var format = s.format || '12';
+      var cls = ['naowee-timepicker'];
+      if (s.size === 'small') cls.push('naowee-timepicker--small');
+      if (s.state === 'open') cls.push('naowee-timepicker--open');
+      if (s.state === 'error') cls.push('naowee-timepicker--error');
+      if (s.state === 'disabled') cls.push('naowee-timepicker--disabled');
+
+      var iconClock = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+      var iconChev = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+      // Placeholder value
+      var placeholder = format === '24' ? '00:00' : '1:00 pm';
+
+      // Chevron (only intervals)
+      var chevron = type === 'intervals' ? '<span class="naowee-timepicker__chevron">' + iconChev + '</span>' : '';
+
+      // Field (trigger)
+      var interactive = (s.state !== 'disabled' && type === 'intervals') ? ' onclick="timepickerToggle(this, event)"' : '';
+      var field = '<div class="naowee-timepicker__field"' + interactive + '>' +
+        '<span class="naowee-timepicker__clock">' + iconClock + '</span>' +
+        '<span class="naowee-timepicker__value">' + placeholder + '</span>' +
+        chevron +
+      '</div>';
+
+      // Dropdown menu (only intervals)
+      var menu = '';
+      if (type === 'intervals') {
+        var options = format === '24'
+          ? ['01:00','02:00','03:00','04:00','05:00','06:00']
+          : ['2:00 pm','3:00 pm','4:00 pm','5:00 pm','6:00 pm','7:00 pm'];
+        var menuItems = options.map(function(o, i){
+          return '<div class="naowee-timepicker__option' + (i === 0 && s.state === 'open' ? '' : '') + '" onclick="timepickerSelect(this, event)">' + o + '</div>';
+        }).join('');
+        menu = '<div class="naowee-timepicker__menu">' + menuItems + '</div>';
+      }
+
+      // Label
+      var label = s.showLabel ? '<span class="naowee-timepicker__label">' + s.label + '</span>' : '';
+
+      // Helper
+      var helper = '';
+      if (s.helperType !== 'none') {
+        var helperCls = 'naowee-helper';
+        var effective = s.helperType;
+        if (s.state === 'error') effective = 'negative';
+        if (s.state === 'disabled') effective = 'disabled';
+        if (effective) helperCls += ' naowee-helper--' + effective;
+        var badgeSvg = {
+          'caution': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+          'negative': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+          'disabled': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+        };
+        var badge = badgeSvg[effective] ? '<span class="naowee-helper__badge">' + badgeSvg[effective] + '</span>' : '';
+        helper = '<div class="' + helperCls + '"><span class="naowee-helper__text">' + badge + '<span>' + s.helperText + '</span></span></div>';
+      }
+
+      return '<div class="' + cls.join(' ') + '" style="width:200px">' + label + field + menu + helper + '</div>';
+    }
+  },
+
+  'file-uploader': {
+    id:'file-uploader', label:'File Uploader', desc:'Carga de archivos con estados: idle, loading, uploaded, confirmed, readonly', tag:'figma',
+    controls: [
+      { type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:'idle'},{l:'Loading',v:'loading'},{l:'Uploaded',v:'uploaded'},
+        {l:'Confirmed',v:'confirmed'},{l:'Read only',v:'readonly'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      { type:'text', label:'Label', prop:'label', default:'Cargar formato' },
+      { type:'text', label:'File name', prop:'filename', default:'Formato_afiliacion-deportiva.pdf' },
+      { type:'text', label:'Helper', prop:'helper', default:'Formato del archivo debe ser jpg, png, pdf un max de 5MB' },
+      { type:'toggle', label:'Required', prop:'required' },
+      { type:'toggle', label:'Show helper', prop:'showHelper' },
+    ],
+    render(s) {
+      var cls = ['naowee-file-uploader'];
+      if (s.state === 'disabled') cls.push('naowee-file-uploader--disabled');
+      if (s.state === 'readonly') cls.push('naowee-file-uploader--readonly');
+      var reqCls = s.required ? ' naowee-file-uploader__label--required' : '';
+      var label = '<label class="naowee-file-uploader__label' + reqCls + '">' + s.label + '</label>';
+      var fileIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+      var helper = '';
+      if (s.showHelper && s.state !== 'readonly') {
+        if (s.state === 'loading') {
+          helper = '<div class="naowee-textfield__assistance"><span class="naowee-helper naowee-helper--informative"><span class="naowee-helper__badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="#006aff"/><path d="M5.25 5.25h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="3.75" r=".75" fill="#fff"/></svg></span>Analizando con IA en paralelo. Esto puede tardar unos segundos.</span></div>';
+        } else {
+          helper = '<div class="naowee-textfield__assistance"><span class="naowee-helper naowee-helper--informative">' + s.helper + '</span></div>';
+        }
+      }
+      var content = '';
+      if (s.state === 'idle') {
+        content = '<div class="naowee-file-uploader__input-wrap"><span class="naowee-file-uploader__placeholder">Seleccionar</span><button class="naowee-file-uploader__action">Subir archivo</button></div>';
+      } else if (s.state === 'loading') {
+        content = '<div class="naowee-file-uploader__input-wrap"><span class="naowee-file-uploader__file-tag">' + fileIcon + ' ' + s.filename + '</span><span style="flex:1"></span><div class="naowee-file-uploader__progress"><div class="naowee-file-uploader__progress-ring"></div><span class="naowee-file-uploader__progress-text">50</span></div></div>';
+      } else if (s.state === 'uploaded') {
+        content = '<div class="naowee-file-uploader__input-wrap"><span class="naowee-file-uploader__file-tag naowee-file-uploader__file-tag--uploaded">' + fileIcon + ' ' + s.filename + '<button class="naowee-file-uploader__file-dismiss" style="display:flex">' + naoIcon('close', 12) + '</button></span></div>';
+      } else if (s.state === 'confirmed' || s.state === 'disabled') {
+        content = '<div class="naowee-file-uploader__input-wrap"><span class="naowee-file-uploader__file-tag naowee-file-uploader__file-tag--confirmed">' + fileIcon + ' ' + s.filename + '</span></div>';
+      } else if (s.state === 'readonly') {
+        var previewIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+        content = '<div class="naowee-file-uploader__input-wrap"><span class="naowee-file-uploader__file-tag naowee-file-uploader__file-tag--confirmed">' + fileIcon + ' ' + s.filename + '</span><span style="flex:1"></span><span class="naowee-file-uploader__preview">' + previewIcon + ' Previsualizar formato</span></div>';
+      }
+      return '<div class="' + cls.join(' ') + '" style="width:420px">' + label + content + helper + '</div>';
+    }
+  },
+
+  helper: {
+    id:'helper', label:'Helper Text', desc:'Texto de ayuda contextual con badge icon', tag:'figma',
+    controls: [
+      { type:'select', label:'Color', prop:'color', options:[
+        {l:'Informative',v:'informative'},{l:'Positive',v:'positive'},
+        {l:'Caution',v:'caution'},{l:'Negative',v:'negative'}
+      ], default:0 },
+      { type:'select', label:'Hierarchy', prop:'hierarchy', options:[
+        {l:'Quiet',v:'quiet'},{l:'Loud',v:'loud'}
+      ], default:0 },
+      { type:'text', label:'Text', prop:'text', default:'Helper text' },
+    ],
+    render(s) {
+      var cls = ['naowee-helper'];
+      if (s.color !== 'informative') cls.push('naowee-helper--' + s.color);
+      else cls.push('naowee-helper--informative');
+      if (s.hierarchy === 'loud') cls.push('naowee-helper--loud');
+      /* Badge icons per color */
+      var badgeIcons = {
+        informative: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-informative-loud,#006aff)"/><path d="M5.25 5.25h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="3.75" r=".75" fill="#fff"/></svg>',
+        positive: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-positive-loud,#1f8923)"/><path d="M4.5 6l1.2 1.2L8 5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+        caution: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-caution-loud,#d74009)"/><path d="M5.25 3.75h1.5v3h-1.5z" fill="#fff"/><circle cx="6" cy="8.25" r=".75" fill="#fff"/></svg>',
+        negative: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-negative-loud,#c4031d)"/><path d="M3.75 6h4.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>'
+      };
+      var badge = '<span class="naowee-helper__badge">' + badgeIcons[s.color] + '</span>';
+      return '<span class="' + cls.join(' ') + '">' + badge + s.text + '</span>';
+    }
+  },
+
+  'list-row': {
+    id:'list-row', label:'List Row', desc:'Fila con 5 variantes: default, chevron, checkbox, radio, pick', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Type', prop:'rowType', options:[
+        {l:'Default',v:'default'},{l:'Chevron',v:'chevron'},
+        {l:'Checkbox',v:'checkbox'},{l:'Radio',v:'radio'},{l:'Pick',v:'pick'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Size', prop:'size', options:[
+        {l:'Medium',v:''},{l:'Small',v:'small'},{l:'Large',v:'large'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'State', prop:'state', options:[
+        {l:'Idle',v:''},{l:'Hover',v:'hover'},{l:'Disabled',v:'disabled'}
+      ], default:0 },
+      { section:'Variant', type:'toggle', label:'Selected', prop:'selected', cls:'selected',
+        showIf: function(s){ return s.rowType === 'checkbox' || s.rowType === 'radio' || s.rowType === 'pick'; } },
+      /* ── Content ── */
+      { section:'Content', type:'select', label:'Left content', prop:'media', options:[
+        {l:'None',v:'none'},{l:'Icon',v:'icon'},{l:'Thumbnail',v:'thumbnail'},{l:'Avatar',v:'avatar'}
+      ], default:1 },
+      { section:'Content', type:'text', label:'Title', prop:'title', default:'Title' },
+      { section:'Content', type:'toggle', label:'Show description', prop:'showDescription', cls:'show-description' },
+      { section:'Content', type:'text', label:'Description', prop:'description', default:'Description',
+        showIf: function(s){ return s.showDescription; } },
+      /* ── Extras ── */
+      { section:'Extras', type:'toggle', label:'Show top right', prop:'showTopRight', cls:'show-top-right' },
+      { section:'Extras', type:'text', label:'Top right text', prop:'topRight', default:'⌘K',
+        showIf: function(s){ return s.showTopRight; } },
+      { section:'Extras', type:'toggle', label:'Show bottom right', prop:'showBottomRight', cls:'show-bottom-right',
+        showIf: function(s){ return s.showDescription; } },
+      { section:'Extras', type:'text', label:'Bottom right text', prop:'bottomRight', default:'extra',
+        showIf: function(s){ return s.showDescription && s.showBottomRight; } },
+      { section:'Extras', type:'toggle', label:'Show divider', prop:'showDivider', cls:'show-divider' },
+      { section:'Extras', type:'toggle', label:'Show bottom slot', prop:'showBottomSlot', cls:'show-bottom-slot' },
+    ],
+    render(s) {
+      return '<div style="width:380px">' + window.renderListRow(s) + '</div>';
+    }
+  },
+
+  'view-indicator': {
+    id:'view-indicator', label:'View Indicator', desc:'Glass pill con dots para paginación (horizontal/vertical)', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Layout', prop:'layout', options:[
+        {l:'Horizontal',v:'horizontal'},{l:'Vertical',v:'vertical'}
+      ], default:0 },
+      { section:'Variant', type:'select', label:'Pages', prop:'pages', options:[
+        {l:'2',v:'2'},{l:'3',v:'3'},{l:'4',v:'4'},{l:'5',v:'5'},{l:'6',v:'6'},
+        {l:'+6 first',v:'6+first'},{l:'+6 middle',v:'6+middle'},{l:'+6 last',v:'6+last'}
+      ], default:3 },
+      { section:'Variant', type:'range', label:'Active page', prop:'active', min:0, max:5, default:1 },
+    ],
+    render(s) {
+      var layout = s.layout || 'horizontal';
+      var pagesOption = s.pages || '5';
+      var cls = ['naowee-view-indicator', 'naowee-view-indicator--' + layout];
+      var dots = '';
+      // Collapsed patterns for >6 pages
+      if (pagesOption === '6+first' || pagesOption === '6+middle' || pagesOption === '6+last') {
+        var collapseMap = {
+          '6+first':  [{a:true},{},{s:'sm'},{s:'xs'},{s:'xs'}],
+          '6+middle': [{s:'xs'},{s:'sm'},{a:true},{s:'sm'},{s:'xs'}],
+          '6+last':   [{s:'xs'},{s:'xs'},{s:'sm'},{},{a:true}],
+        };
+        collapseMap[pagesOption].forEach(function(d){
+          var dc = 'naowee-view-indicator__dot';
+          if (d.a) dc += ' naowee-view-indicator__dot--active';
+          if (d.s === 'sm') dc += ' naowee-view-indicator__dot--shrink-sm';
+          if (d.s === 'xs') dc += ' naowee-view-indicator__dot--shrink-xs';
+          dots += '<span class="' + dc + '"></span>';
+        });
+      } else {
+        var count = parseInt(pagesOption);
+        var active = Math.min(parseInt(s.active), count - 1);
+        for (var i = 0; i < count; i++) {
+          dots += '<span class="naowee-view-indicator__dot' + (i === active ? ' naowee-view-indicator__dot--active' : '') + '"></span>';
+        }
+      }
+      // Put indicator on a dark bg so the glass pill is visible
+      return '<div style="padding:24px;background:#282834;border-radius:12px;display:inline-flex"><div class="' + cls.join(' ') + '">' + dots + '</div></div>';
+    }
+  },
+
+  table: {
+    id:'table', label:'Table', desc:'Tabla de datos', tag:'figma',
+    controls: [
+      { type:'select', label:'Variant', prop:'variant', options:[
+        {l:'Default',v:''},{l:'Borderless',v:'naowee-table--borderless'},
+        {l:'Striped',v:'naowee-table--striped'},{l:'Compact',v:'naowee-table--compact'}
+      ], default:0 },
+      { type:'toggle', label:'Sticky header', prop:'sticky', cls:'naowee-table--sticky-header' },
+    ],
+    render(s) {
+      const cls = ['naowee-table', s.variant, s.sticky].filter(Boolean).join(' ');
+      return '<div class="naowee-table-wrap" style="width:480px"><table class="' + cls + '"><thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead><tbody><tr><td>Ana Garcia</td><td>Coordinator</td><td><span class="naowee-badge naowee-badge--positive naowee-badge--small">Active</span></td></tr><tr><td>Carlos Lopez</td><td>Digitador</td><td><span class="naowee-badge naowee-badge--caution naowee-badge--small">Pending</span></td></tr><tr><td>Maria Torres</td><td>Admin</td><td><span class="naowee-badge naowee-badge--neutral naowee-badge--small">Inactive</span></td></tr></tbody></table></div>';
+    }
+  },
+
+  modal: {
+    id:'modal', label:'Modal', desc:'Diálogo modal con header, body, footer y scroll opcional', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'Width', prop:'width', options:[
+        {l:'Default (480)',v:''},{l:'Wide (800)',v:'wide'}
+      ], default:0 },
+      { section:'Variant', type:'toggle', label:'Fixed header (sticky)', prop:'fixedHeader', cls:'fixed-header' },
+      { section:'Variant', type:'toggle', label:'Fixed footer (sticky)', prop:'fixedFooter', cls:'fixed-footer' },
+      { section:'Variant', type:'toggle', label:'Scrollable content', prop:'scrollable', cls:'scrollable' },
+      /* ── Header ── */
+      { section:'Header', type:'toggle', label:'Show dismiss', prop:'showDismiss', cls:'show-dismiss' },
+      { section:'Header', type:'toggle', label:'Show pagination', prop:'showPagination', cls:'show-pagination',
+        showIf: function(s){ return s.fixedHeader; } },
+      { section:'Header', type:'text', label:'Pagination text', prop:'pagination', default:'1 de 7',
+        showIf: function(s){ return s.fixedHeader && s.showPagination; } },
+      { section:'Header', type:'text', label:'Title', prop:'title', default:'Modal title' },
+      /* ── Body ── */
+      { section:'Body', type:'select', label:'Body layout', prop:'bodyLayout', options:[
+        {l:'Default (left)',v:'default'},{l:'Centered',v:'centered'},{l:'With thumbnail',v:'thumbnail'}
+      ], default:0 },
+      { section:'Body', type:'text', label:'Body text', prop:'body', default:'This text is a replaceable instance. You can put in here almost any type of content. Please check the component documentation for further guidance.' },
+      /* ── Footer ── */
+      { section:'Footer', type:'toggle', label:'Show footer', prop:'showFooter', cls:'show-footer' },
+      { section:'Footer', type:'select', label:'Buttons', prop:'buttonCount', options:[
+        {l:'1 button',v:'1'},{l:'2 buttons',v:'2'}
+      ], default:0,
+        showIf: function(s){ return s.showFooter; } },
+      { section:'Footer', type:'select', label:'Footer alignment', prop:'footerAlign', options:[
+        {l:'Start',v:''},{l:'End',v:'end'},{l:'Center',v:'center'},{l:'Spread',v:'spread'}
+      ], default:0,
+        showIf: function(s){ return s.showFooter; } },
+      { section:'Footer', type:'text', label:'Primary label', prop:'primaryLabel', default:'Label',
+        showIf: function(s){ return s.showFooter; } },
+      { section:'Footer', type:'text', label:'Secondary label', prop:'secondaryLabel', default:'Label',
+        showIf: function(s){ return s.showFooter && s.buttonCount === '2'; } },
+    ],
+    render(s) {
+      var cls = ['naowee-modal'];
+      if (s.width === 'wide') cls.push('naowee-modal--wide');
+      if (s.fixedHeader) cls.push('naowee-modal--fixed-header');
+      if (s.fixedFooter) cls.push('naowee-modal--fixed-footer');
+      if (s.scrollable || s.fixedHeader || s.fixedFooter) cls.push('naowee-modal--scrollable');
+      if (s.bodyLayout === 'centered' || s.bodyLayout === 'thumbnail') cls.push('naowee-modal--centered');
+
+      var iconClose = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      var iconImage = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+      var iconInfo = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="11" x2="8" y2="7"/><line x1="8" y1="5" x2="8.01" y2="5"/></svg>';
+
+      // Header
+      var pagination = (s.fixedHeader && s.showPagination) ? '<span class="naowee-modal__pagination">' + s.pagination + '</span>' : '';
+      var dismiss = s.showDismiss !== false ? '<button class="naowee-modal__dismiss" aria-label="Close">' + iconClose + '</button>' : '';
+      var header = '<div class="naowee-modal__header">' +
+        '<div class="naowee-modal__title-group">' + pagination +
+          '<h2 class="naowee-modal__title">' + s.title + '</h2>' +
+        '</div>' + dismiss +
+      '</div>';
+
+      // Body
+      var bodyInner = '';
+      if (s.bodyLayout === 'thumbnail') {
+        bodyInner = '<div class="naowee-modal__centered">' +
+          '<div style="position:relative;width:80px;height:80px;border-radius:9999px;border:2px solid var(--naowee-color-border-primary);display:flex;align-items:center;justify-content:center">' +
+            '<span style="width:32px;height:32px;color:var(--naowee-color-text-primary)">' + iconImage + '</span>' +
+            '<span style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:9999px;background:var(--naowee-color-feedback-fill-informative-loud);color:#fff;display:flex;align-items:center;justify-content:center">' + iconInfo + '</span>' +
+          '</div>' +
+          '<h2 class="naowee-modal__title">' + s.title + '</h2>' +
+          '<p>' + s.body + '</p>' +
+        '</div>';
+      } else if (s.bodyLayout === 'centered') {
+        bodyInner = '<div class="naowee-modal__centered"><p>' + s.body + '</p></div>';
+      } else if (s.scrollable || s.fixedHeader) {
+        // Long content for scroll demo
+        bodyInner = '<p><strong>Actualización de términos y condiciones</strong></p>' +
+          '<p>' + s.body + '</p>' +
+          '<ul>' +
+            '<li>El Marketplace es una plataforma de comercio electrónico donde las Personas Usuarias pueden vender y comprar productos usando distintas soluciones de pago y envío.</li>' +
+            '<li>En Marketplace VIS, conectamos a las personas interesadas en realizar transacciones con vehículos, inmuebles y servicios con posibles vendedores.</li>' +
+            '<li>Mercado Pago es una plataforma de pagos y cobros que puede ser usada tanto para operaciones realizadas dentro del Marketplace como fuera de él.</li>' +
+            '<li>Mercado Envíos es la herramienta tecnológica que ofrecemos para que las Personas Usuarias puedan enviar y recibir sus compras hechas en sitios o aplicaciones que utilicen la tecnología de Mercado Libre.</li>' +
+            '<li>También ofrecemos otros servicios como Mercado Shops, Mercado Ads, Mercado Créditos, entre muchos otros.</li>' +
+          '</ul>' +
+          '<p>Para poder operar en la plataforma todas las Personas Usuarias deberán aceptar los Términos y Condiciones, los anexos y la Declaración de Privacidad.</p>';
+      } else {
+        bodyInner = '<p>' + s.body + '</p>';
+      }
+      var body = '<div class="naowee-modal__body">' + bodyInner + '</div>';
+
+      // Footer
+      var footer = '';
+      if (s.showFooter) {
+        var alignCls = s.footerAlign ? ' naowee-modal__footer--' + s.footerAlign : '';
+        var primary = '<button class="naowee-btn naowee-btn--loud">' + (s.primaryLabel || 'Label') + '</button>';
+        var secondary = s.buttonCount === '2' ? '<button class="naowee-btn naowee-btn--link" style="background:transparent;color:var(--naowee-color-text-accent)">' + (s.secondaryLabel || 'Label') + '</button>' : '';
+        footer = '<div class="naowee-modal__footer' + alignCls + '">' + primary + secondary + '</div>';
+      }
+
+      // Wrap in dark bg to visualize on overlay
+      return '<div style="padding:32px;background:#282834;border-radius:12px;display:flex;align-items:center;justify-content:center;min-height:400px">' +
+        '<div class="' + cls.join(' ') + '" style="position:relative;animation:none">' +
+          header + body + footer +
+        '</div>' +
+      '</div>';
+    }
+  },
+
+  carousel: {
+    id:'carousel', label:'Carousel', desc:'Carrusel 412x216 con slots 320x216, arrows y view indicator', tag:'figma',
+    controls: [
+      /* ── Variant ── */
+      { section:'Variant', type:'select', label:'View count', prop:'viewCount', options:[
+        {l:'2',v:'2'},{l:'3',v:'3'},{l:'4',v:'4'},{l:'5',v:'5'},{l:'6',v:'6'}
+      ], default:2 },
+      { section:'Variant', type:'select', label:'Indicator', prop:'indicator', options:[
+        {l:'None',v:'none'},{l:'Inside',v:'inside'},{l:'Outside',v:'outside'}
+      ], default:2 },
+      { section:'Variant', type:'toggle', label:'Show controls', prop:'showControls', cls:'show-controls' },
+    ],
+    render(s) {
+      var count = parseInt(s.viewCount || '4');
+      var indicator = s.indicator || 'outside';
+      var slideColors = ['#FFEDC7','#E9F1FF','#D4F7D4','#FFD4E5','#E5D4FF','#FFE5D4'];
+      var slides = '';
+      for (var i = 0; i < count; i++) {
+        var bg = slideColors[i % slideColors.length];
+        slides += '<div class="naowee-carousel__slide" style="background:' + bg + '">Slide ' + (i + 1) + '</div>';
+      }
+      var iconL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+      var iconR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+      var arrows = s.showControls ? (
+        '<button class="naowee-carousel__nav naowee-carousel__nav--prev" onclick="carouselScroll(this,-1)">' + iconL + '</button>' +
+        '<button class="naowee-carousel__nav naowee-carousel__nav--next" onclick="carouselScroll(this,1)">' + iconR + '</button>'
+      ) : '';
+      // Build indicator
+      var dots = '';
+      for (var j = 0; j < count; j++) {
+        dots += '<span class="naowee-view-indicator__dot' + (j === 0 ? ' naowee-view-indicator__dot--active' : '') + '"></span>';
+      }
+      var indicatorHtml = '';
+      if (indicator === 'inside') {
+        indicatorHtml = '<div class="naowee-carousel__indicator-inside"><div class="naowee-view-indicator naowee-view-indicator--horizontal">' + dots + '</div></div>';
+      } else if (indicator === 'outside') {
+        indicatorHtml = '<div class="naowee-carousel__indicator-outside"><div class="naowee-view-indicator naowee-view-indicator--horizontal">' + dots + '</div></div>';
+      }
+      var insideIndicator = indicator === 'inside' ? indicatorHtml : '';
+      var outsideIndicator = indicator === 'outside' ? indicatorHtml : '';
+      return '<div class="naowee-carousel">' +
+        '<div class="naowee-carousel__viewport">' +
+          '<div class="naowee-carousel__track">' + slides + '</div>' +
+          arrows +
+          insideIndicator +
+        '</div>' +
+        outsideIndicator +
+      '</div>';
+    }
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   ENGINE — Routing, Controls, Rendering
+   ═══════════════════════════════════════════════════════════════ */
+
+var STATE = {};
+function getState(id) {
+  if (!STATE[id]) {
+    STATE[id] = {};
+    var comp = COMPONENTS[id];
+    if (comp) {
+      comp.controls.forEach(function(c) {
+        if (c.type === 'select') STATE[id][c.prop] = c.options[c.default || 0].v;
+        else if (c.type === 'toggle') STATE[id][c.prop] = false;
+        else if (c.type === 'text') STATE[id][c.prop] = c.default || '';
+        else if (c.type === 'range') STATE[id][c.prop] = c.default || 50;
+      });
+    }
+  }
+  return STATE[id];
+}
+
+/* ── Build sidebar nav ── */
+function buildSidebar() {
+  var nav = document.getElementById('pg-nav');
+  var html = '<div class="pg-nav-group" id="pg-group-foundations">' +
+    '<div class="pg-nav-group-header" onclick="toggleGroup(\'foundations\')">' +
+    '<span>Foundations</span>' + ICO.chevron + '</div><div class="pg-nav-group-items">';
+  FOUNDATIONS.forEach(function(f) {
+    html += '<div class="pg-nav-item" data-id="' + f.id + '" onclick="navigate(\'' + f.id + '\')"><span>' + f.label + '</span></div>';
+  });
+  html += '</div></div>';
+
+  var compKeys = Object.keys(COMPONENTS).sort(function(a,b){ return COMPONENTS[a].label.localeCompare(COMPONENTS[b].label); });
+  html += '<div class="pg-nav-group" id="pg-group-components">' +
+    '<div class="pg-nav-group-header" onclick="toggleGroup(\'components\')">' +
+    '<span>Components</span>' + ICO.chevron + '</div><div class="pg-nav-group-items">';
+  compKeys.forEach(function(k) {
+    html += '<div class="pg-nav-item" data-id="' + k + '" onclick="navigate(\'' + k + '\')"><span>' + COMPONENTS[k].label + '</span></div>';
+  });
+  html += '</div></div>';
+  nav.innerHTML = html;
+}
+
+function toggleGroup(name) {
+  document.getElementById('pg-group-' + name).classList.toggle('collapsed');
+}
+
+/* ── Search filter ── */
+document.getElementById('pg-search').addEventListener('input', function() {
+  var q = this.value.toLowerCase();
+  document.querySelectorAll('.pg-nav-item').forEach(function(el) {
+    var label = el.textContent.toLowerCase();
+    el.classList.toggle('hidden', q && !label.includes(q));
+  });
+  document.querySelectorAll('.pg-nav-group').forEach(function(g) {
+    if (q) g.classList.remove('collapsed');
+  });
+});
+
+/* ── Navigation ── */
+function navigate(id) { location.hash = id; }
+
+function onHashChange() {
+  var id = location.hash.slice(1) || 'colors';
+  document.querySelectorAll('.pg-nav-item').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.id === id);
+  });
+  var foundation = FOUNDATIONS.find(function(f){ return f.id === id; });
+  var comp = COMPONENTS[id];
+  var title = document.getElementById('pg-title');
+  var desc = document.getElementById('pg-desc');
+  if (foundation) {
+    title.textContent = foundation.label;
+    desc.textContent = foundation.desc;
+  } else if (comp) {
+    title.innerHTML = comp.label + (comp.tag === 'figma' ? '<span class="pg-tag-figma">Figma</span>' : '<span class="pg-tag-custom">Custom</span>');
+    desc.textContent = comp.desc;
+  }
+  renderSection(id);
+}
+
+/* ── Render section ── */
+function renderSection(id) {
+  var body = document.getElementById('pg-body');
+  var foundation = FOUNDATIONS.find(function(f){ return f.id === id; });
+  if (foundation) { body.innerHTML = renderFoundation(id); return; }
+  var comp = COMPONENTS[id];
+  if (!comp) { body.innerHTML = '<div class="pg-empty">Section not found</div>'; return; }
+  getState(id);
+  var html = '<div class="pg-component-layout">' +
+    '<div class="pg-preview-wrap" id="pg-preview">' + renderPreview(id) + '</div>';
+  if (comp.controls.length) {
+    html += '<div class="pg-controls"><div class="pg-controls-title">Properties</div>' + renderControls(id) + '</div>';
+  }
+  html += '</div><div class="pg-code-wrap"><div class="pg-code-bar"><span>HTML</span><button class="pg-copy-btn" onclick="copyCode()">Copy</button></div><pre class="pg-code" id="pg-code-output">' + escapeHtml(renderPreview(id)) + '</pre></div>';
+  body.innerHTML = html;
+}
+
+function renderPreview(id) {
+  var comp = COMPONENTS[id];
+  var state = getState(id);
+  var resolved = {};
+  comp.controls.forEach(function(c) {
+    if (c.type === 'toggle') resolved[c.prop] = state[c.prop] ? (c.cls || true) : '';
+    else resolved[c.prop] = state[c.prop];
+  });
+  /* Pass internal state props (prefixed with _) for interactive components */
+  Object.keys(state).forEach(function(k) {
+    if (k.charAt(0) === '_') resolved[k] = state[k];
+  });
+  return comp.render(resolved);
+}
+
+function renderControls(id) {
+  var comp = COMPONENTS[id];
+  var state = getState(id);
+  // Filter by showIf (function that returns false to hide)
+  var visible = comp.controls.filter(function(c) {
+    if (typeof c.showIf === 'function') {
+      try { return c.showIf(state); } catch (e) { return true; }
+    }
+    return true;
+  });
+  // Group by section; controls without section fall into the first default group
+  var groups = [];
+  var current = { section: null, items: [] };
+  groups.push(current);
+  visible.forEach(function(c) {
+    if (c.section && (!current.section || current.section !== c.section)) {
+      current = { section: c.section, items: [] };
+      groups.push(current);
+    }
+    current.items.push(c);
+  });
+  return groups.filter(function(g){ return g.items.length > 0; }).map(function(g) {
+    var header = g.section ? '<div class="pg-controls-section">' + g.section + '</div>' : '';
+    return header + g.items.map(function(c) {
+      if (c.type === 'select') {
+        var btns = c.options.map(function(o) {
+          return '<button class="pg-segmented-btn' + (state[c.prop]===o.v?' active':'') + '" data-comp="' + id + '" data-prop="' + c.prop + '" data-val="' + o.v + '" onclick="setSelect(this)">' + o.l + '</button>';
+        }).join('');
+        return '<div class="pg-control"><label class="pg-control-label">' + c.label + '</label><div class="pg-segmented">' + btns + '</div></div>';
+      }
+      if (c.type === 'toggle') {
+        var on = state[c.prop] ? ' on' : '';
+        return '<div class="pg-control"><div class="pg-toggle" data-comp="' + id + '" data-prop="' + c.prop + '" onclick="toggleCtrl(this)"><div class="pg-toggle-track' + on + '"></div><span class="pg-toggle-label">' + c.label + '</span></div></div>';
+      }
+      if (c.type === 'text') {
+        return '<div class="pg-control"><label class="pg-control-label">' + c.label + '</label><input type="text" value="' + state[c.prop] + '" data-comp="' + id + '" data-prop="' + c.prop + '" oninput="setTextCtrl(this)"></div>';
+      }
+      if (c.type === 'range') {
+        return '<div class="pg-control"><label class="pg-control-label">' + c.label + '</label><input type="range" min="' + c.min + '" max="' + c.max + '" value="' + state[c.prop] + '" data-comp="' + id + '" data-prop="' + c.prop + '" oninput="setRangeCtrl(this)"><div class="pg-range-val">' + state[c.prop] + '</div></div>';
+      }
+      return '';
+    }).join('');
+  }).join('');
+}
+
+/* Refresh controls panel (used when showIf conditions change) */
+function refreshControls(id) {
+  var panel = document.querySelector('.pg-controls');
+  if (!panel) return;
+  panel.innerHTML = '<div class="pg-controls-title">Properties</div>' + renderControls(id);
+}
+
+/* ── Control handlers ── */
+function setSelect(btn) {
+  STATE[btn.dataset.comp][btn.dataset.prop] = btn.dataset.val;
+  updatePreview(btn.dataset.comp);
+  refreshControls(btn.dataset.comp);
+}
+function toggleCtrl(el) {
+  STATE[el.dataset.comp][el.dataset.prop] = !STATE[el.dataset.comp][el.dataset.prop];
+  el.querySelector('.pg-toggle-track').classList.toggle('on');
+  updatePreview(el.dataset.comp);
+  refreshControls(el.dataset.comp);
+}
+function setTextCtrl(input) {
+  STATE[input.dataset.comp][input.dataset.prop] = input.value;
+  updatePreview(input.dataset.comp);
+}
+function setRangeCtrl(input) {
+  STATE[input.dataset.comp][input.dataset.prop] = input.value;
+  if (input.nextElementSibling) input.nextElementSibling.textContent = input.value;
+  updatePreview(input.dataset.comp);
+}
+function updatePreview(id) {
+  var preview = document.getElementById('pg-preview');
+  var code = document.getElementById('pg-code-output');
+  if (preview) {
+    var html = renderPreview(id);
+    preview.innerHTML = html;
+    if (code) code.textContent = html.trim();
+  }
+}
+function copyCode() {
+  var code = document.getElementById('pg-code-output');
+  if (code) {
+    navigator.clipboard.writeText(code.textContent);
+    var btn = document.querySelector('.pg-copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function(){ btn.textContent = 'Copy'; }, 1500);
+  }
+}
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Interactive component helpers ── */
+function stepperChange(id, delta) {
+  var val = parseInt(STATE[id].value || '0') + delta;
+  if (val < 0) val = 0;
+  STATE[id].value = String(val);
+  updatePreview(id);
+  var inp = document.querySelector('input[data-comp="' + id + '"][data-prop="value"]');
+  if (inp) inp.value = val;
+}
+function stepperInput(el) {
+  var id = 'input-stepper';
+  var val = parseInt(el.value) || 0;
+  if (val < 0) val = 0;
+  STATE[id].value = String(val);
+  updatePreview(id);
+  var inp = document.querySelector('input[data-comp="' + id + '"][data-prop="value"]');
+  if (inp) inp.value = val;
+}
+function paginationChange(id, delta) {
+  var val = parseInt(STATE[id].page || '1') + delta;
+  var max = parseInt(STATE[id].total || '20');
+  if (val < 1) val = 1; if (val > max) val = max;
+  STATE[id].page = String(val);
+  updatePreview(id);
+  var inp = document.querySelector('input[data-comp="' + id + '"][data-prop="page"]');
+  if (inp) inp.value = val;
+}
+function paginationInput(el) {
+  var id = el.dataset.comp;
+  var val = parseInt(el.value) || 1;
+  var max = parseInt(STATE[id].total || '20');
+  if (val < 1) val = 1; if (val > max) val = max;
+  STATE[id].page = String(val);
+}
+/* Live counter for textfield (helper counter) */
+function textfieldInput(el) {
+  var wrap = el.closest('.naowee-textfield');
+  if (!wrap) return;
+  var counter = wrap.querySelector('.naowee-helper__counter');
+  if (counter) {
+    var max = counter.dataset.max || '100';
+    counter.textContent = el.value.length + '/' + max;
+  }
+}
+/* Clear button handler */
+function textfieldClear(btn) {
+  var wrap = btn.closest('.naowee-textfield');
+  if (!wrap) return;
+  var input = wrap.querySelector('.naowee-textfield__input');
+  if (input) {
+    input.value = '';
+    input.focus();
+    textfieldInput(input);
+  }
+}
+/* Interactive switch toggle */
+function toggleSwitchInteractive(el, e) {
+  if (e) e.preventDefault();
+  if (el.classList.contains('naowee-switch--disabled')) return;
+  el.classList.toggle('naowee-switch--on');
+}
+/* Interactive checkbox toggle */
+function toggleCheckboxInteractive(el, e) {
+  if (e) e.preventDefault();
+  if (el.classList.contains('naowee-checkbox--disabled')) return;
+  if (el.classList.contains('naowee-checkbox--indeterminate')) {
+    el.classList.remove('naowee-checkbox--indeterminate');
+    el.classList.add('naowee-checkbox--checked');
+  } else {
+    el.classList.toggle('naowee-checkbox--checked');
+  }
+}
+/* Interactive radio toggle */
+function toggleRadioInteractive(el, e) {
+  if (e) e.preventDefault();
+  if (el.classList.contains('naowee-radio--disabled')) return;
+  el.classList.toggle('naowee-radio--selected');
+}
+/* Interactive searchbox collapse toggle */
+function toggleSearchboxCollapse(el) {
+  var box = el.closest('.naowee-searchbox');
+  if (box) box.classList.toggle('naowee-searchbox--collapsed');
+}
+/* Interactive dropdown toggle open/close */
+function dropdownToggleOpen(el, e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  var dd = el.closest('.naowee-dropdown');
+  if (!dd) return;
+  if (dd.classList.contains('naowee-dropdown--disabled') || dd.classList.contains('naowee-dropdown--readonly')) return;
+  // Close any other open dropdown
+  document.querySelectorAll('.naowee-dropdown--open').forEach(function(o) {
+    if (o !== dd) o.classList.remove('naowee-dropdown--open');
+  });
+  dd.classList.toggle('naowee-dropdown--open');
+}
+function dropdownSelectOption(el, e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  var dd = el.closest('.naowee-dropdown');
+  if (!dd) return;
+  // Update placeholder text to the selected option
+  var placeholder = dd.querySelector('.naowee-dropdown__placeholder');
+  if (placeholder) placeholder.textContent = el.textContent;
+  dd.classList.remove('naowee-dropdown--open');
+}
+/* Close dropdowns when clicking outside */
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.naowee-dropdown')) {
+    document.querySelectorAll('.naowee-dropdown--open').forEach(function(o) {
+      o.classList.remove('naowee-dropdown--open');
+    });
+  }
+});
+/* Time picker interactive toggle */
+function timepickerToggle(el, e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  var tp = el.closest('.naowee-timepicker');
+  if (!tp) return;
+  if (tp.classList.contains('naowee-timepicker--disabled')) return;
+  // Close any other open time picker
+  document.querySelectorAll('.naowee-timepicker--open').forEach(function(o) {
+    if (o !== tp) o.classList.remove('naowee-timepicker--open');
+  });
+  tp.classList.toggle('naowee-timepicker--open');
+}
+function timepickerSelect(el, e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  var tp = el.closest('.naowee-timepicker');
+  if (!tp) return;
+  var value = tp.querySelector('.naowee-timepicker__value');
+  if (value) value.textContent = el.textContent;
+  tp.classList.add('naowee-timepicker--has-value');
+  tp.classList.remove('naowee-timepicker--open');
+  // Update all options selected state
+  tp.querySelectorAll('.naowee-timepicker__option').forEach(function(o) {
+    o.classList.remove('naowee-timepicker__option--selected');
+  });
+  el.classList.add('naowee-timepicker__option--selected');
+}
+/* Close timepickers when clicking outside */
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.naowee-timepicker')) {
+    document.querySelectorAll('.naowee-timepicker--open').forEach(function(o) {
+      o.classList.remove('naowee-timepicker--open');
+    });
+  }
+});
+/* Carousel scroll by one slide */
+function carouselScroll(btn, direction) {
+  var track = btn.closest('.naowee-carousel__viewport').querySelector('.naowee-carousel__track');
+  if (!track) return;
+  var firstSlide = track.querySelector('.naowee-carousel__slide');
+  if (!firstSlide) return;
+  var slideWidth = firstSlide.offsetWidth + 12; // include gap
+  track.scrollBy({ left: slideWidth * direction, behavior: 'smooth' });
+}
+/* Interactive menu item click */
+function menuItemClick(el, e, type) {
+  if (e) e.preventDefault();
+  if (type === 'multiple') {
+    el.classList.toggle('naowee-list-row--checked');
+  } else if (type === 'single') {
+    var menu = el.closest('.naowee-menu');
+    if (menu) {
+      menu.querySelectorAll('.naowee-list-row--selected').forEach(function(i) {
+        i.classList.remove('naowee-list-row--selected');
+      });
+    }
+    el.classList.add('naowee-list-row--selected');
+  }
+}
+/* Interactive list row click (for checkbox/radio/pick) */
+function listRowClick(el, e, type) {
+  if (e) e.preventDefault();
+  if (el.classList.contains('naowee-list-row--disabled')) return;
+  if (type === 'checkbox') {
+    el.classList.toggle('naowee-list-row--checked');
+  } else if (type === 'radio') {
+    var group = el.parentElement;
+    if (group) {
+      group.querySelectorAll('.naowee-list-row--checked').forEach(function(i) {
+        i.classList.remove('naowee-list-row--checked');
+      });
+    }
+    el.classList.add('naowee-list-row--checked');
+  } else if (type === 'pick') {
+    var wrap = el.parentElement;
+    if (wrap) {
+      wrap.querySelectorAll('.naowee-list-row--selected').forEach(function(i) {
+        i.classList.remove('naowee-list-row--selected');
+      });
+    }
+    el.classList.add('naowee-list-row--selected');
+  }
+}
+/* Render a list-row element (reusable for list-row component and menu items) */
+window.renderListRow = function(s, opts) {
+  opts = opts || {};
+  var type = s.rowType || opts.type || 'default';
+  var iconStar = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  var iconChevron = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+  var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var iconThumb = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+
+  var cls = ['naowee-list-row'];
+  cls.push('naowee-list-row--' + type);
+  if (s.size) cls.push('naowee-list-row--' + s.size);
+  if (s.state === 'hover') cls.push('is-hover');
+  if (s.state === 'disabled') cls.push('naowee-list-row--disabled');
+  if (s.showDivider) cls.push('naowee-list-row--divider');
+  if (s.selected && (type === 'checkbox' || type === 'radio')) cls.push('naowee-list-row--checked');
+  if (s.selected && type === 'pick') cls.push('naowee-list-row--selected');
+  if (s.media === 'thumbnail' || s.media === 'avatar') cls.push('naowee-list-row--has-thumb');
+  if (type === 'checkbox' || type === 'radio') cls.push('naowee-list-row--has-control');
+  if (s.showDescription) cls.push('naowee-list-row--has-desc');
+
+  // Control (checkbox or radio)
+  var control = '';
+  if (type === 'checkbox') {
+    control = '<span class="naowee-list-row__control"><span class="naowee-list-row__checkbox">' + iconCheck + '</span></span>';
+  } else if (type === 'radio') {
+    control = '<span class="naowee-list-row__control"><span class="naowee-list-row__radio"></span></span>';
+  }
+
+  // Media (left)
+  var media = '';
+  if (s.media === 'icon') media = '<span class="naowee-list-row__media naowee-list-row__media--icon">' + iconStar + '</span>';
+  else if (s.media === 'thumbnail') media = '<span class="naowee-list-row__media naowee-list-row__media--thumbnail">' + iconThumb + '</span>';
+  else if (s.media === 'avatar') {
+    var initials = opts.initials || 'NA';
+    media = '<span class="naowee-list-row__media naowee-list-row__media--avatar">' + initials + '</span>';
+  }
+
+  // Content
+  var topRight = s.showTopRight ? '<span class="naowee-list-row__top-right">' + (s.topRight || '') + '</span>' : '';
+  var bottomRight = (s.showDescription && s.showBottomRight) ? '<span class="naowee-list-row__bottom-right">' + (s.bottomRight || '') + '</span>' : '';
+  var desc = s.showDescription ? ('<div class="naowee-list-row__desc-row"><span class="naowee-list-row__description">' + (s.description || 'Description') + '</span>' + bottomRight + '</div>') : '';
+  var bottomSlot = s.showBottomSlot ? '<div class="naowee-list-row__bottom-slot">Bottom slot</div>' : '';
+  var content = '<div class="naowee-list-row__content">' +
+    '<div class="naowee-list-row__title-row">' +
+      '<span class="naowee-list-row__title">' + (s.title || 'Title') + '</span>' +
+      topRight +
+    '</div>' +
+    desc +
+    bottomSlot +
+  '</div>';
+
+  // Chevron
+  var chevron = type === 'chevron' ? '<span class="naowee-list-row__chevron">' + iconChevron + '</span>' : '';
+
+  // Click handler for interactive types
+  var onclick = '';
+  if (type === 'checkbox' || type === 'radio' || type === 'pick') {
+    onclick = ' onclick="listRowClick(this, event, \'' + type + '\')"';
+  }
+
+  return '<div class="' + cls.join(' ') + '"' + onclick + '>' + control + media + content + chevron + '</div>';
+};
+/* Date picker view toggle: days → months → years → days */
+function calendarToggleView() {
+  var id = 'date-picker';
+  var st = STATE[id];
+  if (!st._calView || st._calView === 'days') st._calView = 'months';
+  else if (st._calView === 'months') st._calView = 'years';
+  else st._calView = 'days';
+  updatePreview(id);
+}
+function calendarSelectMonth(m) {
+  var id = 'date-picker';
+  STATE[id]._month = m;
+  STATE[id]._calView = 'days';
+  updatePreview(id);
+}
+function calendarSelectYear(y) {
+  var id = 'date-picker';
+  STATE[id]._year = y;
+  STATE[id]._calView = 'months';
+  updatePreview(id);
+}
+function calendarNav(delta) {
+  var id = 'date-picker';
+  var st = STATE[id];
+  var m = st._month || 5; /* June = 5 (0-indexed) */
+  var y = st._year || 2025;
+  if (!st._calView || st._calView === 'days') {
+    m += delta;
+    if (m > 11) { m = 0; y++; }
+    if (m < 0) { m = 11; y--; }
+  } else if (st._calView === 'years') {
+    y += delta * 4;
+  }
+  st._month = m; st._year = y;
+  updatePreview(id);
+}
+/* Date picker interactive click */
+function calendarDayClick(el) {
+  var id = 'date-picker';
+  var day = parseInt(el.textContent);
+  if (isNaN(day) || el.classList.contains('naowee-datepicker__day--other-month')) return;
+  var sel = STATE[id].selection || 'single';
+  if (sel === 'single') {
+    STATE[id]._selectedDay = day;
+    updatePreview(id);
+  } else if (sel === 'range') {
+    if (!STATE[id]._rangeStart || STATE[id]._rangeEnd) {
+      STATE[id]._rangeStart = day; STATE[id]._rangeEnd = null;
+    } else {
+      if (day > STATE[id]._rangeStart) STATE[id]._rangeEnd = day;
+      else { STATE[id]._rangeEnd = STATE[id]._rangeStart; STATE[id]._rangeStart = day; }
+    }
+    updatePreview(id);
+  } else if (sel === 'multiple') {
+    if (!STATE[id]._multiDays) STATE[id]._multiDays = [];
+    var idx = STATE[id]._multiDays.indexOf(day);
+    if (idx === -1) STATE[id]._multiDays.push(day);
+    else STATE[id]._multiDays.splice(idx, 1);
+    updatePreview(id);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FOUNDATION RENDERERS
+   ═══════════════════════════════════════════════════════════════ */
+function renderFoundation(id) {
+  var renderers = { colors:renderColors, icons:renderIcons, typography:renderTypography, spacing:renderSpacing, sizing:renderSizing, shadows:renderShadows, 'border-radius':renderRadius };
+  return '<div class="pg-foundation">' + (renderers[id] || function(){return '';})() + '</div>';
+}
+
+function renderColors() {
+  var html = '<h3>Core Palettes</h3>';
+  PALETTES.forEach(function(p) {
+    html += '<div class="pg-palette"><div class="pg-palette-name">' + p.name + '</div><div class="pg-swatches">';
+    p.steps.forEach(function(step) {
+      var varName = '--naowee-color-' + p.prefix + '-' + step;
+      var isLight = step <= p.lightUntil;
+      html += '<div class="pg-swatch" style="background:var(' + varName + ')" ' + (isLight?'data-light':'data-dark') + '><span>' + step + '</span><div class="pg-swatch-tip">' + varName + '</div></div>';
+    });
+    html += '</div></div>';
+  });
+  html += '<div class="pg-palette"><div class="pg-palette-name">Accents</div><div class="pg-swatches">' +
+    '<div class="pg-swatch" style="background:var(--naowee-color-turquoise-100)" data-light><span>T-100</span><div class="pg-swatch-tip">--naowee-color-turquoise-100</div></div>' +
+    '<div class="pg-swatch" style="background:var(--naowee-color-turquoise-200)" data-dark><span>T-200</span><div class="pg-swatch-tip">--naowee-color-turquoise-200</div></div>' +
+    '<div class="pg-swatch" style="background:var(--naowee-color-turquoise-300)" data-dark><span>T-300</span><div class="pg-swatch-tip">--naowee-color-turquoise-300</div></div>' +
+    '<div class="pg-swatch" style="background:var(--naowee-color-violet-100)" data-light><span>V-100</span><div class="pg-swatch-tip">--naowee-color-violet-100</div></div>' +
+    '<div class="pg-swatch" style="background:var(--naowee-color-violet-200)" data-dark><span>V-200</span><div class="pg-swatch-tip">--naowee-color-violet-200</div></div>' +
+    '<div class="pg-swatch" style="background:var(--naowee-color-violet-300)" data-dark><span>V-300</span><div class="pg-swatch-tip">--naowee-color-violet-300</div></div>' +
+  '</div></div>';
+
+  html += '<h3>Semantic Colors</h3><div class="pg-semantic-grid">';
+  SEMANTIC_COLORS.forEach(function(c) {
+    html += '<div class="pg-semantic-item"><div class="pg-semantic-dot" style="background:var(' + c.v + ')"></div><span class="pg-semantic-label" title="' + c.v + '">' + c.label + '</span></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderIcons() {
+  var cats = {};
+  Object.keys(NAOWEE_ICONS).forEach(function(name) {
+    var icon = NAOWEE_ICONS[name];
+    if (!cats[icon.cat]) cats[icon.cat] = [];
+    cats[icon.cat].push(name);
+  });
+  var html = '<div style="margin-bottom:16px;display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:#646587">Iconos: <strong style="color:#282834">' + Object.keys(NAOWEE_ICONS).length + '</strong> | Categorias: <strong style="color:#282834">' + Object.keys(cats).length + '</strong></span></div>';
+  Object.keys(cats).forEach(function(cat) {
+    html += '<h3>' + cat + '</h3><div class="pg-icon-grid">';
+    cats[cat].forEach(function(name) {
+      html += '<div class="pg-icon-card" title="' + name + '\nTags: ' + NAOWEE_ICONS[name].tags + '" onclick="copyIconName(\'' + name + '\')">' +
+        '<div class="pg-icon-preview">' + naoIcon(name, 24) + '</div>' +
+        '<span class="pg-icon-name">' + name + '</span></div>';
+    });
+    html += '</div>';
+  });
+  html += '<h3>Sizes</h3><div style="display:flex;gap:24px;align-items:flex-end">';
+  [12,16,20,24,32,48].forEach(function(s) {
+    html += '<div style="text-align:center">' + naoIcon('home', s) + '<div style="font-size:10px;color:#9C9EBF;margin-top:4px">' + s + 'px</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+function copyIconName(name) {
+  navigator.clipboard.writeText("naoIcon('" + name + "')");
+  var title = document.querySelector('.pg-topbar-title');
+  var prev = title.textContent;
+  title.textContent = 'Copied: ' + name;
+  setTimeout(function(){ title.textContent = prev; }, 1500);
+}
+
+function renderTypography() {
+  var html = '<h3>Type Scale</h3>';
+  TYPE_SIZES.forEach(function(t) {
+    html += '<div class="pg-type-row"><div class="pg-type-meta">' + t.name + '<br>' + t.size + 'px / ' + t.weight + '</div><div class="pg-type-sample" style="font-size:' + t.size + 'px;font-weight:' + t.weight + ';line-height:' + t.lh + 'px">The quick brown fox jumps</div></div>';
+  });
+  html += '<h3>Font Weights</h3>';
+  [{w:400,n:'Regular'},{w:500,n:'Medium'},{w:600,n:'Semibold'},{w:700,n:'Bold'}].forEach(function(f) {
+    html += '<div class="pg-type-row"><div class="pg-type-meta">' + f.n + ' (' + f.w + ')</div><div class="pg-type-sample" style="font-size:16px;font-weight:' + f.w + ';line-height:24px">The quick brown fox jumps over the lazy dog</div></div>';
+  });
+  return html;
+}
+
+function renderSpacing() {
+  var html = '<h3>Padding / Gap Scale</h3>';
+  SPACING.forEach(function(s) {
+    var pct = (s.px / 88 * 100).toFixed(1);
+    html += '<div class="pg-space-row"><div class="pg-space-label">' + s.name + '</div><div class="pg-space-bar" style="width:' + Math.max(pct,1) + '%"></div><div class="pg-space-val">' + s.px + 'px</div></div>';
+  });
+  return html;
+}
+
+function renderSizing() {
+  var html = '';
+  Object.entries(SIZING).forEach(function(entry) {
+    var group = entry[0], items = entry[1];
+    html += '<h3>' + group.charAt(0).toUpperCase() + group.slice(1) + ' Sizes</h3><div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:16px">';
+    items.forEach(function(i) {
+      html += '<div style="text-align:center"><div style="width:' + Math.max(i.px,40) + 'px;height:' + i.px + 'px;background:#FFEDC7;border:2px solid #FF7500;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#D74009">' + i.px + '</div><div style="font-size:10px;color:#9C9EBF;margin-top:4px">' + i.name + '</div></div>';
+    });
+    html += '</div>';
+  });
+  return html;
+}
+
+function renderShadows() {
+  var html = '<h3>Shadow Tokens</h3><div class="pg-shadow-grid">';
+  SHADOWS.forEach(function(s) {
+    html += '<div class="pg-shadow-card" style="box-shadow:' + s.val + '"><strong>' + s.name + '</strong><br><span style="font-size:10px;color:#9C9EBF">' + s.v + '</span></div>';
+  });
+  return html + '</div>';
+}
+
+function renderRadius() {
+  var html = '<h3>Border Radius Scale</h3><div class="pg-radius-grid">';
+  RADII.forEach(function(r) {
+    var rad = r.px === '9999px' ? '50%' : r.px;
+    html += '<div class="pg-radius-item" style="border-radius:' + rad + '">' + r.name + '<br>' + r.px + '</div>';
+  });
+  return html + '</div>';
+}
+
+/* ── INIT ── */
+buildSidebar();
+window.addEventListener('hashchange', onHashChange);
+onHashChange();
+</script>
+</body>
+</html>

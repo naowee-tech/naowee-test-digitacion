@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Naowee – Detalle de Evento</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="design-system.css"/>
+<style>
+:root {
+  --naranja:#FF7500; --azul:#002B5B;
+  --accent:#d74009;
+  --text-primary:#282834; --text-secondary:#646587;
+  --green:#1f8923; --green-bg:#e6f4e7; --green-border:#b7dfb9;
+  --blue-info:#1f78d1; --blue-bg:#eef5ff;
+  --orange-bg:#fff3e6; --orange-border:#ffbf75;
+  --red-bg:#fff0ee; --red-border:#ffc4bb;
+  --purple:#7c3aed; --purple-bg:#f3eeff;
+  --surface:#ffffff; --bg:#ffffff;
+  --border:#e7e9f3; --border-dark:#d0d4e6;
+  --sidebar-w:274px; --header-h:88px;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+  --font:'Inter',sans-serif;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.12);
+  --shadow-card:0 0 2px rgba(145,158,171,.2),0 12px 24px -4px rgba(145,158,171,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font-size:14px}
+
+/* SHELL */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:width .2s,min-width .2s}
+.sidebar-logo{height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+.burger-btn{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;border-radius:var(--radius-sm);transition:background .15s,transform .2s}
+.burger-btn:hover{background:rgba(0,0,0,.06)}
+.burger-btn:active{transform:scale(.9)}
+.burger-btn svg{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed .burger-btn svg{transform:rotate(180deg)}
+.naowee-logo{height:33px;flex-shrink:0}
+.sidebar-nav{flex:1;padding:24px 0 10px;display:flex;flex-direction:column;gap:10px}
+.nav-section{font-size:12px;font-weight:600;color:#b5b9d4;letter-spacing:0;padding:0 12px;line-height:16px}
+.nav-row{display:flex;align-items:center;gap:12px;height:44px;padding:0 20px 0 0;border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;position:relative;text-decoration:none}
+.nav-row:hover{background:#f5f6fa}
+.nav-row .icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-left:28px}
+.nav-row .lbl{flex:1;font-size:14px;font-weight:600;color:var(--text-primary)}
+.nav-row .nav-arrow{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.7;transition:transform .2s}
+.active-bar{position:absolute;left:4px;top:8px;width:4px;height:28px;background:var(--accent);border-radius:25px}
+.nav-row.active{background:transparent}
+.nav-row.active:hover{background:transparent}
+.nav-row.active .lbl{color:var(--accent)}
+.subnav{padding-left:0}
+.sub-row{display:flex;align-items:center;gap:8px;height:36px;padding:0 8px 0 64px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:background .12s;text-decoration:none}
+.sub-row:hover{background:#f5f6fa}
+.sub-row .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sub-row.active-sub{color:var(--accent);font-weight:600}
+.sub-row.active-sub .dot{background:var(--accent)}
+.sidebar-bottom{padding:8px 0;border-top:1px solid var(--border)}
+.sidebar.collapsed{width:72px;min-width:72px;overflow:hidden}
+.sidebar.collapsed .naowee-logo,.sidebar.collapsed .lbl,.sidebar.collapsed .nav-arrow,.sidebar.collapsed .nav-section,.sidebar.collapsed .subnav,.sidebar.collapsed .sidebar-bottom .lbl{display:none}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row{justify-content:center;padding:0}
+.sidebar.collapsed .nav-row .icon{margin-left:0}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOP HEADER */
+.top-header{height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:0 32px;flex-shrink:0}
+.user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--radius-full);padding:8px 12px 8px 8px;cursor:pointer;max-width:200px}
+.ava{position:relative}
+.ava-ring{width:40px;height:40px;border-radius:50%;background:#ffb8c1;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#672834}
+.ava-dot{position:absolute;bottom:0;right:0;width:8px;height:8px;background:var(--green);border:2px solid #fff;border-radius:50%}
+.user-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.user-name{font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* PAGE */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 40px}
+
+/* PROFILE SWITCHER */
+.profile-switcher{position:relative}
+.profile-current{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-full);cursor:pointer;font-size:13px;font-weight:600;color:var(--text-primary);transition:all .15s;background:var(--surface)}
+.profile-current:hover{border-color:var(--accent);background:#fff8f4}
+.profile-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:260px;z-index:100;display:none;overflow:hidden}
+.profile-dropdown.open{display:block}
+.profile-option{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;transition:background .12s;color:var(--text-secondary)}
+.profile-option:hover{background:#f5f6fa}
+.profile-option.active{background:#fff3e6;color:var(--accent)}
+.po-name{font-size:13px;font-weight:600;color:inherit}
+.po-desc{font-size:11px;color:var(--text-secondary);margin-top:1px}
+
+/* BACK NAV */
+.back-nav{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:20px;padding:6px 12px 6px 8px;border-radius:var(--radius-md);transition:background .15s}
+.back-nav:hover{background:rgba(215,64,9,.08)}
+
+/* EVENT HEADER CARD */
+.event-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px 28px;margin-bottom:18px;animation:fadeInUp .4s ease both}
+.event-header-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.event-header-left{display:flex;align-items:center;gap:18px}
+.event-avatar{width:56px;height:56px;border-radius:14px;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--naranja);flex-shrink:0}
+.event-title{font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.event-meta{font-size:13px;color:var(--text-secondary)}
+.badge-en-curso{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.btn-nuevo{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:var(--radius-lg);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;border:none;background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap;transition:opacity .15s}
+.btn-nuevo:hover{opacity:.88}
+
+/* STATS ROW */
+.stats-divider{display:grid;grid-template-columns:repeat(3,1fr);background:#f5f6fa;border-radius:var(--radius-lg);padding:20px 0;margin-top:16px}
+.stat-block{display:flex;flex-direction:column;align-items:center;gap:2px}
+.stat-block-label{font-size:12px;font-weight:500;color:var(--text-secondary)}
+.stat-block-value{font-size:22px;font-weight:800;color:var(--text-primary)}
+
+/* FASES CARD */
+.fases-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px 28px;margin-bottom:18px;animation:fadeInUp .4s .1s ease both}
+.fases-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:20px}
+.fases-timeline{display:flex;align-items:flex-start;gap:0;position:relative}
+.fase-item{display:flex;flex-direction:column;align-items:center;min-width:160px;position:relative;z-index:1}
+.fase-connector{flex:1;display:flex;align-items:center;padding:0 0;margin-top:14px}
+.fase-connector-line{flex:1;height:3px;background:var(--border);border-radius:2px;position:relative;overflow:hidden;min-width:80px}
+.fase-connector-fill{position:absolute;left:0;top:0;height:100%;border-radius:2px;background:var(--green)}
+.fase-circle{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;box-shadow:0 0 0 4px rgba(215,64,9,.15)}
+.fase-circle.pending{background:var(--border);color:var(--text-secondary);box-shadow:none}
+.fase-circle.done{background:var(--green);box-shadow:0 0 0 4px rgba(31,137,35,.15)}
+.fase-circle.active{background:var(--accent);box-shadow:0 0 0 4px rgba(215,64,9,.15)}
+.fase-name{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px}
+.fase-fechas{font-size:11px;color:var(--text-secondary);margin-bottom:6px}
+
+/* TABS */
+.tabs-bar{display:flex;gap:0;padding:12px 24px 0;border-bottom:1px solid var(--border);animation:fadeInUp .4s .15s ease both}
+.tab-btn{padding:10px 18px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;border:none;background:none;font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text-primary)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* COMPETENCIAS TABLE CARD */
+.comp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp .4s .2s ease both}
+.comp-toolbar{display:flex;align-items:center;gap:12px;padding:16px 24px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:180px;max-width:300px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
+.search-inp{width:100%;height:38px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 12px 0 36px;outline:none;transition:border-color .15s}
+.search-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
+.search-inp::placeholder{color:var(--text-secondary)}
+/* Float dropdown */
+.filter-dd{position:relative}
+.filter-dd-trigger{display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;border:1px solid var(--border-dark);border-radius:var(--radius-md);background:var(--surface);font-size:13px;font-weight:500;color:var(--text-primary);cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.filter-dd-trigger:hover{border-color:var(--accent)}
+.filter-dd-trigger.open{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.1)}
+.filter-dd-trigger svg{color:var(--text-secondary);transition:transform .2s;flex-shrink:0}
+.filter-dd-trigger.open svg{transform:rotate(180deg);color:var(--accent)}
+.filter-dd-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;max-height:0;overflow:hidden;opacity:0;background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-md);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;transition:max-height .2s cubic-bezier(.4,0,.2,1),opacity .15s ease}
+.filter-dd-menu.open{max-height:280px;opacity:1;overflow-y:auto}
+.filter-dd-opt{padding:9px 14px;font-size:13px;color:var(--text-primary);cursor:pointer;transition:background .1s;white-space:nowrap}
+.filter-dd-opt:hover{background:#f5f6fa}
+.filter-dd-opt.selected{background:var(--orange-bg);color:var(--accent);font-weight:600}
+.pag-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
+.pag-label{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+.pag-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-secondary);transition:all .15s;font-family:var(--font)}
+.pag-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pag-btn:disabled{opacity:.4;cursor:default}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;padding:10px 16px;border-bottom:none;background:transparent;white-space:nowrap;letter-spacing:.3px}
+tbody td{font-size:13px;color:var(--text-primary);padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:#fafbfd}
+.row-num{font-size:13px;font-weight:700;color:var(--text-secondary);width:30px}
+.comp-name{font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.comp-code{font-size:11px;color:var(--text-secondary);margin-top:1px;display:flex;align-items:center;gap:6px}
+.comp-cat{font-size:11px;color:var(--text-secondary)}
+.badge-sis{display:inline-flex;padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;white-space:nowrap;background:#f0f2f5;color:var(--text-secondary)}
+.sis-medal{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;margin-top:3px}
+.deporte-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.deporte-emoji{font-size:14px}
+.deporte-text{font-size:13px;color:var(--text-primary)}
+.modalidad-sub{font-size:11px;color:var(--text-secondary);margin-top:1px}
+.evento-text{font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.evento-sub{font-size:11px;color:var(--text-secondary)}
+.badge-est{display:inline-flex;padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;white-space:nowrap}
+.badge-est.digitacion{background:#fff3e6;color:var(--naranja)}
+.badge-est.pausa{background:#fff0ee;color:#c04020}
+.badge-est.finalizada{background:var(--green-bg);color:var(--green)}
+.badge-est.asignada{background:#e8f4ff;color:#1f78d1}
+.badge-est.creada{background:#f0f2f5;color:var(--text-secondary)}
+.digi-cell{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.digi-mini{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.assign-icon{color:var(--accent);flex-shrink:0}
+.action-btn{width:28px;height:28px;border:none;border-radius:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent);transition:all .15s;flex-shrink:0}
+.action-btn:hover{opacity:.7}
+.action-btn a{display:flex;align-items:center;justify-content:center;text-decoration:none}
+.tab-placeholder{padding:48px 24px;text-align:center;color:var(--text-secondary);font-size:14px}
+.no-data{padding:40px 24px;text-align:center;color:var(--text-secondary);font-size:14px}
+
+/* ANIMATIONS */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .event-header-top{flex-direction:column;align-items:flex-start}
+  .stats-divider{grid-template-columns:repeat(3,1fr)}
+  .fases-timeline{flex-direction:column;align-items:flex-start}
+  .sidebar{width:72px;min-width:72px}
+  .sidebar .naowee-logo,.sidebar .lbl,.sidebar .nav-arrow,.sidebar .nav-section,.sidebar .subnav{display:none}
+  .sidebar .sidebar-logo{justify-content:center;padding:0}
+  .sidebar .nav-row{justify-content:center;padding:0}
+  .sidebar .nav-row .icon{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <button class="burger-btn" onclick="toggleSidebar()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.5 12H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 16H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 8H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <svg class="naowee-logo" viewBox="0 0 177 33.22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28.11 33.21c-1.25 0-2.42-.48-3.31-1.36a4.67 4.67 0 01-1.37-3.29l.02-16.73-5.92 5.91a1.6 1.6 0 01-1.75.35 1.6 1.6 0 01-.99-1.47V1.6c0-.88.72-1.6 1.6-1.6h8.59c4.3 0 7.8 3.48 7.8 7.76v20.8c0 2.56-2.1 4.65-4.67 4.65zm-3.05-26.85c.2 0 .41.04.61.12.6.25.99.83.99 1.48l-.02 20.6c0 .39.15.76.43 1.03.28.28.64.43 1.04.43.8 0 1.46-.65 1.46-1.46V7.76c0-2.52-2.06-4.57-4.59-4.57H18v9.56l5.92-5.92c.31-.31.72-.47 1.14-.47" fill="#F49C1C"/>
+      <path d="M16.39 33.21H7.8C3.5 33.21 0 29.73 0 25.45V4.65C0 2.09 2.1 0 4.67 0c1.25 0 2.42.49 3.31 1.36.88.88 1.37 2.05 1.36 3.29L9.33 21.38l5.92-5.91c.46-.46 1.15-.6 1.75-.35.6.25.99.83.99 1.47v15.02c0 .88-.72 1.6-1.6 1.6M4.67 3.19c-.81 0-1.47.65-1.47 1.46v20.8c0 2.52 2.06 4.57 4.59 4.57h7V20.46l-5.92 5.92c-.46.46-1.15.6-1.75.35a1.6 1.6 0 01-.99-1.47L6.14 4.65c0-.39-.15-.76-.43-1.03a1.45 1.45 0 00-1.04-.43" fill="#FF7500"/>
+      <path d="M71.59 24.93h-.31c-.6.72-1.32 1.34-2.16 1.86-.84.52-1.93.77-3.25.77-3.95 0-7.12-2.37-7.12-6.5 0-4.68 3.49-6.42 7.78-6.42 1.25 0 2.27.1 3.07.29.81.19 1.47.39 1.99.6v-.58c0-1.01-.4-1.84-1.21-2.49-.8-.66-1.8-.99-2.99-.99-1.77 0-3.26.73-4.48 2.21l-3.7-2.52c2.03-2.53 4.79-3.79 8.29-3.79 2.96 0 5.22.69 6.77 2.07 1.56 1.38 2.34 3.42 2.34 6.13v11.88h-5.02v-2.52zm0-5.69c-.6-.28-1.21-.51-1.85-.68-.64-.17-1.33-.25-2.08-.25-1.22 0-2.16.26-2.82.79-.66.53-1 1.18-1 1.95 0 .78.32 1.39.96 1.86.64.47 1.37.7 2.2.7.67 0 1.3-.12 1.87-.37.57-.24 1.06-.57 1.46-.97.4-.4.71-.86.93-1.39.22-.53.33-1.08.33-1.65" fill="#002B5B"/>
+      <path d="M89.28 7.37c5.06 0 10.12 3.57 10.12 10.1 0 6.52-5.06 10.1-10.12 10.1-5.06 0-10.11-3.58-10.11-10.1 0-6.53 5.05-10.1 10.11-10.1zm0 15.51c2.41 0 5.02-1.67 5.02-5.42 0-3.74-2.61-5.42-5.02-5.42s-5.02 1.68-5.02 5.42c0 3.75 2.61 5.42 5.02 5.42z" fill="#002B5B"/>
+      <path d="M101.96 7.37h5.72l3.15 12.65h.27l3.78-12.65h5.25l3.82 12.65h.27l3.11-12.65h5.64l-6.11 20.2h-5.49l-3.81-12.74h-.27l-3.81 12.74h-5.41l-6.11-20.2z" fill="#002B5B"/>
+      <path d="M154.68 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.12-4.24-10.12-10.1 0-5.71 4.23-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.1.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.15 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
+      <path d="M176.69 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.11-4.24-10.11-10.1 0-5.71 4.22-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.09.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.14 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
+      <path d="M53.69 27.57c-1.38 0-2.5-1.02-2.5-2.29V15.66c0-2.05-1.82-3.72-4.07-3.72-2.24 0-4.07 1.67-4.07 3.72v9.62c0 1.26-1.12 2.29-2.5 2.29s-2.5-1.02-2.5-2.29V15.66c0-4.57 4.07-8.29 9.07-8.29s9.07 3.72 9.07 8.29v9.62c0 1.26-1.12 2.29-2.5 2.29" fill="#002B5B"/>
+    </svg>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">DASHBOARD</div>
+    <div class="nav-row" onclick="window.location.href='eventos.html'">
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#B5B9D4" stroke-width="1.5"/></svg></div>
+      <span class="lbl">Inicio</span>
+    </div>
+    <div class="nav-section">GESTI&Oacute;N</div>
+    <div class="nav-row" id="navComp">
+      <div class="icon"><svg width="24" height="24" viewBox="0 0 19.5 19.5" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.75.75h8a1 1 0 011 1v6a5 5 0 01-10 0v-6a1 1 0 011-1z" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.17 9.75H4.75a4 4 0 01-4-4v-2a1 1 0 011-1h3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.33 9.75h.42a4 4 0 004-4v-2a1 1 0 00-1-1h-3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.42 15.75H6.08a1.25 1.25 0 01-1.18-1.68l.33-1a1.25 1.25 0 011.18-.82h7.33c.54 0 1.02.34 1.18.82l.33 1a1.25 1.25 0 01-1.18 1.68z" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75 12.75v3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="lbl">Competencias</span>
+      <span class="nav-arrow"><svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M7.33 12.83L11 9.17l3.67 3.67" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="subnav" id="subnavComp">
+      <a class="sub-row" href="lista.html"><span class="dot" style="background:transparent"></span>Lista de competencias</a>
+      <a class="sub-row" href="stepper.html"><span class="dot" style="background:transparent"></span>Nueva competencia</a>
+    </div>
+    <div class="nav-row" onclick="window.location.href='digitadores.html'"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16 20v-1a4 4 0 00-4-4H6a4 4 0 00-4 4v1" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#B5B9D4" stroke-width="1.5"/><path d="M22 20v-1a4 4 0 00-4-4" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M15 3a4 4 0 010 8" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="lbl">Digitadores</span></div>
+    <div class="nav-row" onclick="window.location.href='coordinadores.html'"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="16.75" cy="17.75" r="4.25" stroke="#B5B9D4" stroke-width="1.5"/><path d="M18.18 16.91l-1.79 1.78-1.07-1.07" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M10 15H7a4 4 0 00-4 4v1" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="7" r="4" stroke="#B5B9D4" stroke-width="1.5"/></svg></div><span class="lbl">Coordinadores</span></div>
+    <div class="nav-row"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 20H5a2 2 0 01-2-2v-2a2 2 0 012-2h16" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M20 17H6" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="7.29" cy="7" rx="3" ry="3" stroke="#B5B9D4" stroke-width="1.5"/><ellipse cx="16.72" cy="7" rx="3" ry="3" stroke="#B5B9D4" stroke-width="1.5"/><path d="M10.29 7a2.72 2.72 0 013.43 0" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/><path d="M3 7h1.29M19.72 7H21" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="lbl">Auditor&iacute;a</span></div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="nav-row" id="btnLogout"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#B5B9D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="lbl">Cerrar sesi&oacute;n</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="top-header">
+    <div class="profile-switcher" id="profileSwitcher">
+      <div class="profile-current" onclick="toggleProfileDD()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" stroke="currentColor" stroke-width="1.2"/></svg>
+        <span id="profileLabel">Coordinador de eventos</span>
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="profile-option active" onclick="switchProfile('coordinador')">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" stroke="currentColor" stroke-width="1.2"/></svg>
+          <div><div class="po-name">Coordinador de eventos</div><div class="po-desc">Crear y configurar competencias</div></div>
+        </div>
+        <div class="profile-option" onclick="switchProfile('digitador')">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 2h10v12H3z" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h6M5 7.5h6M5 10h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+          <div><div class="po-name">Digitador</div><div class="po-desc">Digitar enfrentamientos asignados</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="user-chip">
+      <div class="ava"><div class="ava-ring">AS</div><div class="ava-dot"></div></div>
+      <div class="user-info"><span class="user-name">Ana Maria S...</span><span class="user-role">Coordinador d...</span></div>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#282834" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <!-- BACK NAV -->
+    <a class="back-nav" href="eventos.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4l-5 4 5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Volver al inicio
+    </a>
+
+    <!-- EVENT HEADER CARD (dynamic) -->
+    <div class="event-header-card" id="eventHeaderCard"></div>
+
+    <!-- FASES CARD (dynamic) -->
+    <div class="fases-card" id="fasesCard"></div>
+
+    <!-- TABS (always visible) -->
+    <div class="comp-card">
+      <div class="tabs-bar">
+        <button class="tab-btn active" id="tabComp" onclick="setActiveTab('competencias')">Competencias</button>
+        <button class="tab-btn" id="tabInst" onclick="setActiveTab('instituciones')">Instituciones</button>
+        <button class="tab-btn" id="tabDep" onclick="setActiveTab('deportistas')">Deportistas</button>
+        <button class="tab-btn" id="tabPers" onclick="setActiveTab('personal')">Personal de apoyo</button>
+        <button class="tab-btn" id="tabRes" onclick="setActiveTab('resultados')">Resultados</button>
+      </div>
+
+      <!-- COMPETENCIAS CONTENT -->
+      <div id="contentComp">
+        <div class="comp-toolbar">
+          <div class="search-wrap">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input class="search-inp" id="compSearchInp" type="text" placeholder="Buscar competencia" oninput="compPage=1;renderCompetencias()"/>
+          </div>
+          <div class="filter-dd" id="sistemaDD">
+            <div class="filter-dd-trigger" id="sistemaTrigger" onclick="toggleSistemaDD()">
+              <span id="sistemaLabel">Todos los sistemas</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="filter-dd-menu" id="sistemaMenu">
+              <div class="filter-dd-opt selected" onclick="pickSistema('')">Todos los sistemas</div>
+              <div class="filter-dd-opt" onclick="pickSistema('elim')">Eliminación directa</div>
+              <div class="filter-dd-opt" onclick="pickSistema('robin')">Round robin</div>
+              <div class="filter-dd-opt" onclick="pickSistema('final')">Final directa</div>
+              <div class="filter-dd-opt" onclick="pickSistema('grupos')">Fase de grupos</div>
+              <div class="filter-dd-opt" onclick="pickSistema('doble')">Eliminación doble</div>
+              <div class="filter-dd-opt" onclick="pickSistema('multi')">Multi-sistema</div>
+            </div>
+          </div>
+          <div class="pag-wrap">
+            <span class="pag-label" id="compPagLabel">P&aacute;gina 1 de 1</span>
+            <button class="pag-btn" id="compBtnPrev" onclick="changeCompPage(-1)" disabled>&#8249;</button>
+            <button class="pag-btn" id="compBtnNext" onclick="changeCompPage(1)">&#8250;</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Competencia</th>
+                <th>Sistema</th>
+                <th>Deporte &bull; Modalidad</th>
+                <th>Evento / Zona</th>
+                <th>Estado</th>
+                <th>Digitador</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="compBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PLACEHOLDER for other tabs -->
+      <div id="contentOther" style="display:none">
+        <div class="tab-placeholder" id="placeholderText">Contenido no disponible</div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+</div><!-- /shell -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   EVENTS DATABASE — each event has congruent competitions
+   ═══════════════════════════════════════════════════════════════ */
+const DIGITADORES = [
+  {nombre:'Diego Ramirez', color:'#9b59b6', ini:'D'},
+  {nombre:'Carlos Perez',  color:'#2c5f9b', ini:'C'},
+  {nombre:'Ana Torres',    color:'#e67e22', ini:'A'},
+  {nombre:'Maria Gomez',   color:'#1f8923', ini:'M'},
+  {nombre:'Santiago Escobar', color:'#3b82f6', ini:'S'},
+  {nombre:'Reinaldo Rueda', color:'#e67e22', ini:'R'},
+];
+function rDigi(){ return DIGITADORES[Math.floor(Math.random()*DIGITADORES.length)]; }
+
+const EVENTS_DB = {
+  1: {
+    nombre:'Juegos Intercolegiados 2026', deporte:'Multideporte', categoria:'Juvenil', categorias:['Juvenil','+2'],
+    fechaInicio:'15 Ene. 2026', fechaFin:'30 Jun. 2026',
+    instituciones:'1.092', deportistas:'9.029', promovidos:'12',
+    fases:[
+      {num:1, nombre:'Municipal',       fechas:'15 Ene. \u2022 15 Feb.',  estado:'completada'},
+      {num:2, nombre:'Departamental',    fechas:'20 Feb. \u2022 20 Mar.', estado:'completada'},
+      {num:3, nombre:'Regional',         fechas:'25 Mar. \u2022 30 Abr.', estado:'en-curso'},
+      {num:4, nombre:'Nacional',         fechas:'10 May. \u2022 15 Jun.', estado:'pendiente'},
+      {num:5, nombre:'Final Nacional',   fechas:'20 Jun. \u2022 30 Jun.', estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'Fútbol Sala Masculino Sub-17',    deporte:'Fútbol Sala',  sportKey:'futsal',     sisKey:'elim', sistemaLabel:'Eliminación directa',    zona:'Centro', fase:'Semifinal',   estado:'en-digitacion'},
+      {nombre:'Baloncesto 5x5 Femenino Juvenil', deporte:'Baloncesto',   sportKey:'baloncesto', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Norte',  fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Voleibol Mixto Juvenil',          deporte:'Voleibol',     sportKey:'voleibol',   sisKey:'robin', sistemaLabel:'Round robin',            zona:'Sur',    fase:'Fase clasificatoria', estado:'en-pausa'},
+      {nombre:'Atletismo 100m Masculino',        deporte:'Atletismo',    sportKey:'atletismo',  sisKey:'final', sistemaLabel:'Final directa',          zona:'Centro', fase:'Fase final',  estado:'finalizada'},
+      {nombre:'Natación 50m Libre Femenino',     deporte:'Natación',     sportKey:'natacion',   sisKey:'final', sistemaLabel:'Final directa',          zona:'Norte',  fase:'Clasificatoria', estado:'en-digitacion'},
+      {nombre:'Bádminton Singles Masculino',      deporte:'Bádminton',    sportKey:'badminton',  sisKey:'elim', sistemaLabel:'Eliminación directa',    zona:'Sur',    fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Ajedrez Individual Abierto',      deporte:'Ajedrez',      sportKey:'ajedrez',    sisKey:'robin', sistemaLabel:'Round robin',            zona:'Centro', fase:'Fase grupos', estado:'en-digitacion'},
+      {nombre:'Taekwondo -58kg Masculino',       deporte:'Taekwondo',    sportKey:'taekwondo',  sisKey:'doble', sistemaLabel:'Eliminación doble',      zona:'Norte',  fase:'Semifinal',   estado:'en-pausa'},
+      {nombre:'Tenis de Mesa Dobles Mixto',      deporte:'Tenis de mesa',sportKey:'tenis_mesa', sisKey:'elim', sistemaLabel:'Eliminación directa',    zona:'Sur',    fase:'Semifinal',   estado:'asignada'},
+      {nombre:'Gimnasia Artística Femenina',     deporte:'Gimnasia',     sportKey:'gimnasia',   sisKey:'final', sistemaLabel:'Final directa',          zona:'Centro', fase:'Fase final',  estado:'finalizada'},
+      {nombre:'Balonmano Masculino Juvenil',     deporte:'Balonmano',    sportKey:'balonmano',  sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Norte',  fase:'Fase de grupos', estado:'asignada'},
+      {nombre:'Judo -60kg Femenino',             deporte:'Judo',         sportKey:'judo',       sisKey:'doble', sistemaLabel:'Eliminación doble',      zona:'Sur',    fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Hockey Césped Femenino Sub-17',   deporte:'Hockey',       sportKey:'hockey',     sisKey:'robin', sistemaLabel:'Round robin',            zona:'Centro', fase:'Fase clasificatoria', estado:'creada'},
+      {nombre:'Rugby 7s Masculino Juvenil',      deporte:'Rugby',        sportKey:'rugby',      sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Sur',    fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Boxeo 57kg Masculino',            deporte:'Boxeo',        sportKey:'boxeo',      sisKey:'elim', sistemaLabel:'Eliminación directa',    zona:'Norte',  fase:'Semifinal',   estado:'en-digitacion'},
+    ]
+  },
+  2: {
+    nombre:'Copa Atlántico de Natación', deporte:'Natación', categoria:'Pre-juvenil', categorias:['Pre-juvenil'],
+    fechaInicio:'15 Ene. 2026', fechaFin:'30 Mar. 2026',
+    instituciones:'84', deportistas:'612', promovidos:'45',
+    fases:[
+      {num:1, nombre:'Clasificatoria', fechas:'15 Ene. \u2022 10 Feb.', estado:'completada'},
+      {num:2, nombre:'Semifinal',      fechas:'15 Feb. \u2022 28 Feb.', estado:'en-curso'},
+      {num:3, nombre:'Final',          fechas:'15 Mar. \u2022 30 Mar.', estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'50m Libre Masculino',     deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Semifinal',     estado:'en-digitacion'},
+      {nombre:'50m Libre Femenino',      deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Semifinal',     estado:'en-digitacion'},
+      {nombre:'100m Espalda Masculino',  deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Clasificatoria', estado:'finalizada'},
+      {nombre:'100m Mariposa Femenino',  deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Semifinal',     estado:'en-pausa'},
+      {nombre:'200m Libre Masculino',    deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Clasificatoria', estado:'finalizada'},
+      {nombre:'200m Combinado Femenino', deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Semifinal',     estado:'en-digitacion'},
+      {nombre:'4x100m Relevo Mixto',     deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Clasificatoria', estado:'asignada'},
+      {nombre:'400m Libre Masculino',    deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Atlántico', fase:'Clasificatoria', estado:'creada'},
+    ]
+  },
+  3: {
+    nombre:'Copa Atlántico de Baloncesto', deporte:'Baloncesto', categoria:'Pre-juvenil', categorias:['Pre-juvenil'],
+    fechaInicio:'15 Abr. 2026', fechaFin:'30 May. 2026',
+    instituciones:'32', deportistas:'480', promovidos:'0',
+    fases:[
+      {num:1, nombre:'Fase de grupos',        fechas:'15 Abr. \u2022 30 Abr.', estado:'pendiente'},
+      {num:2, nombre:'Eliminación directa',   fechas:'5 May. \u2022 20 May.',  estado:'pendiente'},
+      {num:3, nombre:'Final',                  fechas:'25 May. \u2022 30 May.', estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'Baloncesto 5x5 Masculino Sub-14', deporte:'Baloncesto', sportKey:'baloncesto', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Atlántico', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Baloncesto 5x5 Femenino Sub-14',  deporte:'Baloncesto', sportKey:'baloncesto', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Atlántico', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Baloncesto 3x3 Mixto Sub-14',     deporte:'Baloncesto', sportKey:'baloncesto_3x3', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Atlántico', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Baloncesto 5x5 Masculino Sub-16', deporte:'Baloncesto', sportKey:'baloncesto', sisKey:'elim', sistemaLabel:'Eliminación directa',    zona:'Atlántico', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Baloncesto 5x5 Femenino Sub-16',  deporte:'Baloncesto', sportKey:'baloncesto', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Atlántico', fase:'Sin iniciar', estado:'creada'},
+    ]
+  },
+  4: {
+    nombre:'Juegos Departamentales Atletismo', deporte:'Atletismo', categoria:'Sub-23', categorias:['Sub-23'],
+    fechaInicio:'10 Feb. 2026', fechaFin:'15 Abr. 2026',
+    instituciones:'156', deportistas:'1.240', promovidos:'68',
+    fases:[
+      {num:1, nombre:'Clasificatoria',  fechas:'10 Feb. \u2022 28 Feb.', estado:'completada'},
+      {num:2, nombre:'Departamental',   fechas:'5 Mar. \u2022 15 Abr.',  estado:'en-curso'},
+    ],
+    competencias:[
+      {nombre:'100m Planos Masculino',       deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Fase final',     estado:'en-digitacion'},
+      {nombre:'100m Planos Femenino',        deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Clasificatoria', estado:'en-digitacion'},
+      {nombre:'200m Planos Masculino',       deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Clasificatoria', estado:'en-pausa'},
+      {nombre:'400m Planos Femenino',        deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Fase final',     estado:'finalizada'},
+      {nombre:'Salto Largo Masculino',       deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Fase final',     estado:'en-digitacion'},
+      {nombre:'Salto Alto Femenino',         deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Clasificatoria', estado:'asignada'},
+      {nombre:'Lanzamiento Bala Masculino',  deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Fase final',     estado:'en-digitacion'},
+      {nombre:'Lanzamiento Disco Femenino',  deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Clasificatoria', estado:'creada'},
+      {nombre:'4x100m Relevo Masculino',     deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Fase final',     estado:'asignada'},
+      {nombre:'800m Planos Masculino',       deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Clasificatoria', estado:'en-digitacion'},
+      {nombre:'1500m Femenino',              deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Fase final',     estado:'finalizada'},
+      {nombre:'3000m Obstáculos Masculino',  deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Departamental', fase:'Clasificatoria', estado:'creada'},
+    ]
+  },
+  5: {
+    nombre:'Copa Regional Ajedrez', deporte:'Ajedrez', categoria:'Todas', categorias:['Todas'],
+    fechaInicio:'5 Ene. 2026', fechaFin:'20 Ene. 2026',
+    instituciones:'48', deportistas:'192', promovidos:'24',
+    fases:[
+      {num:1, nombre:'Municipal',    fechas:'5 Ene. \u2022 8 Ene.',  estado:'completada'},
+      {num:2, nombre:'Departamental',fechas:'10 Ene. \u2022 14 Ene.',estado:'completada'},
+      {num:3, nombre:'Regional',     fechas:'16 Ene. \u2022 20 Ene.',estado:'completada'},
+    ],
+    competencias:[
+      {nombre:'Ajedrez Clásico Individual Abierto',  deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',       zona:'Regional', fase:'Final',          estado:'finalizada'},
+      {nombre:'Ajedrez Rápido Masculino',            deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',       zona:'Regional', fase:'Final',          estado:'finalizada'},
+      {nombre:'Ajedrez Rápido Femenino',             deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',       zona:'Regional', fase:'Final',          estado:'finalizada'},
+      {nombre:'Ajedrez Blitz Mixto',                 deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',       zona:'Regional', fase:'Final',          estado:'finalizada'},
+      {nombre:'Ajedrez por Equipos Mixto',           deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'grupos', sistemaLabel:'Fase de grupos',  zona:'Regional', fase:'Final',          estado:'finalizada'},
+    ]
+  },
+  6: {
+    nombre:'Torneo Nacional Natación', deporte:'Natación', categoria:'Mayores', categorias:['Mayores'],
+    fechaInicio:'1 Feb. 2026', fechaFin:'10 May. 2026',
+    instituciones:'210', deportistas:'1.580', promovidos:'96',
+    fases:[
+      {num:1, nombre:'Municipal',     fechas:'1 Feb. \u2022 15 Feb.',  estado:'completada'},
+      {num:2, nombre:'Departamental', fechas:'20 Feb. \u2022 10 Mar.', estado:'completada'},
+      {num:3, nombre:'Regional',      fechas:'15 Mar. \u2022 5 Abr.',  estado:'completada'},
+      {num:4, nombre:'Nacional',      fechas:'15 Abr. \u2022 10 May.', estado:'en-curso'},
+    ],
+    competencias:[
+      {nombre:'50m Libre Masculino Mayores',    deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Fase final',     estado:'en-digitacion'},
+      {nombre:'100m Libre Femenino Mayores',    deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Fase final',     estado:'en-digitacion'},
+      {nombre:'200m Espalda Masculino',         deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Semifinal',      estado:'en-pausa'},
+      {nombre:'100m Pecho Femenino',            deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Fase final',     estado:'finalizada'},
+      {nombre:'200m Mariposa Masculino',        deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Semifinal',      estado:'en-digitacion'},
+      {nombre:'400m Combinado Individual Fem.', deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Fase final',     estado:'asignada'},
+      {nombre:'4x200m Relevo Libre Masculino',  deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Fase final',     estado:'en-digitacion'},
+      {nombre:'800m Libre Femenino',            deporte:'Natación', sportKey:'natacion', sisKey:'final', sistemaLabel:'Final directa', zona:'Nacional', fase:'Semifinal',      estado:'creada'},
+    ]
+  },
+  7: {
+    nombre:'Campeonato Voleibol Playa', deporte:'Voleibol', categoria:'Sub-21', categorias:['Sub-21'],
+    fechaInicio:'20 Mar. 2026', fechaFin:'25 Mar. 2026',
+    instituciones:'24', deportistas:'96', promovidos:'8',
+    fases:[
+      {num:1, nombre:'Fase de grupos', fechas:'20 Mar. \u2022 22 Mar.', estado:'en-curso'},
+      {num:2, nombre:'Final',          fechas:'23 Mar. \u2022 25 Mar.', estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'Voleibol Playa Masculino Sub-21', deporte:'Voleibol', sportKey:'voleibol', sisKey:'grupos', sistemaLabel:'Fase de grupos', zona:'Caribe', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Voleibol Playa Femenino Sub-21',  deporte:'Voleibol', sportKey:'voleibol', sisKey:'grupos', sistemaLabel:'Fase de grupos', zona:'Caribe', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Voleibol Playa Mixto Sub-21',     deporte:'Voleibol', sportKey:'voleibol', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Caribe', fase:'Sin iniciar', estado:'asignada'},
+    ]
+  },
+  8: {
+    nombre:'Liga Nacional Ajedrez', deporte:'Ajedrez', categoria:'Open', categorias:['Open'],
+    fechaInicio:'10 Ene. 2026', fechaFin:'28 May. 2026',
+    instituciones:'120', deportistas:'480', promovidos:'32',
+    fases:[
+      {num:1, nombre:'Municipal',     fechas:'10 Ene. \u2022 20 Ene.', estado:'completada'},
+      {num:2, nombre:'Departamental', fechas:'25 Ene. \u2022 10 Feb.', estado:'completada'},
+      {num:3, nombre:'Regional',      fechas:'15 Feb. \u2022 5 Mar.',  estado:'completada'},
+      {num:4, nombre:'Nacional',      fechas:'10 Mar. \u2022 10 Abr.', estado:'completada'},
+      {num:5, nombre:'Final Nacional',fechas:'15 Abr. \u2022 28 May.', estado:'completada'},
+    ],
+    competencias:[
+      {nombre:'Ajedrez Clásico Individual Open', deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',      zona:'Nacional', fase:'Final', estado:'finalizada'},
+      {nombre:'Ajedrez Rápido Open',             deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',      zona:'Nacional', fase:'Final', estado:'finalizada'},
+      {nombre:'Ajedrez Blitz Open',              deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'robin', sistemaLabel:'Round robin',      zona:'Nacional', fase:'Final', estado:'finalizada'},
+      {nombre:'Ajedrez por Equipos Open',        deporte:'Ajedrez', sportKey:'ajedrez', sisKey:'grupos', sistemaLabel:'Fase de grupos', zona:'Nacional', fase:'Final', estado:'finalizada'},
+    ]
+  },
+  9: {
+    nombre:'Torneo Tenis de Mesa', deporte:'Tenis de mesa', categoria:'Juvenil', categorias:['Juvenil'],
+    fechaInicio:'5 Abr. 2026', fechaFin:'10 Abr. 2026',
+    instituciones:'16', deportistas:'64', promovidos:'0',
+    fases:[
+      {num:1, nombre:'Clasificatoria',       fechas:'5 Abr. \u2022 7 Abr.',  estado:'pendiente'},
+      {num:2, nombre:'Eliminación directa',  fechas:'8 Abr. \u2022 9 Abr.',  estado:'pendiente'},
+      {num:3, nombre:'Final',                 fechas:'10 Abr.',               estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'Tenis de Mesa Singles Masculino',  deporte:'Tenis de mesa', sportKey:'tenis_mesa', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Tenis de Mesa Singles Femenino',   deporte:'Tenis de mesa', sportKey:'tenis_mesa', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Tenis de Mesa Dobles Masculino',   deporte:'Tenis de mesa', sportKey:'tenis_mesa', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Tenis de Mesa Dobles Mixto',       deporte:'Tenis de mesa', sportKey:'tenis_mesa', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Sin iniciar', estado:'creada'},
+    ]
+  },
+  10: {
+    nombre:'Copa Interclubes Fútbol Sala', deporte:'Fútbol sala', categoria:'Mayores', categorias:['Mayores'],
+    fechaInicio:'15 Mar. 2026', fechaFin:'30 Jun. 2026',
+    instituciones:'64', deportistas:'768', promovidos:'16',
+    fases:[
+      {num:1, nombre:'Municipal',     fechas:'15 Mar. \u2022 30 Mar.', estado:'completada'},
+      {num:2, nombre:'Departamental', fechas:'5 Abr. \u2022 30 Abr.',  estado:'completada'},
+      {num:3, nombre:'Regional',      fechas:'5 May. \u2022 31 May.',  estado:'en-curso'},
+      {num:4, nombre:'Nacional',      fechas:'5 Jun. \u2022 30 Jun.',  estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'Fútbol Sala Masculino Mayores',    deporte:'Fútbol sala', sportKey:'futsal', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Regional', fase:'Semifinal',      estado:'en-digitacion'},
+      {nombre:'Fútbol Sala Femenino Mayores',     deporte:'Fútbol sala', sportKey:'futsal', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Regional', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Fútbol Sala Masculino Sub-20',     deporte:'Fútbol sala', sportKey:'futsal', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Cuartos de final', estado:'en-pausa'},
+      {nombre:'Fútbol Sala Femenino Sub-20',      deporte:'Fútbol sala', sportKey:'futsal', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Semifinal',      estado:'asignada'},
+      {nombre:'Fútbol Sala Mixto Recreativo',     deporte:'Fútbol sala', sportKey:'futsal', sisKey:'robin',  sistemaLabel:'Round robin',          zona:'Regional', fase:'Fase clasificatoria', estado:'en-digitacion'},
+    ]
+  },
+  11: {
+    nombre:'Festival Atletismo Escolar', deporte:'Atletismo', categoria:'Infantil', categorias:['Infantil'],
+    fechaInicio:'20 Abr. 2026', fechaFin:'22 Abr. 2026',
+    instituciones:'40', deportistas:'320', promovidos:'0',
+    fases:[
+      {num:1, nombre:'Clasificatoria', fechas:'20 Abr.',        estado:'pendiente'},
+      {num:2, nombre:'Final',          fechas:'21 Abr. \u2022 22 Abr.', estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'60m Planos Masculino Infantil',   deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Escolar', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'60m Planos Femenino Infantil',    deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Escolar', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Salto Largo Masculino Infantil',  deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Escolar', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'Lanzamiento Pelota Femenino',     deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Escolar', fase:'Sin iniciar', estado:'creada'},
+      {nombre:'4x60m Relevo Mixto Infantil',     deporte:'Atletismo', sportKey:'atletismo', sisKey:'final', sistemaLabel:'Final directa', zona:'Escolar', fase:'Sin iniciar', estado:'asignada'},
+    ]
+  },
+  12: {
+    nombre:'Torneo Balonmano Regional', deporte:'Balonmano', categoria:'Sub-19', categorias:['Sub-19'],
+    fechaInicio:'1 Feb. 2026', fechaFin:'15 Feb. 2026',
+    instituciones:'20', deportistas:'280', promovidos:'8',
+    fases:[
+      {num:1, nombre:'Fase de grupos', fechas:'1 Feb. \u2022 7 Feb.',  estado:'completada'},
+      {num:2, nombre:'Semifinal',      fechas:'9 Feb. \u2022 11 Feb.', estado:'completada'},
+      {num:3, nombre:'Final',          fechas:'13 Feb. \u2022 15 Feb.',estado:'completada'},
+    ],
+    competencias:[
+      {nombre:'Balonmano Masculino Sub-19',       deporte:'Balonmano', sportKey:'balonmano', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Regional', fase:'Final', estado:'finalizada'},
+      {nombre:'Balonmano Femenino Sub-19',        deporte:'Balonmano', sportKey:'balonmano', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Regional', fase:'Final', estado:'finalizada'},
+      {nombre:'Balonmano Playa Masculino Sub-19', deporte:'Balonmano', sportKey:'balonmano_playa', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Final', estado:'finalizada'},
+      {nombre:'Balonmano Playa Femenino Sub-19',  deporte:'Balonmano', sportKey:'balonmano_playa', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Regional', fase:'Final', estado:'finalizada'},
+    ]
+  },
+  13: {
+    nombre:'Campeonato Nacional Boccia', deporte:'Boccia', categoria:'Mayores', categorias:['Mayores'],
+    fechaInicio:'5 Mar. 2026', fechaFin:'12 Mar. 2026',
+    instituciones:'18', deportistas:'72', promovidos:'12',
+    fases:[
+      {num:1, nombre:'Fase de grupos', fechas:'5 Mar. \u2022 8 Mar.',  estado:'en-curso'},
+      {num:2, nombre:'Eliminación directa', fechas:'9 Mar. \u2022 11 Mar.', estado:'pendiente'},
+      {num:3, nombre:'Final',          fechas:'12 Mar.',               estado:'pendiente'},
+    ],
+    competencias:[
+      {nombre:'Boccia BC1 Masculino',           deporte:'Boccia', sportKey:'boccia_bc1',         sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Nacional', fase:'Fase de grupos',    estado:'en-digitacion'},
+      {nombre:'Boccia BC1 Femenino',             deporte:'Boccia', sportKey:'boccia_bc1',         sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Cuartos de final',  estado:'en-digitacion'},
+      {nombre:'Boccia BC2 Masculino',            deporte:'Boccia', sportKey:'boccia_bc2',         sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Nacional', fase:'Fase de grupos',    estado:'en-digitacion'},
+      {nombre:'Boccia BC2 Femenino',             deporte:'Boccia', sportKey:'boccia_bc2',         sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Semifinal',         estado:'en-pausa'},
+      {nombre:'Boccia BC3 Individual Masculino', deporte:'Boccia', sportKey:'boccia_bc3',         sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Nacional', fase:'Fase de grupos',    estado:'en-digitacion'},
+      {nombre:'Boccia BC3 Individual Femenino',  deporte:'Boccia', sportKey:'boccia_bc3',         sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Cuartos de final',  estado:'asignada'},
+      {nombre:'Boccia BC4 Individual Masculino', deporte:'Boccia', sportKey:'boccia_bc4',         sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Nacional', fase:'Fase de grupos',    estado:'en-digitacion'},
+      {nombre:'Boccia BC4 Individual Femenino',  deporte:'Boccia', sportKey:'boccia_bc4',         sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Semifinal',         estado:'en-digitacion'},
+      {nombre:'Boccia BC3 Parejas Mixto',        deporte:'Boccia', sportKey:'boccia_bc3_parejas', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Nacional', fase:'Fase de grupos',    estado:'en-digitacion'},
+      {nombre:'Boccia BC3 Parejas Femenino',     deporte:'Boccia', sportKey:'boccia_bc3_parejas', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Cuartos de final',  estado:'en-pausa'},
+      {nombre:'Boccia BC4 Parejas Mixto',        deporte:'Boccia', sportKey:'boccia_bc4_parejas', sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Nacional', fase:'Fase de grupos',    estado:'en-digitacion'},
+      {nombre:'Boccia BC4 Parejas Masculino',    deporte:'Boccia', sportKey:'boccia_bc4_parejas', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Semifinal',         estado:'asignada'},
+    ]
+  },
+  13: {
+    nombre:'Copa Nacional Bádminton', deporte:'Bádminton', categoria:'Juvenil', categorias:['Juvenil'],
+    fechaInicio:'5 Mar. 2026', fechaFin:'20 Mar. 2026', instituciones:'48', deportistas:'192', promovidos:'8',
+    fases:[{num:1,nombre:'Departamental',fechas:'5 Mar. • 12 Mar.',estado:'completada'},{num:2,nombre:'Nacional',fechas:'13 Mar. • 20 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Bádminton Singles Masculino Juvenil',  deporte:'Bádminton', sportKey:'badminton_singles', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Norte', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Bádminton Singles Femenino Juvenil',   deporte:'Bádminton', sportKey:'badminton_singles', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Norte', fase:'Semifinal',        estado:'en-digitacion'},
+      {nombre:'Bádminton Dobles Mixto Juvenil',       deporte:'Bádminton', sportKey:'badminton_dobles',  sisKey:'robin',sistemaLabel:'Round Robin',          zona:'Centro',fase:'Fase de grupos',   estado:'en-digitacion'},
+    ]
+  },
+  14: {
+    nombre:'Torneo Hockey Césped', deporte:'Hockey', categoria:'Sub-21', categorias:['Sub-21'],
+    fechaInicio:'10 Abr. 2026', fechaFin:'25 Abr. 2026', instituciones:'16', deportistas:'320', promovidos:'4',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'10 Abr. • 18 Abr.',estado:'completada'},{num:2,nombre:'Final',fechas:'19 Abr. • 25 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Hockey Césped Masculino Sub-21',  deporte:'Hockey', sportKey:'hockey_cesped', sisKey:'grupos', sistemaLabel:'Fase de grupos', zona:'Sur',  fase:'Fase de grupos',  estado:'en-digitacion'},
+      {nombre:'Hockey Césped Femenino Sub-21',   deporte:'Hockey', sportKey:'hockey_cesped', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Sur', fase:'Semifinal', estado:'en-digitacion'},
+    ]
+  },
+  15: {
+    nombre:'Copa Béisbol Departamental', deporte:'Béisbol', categoria:'Mayores', categorias:['Mayores'],
+    fechaInicio:'1 Mar. 2026', fechaFin:'30 Abr. 2026', instituciones:'24', deportistas:'480', promovidos:'6',
+    fases:[{num:1,nombre:'Municipal',fechas:'1 Mar. • 15 Mar.',estado:'completada'},{num:2,nombre:'Departamental',fechas:'16 Mar. • 31 Mar.',estado:'completada'},{num:3,nombre:'Regional',fechas:'1 Abr. • 20 Abr.',estado:'en-curso'},{num:4,nombre:'Final',fechas:'21 Abr. • 30 Abr.',estado:'pendiente'}],
+    competencias:[
+      {nombre:'Béisbol Tradicional Masculino',    deporte:'Béisbol',  sportKey:'b_isbol',   sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Caribe', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Béisbol 5 Mixto',                  deporte:'Béisbol',  sportKey:'beisbol_5', sisKey:'robin',  sistemaLabel:'Round Robin',          zona:'Caribe', fase:'Fase de grupos',   estado:'en-digitacion'},
+    ]
+  },
+  16: {
+    nombre:'Torneo Sóftbol Femenino', deporte:'Sóftbol', categoria:'Sub-23', categorias:['Sub-23'],
+    fechaInicio:'15 Mar. 2026', fechaFin:'10 Abr. 2026', instituciones:'16', deportistas:'240', promovidos:'4',
+    fases:[{num:1,nombre:'Departamental',fechas:'15 Mar. • 25 Mar.',estado:'completada'},{num:2,nombre:'Nacional',fechas:'1 Abr. • 10 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Sóftbol Femenino Sub-23',         deporte:'Sóftbol', sportKey:'softbol', sisKey:'robin', sistemaLabel:'Round Robin', zona:'Centro', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Sóftbol Femenino Sub-23 Final',   deporte:'Sóftbol', sportKey:'softbol', sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Centro', fase:'Semifinal', estado:'en-digitacion'},
+    ]
+  },
+  17: {
+    nombre:'Copa Fútbol Interclubes', deporte:'Fútbol', categoria:'Mayores', categorias:['Mayores'],
+    fechaInicio:'10 Ene. 2026', fechaFin:'15 Jun. 2026', instituciones:'64', deportistas:'1.280', promovidos:'12',
+    fases:[{num:1,nombre:'Municipal',fechas:'10 Ene. • 10 Feb.',estado:'completada'},{num:2,nombre:'Departamental',fechas:'15 Feb. • 15 Mar.',estado:'completada'},{num:3,nombre:'Regional',fechas:'20 Mar. • 20 Abr.',estado:'en-curso'},{num:4,nombre:'Nacional',fechas:'1 May. • 15 Jun.',estado:'pendiente'}],
+    competencias:[
+      {nombre:'Fútbol Masculino Mayores',      deporte:'Fútbol', sportKey:'f_tbol',      sisKey:'grupos', sistemaLabel:'Fase de grupos',       zona:'Andina', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Fútbol Femenino Mayores',       deporte:'Fútbol', sportKey:'f_tbol',      sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Andina', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Fútbol Sala Masculino Mayores', deporte:'Fútbol Sala', sportKey:'f_tbol_sala', sisKey:'robin', sistemaLabel:'Round Robin', zona:'Pacífica', fase:'Fase de grupos', estado:'en-digitacion'},
+    ]
+  },
+  18: {
+    nombre:'Torneo Curling Nacional', deporte:'Curling', categoria:'Open', categorias:['Open'],
+    fechaInicio:'20 Feb. 2026', fechaFin:'5 Mar. 2026', instituciones:'12', deportistas:'96', promovidos:'4',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'20 Feb. • 27 Feb.',estado:'completada'},{num:2,nombre:'Final',fechas:'1 Mar. • 5 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Curling Mixto Open',            deporte:'Curling', sportKey:'curling',        sisKey:'robin', sistemaLabel:'Round Robin', zona:'Nacional', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Curling Dobles Mixto Open',     deporte:'Curling', sportKey:'curling_dobles', sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Semifinal', estado:'en-digitacion'},
+    ]
+  },
+  19: {
+    nombre:'Liga Cricket Colombia', deporte:'Cricket', categoria:'Mayores', categorias:['Mayores'],
+    fechaInicio:'1 Abr. 2026', fechaFin:'30 May. 2026', instituciones:'8', deportistas:'160', promovidos:'4',
+    fases:[{num:1,nombre:'Fase de grupos',fechas:'1 Abr. • 30 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Cricket ODI Masculino',    deporte:'Cricket', sportKey:'cricket_odi',  sisKey:'robin', sistemaLabel:'Round Robin', zona:'Caribe', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Cricket T20 Masculino',    deporte:'Cricket', sportKey:'cricket',      sisKey:'robin', sistemaLabel:'Round Robin', zona:'Caribe', fase:'Fase de grupos', estado:'en-digitacion'},
+    ]
+  },
+  20: {
+    nombre:'Copa Disco Volador', deporte:'Disco Volador', categoria:'Mixto', categorias:['Mixto'],
+    fechaInicio:'12 Mar. 2026', fechaFin:'18 Mar. 2026', instituciones:'16', deportistas:'256', promovidos:'4',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'12 Mar. • 15 Mar.',estado:'completada'},{num:2,nombre:'Final',fechas:'16 Mar. • 18 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Disco Volador Mixto',         deporte:'Disco Volador', sportKey:'disco_volador',       sisKey:'grupos', sistemaLabel:'Fase de grupos', zona:'Centro', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Disco Volador Playa Mixto',   deporte:'Disco Volador', sportKey:'disco_volador_playa', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Caribe', fase:'Semifinal', estado:'en-digitacion'},
+    ]
+  },
+  21: {
+    nombre:'Campeonato Bobsleigh', deporte:'Bobsleigh', categoria:'Open', categorias:['Open'],
+    fechaInicio:'5 Feb. 2026', fechaFin:'12 Feb. 2026', instituciones:'8', deportistas:'32', promovidos:'3',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'5 Feb. • 8 Feb.',estado:'completada'},{num:2,nombre:'Final',fechas:'9 Feb. • 12 Feb.',estado:'completada'},{num:3,nombre:'Ceremonia',fechas:'12 Feb.',estado:'completada'}],
+    competencias:[
+      {nombre:'Bobsleigh 2 Tripulantes Masculino', deporte:'Bobsleigh', sportKey:'bobsleigh', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'finalizada'},
+      {nombre:'Bobsleigh 4 Tripulantes Masculino', deporte:'Bobsleigh', sportKey:'bobsleigh', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'finalizada'},
+    ]
+  },
+  22: {
+    nombre:'Liga Voleibol Nacional', deporte:'Voleibol', categoria:'Juvenil', categorias:['Juvenil'],
+    fechaInicio:'10 Feb. 2026', fechaFin:'20 May. 2026', instituciones:'32', deportistas:'480', promovidos:'8',
+    fases:[{num:1,nombre:'Departamental',fechas:'10 Feb. • 10 Mar.',estado:'completada'},{num:2,nombre:'Regional',fechas:'15 Mar. • 15 Abr.',estado:'completada'},{num:3,nombre:'Nacional',fechas:'20 Abr. • 20 May.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Voleibol Masculino Juvenil',  deporte:'Voleibol', sportKey:'voleibol', sisKey:'grupos', sistemaLabel:'Fase de grupos', zona:'Andina', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Voleibol Femenino Juvenil',   deporte:'Voleibol', sportKey:'voleibol', sisKey:'elim',   sistemaLabel:'Eliminación directa', zona:'Andina', fase:'Cuartos de final', estado:'en-digitacion'},
+    ]
+  },
+  23: {
+    nombre:'Festival Mini Voleibol Escolar', deporte:'Mini Voleibol', categoria:'Infantil', categorias:['Infantil'],
+    fechaInicio:'25 Abr. 2026', fechaFin:'28 Abr. 2026', instituciones:'24', deportistas:'192', promovidos:'6',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'25 Abr. • 27 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Mini Voleibol Mixto Infantil', deporte:'Mini Voleibol', sportKey:'mini_voleibol', sisKey:'robin', sistemaLabel:'Round Robin', zona:'Centro', fase:'Fase de grupos', estado:'en-digitacion'},
+    ]
+  },
+  24: {
+    nombre:'Copa Pádel Departamental', deporte:'Pádel', categoria:'Open', categorias:['Open'],
+    fechaInicio:'8 Mar. 2026', fechaFin:'15 Mar. 2026', instituciones:'32', deportistas:'128', promovidos:'4',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'8 Mar. • 12 Mar.',estado:'completada'},{num:2,nombre:'Final',fechas:'13 Mar. • 15 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Pádel Masculino Open',    deporte:'Pádel', sportKey:'padel', sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Norte', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Pádel Femenino Open',     deporte:'Pádel', sportKey:'padel', sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Norte', fase:'Semifinal',        estado:'en-digitacion'},
+      {nombre:'Pádel Mixto Open',        deporte:'Pádel', sportKey:'padel', sisKey:'robin', sistemaLabel:'Round Robin',          zona:'Centro',fase:'Fase de grupos',   estado:'en-digitacion'},
+    ]
+  },
+  25: {
+    nombre:'Campeonato Nacional Porrismo', deporte:'Porrismo', categoria:'Juvenil', categorias:['Juvenil'],
+    fechaInicio:'1 Abr. 2026', fechaFin:'5 Abr. 2026', instituciones:'40', deportistas:'600', promovidos:'8',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'1 Abr. • 3 Abr.',estado:'completada'},{num:2,nombre:'Final',fechas:'4 Abr. • 5 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Porrismo Cheer Juvenil',    deporte:'Porrismo', sportKey:'porrismo_cheer',   sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Porrismo Hip Hop Juvenil',  deporte:'Porrismo', sportKey:'porrismo_hip_hop', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Porrismo Pom Juvenil',      deporte:'Porrismo', sportKey:'porrismo_pom',     sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+    ]
+  },
+  26: {
+    nombre:'Regata Nacional de Remo', deporte:'Remo', categoria:'Sub-23', categorias:['Sub-23'],
+    fechaInicio:'15 Mar. 2026', fechaFin:'22 Mar. 2026', instituciones:'20', deportistas:'160', promovidos:'6',
+    fases:[{num:1,nombre:'Eliminatoria',fechas:'15 Mar. • 18 Mar.',estado:'completada'},{num:2,nombre:'Final',fechas:'19 Mar. • 22 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Remo Single Scull Masculino',  deporte:'Remo', sportKey:'remo',              sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Remo Doble Scull Femenino',    deporte:'Remo', sportKey:'remo_doble_scull',  sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+    ]
+  },
+  27: {
+    nombre:'Copa Taekwondo Departamental', deporte:'Taekwondo', categoria:'Juvenil', categorias:['Juvenil'],
+    fechaInicio:'20 Feb. 2026', fechaFin:'28 Feb. 2026', instituciones:'36', deportistas:'288', promovidos:'8',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'20 Feb. • 24 Feb.',estado:'completada'},{num:2,nombre:'Final',fechas:'25 Feb. • 28 Feb.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Taekwondo -58kg Masculino Juvenil', deporte:'Taekwondo', sportKey:'taekwondo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Centro', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Taekwondo -49kg Femenino Juvenil',  deporte:'Taekwondo', sportKey:'taekwondo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Centro', fase:'Semifinal',        estado:'en-digitacion'},
+      {nombre:'Taekwondo Poomsae Mixto Juvenil',   deporte:'Taekwondo', sportKey:'taekwondo', sisKey:'final',sistemaLabel:'Final Directa',       zona:'Centro', fase:'Final',             estado:'en-digitacion'},
+    ]
+  },
+  28: {
+    nombre:'Torneo Patinaje Regional', deporte:'Patinaje', categoria:'Sub-18', categorias:['Sub-18'],
+    fechaInicio:'5 Mar. 2026', fechaFin:'20 Mar. 2026', instituciones:'28', deportistas:'224', promovidos:'6',
+    fases:[{num:1,nombre:'Departamental',fechas:'5 Mar. • 12 Mar.',estado:'completada'},{num:2,nombre:'Regional',fechas:'13 Mar. • 20 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Patinaje Velocidad 300m Masculino', deporte:'Patinaje', sportKey:'patinaje', sisKey:'final', sistemaLabel:'Final Directa', zona:'Andina', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Patinaje Velocidad 500m Femenino',  deporte:'Patinaje', sportKey:'patinaje', sisKey:'final', sistemaLabel:'Final Directa', zona:'Andina', fase:'Final', estado:'en-digitacion'},
+    ]
+  },
+  29: {
+    nombre:'Vuelta Ciclística Departamental', deporte:'Ciclismo', categoria:'Élite', categorias:['Élite'],
+    fechaInicio:'10 Abr. 2026', fechaFin:'18 Abr. 2026', instituciones:'30', deportistas:'180', promovidos:'6',
+    fases:[{num:1,nombre:'Etapas',fechas:'10 Abr. • 16 Abr.',estado:'completada'},{num:2,nombre:'Final',fechas:'17 Abr. • 18 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Ciclismo Ruta Masculino Élite',       deporte:'Ciclismo', sportKey:'ciclismo', sisKey:'final', sistemaLabel:'Final Directa', zona:'Andina', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Ciclismo Contrarreloj Femenino Élite', deporte:'Ciclismo', sportKey:'ciclismo', sisKey:'final', sistemaLabel:'Final Directa', zona:'Andina', fase:'Final', estado:'en-digitacion'},
+    ]
+  },
+  30: {
+    nombre:'Copa Karate Do Nacional', deporte:'Karate Do', categoria:'Sub-21', categorias:['Sub-21'],
+    fechaInicio:'8 Feb. 2026', fechaFin:'12 Feb. 2026', instituciones:'40', deportistas:'320', promovidos:'8',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'8 Feb. • 10 Feb.',estado:'completada'},{num:2,nombre:'Final',fechas:'11 Feb. • 12 Feb.',estado:'completada'},{num:3,nombre:'Ceremonia',fechas:'12 Feb.',estado:'completada'}],
+    competencias:[
+      {nombre:'Karate Kumite -60kg Masculino',  deporte:'Karate Do', sportKey:'karate_do', sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Final',    estado:'finalizada'},
+      {nombre:'Karate Kumite -55kg Femenino',   deporte:'Karate Do', sportKey:'karate_do', sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Final',    estado:'finalizada'},
+      {nombre:'Karate Kata Individual Mixto',   deporte:'Karate Do', sportKey:'karate_do', sisKey:'final', sistemaLabel:'Final Directa',       zona:'Nacional', fase:'Final',    estado:'finalizada'},
+    ]
+  },
+  31: {
+    nombre:'Campeonato Boxeo Juvenil', deporte:'Boxeo', categoria:'Juvenil', categorias:['Juvenil'],
+    fechaInicio:'15 Mar. 2026', fechaFin:'25 Mar. 2026', instituciones:'32', deportistas:'192', promovidos:'6',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'15 Mar. • 20 Mar.',estado:'completada'},{num:2,nombre:'Final',fechas:'21 Mar. • 25 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Boxeo -52kg Masculino Juvenil',  deporte:'Boxeo', sportKey:'boxeo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Centro', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Boxeo -57kg Femenino Juvenil',   deporte:'Boxeo', sportKey:'boxeo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Centro', fase:'Semifinal',        estado:'en-digitacion'},
+    ]
+  },
+  32: {
+    nombre:'Copa Judo Nacional', deporte:'Judo', categoria:'Sub-23', categorias:['Sub-23'],
+    fechaInicio:'1 Mar. 2026', fechaFin:'10 Mar. 2026', instituciones:'36', deportistas:'252', promovidos:'8',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'1 Mar. • 5 Mar.',estado:'completada'},{num:2,nombre:'Eliminatoria',fechas:'6 Mar. • 8 Mar.',estado:'completada'},{num:3,nombre:'Final',fechas:'9 Mar. • 10 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Judo -60kg Masculino Sub-23',  deporte:'Judo', sportKey:'judo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Judo -48kg Femenino Sub-23',   deporte:'Judo', sportKey:'judo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Semifinal',        estado:'en-digitacion'},
+      {nombre:'Judo -73kg Masculino Sub-23',  deporte:'Judo', sportKey:'judo', sisKey:'elim', sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Cuartos de final', estado:'en-digitacion'},
+    ]
+  },
+  33: {
+    nombre:'Torneo Boccia Paralímpico', deporte:'Boccia', categoria:'Open', categorias:['Open'],
+    fechaInicio:'20 Mar. 2026', fechaFin:'25 Mar. 2026', instituciones:'16', deportistas:'64', promovidos:'4',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'20 Mar. • 22 Mar.',estado:'completada'},{num:2,nombre:'Final',fechas:'23 Mar. • 25 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Boccia BC1 Individual Mixto',   deporte:'Boccia', sportKey:'boccia',            sisKey:'robin', sistemaLabel:'Round Robin',          zona:'Nacional', fase:'Fase de grupos', estado:'en-digitacion'},
+      {nombre:'Boccia BC3 Parejas Mixto Open', deporte:'Boccia', sportKey:'boccia_bc3_parejas',sisKey:'elim',  sistemaLabel:'Eliminación directa', zona:'Nacional', fase:'Semifinal',      estado:'en-digitacion'},
+    ]
+  },
+  34: {
+    nombre:'Copa Para Atletismo Nacional', deporte:'Para Atletismo', categoria:'Open', categorias:['Open'],
+    fechaInicio:'5 Abr. 2026', fechaFin:'15 Abr. 2026', instituciones:'24', deportistas:'192', promovidos:'6',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'5 Abr. • 10 Abr.',estado:'completada'},{num:2,nombre:'Final',fechas:'11 Abr. • 15 Abr.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Para Atletismo 100m T11 Masculino', deporte:'Para Atletismo', sportKey:'para_atletismo', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Para Atletismo 400m T47 Femenino',  deporte:'Para Atletismo', sportKey:'para_atletismo', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Para Atletismo Lanzamiento Bala F32',deporte:'Para Atletismo', sportKey:'para_atletismo', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+    ]
+  },
+  35: {
+    nombre:'Torneo Para Natación Regional', deporte:'Para Natación', categoria:'Open', categorias:['Open'],
+    fechaInicio:'10 Mar. 2026', fechaFin:'18 Mar. 2026', instituciones:'20', deportistas:'120', promovidos:'4',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'10 Mar. • 14 Mar.',estado:'completada'},{num:2,nombre:'Final',fechas:'15 Mar. • 18 Mar.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Para Natación 50m Libre S6 Masculino',   deporte:'Para Natación', sportKey:'para_nataci_n', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Para Natación 100m Espalda S8 Femenino',  deporte:'Para Natación', sportKey:'para_nataci_n', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+      {nombre:'Para Natación 200m Libre S10 Mixto',      deporte:'Para Natación', sportKey:'para_nataci_n', sisKey:'final', sistemaLabel:'Final Directa', zona:'Nacional', fase:'Final', estado:'en-digitacion'},
+    ]
+  },
+  36: {
+    nombre:'Copa Artes Marciales Doble Eliminación', deporte:'Multideporte', categoria:'Sub-21', categorias:['Sub-21'],
+    fechaInicio:'1 May. 2026', fechaFin:'12 May. 2026', instituciones:'32', deportistas:'256', promovidos:'8',
+    fases:[{num:1,nombre:'Clasificatoria',fechas:'1 May. • 5 May.',estado:'completada'},{num:2,nombre:'Eliminatoria',fechas:'6 May. • 12 May.',estado:'en-curso'}],
+    competencias:[
+      {nombre:'Taekwondo -58kg Masculino Sub-21',  deporte:'Taekwondo', sportKey:'taekwondo', sisKey:'doble', sistemaLabel:'Eliminación doble', zona:'Nacional', fase:'Semifinal',        estado:'en-digitacion'},
+      {nombre:'Taekwondo -49kg Femenino Sub-21',   deporte:'Taekwondo', sportKey:'taekwondo', sisKey:'doble', sistemaLabel:'Eliminación doble', zona:'Nacional', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Judo -60kg Masculino Sub-21',       deporte:'Judo',      sportKey:'judo',      sisKey:'doble', sistemaLabel:'Eliminación doble', zona:'Nacional', fase:'Semifinal',        estado:'en-digitacion'},
+      {nombre:'Judo -48kg Femenino Sub-21',        deporte:'Judo',      sportKey:'judo',      sisKey:'doble', sistemaLabel:'Eliminación doble', zona:'Nacional', fase:'Cuartos de final', estado:'en-digitacion'},
+      {nombre:'Karate Kumite -60kg Masculino',     deporte:'Karate Do', sportKey:'karate_do', sisKey:'doble', sistemaLabel:'Eliminación doble', zona:'Nacional', fase:'Ronda 1',          estado:'en-digitacion'},
+      {nombre:'Boxeo -52kg Masculino Sub-21',      deporte:'Boxeo',     sportKey:'boxeo',     sisKey:'doble', sistemaLabel:'Eliminación doble', zona:'Nacional', fase:'Cuartos de final', estado:'en-digitacion'},
+    ]
+  },
+};
+
+/* Assign random digitadores to all competencias */
+Object.values(EVENTS_DB).forEach(ev => {
+  ev.competencias.forEach((c,i) => {
+    const d = DIGITADORES[i % DIGITADORES.length];
+    c.digitador = d.nombre; c.digitadorColor = d.color; c.digitadorIni = d.ini;
+    c.compCode = 'COMP-' + String(ev.competencias.indexOf(c)+1).padStart(3,'0');
+    if(c.estado === 'creada'){ c.digitador = null; c.digitadorColor = null; c.digitadorIni = null; }
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   READ EVENT ID FROM URL & RENDER
+   ═══════════════════════════════════════════════════════════════ */
+const params = new URLSearchParams(window.location.search);
+const eventId = parseInt(params.get('id')) || 1;
+const EVENT = EVENTS_DB[eventId] || EVENTS_DB[1];
+
+const ESTADO_LABELS = {'en-digitacion':'En digitación','en-pausa':'En pausa','finalizada':'Finalizada','asignada':'Asignada','creada':'Creada'};
+const ESTADO_CLS_MAP = {'en-digitacion':'digitacion','en-pausa':'pausa','finalizada':'finalizada','asignada':'asignada','creada':'creada'};
+const SPORT_EMOJIS = {futsal:'⚽',baloncesto:'🏀',baloncesto_3x3:'🏀',voleibol:'🏐',atletismo:'🏃',natacion:'🏊',badminton:'🏸',ajedrez:'♟️',taekwondo:'🥋',tenis_mesa:'🏓',gimnasia:'🤸',balonmano:'🤾',balonmano_playa:'🤾',judo:'🥋',hockey:'🏑',rugby:'🏉',boxeo:'🥊',futbol:'⚽',beisbol:'⚾',softbol:'🥎',tenis:'🎾',boccia:'🎱',boccia_bc1:'🎱',boccia_bc2:'🎱',boccia_bc3:'🎱',boccia_bc4:'🎱',boccia_bc3_parejas:'🎱',boccia_bc4_parejas:'🎱'};
+const ESTADO_MAP_EVENTO = {'completada':'finalizado','en-curso':'en-curso','pendiente':'proximo'};
+const ESTADO_BADGE_MAP = {'en-curso':['en-curso','En curso'],'proximo':['proximo','Próximo'],'finalizado':['finalizado','Finalizado']};
+
+function getEventEstado(){
+  const fases = EVENT.fases;
+  if(fases.every(f=>f.estado==='completada')) return 'finalizado';
+  if(fases.every(f=>f.estado==='pendiente')) return 'proximo';
+  return 'en-curso';
+}
+
+function renderEventHeader(){
+  const estado = getEventEstado();
+  const [cls,lbl] = ESTADO_BADGE_MAP[estado];
+  const initials = EVENT.nombre.split(' ').filter(w=>w.length>2).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+  document.getElementById('eventHeaderCard').innerHTML = `
+    <div class="event-header-top">
+      <div class="event-header-left">
+        <div class="event-avatar">${initials}</div>
+        <div>
+          <div class="event-title">
+            ${EVENT.nombre}
+            <span class="badge-en-curso ${cls}" style="${cls==='finalizado'?'background:var(--green-bg);color:var(--green)':cls==='proximo'?'background:var(--orange-bg);color:var(--naranja)':''}">${lbl}</span>
+          </div>
+          <div class="event-meta">${EVENT.deporte} &bull; ${EVENT.categorias.join(', ')} &bull; ${EVENT.fechaInicio} &ndash; ${EVENT.fechaFin}</div>
+        </div>
+      </div>
+      <a href="stepper.html?eventId=${eventId}&eventoNombre=${encodeURIComponent(EVENT.nombre)}" class="btn-nuevo">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Nuevo enfrentamiento
+      </a>
+    </div>
+    <div class="stats-divider">
+      <div class="stat-block"><div class="stat-block-label">Instituciones</div><div class="stat-block-value">${EVENT.instituciones}</div></div>
+      <div class="stat-block"><div class="stat-block-label">Deportistas</div><div class="stat-block-value">${EVENT.deportistas}</div></div>
+      <div class="stat-block"><div class="stat-block-label">Promovidos</div><div class="stat-block-value">${EVENT.promovidos}</div></div>
+    </div>`;
+}
+
+function renderFases(){
+  const fases = EVENT.fases;
+  let html = '<div class="fases-title">Fases del evento</div><div class="fases-timeline">';
+  fases.forEach((f,i) => {
+    const isActive = f.estado === 'en-curso';
+    const isDone = f.estado === 'completada';
+    const isPending = f.estado === 'pendiente';
+    html += `<div class="fase-item">
+      <div class="fase-circle${isPending?' pending':''}${isDone?' done':''}${isActive?' active':''}">${isDone?'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':f.num}</div>
+      <div class="fase-name"${isPending?' style="color:var(--text-secondary)"':''}>${f.nombre}</div>
+      <div class="fase-fechas">${f.fechas}</div>
+      ${isActive?'<span class="badge-en-curso" style="background:var(--orange-bg);color:var(--naranja);border-color:var(--orange-border)">En curso</span>':''}
+      ${isDone?'<span class="badge-en-curso" style="background:var(--green-bg);color:var(--green)">Completada</span>':''}
+    </div>`;
+    if(i < fases.length - 1){
+      const fillPct = isDone ? 100 : isActive ? 50 : 0;
+      html += `<div class="fase-connector"><div class="fase-connector-line"><div class="fase-connector-fill" style="width:${fillPct}%"></div></div></div>`;
+    }
+  });
+  html += '</div>';
+  document.getElementById('fasesCard').innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPETENCIAS TABLE
+   ═══════════════════════════════════════════════════════════════ */
+const COMP_PER_PAGE = 10;
+let compPage = 1;
+let _compSistemaFilter = '';
+
+const SIS_LABELS_MAP = {'':'Todos los sistemas',elim:'Eliminación directa',robin:'Round robin',final:'Final directa',grupos:'Fase de grupos',doble:'Eliminación doble',multi:'Multi-sistema'};
+
+function toggleSistemaDD(){
+  const trigger = document.getElementById('sistemaTrigger');
+  const menu = document.getElementById('sistemaMenu');
+  const isOpen = menu.classList.contains('open');
+  menu.classList.toggle('open');
+  trigger.classList.toggle('open');
+  if(!isOpen) document.addEventListener('click',_closeSistemaDD);
+}
+function _closeSistemaDD(e){
+  if(!e.target.closest('#sistemaDD')){
+    document.getElementById('sistemaMenu').classList.remove('open');
+    document.getElementById('sistemaTrigger').classList.remove('open');
+    document.removeEventListener('click',_closeSistemaDD);
+  }
+}
+function pickSistema(val){
+  _compSistemaFilter = val;
+  document.getElementById('sistemaLabel').textContent = SIS_LABELS_MAP[val]||'Todos los sistemas';
+  document.getElementById('sistemaMenu').classList.remove('open');
+  document.getElementById('sistemaTrigger').classList.remove('open');
+  document.querySelectorAll('#sistemaMenu .filter-dd-opt').forEach(o => o.classList.remove('selected'));
+  event.target.classList.add('selected');
+  compPage=1;
+  renderCompetencias();
+}
+
+function renderCompetencias() {
+  const q = document.getElementById('compSearchInp').value.trim().toLowerCase();
+  const sisFilter = _compSistemaFilter;
+  const comps = EVENT.competencias;
+  const filtered = comps.filter(c =>
+    (!q || c.nombre.toLowerCase().includes(q) || c.deporte.toLowerCase().includes(q)) &&
+    (!sisFilter || c.sisKey === sisFilter)
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / COMP_PER_PAGE));
+  if (compPage > totalPages) compPage = totalPages;
+  const start = (compPage - 1) * COMP_PER_PAGE;
+  const pageData = filtered.slice(start, start + COMP_PER_PAGE);
+
+  document.getElementById('compPagLabel').textContent = `Página ${compPage} de ${totalPages}`;
+  document.getElementById('compBtnPrev').disabled = compPage <= 1;
+  document.getElementById('compBtnNext').disabled = compPage >= totalPages;
+
+  const tbody = document.getElementById('compBody');
+  if (pageData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="no-data">No se encontraron competencias</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = pageData.map((c, idx) => {
+    const emoji = SPORT_EMOJIS[c.sportKey] || '🏅';
+    const estCls = ESTADO_CLS_MAP[c.estado] || 'creada';
+    const estLabel = ESTADO_LABELS[c.estado] || c.estado;
+    const digiHtml = c.digitador
+      ? `<div class="digi-cell"><div class="digi-mini" style="background:${c.digitadorColor}">${c.digitadorIni}</div>${c.digitador}</div>`
+      : '<div class="digi-cell"><span style="color:var(--text-secondary)">Sin asignar</span></div>';
+    return `<tr>
+      <td class="row-num">${start + idx + 1}</td>
+      <td>
+        <div class="comp-name">${c.nombre}</div>
+        <div class="comp-code">${c.compCode} &nbsp;\u2022&nbsp; <span class="comp-cat">${EVENT.categoria}</span></div>
+      </td>
+      <td>
+        <span class="badge-sis ${c.sisKey}">${c.sistemaLabel}</span>
+        <div class="sis-medal">Sin medallas</div>
+      </td>
+      <td>
+        <div class="deporte-cell"><span class="deporte-emoji">${emoji}</span><span class="deporte-text">${c.deporte}</span></div>
+        <div class="modalidad-sub">${c.nombre}</div>
+      </td>
+      <td>
+        <div class="evento-text">${EVENT.nombre}</div>
+        <div class="evento-sub">${c.zona} \u2022 ${c.fase}</div>
+      </td>
+      <td><span class="badge-est ${estCls}">${estLabel}</span></td>
+      <td>${digiHtml}</td>
+      <td><div class="action-btn"><a href="detalle.html?id=${c.compCode}&role=coordinador&sport=${c.sportKey}&sis=${c.sisKey}&deporte=${encodeURIComponent(c.deporte)}&nombre=${encodeURIComponent(c.nombre)}&estado=${encodeURIComponent(estLabel)}&estCls=${c.estado}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="#d74009" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#d74009" stroke-width="1.5"/></svg></a></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function changeCompPage(dir) {
+  const comps = EVENT.competencias;
+  const q = document.getElementById('compSearchInp').value.trim().toLowerCase();
+  const filtered = comps.filter(c =>
+    (!q || c.nombre.toLowerCase().includes(q) || c.deporte.toLowerCase().includes(q)) &&
+    (!_compSistemaFilter || c.sisKey === _compSistemaFilter)
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / COMP_PER_PAGE));
+  compPage = Math.min(Math.max(1, compPage + dir), totalPages);
+  renderCompetencias();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABS & NAV
+   ═══════════════════════════════════════════════════════════════ */
+const TAB_LABELS = {
+  instituciones: 'Módulo de Instituciones',
+  deportistas: 'Módulo de Deportistas',
+  personal: 'Módulo de Personal de apoyo',
+  resultados: 'Módulo de Resultados'
+};
+
+function setActiveTab(tab) {
+  const tabs = ['tabComp','tabInst','tabDep','tabPers','tabRes'];
+  const map = {competencias:'tabComp', instituciones:'tabInst', deportistas:'tabDep', personal:'tabPers', resultados:'tabRes'};
+  tabs.forEach(t => document.getElementById(t).classList.remove('active'));
+  document.getElementById(map[tab]).classList.add('active');
+
+  if (tab === 'competencias') {
+    document.getElementById('contentComp').style.display = '';
+    document.getElementById('contentOther').style.display = 'none';
+  } else {
+    document.getElementById('contentComp').style.display = 'none';
+    document.getElementById('contentOther').style.display = '';
+    document.getElementById('placeholderText').textContent = TAB_LABELS[tab] + ' — próximamente disponible';
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function toggleCompMenu() {
+  const nav = document.getElementById('navComp');
+  const sub = document.getElementById('subnavComp');
+  nav.classList.toggle('expanded');
+  sub.classList.toggle('open');
+}
+
+function toggleProfileDD() {
+  document.getElementById('profileDropdown').classList.toggle('open');
+}
+
+function fadeAndGo(url){document.body.style.transition='opacity .25s ease';document.body.style.opacity='0';setTimeout(()=>{window.location.href=url},260)}
+function switchProfile(p) {
+  document.getElementById('profileDropdown').classList.remove('open');
+  if (p === 'digitador') fadeAndGo('digitador.html');
+  else fadeAndGo('eventos.html');
+}
+
+/* Check for new competition created from stepper */
+(function _checkNewComp(){
+  try {
+    const stored = JSON.parse(localStorage.getItem('naowee_new_competitions') || '[]');
+    const forThisEvent = stored.filter(c => String(c.eventId) === String(eventId));
+    if(forThisEvent.length > 0){
+      forThisEvent.forEach(c => {
+        const faseActual = EVENT.fases.find(f => f.estado === 'en-curso');
+        EVENT.competencias.unshift({
+          nombre: c.nombre || (c.deporte + ' ' + (c.categoria || '')),
+          deporte: c.deporte || 'Deporte',
+          sportKey: c.sportKey || c.sport || 'futbol',
+          sisKey: c.sisKey || 'elim',
+          sistemaLabel: c.sistema || 'Eliminación directa',
+          zona: 'Centro',
+          fase: faseActual ? faseActual.nombre : 'Fase actual',
+          estado: 'en-digitacion',
+          compCode: c.code || 'COMP-NEW-' + Date.now()
+        });
+      });
+      /* Remove processed entries */
+      const remaining = stored.filter(c => String(c.eventId) !== String(eventId));
+      localStorage.setItem('naowee_new_competitions', JSON.stringify(remaining));
+    }
+  } catch(e){}
+})();
+
+/* Also save to lista global via localStorage */
+(function _syncToLista(){
+  try {
+    const stored = JSON.parse(localStorage.getItem('naowee_lista_new') || '[]');
+    /* Already synced on previous load — nothing to do here */
+  } catch(e){}
+})();
+
+/* INIT */
+renderEventHeader();
+renderFases();
+renderCompetencias();
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.profile-switcher')) document.getElementById('profileDropdown').classList.remove('open');
+});
+
+document.getElementById('btnLogout')?.addEventListener('click', () => {
+  fadeAndGo('../escenarios/escenario-01-login.html');
+});
+</script>
+</body>
+</html>

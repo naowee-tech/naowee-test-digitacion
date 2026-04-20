@@ -2301,6 +2301,13 @@ function renderSection(id) {
   }
   html += '</div><div class="pg-code-wrap"><div class="pg-code-bar"><span>HTML</span><button class="pg-copy-btn" onclick="copyCode()">Copy</button></div><pre class="pg-code" id="pg-code-output">' + escapeHtml(renderPreview(id)) + '</pre></div>';
   body.innerHTML = html;
+  var preview = document.getElementById('pg-preview');
+  if (preview) {
+    positionSegmentPills(preview, false);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function(){ positionSegmentPills(preview, false); });
+    }
+  }
 }
 
 function renderPreview(id) {

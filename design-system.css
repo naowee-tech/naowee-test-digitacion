@@ -5601,6 +5601,7 @@
 
 /* ── Sliding pill (background for active item) ── */
 .naowee-segment__pill {
+  box-sizing: border-box;
   position: absolute;
   top: var(--naowee-spacing-padding-xnano, 4px);
   bottom: var(--naowee-spacing-padding-xnano, 4px);
@@ -5611,10 +5612,10 @@
   border-radius: var(--naowee-border-radius-square-to-circle-small, 8px);
   box-shadow: var(--naowee-shadow-highlight-accent);
   pointer-events: none;
-  transform: translateX(var(--segment-pill-x, 0));
+  transform: translate3d(var(--segment-pill-x, 0), 0, 0);
   transition:
-    transform 340ms cubic-bezier(.22,1,.36,1),
-    width 340ms cubic-bezier(.22,1,.36,1);
+    transform 380ms cubic-bezier(.4, 0, .2, 1),
+    width 380ms cubic-bezier(.4, 0, .2, 1);
   will-change: transform, width;
   z-index: 0;
 }

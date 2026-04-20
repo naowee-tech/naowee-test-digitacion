@@ -1652,15 +1652,16 @@ const COMPONENTS = {
       var labels = ['Label','Label','Label','Label','Label'];
       var active = parseInt(s.active);
       var iconSz = s.size === 'small' ? 16 : 20;
-      return '<div class="' + cls.join(' ') + '" style="' + (s.proportional ? 'width:380px' : '') + '">' + labels.map(function(lbl,i){
+      var items = labels.map(function(lbl,i){
         var actCls = i === active ? ' naowee-segment__item--active' : '';
         var content = '';
         if (s.config === 'icon-text') content = naoIcon('image', iconSz) + lbl;
         else if (s.config === 'icon') content = naoIcon('image', iconSz);
         else if (s.config === 'thumb-text') content = '<span class="naowee-segment__thumb"></span>' + lbl;
         else content = lbl;
-        return '<button class="naowee-segment__item' + actCls + '">' + content + '</button>';
-      }).join('') + '</div>';
+        return '<button class="naowee-segment__item' + actCls + '" data-idx="' + i + '" onclick="segmentClick(this)">' + content + '</button>';
+      }).join('');
+      return '<div class="' + cls.join(' ') + '" style="' + (s.proportional ? 'width:380px' : '') + '" data-segmented><span class="naowee-segment__pill naowee-segment__pill--no-anim" data-pill></span>' + items + '</div>';
     }
   },
 
@@ -2371,9 +2372,29 @@ function refreshControls(id) {
 
 /* ── Control handlers ── */
 function setSelect(btn) {
-  STATE[btn.dataset.comp][btn.dataset.prop] = btn.dataset.val;
-  updatePreview(btn.dataset.comp);
-  refreshControls(btn.dataset.comp);
+  var comp = btn.dataset.comp;
+  var prop = btn.dataset.prop;
+  var val = btn.dataset.val;
+  STATE[comp][prop] = val;
+  // Smooth path: segmented-control "active" changes animate the pill in place
+  if (comp === 'segmented-control' && prop === 'active') {
+    var preview = document.getElementById('pg-preview');
+    var seg = preview && preview.querySelector('[data-segmented]');
+    var target = seg && seg.querySelector('.naowee-segment__item[data-idx="' + val + '"]');
+    if (target) {
+      seg.querySelectorAll('.naowee-segment__item--active').forEach(function(el){
+        el.classList.remove('naowee-segment__item--active');
+      });
+      target.classList.add('naowee-segment__item--active');
+      positionSegmentPills(preview, true);
+      var code = document.getElementById('pg-code-output');
+      if (code) code.textContent = renderPreview(comp).trim();
+      refreshControls(comp);
+      return;
+    }
+  }
+  updatePreview(comp);
+  refreshControls(comp);
 }
 function toggleCtrl(el) {
   STATE[el.dataset.comp][el.dataset.prop] = !STATE[el.dataset.comp][el.dataset.prop];
@@ -2397,8 +2418,55 @@ function updatePreview(id) {
     var html = renderPreview(id);
     preview.innerHTML = html;
     if (code) code.textContent = html.trim();
+    positionSegmentPills(preview, false);
   }
 }
+function positionSegmentPills(root, animate) {
+  var segs = root.querySelectorAll('[data-segmented]');
+  segs.forEach(function(seg){
+    var pill = seg.querySelector('[data-pill]');
+    var active = seg.querySelector('.naowee-segment__item--active');
+    if (!pill || !active) return;
+    if (!animate) pill.classList.add('naowee-segment__pill--no-anim');
+    var segRect = seg.getBoundingClientRect();
+    var actRect = active.getBoundingClientRect();
+    var x = actRect.left - segRect.left - seg.clientLeft;
+    pill.style.setProperty('--segment-pill-x', x + 'px');
+    pill.style.width = actRect.width + 'px';
+    if (!animate) {
+      // Force reflow then re-enable transitions
+      void pill.offsetWidth;
+      requestAnimationFrame(function(){
+        pill.classList.remove('naowee-segment__pill--no-anim');
+      });
+    }
+  });
+}
+function segmentClick(btn) {
+  var seg = btn.closest('[data-segmented]');
+  if (!seg) return;
+  var idx = btn.dataset.idx;
+  seg.querySelectorAll('.naowee-segment__item--active').forEach(function(el){
+    el.classList.remove('naowee-segment__item--active');
+  });
+  btn.classList.add('naowee-segment__item--active');
+  positionSegmentPills(seg.parentElement || document, true);
+  if (STATE['segmented-control']) {
+    STATE['segmented-control'].active = idx;
+    refreshControls('segmented-control');
+    // Sync code panel without resetting DOM
+    var code = document.getElementById('pg-code-output');
+    if (code) code.textContent = renderPreview('segmented-control').trim();
+  }
+}
+// Hook into setSelect: when changing "active" on segmented-control, animate pill instead of full re-render
+var _origSetSelect_segmented;
+document.addEventListener('DOMContentLoaded', function(){
+  window.addEventListener('resize', function(){
+    var p = document.getElementById('pg-preview');
+    if (p) positionSegmentPills(p, false);
+  });
+});
 function copyCode() {
   var code = document.getElementById('pg-code-output');
   if (code) {

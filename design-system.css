@@ -5587,6 +5587,7 @@
 
 /* ── Container ── */
 .naowee-segment {
+  position: relative;
   display: inline-flex;
   background: var(--naowee-color-fill-primary);
   border: var(--naowee-border-width-small) solid var(--naowee-color-border-primary, #d0d4e6);
@@ -5598,8 +5599,33 @@
   font-feature-settings: 'case' 1;
 }
 
+/* ── Sliding pill (background for active item) ── */
+.naowee-segment__pill {
+  position: absolute;
+  top: var(--naowee-spacing-padding-xnano, 4px);
+  bottom: var(--naowee-spacing-padding-xnano, 4px);
+  left: 0;
+  width: 0;
+  background: var(--naowee-color-fill-primary);
+  border: 2px solid var(--naowee-color-selected-border-idle, #d74009);
+  border-radius: var(--naowee-border-radius-square-to-circle-small, 8px);
+  box-shadow: var(--naowee-shadow-highlight-accent);
+  pointer-events: none;
+  transform: translateX(var(--segment-pill-x, 0));
+  transition:
+    transform 340ms cubic-bezier(.22,1,.36,1),
+    width 340ms cubic-bezier(.22,1,.36,1);
+  will-change: transform, width;
+  z-index: 0;
+}
+.naowee-segment__pill--no-anim {
+  transition: none;
+}
+
 /* ── Segment item (unselected) ── */
 .naowee-segment__item {
+  position: relative;
+  z-index: 1;
   display: flex; align-items: center; justify-content: center;
   gap: var(--naowee-spacing-gap-xnano);
   align-self: stretch;
@@ -5612,21 +5638,23 @@
   font-weight: var(--naowee-font-weight-semibold);
   color: var(--naowee-color-text-secondary);
   cursor: pointer;
-  transition: all var(--naowee-transition-default);
+  transition: color 220ms cubic-bezier(.22,1,.36,1);
   white-space: nowrap;
   overflow: clip;
   flex-shrink: 0;
 }
 .naowee-segment__item:hover { color: var(--naowee-color-text-primary); }
-.naowee-segment__item svg { width: 20px; height: 20px; flex-shrink: 0; }
+.naowee-segment__item svg {
+  width: 20px; height: 20px; flex-shrink: 0;
+  transition: opacity 220ms cubic-bezier(.22,1,.36,1);
+  opacity: .75;
+}
 
 /* ── Segment item (selected/active) ── */
 .naowee-segment__item--active {
-  background: var(--naowee-color-fill-primary);
-  border-color: var(--naowee-color-selected-border-idle, #d74009);
   color: var(--naowee-color-text-primary);
-  box-shadow: var(--naowee-shadow-highlight-accent);
 }
+.naowee-segment__item--active svg { opacity: 1; }
 
 /* ── Proportional width (segments fill container equally) ── */
 .naowee-segment--proportional .naowee-segment__item { flex: 1; }

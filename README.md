@@ -6,7 +6,7 @@ Cubre el ciclo completo de registro de resultados en competencias deportivas: de
 
 ## Demo en vivo
 
-Se sirve desde GitHub Pages: **https://douguizard.github.io/digitacion-ui-ux-demo/**
+Se sirve desde GitHub Pages: **https://naowee-tech.github.io/naowee-test-digitacion/**
 
 ## Estructura
 
@@ -68,7 +68,7 @@ El selector de perfil en el header permite alternar entre ambos roles.
 
 | Repo | Qué contiene |
 |---|---|
-| [`douguizard/escenarios-ux-ui-demo`](https://github.com/douguizard/escenarios-ux-ui-demo) | Prototipo del módulo Escenarios (sedes y escenarios deportivos) |
+| [`naowee-tech/naowee-test-escenarios`](https://github.com/naowee-tech/naowee-test-escenarios) | Prototipo del módulo Escenarios (sedes y escenarios deportivos) |
 | [`naowee-tech/parametrizacion-deportes`](https://github.com/naowee-tech/parametrizacion-deportes) | CSVs fuente de verdad de reglas deportivas |
 | [`naowee-tech/handoff-engines`](https://github.com/naowee-tech/handoff-engines) | Motores de scoring y modelos TypeScript para integración Angular |
 

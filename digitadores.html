@@ -241,6 +241,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .digi-modal{
   width:520px;max-width:520px;overflow:visible;
   border-radius:var(--naowee-border-radius-containers-default,20px);
+  /* Cero padding bottom: el footer ya cubre el borde inferior del modal
+     y mantiene el corner-radius via su propia regla. Asi evitamos que el
+     bloque de botones tenga 64px de aire por debajo (32 modal + 32 footer)
+     mientras tiene solo 18-20 por encima — paddings ahora simetricos. */
+  padding-bottom:0;
 }
 .digi-modal .naowee-modal__header{
   border-top-left-radius:var(--naowee-border-radius-containers-default,20px);
@@ -249,10 +254,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .digi-modal .naowee-modal__footer{
   border-bottom-left-radius:var(--naowee-border-radius-containers-default,20px);
   border-bottom-right-radius:var(--naowee-border-radius-containers-default,20px);
-  /* Divider sobre el contenido — separa CTAs del body */
+  /* Divider sobre el contenido — separa CTAs del body.
+     Padding simetrico 20 vertical / 32 horizontal en las 4 direcciones
+     respecto al grupo de botones (mismo respiro arriba y abajo). */
   border-top:1px solid var(--border);
   margin-top:18px;
-  padding-top:18px !important;
+  padding:20px 32px !important;
 }
 .digi-modal .naowee-modal__body{
   display:flex;flex-direction:column;gap:14px;

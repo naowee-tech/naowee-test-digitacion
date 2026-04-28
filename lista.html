@@ -157,8 +157,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .filter-dd-opt:hover{background:#f5f6fa}
 .filter-dd-opt.selected{background:var(--orange-bg);color:var(--accent);font-weight:500}
 
-/* Pagination — usa naowee-pagination del DS, alineado a la derecha del toolbar */
-.filters-row .naowee-pagination{margin-left:auto;flex-shrink:0}
+/* Pagination — usa naowee-pagination del DS, alineado a la derecha del toolbar.
+   Override del gap: el DS pone gap:0 en --small, lo que pega el "de N" al boton
+   prev. Restauramos un gap de 12px entre __pages y __controls. */
+.filters-row .naowee-pagination{margin-left:auto;flex-shrink:0;gap:12px}
 
 /* Table */
 .table-card{background:var(--surface);border-radius:var(--radius-xl);border:1px solid var(--border);overflow:hidden}

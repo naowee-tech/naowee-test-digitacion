@@ -201,12 +201,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .coord-modal .naowee-modal__header{
   border-top-left-radius:var(--naowee-border-radius-containers-default,20px);
   border-top-right-radius:var(--naowee-border-radius-containers-default,20px);
-  padding:24px !important;
+  padding:24px 56px 24px 24px !important;
+  position:relative;
+}
+/* X de cierre flotando en el corner superior derecho — paridad digi-modal */
+.coord-modal .naowee-modal__dismiss{
+  position:absolute;top:20px;right:20px;z-index:2;
 }
 .coord-modal .naowee-modal__body{
   display:flex;flex-direction:column;gap:14px;
   overflow:visible;
-  padding:0 24px 24px !important;
+  padding:8px 24px 24px !important;
 }
 .coord-modal .naowee-modal__footer{
   border-bottom-left-radius:var(--naowee-border-radius-containers-default,20px);

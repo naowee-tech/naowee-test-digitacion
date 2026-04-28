@@ -246,12 +246,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .digi-modal .naowee-modal__header{
   border-top-left-radius:var(--naowee-border-radius-containers-default,20px);
   border-top-right-radius:var(--naowee-border-radius-containers-default,20px);
-  padding:24px !important;  /* simetrico — X queda 24px de cada borde */
+  padding:24px 56px 24px 24px !important;  /* extra right padding para no chocar con la X absoluta */
+  position:relative;  /* anchor para .naowee-modal__dismiss absoluto */
+}
+/* X de cierre flotando en el corner superior derecho del modal —
+   por encima del contenido y siempre a 16/20px del borde sin importar
+   el tamano del title-group (titulo solo, titulo + subtitulo, o
+   icono + titulo en el modal de confirmacion). */
+.digi-modal .naowee-modal__dismiss{
+  position:absolute;top:20px;right:20px;z-index:2;
 }
 .digi-modal .naowee-modal__body{
   display:flex;flex-direction:column;gap:14px;
   overflow:visible;
-  padding:0 24px 24px !important;  /* sides 24, bottom 24, top hereda del header */
+  /* padding-top:8 da respiro entre la sombra sticky del header y el primer label */
+  padding:8px 24px 24px !important;
 }
 .digi-modal .naowee-modal__footer{
   border-bottom-left-radius:var(--naowee-border-radius-containers-default,20px);

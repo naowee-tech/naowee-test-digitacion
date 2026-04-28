@@ -113,9 +113,38 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 
 /* Filters Row */
 .filters-row{display:flex;align-items:center;gap:10px;padding:16px 20px}
-.search-input{flex:1;max-width:340px;height:40px;padding:0 12px 0 36px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Ccircle cx='7' cy='7' r='5' stroke='%23646587' stroke-width='1.3'/%3E%3Cpath d='M11 11l3.5 3.5' stroke='%23646587' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E") 10px center no-repeat;transition:border-color .15s}
-.search-input:focus{border-color:var(--accent)}
-.search-input::placeholder{color:var(--text-secondary)}
+/* DS naowee-searchbox tunings para que encaje en el toolbar (altura 40, max 340) */
+.filters-row .naowee-searchbox{flex:1;max-width:340px}
+.filters-row .naowee-searchbox__input-wrap{
+  display:flex;align-items:center;gap:8px;
+  height:40px;padding:0 12px;
+  background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-md);
+  transition:border-color .15s,box-shadow .15s;
+}
+.filters-row .naowee-searchbox__input-wrap:hover{border-color:#9ca0c0}
+.filters-row .naowee-searchbox__input-wrap:focus-within{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12);
+}
+.filters-row .naowee-searchbox__icon{
+  width:16px;height:16px;flex-shrink:0;color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;
+}
+.filters-row .naowee-searchbox__icon svg{width:16px;height:16px}
+.filters-row .naowee-searchbox__input{
+  flex:1;min-width:0;height:100%;
+  border:none;background:transparent;outline:none;
+  font-size:13px;font-family:var(--font);color:var(--text-primary);
+}
+.filters-row .naowee-searchbox__input::placeholder{color:var(--text-secondary)}
+.filters-row .naowee-searchbox__clear{
+  width:22px;height:22px;border:none;background:transparent;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  border-radius:6px;color:var(--text-secondary);flex-shrink:0;
+  transition:background .12s;
+}
+.filters-row .naowee-searchbox__clear:hover{background:#f0f1f7;color:var(--text-primary)}
+.filters-row .naowee-searchbox__clear svg{width:13px;height:13px}
+.filters-row .naowee-searchbox.has-value .naowee-searchbox__clear{display:inline-flex}
 .filter-dd{position:relative}
 .filter-dd-trigger{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px;border:1px solid var(--border-dark);border-radius:var(--radius-md);background:var(--surface);font-size:13px;font-weight:500;color:var(--text-primary);cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
 .filter-dd-trigger:hover{border-color:var(--accent)}
@@ -128,16 +157,41 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .filter-dd-opt:hover{background:#f5f6fa}
 .filter-dd-opt.selected{background:var(--orange-bg);color:var(--accent);font-weight:500}
 
-/* Pagination */
-.pagination{display:flex;align-items:center;gap:6px;margin-left:auto;font-size:13px;color:var(--text-secondary)}
-.pagination span{font-weight:500;color:var(--text-primary)}
-.page-input{width:40px;height:32px;text-align:center;border:1px solid var(--border-dark);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:500;color:var(--text-primary);outline:none}
-.page-btn{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);transition:all .15s}
-.page-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Pagination — usa naowee-pagination del DS, alineado a la derecha del toolbar */
+.filters-row .naowee-pagination{margin-left:auto;flex-shrink:0}
 
 /* Table */
 .table-card{background:var(--surface);border-radius:var(--radius-xl);border:1px solid var(--border);overflow:hidden}
-.table-wrap{overflow-x:auto;padding:0 16px}
+/* min-height ≈ 10 filas para que la tabla no encoja al filtrar (mantiene
+   la altura constante; pagina maxima 10 → caso ideal). En filtros con
+   menos de 10 resultados, queda espacio en blanco abajo (intencional). */
+.table-wrap{overflow-x:auto;padding:0 16px;min-height:720px;position:relative}
+
+/* Empty state — replace tbody con un mensaje centrado */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:80px 24px;color:var(--text-secondary);
+}
+.empty-state__icon{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--orange-bg,#fff3e6);color:var(--accent);
+  display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;
+}
+.empty-state__icon svg{width:32px;height:32px}
+.empty-state__title{
+  font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:6px;
+}
+.empty-state__desc{
+  font-size:13px;color:var(--text-secondary);max-width:360px;line-height:1.5;
+}
+.empty-state__action{
+  margin-top:18px;display:inline-flex;align-items:center;gap:6px;
+  height:36px;padding:0 14px;border-radius:var(--radius-md);
+  background:transparent;color:var(--accent);border:none;cursor:pointer;
+  font:600 13px var(--font);
+  transition:background .15s;
+}
+.empty-state__action:hover{background:var(--orange-bg,#fff3e6)}
 table{width:100%;border-collapse:separate;border-spacing:0}
 thead th{font-size:12px;font-weight:500;color:var(--text-secondary);text-align:left;padding:10px 16px;background:#f4f6f8;white-space:nowrap;border:none}
 thead th:first-child{border-radius:var(--radius-md) 0 0 var(--radius-md)}
@@ -338,7 +392,17 @@ tbody tr{animation:fadeInUp .3s ease-out;animation-fill-mode:both}
     <div class="table-card">
       <!-- Filters + Pagination -->
       <div class="filters-row">
-        <input class="search-input" id="searchInput" type="text" placeholder="Buscar por nombre, codigo, deporte, prue..."/>
+        <div class="naowee-searchbox" id="searchBar">
+          <div class="naowee-searchbox__input-wrap">
+            <span class="naowee-searchbox__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" class="naowee-searchbox__input" id="searchInput" placeholder="Buscar por nombre, código, deporte, prueba…"/>
+            <button type="button" class="naowee-searchbox__clear" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
         <div class="filter-dd" id="sistemaDD">
           <div class="filter-dd-trigger" onclick="toggleFilterDD('sistemaDD')">
             <span class="filter-dd-label" id="sistemaLabel">Todos los sistemas</span>
@@ -353,10 +417,20 @@ tbody tr{animation:fadeInUp .3s ease-out;animation-fill-mode:both}
           </div>
           <div class="filter-dd-menu" id="eventoMenu"></div>
         </div>
-        <div class="pagination">
-          P&aacute;gina <input class="page-input" value="1"/> de <span id="totalCount">0</span>
-          <button class="page-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-          <button class="page-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <div class="naowee-pagination naowee-pagination--small">
+          <div class="naowee-pagination__pages">
+            <span class="naowee-pagination__label">Página</span>
+            <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+            <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+          </div>
+          <div class="naowee-pagination__controls">
+            <button type="button" class="naowee-pagination__btn" id="pagPrev" onclick="changePage(-1)" aria-label="Anterior">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="naowee-pagination__btn" id="pagNext" onclick="changePage(1)" aria-label="Siguiente">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <div class="table-wrap">
@@ -911,6 +985,7 @@ function renderPills(){
   container.querySelectorAll('.sport-pill').forEach(pill => {
     pill.addEventListener('click', () => {
       activeFilter = pill.dataset.filter;
+      currentPage = 1;  // reset a primera pagina al cambiar de pill
       renderPills();
       renderTable();
     });
@@ -964,19 +1039,66 @@ function pickFilterDD(type, val){
     m.classList.remove('open');
     m.closest('.filter-dd').querySelector('.filter-dd-trigger').classList.remove('open');
   });
+  currentPage = 1;  // reset a primera pagina al cambiar filtros
   populateDropdowns();
   renderTable();
 }
 
+/* Paginacion: cap de 10 filas por pagina */
+const PAGE_SIZE = 10;
+let currentPage = 1;
+
+function buildEmptyState(){
+  const hasSearch = !!searchQuery;
+  const hasFilters = activeFilter !== 'all' || sistemaFilter || eventoFilter;
+  const title = hasSearch
+    ? 'Sin resultados para "' + searchQuery + '"'
+    : (hasFilters ? 'Sin resultados con esos filtros' : 'Sin competencias por mostrar');
+  const desc = hasSearch
+    ? 'Intenta con otros términos o limpia la búsqueda para volver al listado completo.'
+    : (hasFilters ? 'Ajusta los filtros para encontrar lo que buscas.' : 'Crea una nueva competencia desde el botón superior.');
+  const action = hasSearch
+    ? '<button class="empty-state__action" onclick="clearSearch()">Limpiar búsqueda</button>'
+    : (hasFilters ? '<button class="empty-state__action" onclick="clearAllFilters()">Limpiar filtros</button>' : '');
+  return '<tr class="empty-row"><td colspan="8" style="padding:0;border:none">' +
+    '<div class="empty-state">' +
+      '<div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
+      '<div class="empty-state__title">' + title + '</div>' +
+      '<div class="empty-state__desc">' + desc + '</div>' +
+      action +
+    '</div>' +
+  '</td></tr>';
+}
+
 function renderTable(){
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
   const filtered = getFilteredData();
-  filtered.forEach((d, idx) => {
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  // Empty state cuando no hay resultados
+  if (filtered.length === 0) {
+    tbody.innerHTML = buildEmptyState();
+    document.getElementById('pagInput').value = 1;
+    document.getElementById('pagTotal').textContent = 1;
+    document.getElementById('pagPrev').disabled = true;
+    document.getElementById('pagNext').disabled = true;
+    document.getElementById('pageSub').textContent = '0 de ' + DATA.length + ' competencias';
+    return;
+  }
+
+  // Slice a la pagina actual
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, filtered.length);
+  const slice = filtered.slice(start, end);
+
+  tbody.innerHTML = '';
+  slice.forEach((d, idx) => {
     const tr = document.createElement('tr');
     tr.style.animationDelay = (idx * 0.04) + 's';
     tr.innerHTML = `
-      <td class="row-num">${idx + 1}</td>
+      <td class="row-num">${start + idx + 1}</td>
       <td>
         <div class="comp-name">${d.comp}</div>
         <div class="comp-code">${d.code} &nbsp;\u2022&nbsp; <span class="comp-cat">${d.cat}</span></div>
@@ -1004,14 +1126,59 @@ function renderTable(){
     `;
     tbody.appendChild(tr);
   });
-  // Update counts
-  document.getElementById('totalCount').textContent = filtered.length;
+
+  // Update pagination controls
+  document.getElementById('pagInput').value = currentPage;
+  document.getElementById('pagTotal').textContent = totalPages;
+  document.getElementById('pagPrev').disabled = currentPage <= 1;
+  document.getElementById('pagNext').disabled = currentPage >= totalPages;
   document.getElementById('pageSub').textContent = filtered.length + ' de ' + DATA.length + ' competencias';
+}
+
+function changePage(delta){
+  const filtered = getFilteredData();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const next = currentPage + delta;
+  if (next < 1 || next > totalPages) return;
+  currentPage = next;
+  renderTable();
+}
+
+function clearSearch(){
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchBar').classList.remove('has-value');
+  currentPage = 1;
+  renderTable();
+}
+
+function clearAllFilters(){
+  searchQuery = '';
+  sistemaFilter = '';
+  eventoFilter = '';
+  activeFilter = 'all';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchBar').classList.remove('has-value');
+  document.getElementById('sistemaLabel').textContent = 'Todos los sistemas';
+  document.getElementById('eventoLabel').textContent = 'Evento';
+  currentPage = 1;
+  populateDropdowns();
+  renderPills();
+  renderTable();
 }
 
 // Event listeners
 document.getElementById('searchInput').addEventListener('input', function(){
   searchQuery = this.value;
+  document.getElementById('searchBar').classList.toggle('has-value', !!searchQuery);
+  currentPage = 1;  // reset a primera pagina al filtrar
+  renderTable();
+});
+document.getElementById('pagInput').addEventListener('change', function(e){
+  const filtered = getFilteredData();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const v = parseInt(e.target.value, 10) || 1;
+  currentPage = Math.max(1, Math.min(totalPages, v));
   renderTable();
 });
 

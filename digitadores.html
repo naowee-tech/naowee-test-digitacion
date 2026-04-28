@@ -234,17 +234,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 
 /* MODAL — overrides para el patrón DS naowee-modal en este page */
 /* overflow:visible permite que el menu del dropdown se proyecte por encima
-   del modal sin quedar enmascarado por el overflow:clip del DS. */
-.digi-modal{ width:520px;max-width:520px;overflow:visible }
-.digi-modal .naowee-modal__body{
-  display:flex;flex-direction:column;gap:14px;
-  overflow:visible;
+   del modal sin quedar enmascarado por el overflow:clip del DS.
+   Trade-off: las hijas con bg propio (header/footer en --fixed-*) ya no
+   heredan el clip rounded del modal — por eso re-aplicamos border-radius
+   explicito a sus esquinas para mantener el shape del DS (20px). */
+.digi-modal{
+  width:520px;max-width:520px;overflow:visible;
+  border-radius:var(--naowee-border-radius-containers-default,20px);
 }
-/* Footer con divider sobre el contenido (separa CTAs del body) */
+.digi-modal .naowee-modal__header{
+  border-top-left-radius:var(--naowee-border-radius-containers-default,20px);
+  border-top-right-radius:var(--naowee-border-radius-containers-default,20px);
+}
 .digi-modal .naowee-modal__footer{
+  border-bottom-left-radius:var(--naowee-border-radius-containers-default,20px);
+  border-bottom-right-radius:var(--naowee-border-radius-containers-default,20px);
+  /* Divider sobre el contenido — separa CTAs del body */
   border-top:1px solid var(--border);
   margin-top:18px;
   padding-top:18px !important;
+}
+.digi-modal .naowee-modal__body{
+  display:flex;flex-direction:column;gap:14px;
+  overflow:visible;
 }
 /* Dropdown menu por encima del header/footer/cualquier sibling */
 .digi-modal .naowee-dropdown__menu{ z-index:20 }

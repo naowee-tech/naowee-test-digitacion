@@ -168,22 +168,48 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .eventos-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp .4s .3s ease both}
 .eventos-toolbar{display:flex;align-items:center;gap:12px;padding:20px 20px 16px;flex-wrap:wrap}
 .eventos-title{font-size:16px;font-weight:700;color:var(--text-primary);margin-right:4px}
-.search-wrap{position:relative;flex:1;min-width:180px;max-width:320px}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
-.search-inp{width:100%;height:38px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 12px 0 36px;outline:none;transition:border-color .15s}
-.search-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
-.search-inp::placeholder{color:var(--text-secondary)}
-.tabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-md);padding:3px}
-.tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .15s;border:none;background:none;font-family:var(--font)}
-.tab.active{background:var(--surface);color:var(--text-primary);box-shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
-.pag-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
-.pag-label{font-size:12px;color:var(--text-secondary);white-space:nowrap}
-.pag-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-secondary);transition:all .15s;font-family:var(--font)}
-.pag-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-.pag-btn:disabled{opacity:.4;cursor:default}
+/* DS naowee-searchbox tunings — encaja en el toolbar */
+.eventos-toolbar .naowee-searchbox{flex:1;min-width:180px;max-width:320px}
+.eventos-toolbar .naowee-searchbox__input-wrap{
+  display:flex;align-items:center;gap:8px;
+  height:38px;padding:0 12px;
+  background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-md);
+  transition:border-color .15s,box-shadow .15s;
+}
+.eventos-toolbar .naowee-searchbox__input-wrap:hover{border-color:#9ca0c0}
+.eventos-toolbar .naowee-searchbox__input-wrap:focus-within{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12);
+}
+.eventos-toolbar .naowee-searchbox__icon{
+  width:16px;height:16px;flex-shrink:0;color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;
+}
+.eventos-toolbar .naowee-searchbox__icon svg{width:16px;height:16px}
+.eventos-toolbar .naowee-searchbox__input{
+  flex:1;min-width:0;height:100%;
+  border:none;background:transparent;outline:none;
+  font-size:13px;font-family:var(--font);color:var(--text-primary);
+}
+.eventos-toolbar .naowee-searchbox__input::placeholder{color:var(--text-secondary)}
+.eventos-toolbar .naowee-searchbox__clear{
+  width:22px;height:22px;border:none;background:transparent;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  border-radius:6px;color:var(--text-secondary);flex-shrink:0;
+  transition:background .12s;
+}
+.eventos-toolbar .naowee-searchbox__clear:hover{background:#f0f1f7;color:var(--text-primary)}
+.eventos-toolbar .naowee-searchbox__clear svg{width:13px;height:13px}
+.eventos-toolbar .naowee-searchbox.has-value .naowee-searchbox__clear{display:inline-flex}
 
-/* TABLE */
-.table-wrap{overflow-x:auto;padding:4px 12px 0}
+/* DS naowee-segment — pagina compacta */
+.eventos-toolbar .naowee-segment{height:38px}
+.eventos-toolbar .naowee-segment__item{font-size:12px;padding:0 14px}
+
+/* DS naowee-pagination tunings (gap) */
+.eventos-toolbar .naowee-pagination{margin-left:auto;flex-shrink:0;gap:12px}
+
+/* TABLE — min-height para que no encoja al filtrar */
+.table-wrap{overflow-x:auto;padding:4px 12px 0;min-height:560px;position:relative}
 table{width:100%;border-collapse:separate;border-spacing:0}
 thead th{font-size:12px;font-weight:600;color:var(--text-secondary);text-align:left;padding:12px 20px;background:#f5f6fa;white-space:nowrap;border:none}
 thead th:first-child{border-radius:12px 0 0 12px}
@@ -206,7 +232,14 @@ tbody tr:hover{background:#fafbfd}
 .badge-estado.finalizado{background:#f5f6fa;color:var(--text-secondary)}
 .row-arrow{color:var(--naranja);display:flex;align-items:center}
 tbody tr:hover .row-arrow{color:var(--accent);opacity:1}
-.no-data{padding:40px 24px;text-align:center;color:var(--text-secondary);font-size:14px}
+/* Empty state — paridad con lista.html */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;color:var(--text-secondary)}
+.empty-state__icon{width:64px;height:64px;border-radius:50%;background:var(--orange-bg,#fff3e6);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.empty-state__icon svg{width:32px;height:32px}
+.empty-state__title{font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.empty-state__desc{font-size:13px;color:var(--text-secondary);max-width:360px;line-height:1.5}
+.empty-state__action{margin-top:18px;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-md);background:transparent;color:var(--accent);border:none;cursor:pointer;font:600 13px var(--font);transition:background .15s}
+.empty-state__action:hover{background:var(--orange-bg,#fff3e6)}
 
 /* ANIMATIONS */
 @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -409,19 +442,43 @@ tbody tr:hover .row-arrow{color:var(--accent);opacity:1}
     <div class="eventos-card">
       <div class="eventos-toolbar">
         <span class="eventos-title">Eventos</span>
-        <div class="search-wrap">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <input class="search-inp" id="searchInp" type="text" placeholder="Buscar evento o deporte" oninput="renderEvents()"/>
+
+        <!-- Search (DS naowee-searchbox) -->
+        <div class="naowee-searchbox" id="searchBar">
+          <div class="naowee-searchbox__input-wrap">
+            <span class="naowee-searchbox__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" class="naowee-searchbox__input" id="searchInp" placeholder="Buscar evento o deporte" oninput="onSearchInput()"/>
+            <button type="button" class="naowee-searchbox__clear" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="tabs">
-          <button class="tab active" id="tabTodos" onclick="setTab('todos')">Todos</button>
-          <button class="tab" id="tabCurso" onclick="setTab('en-curso')">En curso</button>
-          <button class="tab" id="tabFin" onclick="setTab('finalizado')">Finalizado</button>
+
+        <!-- Tabs (DS naowee-segment con sliding pill) -->
+        <div class="naowee-segment naowee-segment--small" id="estadoSegment" role="tablist">
+          <span class="naowee-segment__pill naowee-segment__pill--no-anim" aria-hidden="true"></span>
+          <button class="naowee-segment__item naowee-segment__item--active" id="tabTodos" type="button" role="tab" data-val="todos" onclick="setTab('todos')">Todos</button>
+          <button class="naowee-segment__item" id="tabCurso" type="button" role="tab" data-val="en-curso" onclick="setTab('en-curso')">En curso</button>
+          <button class="naowee-segment__item" id="tabFin" type="button" role="tab" data-val="finalizado" onclick="setTab('finalizado')">Finalizado</button>
         </div>
-        <div class="pag-wrap">
-          <span class="pag-label" id="pagLabel">P&aacute;gina 1 de 1</span>
-          <button class="pag-btn" id="btnPrev" onclick="changePage(-1)" disabled>&#8249;</button>
-          <button class="pag-btn" id="btnNext" onclick="changePage(1)">&#8250;</button>
+
+        <!-- Pagination (DS naowee-pagination--small) -->
+        <div class="naowee-pagination naowee-pagination--small">
+          <div class="naowee-pagination__pages">
+            <span class="naowee-pagination__label">Página</span>
+            <input type="text" class="naowee-pagination__input" id="pagInput" value="1" inputmode="numeric"/>
+            <span class="naowee-pagination__total">de <strong id="pagTotal">1</strong></span>
+          </div>
+          <div class="naowee-pagination__controls">
+            <button type="button" class="naowee-pagination__btn" id="btnPrev" onclick="changePage(-1)" aria-label="Anterior">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="naowee-pagination__btn" id="btnNext" onclick="changePage(1)" aria-label="Siguiente">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <div class="table-wrap">
@@ -494,10 +551,34 @@ let currentPage = 1;
 function setTab(tab) {
   currentTab = tab;
   currentPage = 1;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#estadoSegment .naowee-segment__item').forEach(t => t.classList.remove('naowee-segment__item--active'));
   const map = {todos:'tabTodos','en-curso':'tabCurso',finalizado:'tabFin'};
-  document.getElementById(map[tab]).classList.add('active');
+  document.getElementById(map[tab]).classList.add('naowee-segment__item--active');
+  positionSegmentPill(document.getElementById('estadoSegment'), true);
   renderEvents();
+}
+
+/* DS naowee-segment — posiciona la pill bajo el item activo */
+function positionSegmentPill(seg, animate){
+  if(!seg) return;
+  const pill = seg.querySelector('.naowee-segment__pill');
+  const active = seg.querySelector('.naowee-segment__item--active');
+  if(!pill || !active) return;
+  const segRect = seg.getBoundingClientRect();
+  const actRect = active.getBoundingClientRect();
+  const x = actRect.left - segRect.left - parseFloat(getComputedStyle(seg).borderLeftWidth || 0);
+  if(animate){
+    pill.classList.remove('naowee-segment__pill--no-anim');
+    pill.style.setProperty('--segment-pill-x', x + 'px');
+    pill.style.width = actRect.width + 'px';
+  } else {
+    pill.classList.add('naowee-segment__pill--no-anim');
+    pill.style.setProperty('--segment-pill-x', x + 'px');
+    pill.style.width = actRect.width + 'px';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      pill.classList.remove('naowee-segment__pill--no-anim');
+    }));
+  }
 }
 
 function renderFaseDots(fase) {
@@ -534,16 +615,36 @@ function renderEvents() {
   const filtered = getFiltered();
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
   const start = (currentPage - 1) * PER_PAGE;
   const pageData = filtered.slice(start, start + PER_PAGE);
 
-  document.getElementById('pagLabel').textContent = `Página ${currentPage} de ${totalPages}`;
+  document.getElementById('pagInput').value = currentPage;
+  document.getElementById('pagTotal').textContent = totalPages;
   document.getElementById('btnPrev').disabled = currentPage <= 1;
   document.getElementById('btnNext').disabled = currentPage >= totalPages;
 
   const tbody = document.getElementById('eventsBody');
   if (pageData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="no-data">No se encontraron eventos</div></td></tr>';
+    const hasSearch = !!document.getElementById('searchInp').value.trim();
+    const hasFilter = currentTab !== 'todos';
+    const title = hasSearch
+      ? 'Sin resultados para "' + document.getElementById('searchInp').value.trim() + '"'
+      : (hasFilter ? 'Sin eventos en este estado' : 'Sin eventos por mostrar');
+    const desc = hasSearch
+      ? 'Intenta con otros términos o limpia la búsqueda para volver al listado completo.'
+      : (hasFilter ? 'No hay eventos en estado "' + (currentTab === 'en-curso' ? 'En curso' : 'Finalizado') + '". Cambia de filtro o limpia la selección.' : 'Aún no se han registrado eventos.');
+    const action = hasSearch
+      ? '<button class="empty-state__action" onclick="clearSearch()">Limpiar búsqueda</button>'
+      : (hasFilter ? '<button class="empty-state__action" onclick="setTab(\'todos\')">Ver todos</button>' : '');
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:0;border:none">' +
+      '<div class="empty-state">' +
+        '<div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
+        '<div class="empty-state__title">' + title + '</div>' +
+        '<div class="empty-state__desc">' + desc + '</div>' +
+        action +
+      '</div>' +
+    '</td></tr>';
     return;
   }
   tbody.innerHTML = pageData.map(ev => `
@@ -560,6 +661,22 @@ function renderEvents() {
       <td><div class="row-arrow"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></td>
     </tr>
   `).join('');
+}
+
+/* Search clear + DS searchbox handlers */
+function onSearchInput(){
+  const input = document.getElementById('searchInp');
+  document.getElementById('searchBar').classList.toggle('has-value', !!input.value.trim());
+  currentPage = 1;
+  renderEvents();
+}
+function clearSearch(){
+  const input = document.getElementById('searchInp');
+  input.value = '';
+  document.getElementById('searchBar').classList.remove('has-value');
+  currentPage = 1;
+  renderEvents();
+  input.focus();
 }
 
 function changePage(dir) {
@@ -596,6 +713,22 @@ document.addEventListener('click', function(e) {
 });
 
 renderEvents();
+
+/* Init pill del segment (posiciona bajo "Todos") + reposicion en resize */
+const __seg = document.getElementById('estadoSegment');
+positionSegmentPill(__seg, false);
+window.addEventListener('load', () => positionSegmentPill(__seg, false));
+window.addEventListener('resize', () => positionSegmentPill(__seg, true));
+setTimeout(() => positionSegmentPill(__seg, false), 100);
+
+/* Handler del input de pagina (escribir + Enter) */
+document.getElementById('pagInput').addEventListener('change', function(e){
+  const filtered = getFiltered();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const v = parseInt(e.target.value, 10) || 1;
+  currentPage = Math.max(1, Math.min(totalPages, v));
+  renderEvents();
+});
 
 document.getElementById('btnLogout')?.addEventListener('click', () => {
   fadeAndGo('../escenarios/escenario-01-login.html');

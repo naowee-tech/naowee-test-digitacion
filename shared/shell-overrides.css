@@ -43,34 +43,53 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Elevation glow para CTAs primarios CUSTOM de Digitación
    (mismo background:var(--accent) #d74009 — equivalentes a "loud").
+
+   IMPORTANTE: NUNCA aplica el glow a botones disabled — el :not(:disabled)
+   se valida en cada selector de hover/focus/active.
    ═══════════════════════════════════════════════════════════════════════════ */
-.btn-orange:hover, .btn-orange:focus-visible,
-.btn-accent:hover, .btn-accent:focus-visible,
-.btn--primary:hover, .btn--primary:focus-visible,
-.btn-digitar:hover, .btn-digitar:focus-visible,
-.btn-new:hover, .btn-new:focus-visible,
-.btn-nuevo:hover, .btn-nuevo:focus-visible,
-.btn-next:hover, .btn-next:focus-visible,
+.btn-orange:not(:disabled):hover, .btn-orange:not(:disabled):focus-visible,
+.btn-accent:not(:disabled):hover, .btn-accent:not(:disabled):focus-visible,
+.btn--primary:not(:disabled):hover, .btn--primary:not(:disabled):focus-visible,
+.btn-digitar:not(:disabled):hover, .btn-digitar:not(:disabled):focus-visible,
+.btn-new:not(:disabled):hover, .btn-new:not(:disabled):focus-visible,
+.btn-nuevo:not(:disabled):hover, .btn-nuevo:not(:disabled):focus-visible,
+.btn-next:not(:disabled):hover, .btn-next:not(:disabled):focus-visible,
 .am-btn-assign:not([disabled]):hover, .am-btn-assign:not([disabled]):focus-visible{
   outline: none;
   box-shadow: var(--naowee-shadow-loud-md);
   transition: box-shadow .18s ease, transform .15s ease;
 }
 
-.btn-new:hover, .btn-new:focus-visible,
-.btn-nuevo:hover, .btn-nuevo:focus-visible{
+.btn-new:not(:disabled):hover, .btn-new:not(:disabled):focus-visible,
+.btn-nuevo:not(:disabled):hover, .btn-nuevo:not(:disabled):focus-visible{
   box-shadow: var(--naowee-shadow-loud-lg);
 }
 
-.btn-orange:active,
-.btn-accent:active,
-.btn--primary:active,
-.btn-digitar:active,
-.btn-new:active,
-.btn-nuevo:active,
-.btn-next:active,
+.btn-orange:not(:disabled):active,
+.btn-accent:not(:disabled):active,
+.btn--primary:not(:disabled):active,
+.btn-digitar:not(:disabled):active,
+.btn-new:not(:disabled):active,
+.btn-nuevo:not(:disabled):active,
+.btn-next:not(:disabled):active,
 .am-btn-assign:not([disabled]):active{
   box-shadow: var(--naowee-shadow-loud-xs);
+}
+
+/* Estado disabled de los CTAs primarios — opacity reducida + sin glow.
+   Refuerza el contraste con el estado activo (por consistencia visual). */
+.btn-orange:disabled,
+.btn-accent:disabled,
+.btn--primary:disabled,
+.btn-digitar:disabled,
+.btn-new:disabled,
+.btn-nuevo:disabled,
+.btn-next:disabled,
+.am-btn-assign[disabled]{
+  opacity:.5;
+  cursor:not-allowed;
+  box-shadow:none !important;
+  pointer-events:none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

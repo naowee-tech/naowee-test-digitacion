@@ -97,9 +97,25 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 /* ═══ PAGE CONTENT ════════════════════════════════════════ */
 .page{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 28px 40px}
 
-.breadcrumb{display:flex;align-items:center;gap:4px;margin-bottom:10px;max-width:860px;margin-left:auto;margin-right:auto}
-.breadcrumb a{font-size:13px;font-weight:500;color:var(--accent);text-decoration:none;padding:4px 8px;border-radius:var(--radius-sm);transition:background .15s}
-.breadcrumb a:hover{background:var(--orange-bg)}
+.breadcrumb{display:flex;align-items:center;gap:6px;margin:16px auto 18px;max-width:860px}
+.breadcrumb a{
+  display:inline-flex;align-items:center;gap:6px;
+  height:40px;padding:0 14px;border-radius:var(--radius-md);
+  font-size:14px;font-weight:600;color:var(--accent);
+  background:var(--orange-bg);border:1px solid transparent;
+  text-decoration:none;cursor:pointer;
+  transition:background .15s,border-color .15s,box-shadow .15s,transform .15s;
+}
+.breadcrumb a:hover{
+  background:#ffe4cf;border-color:rgba(215,64,9,.18);
+  box-shadow:var(--naowee-shadow-loud-xs);
+}
+.breadcrumb a:focus-visible{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(215,64,9,.18);
+}
+.breadcrumb a:active{transform:translateX(-1px)}
+.breadcrumb a svg{width:14px;height:14px;flex-shrink:0}
 .page-title{font-size:22px;font-weight:600;color:var(--text-primary);margin-bottom:4px;max-width:860px;margin-left:auto;margin-right:auto}
 .page-sub{font-size:13px;color:var(--text-secondary);margin-bottom:16px;max-width:860px;margin-left:auto;margin-right:auto}
 
@@ -771,7 +787,7 @@ select option{
 
   <div class="page">
     <div class="breadcrumb">
-      <a href="#"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="vertical-align:-1px;margin-right:2px"><path d="M8 10L4 6l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Volver a competencias</a>
+      <a href="#"><svg viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Volver a competencias</a>
     </div>
     <h1 class="page-title" id="pageTitle">Nuevo enfrentamiento</h1>
     <p class="page-sub">Complete la información para registrar una nueva competencia deportiva</p>

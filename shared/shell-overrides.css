@@ -271,7 +271,9 @@
   width:32px;height:32px;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;
   background:transparent;border:none;cursor:pointer;
-  border-radius:8px;color:var(--text-secondary,#646587);
+  border-radius:8px;
+  /* Color accent en idle (paridad con naowee-btn--mute: text-accent) */
+  color:var(--accent,#d74009);
   transition:background .15s ease, color .15s ease, box-shadow .15s ease;
 }
 .icon-btn-ghost svg{ width:16px;height:16px;display:block }
@@ -287,9 +289,11 @@
 }
 .icon-btn-ghost:active{ background:#ffe4cf }
 
-/* Variante destructiva — para acciones como "Eliminar" */
+/* Variante destructiva — idle también accent (signaling "interactive"),
+   pero hover/focus/active cambian a rojo (signal "danger imminent"). */
+.icon-btn-ghost.is-danger{ color:var(--accent,#d74009) }
 .icon-btn-ghost.is-danger:hover{ background:#fef2f2;color:#dc2626 }
 .icon-btn-ghost.is-danger:focus-visible{
   background:#fef2f2;color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18);
 }
-.icon-btn-ghost.is-danger:active{ background:#fee2e2 }
+.icon-btn-ghost.is-danger:active{ background:#fee2e2;color:#dc2626 }

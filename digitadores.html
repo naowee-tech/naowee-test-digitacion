@@ -101,10 +101,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .page-sub{font-size:14px;color:var(--text-secondary)}
 
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;border-radius:var(--radius-md);font-size:13px;font-weight:700;font-family:var(--font);border:none;cursor:pointer;transition:opacity .15s,transform .1s}
-.btn:hover{opacity:.88}
-.btn:active{transform:scale(.97)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;border-radius:var(--radius-md);font-size:13px;font-weight:700;font-family:var(--font);border:none;cursor:pointer;transition:background .15s,box-shadow .15s,transform .1s}
+.btn:active{transform:scale(.98)}
 .btn-accent{background:var(--accent);color:#fff;border-radius:var(--radius-lg)}
+/* Variante large (paridad con naowee-btn--large) */
+.btn--large{height:48px;padding:0 24px;font-size:14px;gap:10px;border-radius:var(--radius-lg)}
+.btn--large svg{width:18px;height:18px}
 .btn-outline{background:var(--surface);color:var(--text-primary);border:1px solid var(--border-dark);transition:all .15s}
 .btn-outline:hover{border-radius:var(--radius-lg)}
 .btn-link{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font);padding:8px 14px;height:40px;display:inline-flex;align-items:center;border-radius:var(--radius-md);transition:background .15s}
@@ -121,17 +123,50 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .stat-number{font-size:24px;font-weight:800;color:var(--text-primary);line-height:1}
 .stat-label{font-size:12px;color:var(--text-secondary);margin-top:2px}
 
-/* SEARCH */
-.search-bar{position:relative;margin-bottom:24px}
-.search-bar svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
-.search-bar input{width:100%;height:42px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 14px 0 40px;outline:none;transition:border-color .15s}
-.search-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
-.search-bar input::placeholder{color:var(--text-secondary)}
+/* SEARCH BAR — naowee-searchbox style (DS), max-width limitado */
+.search-bar{margin-bottom:24px;max-width:480px}
+.search-bar .naowee-searchbox__input-wrap{
+  display:flex;align-items:center;gap:8px;
+  height:44px;padding:0 14px;
+  background:#fff;border:1px solid var(--border-dark);border-radius:9999px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.search-bar .naowee-searchbox__input-wrap:hover{border-color:#9ca0c0}
+.search-bar .naowee-searchbox__input-wrap:focus-within{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(215,64,9,.15);
+}
+.search-bar .naowee-searchbox__icon{
+  width:18px;height:18px;flex-shrink:0;color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;
+}
+.search-bar .naowee-searchbox__icon svg{width:18px;height:18px}
+.search-bar .naowee-searchbox__input{
+  flex:1;min-width:0;height:100%;
+  border:none;background:transparent;outline:none;
+  font-size:13px;font-family:var(--font);color:var(--text-primary);
+}
+.search-bar .naowee-searchbox__input::placeholder{color:var(--text-secondary)}
+.search-bar .naowee-searchbox__clear{
+  width:24px;height:24px;border:none;background:transparent;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  border-radius:6px;color:var(--text-secondary);flex-shrink:0;
+  transition:background .12s;
+}
+.search-bar .naowee-searchbox__clear:hover{background:#f0f1f7;color:var(--text-primary)}
+.search-bar .naowee-searchbox__clear svg{width:14px;height:14px}
+.search-bar.has-value .naowee-searchbox__clear{display:inline-flex}
 
 /* DIGITADORES GRID */
 .digi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.digi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp .4s ease both;transition:box-shadow .15s}
-.digi-card:hover{box-shadow:var(--shadow-card)}
+/* Card: flex-column + overflow visible para que tooltips no queden enmascarados */
+.digi-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+  display:flex;flex-direction:column;
+  animation:fadeInUp .4s ease both;
+  /* Sin hover-state — el card es informativo, no clickable. */
+}
 .digi-card:nth-child(1){animation-delay:.1s}
 .digi-card:nth-child(2){animation-delay:.15s}
 .digi-card:nth-child(3){animation-delay:.2s}
@@ -139,7 +174,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .digi-card:nth-child(5){animation-delay:.3s}
 .digi-card.inactive{opacity:.6}
 .digi-card-header{display:flex;align-items:flex-start;gap:12px;padding:20px 20px 16px;position:relative}
-.digi-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;position:relative}
+/* Avatar low-contrast: tinta suave del color del tema (color-mix con blanco al 16%)
+   y el texto en el color saturado original. Paridad con .naowee-thumbnail --quiet. */
+.digi-avatar{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;letter-spacing:.2px;
+  background:color-mix(in oklab, var(--avatar-color, #6b7280) 16%, white);
+  color:var(--avatar-color, #6b7280);
+}
 .digi-online-dot{position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;border:2px solid #fff}
 .digi-online-dot.online{background:var(--green)}
 .digi-online-dot.offline{background:var(--border-dark)}
@@ -165,23 +208,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .digi-comp-more:hover{text-decoration:underline}
 
 /* BADGES — paridad con .naowee-badge --quiet --small del DS
-   (low-contrast pill: fondo tinta sutil, sin borde marcado, semantico) */
+   (compacto: 18px height, font 10px, padding 0 7px) */
 .badge{
-  display:inline-flex;align-items:center;gap:6px;
-  height:22px;padding:0 10px;border-radius:9999px;
-  font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1px;
+  display:inline-flex;align-items:center;gap:4px;
+  height:18px;padding:0 7px;border-radius:9999px;
+  font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.2px;
   white-space:nowrap;border:none;flex-shrink:0;line-height:1;
 }
 .badge::before{
-  content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;background:currentColor;
+  content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;background:currentColor;
 }
 .badge.en-digitacion{background:#e6f4e7;color:#15803d}
 .badge.en-pausa{background:#fff3e6;color:#b45309}
 .badge.finalizada{background:#dbe9ff;color:#1e40af}
 .badge.asignada{background:#f0f1f7;color:#646587}
 
-/* CARD FOOTER */
-.digi-card-footer{display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid var(--border);color:var(--text-secondary);font-size:13px}
+/* CARD FOOTER — pegado al borde inferior (margin-top:auto), color accent */
+.digi-card-footer{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 20px;border-top:1px solid var(--border);
+  color:var(--accent);font-size:13px;font-weight:600;
+  margin-top:auto;
+}
+.digi-card-footer svg{color:var(--accent);flex-shrink:0}
 
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -342,8 +391,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
         <h1 class="page-title">Gesti&oacute;n de digitadores</h1>
         <p class="page-sub">4 activos de 5 registrados</p>
       </div>
-      <button class="btn btn-accent" onclick="openModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.5"/><line x1="19" y1="8" x2="19" y2="14" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="22" y1="11" x2="16" y2="11" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <button class="btn btn-accent btn--large" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.6"/><line x1="19" y1="8" x2="19" y2="14" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><line x1="22" y1="11" x2="16" y2="11" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
         Crear digitador
       </button>
     </div>
@@ -388,10 +437,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
     </div>
 
-    <!-- SEARCH -->
-    <div class="search-bar">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input type="text" id="searchInput" placeholder="Buscar digitador por nombre, email, zona" oninput="filterCards()"/>
+    <!-- SEARCH (DS naowee-searchbox style) -->
+    <div class="search-bar naowee-searchbox" id="searchBar">
+      <div class="naowee-searchbox__input-wrap">
+        <span class="naowee-searchbox__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" class="naowee-searchbox__input" id="searchInput" placeholder="Buscar digitador por nombre, email, zona" oninput="onSearchInput()"/>
+        <button type="button" class="naowee-searchbox__clear" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- DIGITADORES GRID -->
@@ -608,7 +664,7 @@ function renderCards(list) {
 
     card.innerHTML =
       '<div class="digi-card-header">' +
-        '<div class="digi-avatar" style="background:' + d.avatar + '">' +
+        '<div class="digi-avatar" style="--avatar-color:' + d.avatar + '">' +
           d.initials +
           '<span class="digi-online-dot ' + (d.online ? 'online' : 'offline') + '"></span>' +
         '</div>' +
@@ -637,17 +693,28 @@ function renderCards(list) {
 }
 
 // SEARCH FILTER
-function filterCards() {
-  var q = document.getElementById('searchInput').value.toLowerCase().trim();
+function onSearchInput() {
+  var input = document.getElementById('searchInput');
+  var bar = document.getElementById('searchBar');
+  var q = input.value.toLowerCase().trim();
+  bar.classList.toggle('has-value', !!q);
   if (!q) {
     renderCards(digitadores);
     return;
   }
   var filtered = digitadores.filter(function(d) {
     return d.name.toLowerCase().indexOf(q) !== -1 ||
-           d.email.toLowerCase().indexOf(q) !== -1;
+           d.email.toLowerCase().indexOf(q) !== -1 ||
+           (d.zona && d.zona.toLowerCase().indexOf(q) !== -1);
   });
   renderCards(filtered);
+}
+function clearSearch() {
+  var input = document.getElementById('searchInput');
+  input.value = '';
+  document.getElementById('searchBar').classList.remove('has-value');
+  renderCards(digitadores);
+  input.focus();
 }
 
 // SIDEBAR

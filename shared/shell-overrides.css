@@ -232,6 +232,19 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Tabla — encabezados en MAYÚSCULAS (paridad con todas las pantallas)
+   Aplica a cualquier <th> dentro de <thead> y a celdas con scope="col/row".
+   Override de los estilos inline por especificidad cuando el HTML
+   declare su propio thead th{...}: usamos atributo + selector.
+   ═══════════════════════════════════════════════════════════════════════════ */
+table thead th,
+table th[scope="col"],
+table th[scope="row"]{
+  text-transform:uppercase !important;
+  letter-spacing:.4px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Tooltip global [data-tooltip] — para botones icon-only y otros elementos
    sin label visible. Uso: <button data-tooltip="Editar">...</button>
    ═══════════════════════════════════════════════════════════════════════════ */

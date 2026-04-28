@@ -232,16 +232,21 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Tabla — encabezados en MAYÚSCULAS (paridad con todas las pantallas)
-   Aplica a cualquier <th> dentro de <thead> y a celdas con scope="col/row".
-   Override de los estilos inline por especificidad cuando el HTML
-   declare su propio thead th{...}: usamos atributo + selector.
+   Tabla — estilo unificado de encabezados (paridad cross-page)
+   - MAYÚSCULAS con letter-spacing generoso (legibilidad)
+   - Tamaño compacto (11px) — más pequeño que el body
+   - Weight 700 (bold) para jerarquía visual clara
+   - Color secondary (no compite con el contenido de la fila)
    ═══════════════════════════════════════════════════════════════════════════ */
 table thead th,
 table th[scope="col"],
 table th[scope="row"]{
+  font-family:'Inter',sans-serif !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  letter-spacing:.6px !important;
   text-transform:uppercase !important;
-  letter-spacing:.4px !important;
+  color:var(--text-secondary,#646587) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

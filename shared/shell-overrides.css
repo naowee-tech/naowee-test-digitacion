@@ -76,8 +76,9 @@
   box-shadow: var(--naowee-shadow-loud-xs);
 }
 
-/* Estado disabled de los CTAs primarios — opacity reducida + sin glow.
-   Refuerza el contraste con el estado activo (por consistencia visual). */
+/* Estado disabled de los CTAs primarios — paridad con DS (loud:disabled).
+   Background gray-300 + texto gray-500 → clarísimo "no clickable",
+   en vez del orange-with-opacity que parecía un "active light". */
 .btn-orange:disabled,
 .btn-accent:disabled,
 .btn--primary:disabled,
@@ -86,10 +87,26 @@
 .btn-nuevo:disabled,
 .btn-next:disabled,
 .am-btn-assign[disabled]{
-  opacity:.5;
-  cursor:not-allowed;
+  background:var(--naowee-color-fill-disabled,#dcdfea) !important;
+  color:var(--naowee-color-text-disabled,#8788ab) !important;
+  cursor:not-allowed !important;
   box-shadow:none !important;
+  opacity:1 !important;
   pointer-events:none;
+  border-color:transparent !important;
+}
+/* SVGs internos: targets path/rect/circle/line para vencer cualquier
+   stroke="white" hardcoded en el markup (las presentation attributes
+   de SVG tienen specificity 0). */
+.btn-orange:disabled svg path, .btn-orange:disabled svg rect, .btn-orange:disabled svg circle, .btn-orange:disabled svg line,
+.btn-accent:disabled svg path, .btn-accent:disabled svg rect, .btn-accent:disabled svg circle, .btn-accent:disabled svg line,
+.btn--primary:disabled svg path, .btn--primary:disabled svg rect, .btn--primary:disabled svg circle, .btn--primary:disabled svg line,
+.btn-digitar:disabled svg path, .btn-digitar:disabled svg rect, .btn-digitar:disabled svg circle, .btn-digitar:disabled svg line,
+.btn-new:disabled svg path, .btn-new:disabled svg rect, .btn-new:disabled svg circle, .btn-new:disabled svg line,
+.btn-nuevo:disabled svg path, .btn-nuevo:disabled svg rect, .btn-nuevo:disabled svg circle, .btn-nuevo:disabled svg line,
+.btn-next:disabled svg path, .btn-next:disabled svg rect, .btn-next:disabled svg circle, .btn-next:disabled svg line,
+.am-btn-assign[disabled] svg path, .am-btn-assign[disabled] svg rect, .am-btn-assign[disabled] svg circle, .am-btn-assign[disabled] svg line{
+  stroke:var(--naowee-color-icon-disabled,#8788ab) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

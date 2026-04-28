@@ -97,25 +97,25 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 /* ═══ PAGE CONTENT ════════════════════════════════════════ */
 .page{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 28px 40px}
 
-.breadcrumb{display:flex;align-items:center;gap:6px;margin:16px auto 18px;max-width:860px}
+/* Breadcrumb back-link — ghost style (paridad con naowee-btn--mute --large)
+   transparent idle, hover con orange-100, sin borde, sin shadow. */
+.breadcrumb{display:flex;align-items:center;margin:18px auto 20px;max-width:860px}
 .breadcrumb a{
   display:inline-flex;align-items:center;gap:6px;
-  height:40px;padding:0 14px;border-radius:var(--radius-md);
+  height:44px;padding:0 16px;border-radius:var(--radius-md);
   font-size:14px;font-weight:600;color:var(--accent);
-  background:var(--orange-bg);border:1px solid transparent;
+  background:transparent;border:none;
   text-decoration:none;cursor:pointer;
-  transition:background .15s,border-color .15s,box-shadow .15s,transform .15s;
+  transition:background .15s,color .15s;
 }
-.breadcrumb a:hover{
-  background:#ffe4cf;border-color:rgba(215,64,9,.18);
-  box-shadow:var(--naowee-shadow-loud-xs);
-}
+.breadcrumb a:hover{ background:var(--naowee-color-orange-100,#fff3e6) }
 .breadcrumb a:focus-visible{
-  outline:none;border-color:var(--accent);
+  outline:none;
+  background:var(--naowee-color-orange-100,#fff3e6);
   box-shadow:0 0 0 3px rgba(215,64,9,.18);
 }
-.breadcrumb a:active{transform:translateX(-1px)}
-.breadcrumb a svg{width:14px;height:14px;flex-shrink:0}
+.breadcrumb a:active{ background:#ffe4cf }
+.breadcrumb a svg{width:14px;height:14px;flex-shrink:0;color:currentColor}
 .page-title{font-size:22px;font-weight:600;color:var(--text-primary);margin-bottom:4px;max-width:860px;margin-left:auto;margin-right:auto}
 .page-sub{font-size:13px;color:var(--text-secondary);margin-bottom:16px;max-width:860px;margin-left:auto;margin-right:auto}
 

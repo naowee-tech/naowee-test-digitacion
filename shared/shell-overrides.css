@@ -1,0 +1,101 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   shell-overrides.css — Overrides cosméticos sobre design-system.css
+   Origen: alineación con módulo de Incentivos (mismo patrón visual SUID).
+   Pendiente: migrar tokens y override de btn--loud al DS oficial
+   (naowee-tech/naowee-design-system).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── ELEVATION LOUD (naranja) — para CTAs primarios ──
+     Aplicado vía override del DS (btn--loud:hover/focus/active).
+     Mismos valores que el módulo Incentivos.
+  */
+  --naowee-shadow-loud-xs: 0 2px 6px rgba(215,64,9,.14);
+  --naowee-shadow-loud-sm: 0 4px 12px rgba(215,64,9,.18);
+  --naowee-shadow-loud-md: 0 6px 16px rgba(215,64,9,.22);
+  --naowee-shadow-loud-lg: 0 10px 28px rgba(215,64,9,.32);
+  --naowee-shadow-loud-xl: 0 16px 40px rgba(215,64,9,.38);
+
+  /* Versión brand (naranja claro) para hovers de variantes alternas */
+  --naowee-shadow-brand-md: 0 6px 16px rgba(255,117,0,.24);
+  --naowee-shadow-brand-lg: 0 12px 32px rgba(255,117,0,.30);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Override DS: naowee-btn--loud hover/focus/active
+   El hover NO cambia el fill, solo aplica la elevation naranja.
+   Reduce el "flash" del color y proyecta identidad de marca.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.naowee-btn--loud:hover,
+.naowee-btn--loud:focus-visible{
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: var(--naowee-shadow-loud-md);
+}
+.naowee-btn--loud.naowee-btn--large:hover,
+.naowee-btn--loud.naowee-btn--large:focus-visible{
+  box-shadow: var(--naowee-shadow-loud-lg);
+}
+.naowee-btn--loud:active{
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: var(--naowee-shadow-loud-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Elevation glow para CTAs primarios CUSTOM de Digitación
+   (mismo background:var(--accent) #d74009 — equivalentes a "loud").
+   ═══════════════════════════════════════════════════════════════════════════ */
+.btn-orange:hover, .btn-orange:focus-visible,
+.btn-accent:hover, .btn-accent:focus-visible,
+.btn--primary:hover, .btn--primary:focus-visible,
+.btn-digitar:hover, .btn-digitar:focus-visible,
+.btn-new:hover, .btn-new:focus-visible,
+.btn-nuevo:hover, .btn-nuevo:focus-visible,
+.btn-next:hover, .btn-next:focus-visible,
+.am-btn-assign:not([disabled]):hover, .am-btn-assign:not([disabled]):focus-visible{
+  outline: none;
+  box-shadow: var(--naowee-shadow-loud-md);
+  transition: box-shadow .18s ease, transform .15s ease;
+}
+
+.btn-new:hover, .btn-new:focus-visible,
+.btn-nuevo:hover, .btn-nuevo:focus-visible{
+  box-shadow: var(--naowee-shadow-loud-lg);
+}
+
+.btn-orange:active,
+.btn-accent:active,
+.btn--primary:active,
+.btn-digitar:active,
+.btn-new:active,
+.btn-nuevo:active,
+.btn-next:active,
+.am-btn-assign:not([disabled]):active{
+  box-shadow: var(--naowee-shadow-loud-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sidebar logos institucionales (Ministerio del Deporte + SUID)
+   Reemplaza el bloque <svg class="naowee-logo"> por dos imágenes con divider.
+   Las clases coexisten con la estructura actual del sidebar de Digitación.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.sidebar-logo{ gap:12px }
+.sb-logo-img{
+  height:40px;width:auto;flex-shrink:0;object-fit:contain;
+  transition:height .25s cubic-bezier(.32,.72,0,1),opacity .2s;
+}
+.logo-sep{
+  width:1px;height:28px;background:var(--border,#e7e9f3);flex-shrink:0;
+  transition:opacity .2s;
+}
+
+/* En sidebar colapsado: solo SUID visible (logo institucional principal) */
+.sidebar.collapsed .sb-logo-img:first-of-type,
+.sidebar.collapsed .logo-sep{ display:none }
+.sidebar.collapsed .sb-logo-img{ height:32px }
+
+/* Responsive: en pantallas pequeñas oculta el logo Ministerio (decisión de marca) */
+@media (max-width:640px){
+  .sidebar-logo{ gap:8px }
+  .sb-logo-img:first-of-type,
+  .logo-sep{ display:none }
+}

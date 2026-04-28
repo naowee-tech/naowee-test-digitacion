@@ -145,10 +145,11 @@
 
 /* ═══ Collapsed state — fade+shrink suave en vez de display:none ═══ */
 .sidebar.collapsed{ width:72px; min-width:72px; overflow:hidden }
-.sidebar.collapsed .sb-logo-img:first-of-type,
+/* Oculta TODOS los logos en colapsado (paridad con Incentivos): solo
+   queda visible el burger button en el sidebar-logo. */
+.sidebar.collapsed .sb-logo-img,
 .sidebar.collapsed .logo-sep,
 .sidebar.collapsed .nav-section{ display:none !important }
-.sidebar.collapsed .sb-logo-img{ height:32px }
 
 /* Override del display:none original para los labels: usar fade+shrink */
 .sidebar.collapsed .nav-row .lbl,

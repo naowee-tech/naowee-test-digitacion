@@ -117,7 +117,7 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 /* ═══ PAGE CONTENT ════════════════════════════════════════ */
 .page{flex:1;overflow:hidden;padding:20px 28px 0;background:var(--bg);display:flex;flex-direction:column;min-height:0}
 
-.page-title{font-size:22px;font-weight:600;color:var(--text-primary);margin-bottom:4px;flex-shrink:0}
+.page-title{font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:18px;flex-shrink:0;letter-spacing:-.01em}
 .page-sub{font-size:13px;color:var(--text-secondary);margin-bottom:20px}
 
 /* ═══ STAT CARDS — paridad con .sum-card de Incentivos ═══════════════════
@@ -143,9 +143,10 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 .stat-icon-mini{display:flex;align-items:center;color:var(--text-secondary)}
 
 /* ═══ SEARCH + FILTER BAR — DS naowee-searchbox + naowee-dropdown ═══════ */
-.search-bar{display:flex;gap:12px;margin-bottom:18px;align-items:center;justify-content:space-between;flex-shrink:0}
+/* Layout left-aligned: search + dropdown se quedan a la izquierda */
+.search-bar{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-shrink:0;flex-wrap:wrap}
 
-/* DS naowee-searchbox tunings: 42px height, 320 max-width pegado a la izquierda */
+/* DS naowee-searchbox tunings: 42px height, 320 ancho */
 .search-bar .naowee-searchbox{width:320px;flex-shrink:0}
 .search-bar .naowee-searchbox__input-wrap{
   display:flex;align-items:center;gap:8px;
@@ -178,9 +179,11 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 .search-bar .naowee-searchbox__clear svg{width:13px;height:13px}
 .search-bar .naowee-searchbox.has-value .naowee-searchbox__clear{display:inline-flex}
 
-/* naowee-dropdown del status — compacto, sin label, ancho minimo */
-.search-bar .naowee-dropdown{margin-left:auto;min-width:180px}
-.search-bar .naowee-dropdown__trigger{height:42px}
+/* naowee-dropdown del status — compacto: ancho de su contenido, sin
+   margin-left:auto (queda pegado al search a la izquierda). */
+.search-bar .naowee-dropdown{width:auto;flex-shrink:0}
+.search-bar .naowee-dropdown__trigger{height:42px;min-width:0;width:fit-content;padding:0 36px 0 14px}
+.search-bar .naowee-dropdown__placeholder{flex:0 1 auto}
 
 /* ═══ TWO-COLUMN LAYOUT ══════════════════════════════════ */
 .dash-layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:stretch;flex:1;min-height:0;overflow:hidden}
@@ -258,7 +261,7 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 }
 .detail-empty-icon{font-size:40px;opacity:.3}
 /* Detail tags — paridad naowee-badge --quiet --small */
-.detail-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+/* Detail tags — paridad naowee-badge --quiet --small */
 .detail-tag{
   display:inline-flex;align-items:center;gap:4px;
   height:20px;padding:0 8px;border-radius:9999px;
@@ -271,7 +274,41 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 .detail-tag.gray{background:#f0f1f7;color:#646587}
 .detail-tag.gold{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e}
 .detail-tag.gold::before{background:#92400e}
-.detail-sport-title{font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:4px}
+
+/* ═══ DETAIL HEADER — patron card-header con actions a la derecha ═══ */
+.detail-header{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  margin-bottom:16px;flex-wrap:wrap;
+}
+.detail-header__title-group{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.detail-header__title{
+  font-size:20px;font-weight:700;color:var(--text-primary);
+  line-height:1.25;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:10px;
+}
+.detail-header__title-emoji{font-size:24px;line-height:1;flex-shrink:0}
+.detail-header__meta{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12px;color:var(--text-secondary);
+}
+.detail-header__code{
+  font-size:12px;color:var(--text-secondary);
+  font-variant-numeric:tabular-nums;
+}
+.detail-header__code::before{
+  content:'·';margin:0 6px 0 2px;color:var(--text-secondary);
+}
+.detail-header__actions{display:flex;gap:8px;flex-shrink:0;align-items:center}
+
+/* Divider sutil antes de las secciones */
+.detail-divider{
+  border:none;border-top:1px solid var(--border);
+  margin:0 0 18px;
+}
+
+/* Compatibilidad con clases viejas (por si quedan referencias) */
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.detail-sport-title{font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
 .detail-code{font-size:12px;color:var(--text-secondary);margin-bottom:16px}
 .detail-actions{display:flex;gap:10px;margin-bottom:24px}
 
@@ -2153,27 +2190,35 @@ function renderDetail(id){
       </div>
     </div>` : ''}
 
-    <div class="detail-tags">
-      <span class="detail-tag ${isPaused ? 'blue' : 'green'}">${{
-        'en-digitacion':'En digitación',
-        'asignada':'Asignada',
-        'en-pausa':'En pausa',
-        'finalizada':'Finalizada'
-      }[comp.status]}</span>
-      <span class="detail-tag gray">${comp.sistema}</span>
-      ${comp.medallas ? '<span class="detail-tag gold">🏅 Con Medallas</span>':''}
+    <div class="detail-header">
+      <div class="detail-header__title-group">
+        <h2 class="detail-header__title">
+          <span class="detail-header__title-emoji">${sport.emoji}</span>
+          <span>${sport.label} ${comp.genero} ${comp.categoria}</span>
+        </h2>
+        <div class="detail-header__meta">
+          <span class="detail-tag ${isPaused ? 'blue' : 'green'}">${{
+            'en-digitacion':'En digitación',
+            'asignada':'Asignada',
+            'en-pausa':'En pausa',
+            'finalizada':'Finalizada'
+          }[comp.status]}</span>
+          <span class="detail-tag gray">${comp.sistema}</span>
+          ${comp.medallas ? '<span class="detail-tag gold">🏅 Con Medallas</span>':''}
+          <span class="detail-header__code">${comp.code} · Juegos Departamentales Cundinamarca 2024</span>
+        </div>
+      </div>
+      <div class="detail-header__actions">
+        ${comp.status!=='finalizada' ? `
+        <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="pauseComp(${comp.id})"${isPaused ? ' style="color:var(--green)"' : ''}>
+          ${isPaused ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2l8 5-8 5V2z" fill="currentColor"/></svg>' : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>'}
+          ${isPaused?'Reanudar':'Pausar'}
+        </button>
+        ${!isPaused ? '<button class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="finalizeComp('+comp.id+')">Finalizar</button>' : ''}
+        ` : '<span class="detail-tag green" style="font-size:12px;padding:0 12px;height:24px">Competencia finalizada</span>'}
+      </div>
     </div>
-    <div class="detail-sport-title">${sport.emoji} ${sport.label} ${comp.genero} ${comp.categoria}</div>
-    <div class="detail-code">${comp.code} · Juegos Departamentales Cundinamarca 2024</div>
-    <div class="detail-actions">
-      ${comp.status!=='finalizada' ? `
-      <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="pauseComp(${comp.id})"${isPaused ? ' style="color:var(--green)"' : ''}>
-        ${isPaused ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2l8 5-8 5V2z" fill="currentColor"/></svg>' : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>'}
-        ${isPaused?'Reanudar':'Pausar'}
-      </button>
-      ${!isPaused ? '<button class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="finalizeComp('+comp.id+')">Finalizar</button>' : ''}
-      `:'<span class="detail-tag green" style="font-size:13px;padding:6px 16px">Competencia finalizada</span>'}
-    </div>
+    <hr class="detail-divider"/>
 
     ${inProgress.length > 0 ? `
     <div class="section-title">

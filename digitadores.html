@@ -233,10 +233,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .digi-card-footer svg{color:var(--accent);flex-shrink:0}
 
 /* MODAL — overrides para el patrón DS naowee-modal en este page */
-.digi-modal{ width:520px;max-width:520px }
+/* overflow:visible permite que el menu del dropdown se proyecte por encima
+   del modal sin quedar enmascarado por el overflow:clip del DS. */
+.digi-modal{ width:520px;max-width:520px;overflow:visible }
 .digi-modal .naowee-modal__body{
   display:flex;flex-direction:column;gap:14px;
+  overflow:visible;
 }
+/* Footer con divider sobre el contenido (separa CTAs del body) */
+.digi-modal .naowee-modal__footer{
+  border-top:1px solid var(--border);
+  margin-top:18px;
+  padding-top:18px !important;
+}
+/* Dropdown menu por encima del header/footer/cualquier sibling */
+.digi-modal .naowee-dropdown__menu{ z-index:20 }
+
 /* Cuando el dropdown ya tiene valor, el placeholder se vuelve text-primary
    (la base del DS lo deja como secondary aunque haya valor seleccionado). */
 .naowee-dropdown[data-value]:not([data-value=""]) .naowee-dropdown__placeholder{

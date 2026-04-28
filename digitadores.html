@@ -232,53 +232,44 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 }
 .digi-card-footer svg{color:var(--accent);flex-shrink:0}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.open{opacity:1;pointer-events:auto}
-.modal{background:var(--surface);border-radius:var(--radius-xl);width:95vw;max-width:520px;max-height:90vh;display:flex;flex-direction:column;transform:scale(.92);opacity:0;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s}
-.modal-overlay.open .modal{transform:scale(1);opacity:1}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 18px;border-bottom:1px solid var(--border)}
-.modal-header h2{font-size:18px;font-weight:700;color:var(--text-primary)}
-.modal-close{width:32px;height:32px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);color:var(--text-secondary);transition:background .12s}
-.modal-close:hover{background:var(--orange-bg);color:var(--text-secondary)}
-.modal-body{padding:24px 28px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
-.form-group{display:flex;flex-direction:column;gap:6px}
-.form-group label{font-size:13px;font-weight:600;color:var(--text-primary)}
-.form-group label .req{color:var(--accent)}
-.form-group input,.form-group select{height:42px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 12px;outline:none;transition:border-color .15s}
-.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
-.form-group input::placeholder{color:var(--text-secondary)}
-.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:18px 28px;border-top:1px solid var(--border)}
-.modal-footer .btn-accent:disabled{opacity:.5;cursor:not-allowed}
+/* MODAL — overrides para el patrón DS naowee-modal en este page */
+.digi-modal{ width:520px;max-width:520px }
+.digi-modal .naowee-modal__body{
+  display:flex;flex-direction:column;gap:14px;
+}
+/* Cuando el dropdown ya tiene valor, el placeholder se vuelve text-primary
+   (la base del DS lo deja como secondary aunque haya valor seleccionado). */
+.naowee-dropdown[data-value]:not([data-value=""]) .naowee-dropdown__placeholder{
+  color:var(--naowee-color-text-primary,#282834);
+}
 
-/* Confirm-delete modal — small variant + destructive button */
-.modal.modal--small{max-width:440px}
-.modal-body .confirm-icon{
-  width:48px;height:48px;border-radius:50%;background:#fef2f2;color:#dc2626;
-  display:inline-flex;align-items:center;justify-content:center;align-self:center;
-  margin-bottom:4px;
+/* Modal de confirmación — header con ícono caution rojo */
+.digi-modal--confirm{ width:440px;max-width:440px }
+.digi-modal--confirm .naowee-modal__header{ align-items:center;gap:14px }
+.digi-modal--confirm .confirm-icon{
+  width:40px;height:40px;border-radius:50%;
+  background:#fef2f2;color:#dc2626;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.modal-body .confirm-icon svg{width:24px;height:24px}
-.modal-body .confirm-text{
-  font-size:14px;color:var(--text-primary);text-align:center;line-height:1.55;margin:0;
+.digi-modal--confirm .confirm-icon svg{width:22px;height:22px}
+.digi-modal--confirm .naowee-modal__title-group{
+  flex-direction:row;align-items:center;gap:14px;
 }
-.modal-body .confirm-text strong{color:var(--text-primary);font-weight:700}
-.modal-body .confirm-sub{
-  display:inline-block;margin-top:8px;
-  font-size:13px;color:var(--text-secondary);line-height:1.5;
+.digi-modal--confirm .confirm-sub{
+  margin-top:6px;font-size:13px;color:var(--text-secondary);line-height:1.55;
 }
-.btn.btn-danger{
-  background:#dc2626;color:#fff;border:none;
-  height:40px;padding:0 18px;border-radius:var(--radius-md);
-  font:600 13px var(--font);cursor:pointer;
-  transition:background .15s, box-shadow .15s;
+
+/* CTA destructivo — overrides al naowee-btn--loud para variante rojo
+   (idle rojo + glow rojo en hover, en vez del naranja del brand) */
+.naowee-btn--loud.btn-danger-loud{ background:#dc2626;color:#fff }
+.naowee-btn--loud.btn-danger-loud:hover,
+.naowee-btn--loud.btn-danger-loud:focus-visible{
+  background:#dc2626 !important;
+  box-shadow:0 6px 16px rgba(220,38,38,.28) !important;
 }
-.btn.btn-danger:hover{
-  background:#b91c1c;
-  box-shadow:0 6px 16px rgba(220,38,38,.22);
-}
-.btn.btn-danger:focus-visible{
-  outline:none;box-shadow:0 0 0 3px rgba(220,38,38,.25);
+.naowee-btn--loud.btn-danger-loud:active{
+  background:#b91c1c !important;
+  box-shadow:0 2px 6px rgba(220,38,38,.18) !important;
 }
 
 /* TOAST */
@@ -463,69 +454,92 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 </div><!-- /main -->
 </div><!-- /shell -->
 
-<!-- CREATE / EDIT MODAL (modo segun data-mode) -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)" data-mode="create">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">Crear nuevo digitador</h2>
-      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+<!-- CREATE / EDIT MODAL (DS naowee-modal) -->
+<div class="naowee-modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)" data-mode="create" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="naowee-modal naowee-modal--fixed-header naowee-modal--fixed-footer digi-modal">
+    <header class="naowee-modal__header">
+      <div class="naowee-modal__title-group">
+        <h2 class="naowee-modal__title" id="modalTitle">Crear nuevo digitador</h2>
+        <div class="naowee-modal__subtitle" id="modalSubtitle">Completa los datos del digitador. Recibirá un correo con las instrucciones de acceso.</div>
+      </div>
+      <button class="naowee-modal__dismiss" type="button" onclick="closeModal()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
+    </header>
+
+    <div class="naowee-modal__body">
+      <div class="naowee-textfield">
+        <label class="naowee-textfield__label naowee-textfield__label--required" for="formName">Nombre completo</label>
+        <div class="naowee-textfield__input-wrap">
+          <input class="naowee-textfield__input" type="text" id="formName" placeholder="Ej. Juan David López" oninput="validateForm()"/>
+        </div>
+      </div>
+
+      <div class="naowee-textfield">
+        <label class="naowee-textfield__label naowee-textfield__label--required" for="formEmail">Correo electrónico</label>
+        <div class="naowee-textfield__input-wrap">
+          <input class="naowee-textfield__input" type="email" id="formEmail" placeholder="Ej. juan.lopez@gmail.com" oninput="validateForm()"/>
+        </div>
+        <div class="naowee-helper"><div class="naowee-helper__text">A este correo se enviarán las instrucciones de acceso.</div></div>
+      </div>
+
+      <div class="naowee-textfield">
+        <label class="naowee-textfield__label" for="formPhone">Teléfono</label>
+        <div class="naowee-textfield__input-wrap">
+          <input class="naowee-textfield__input" type="tel" id="formPhone" placeholder="Ej. 315 092 0923"/>
+        </div>
+      </div>
+
+      <div class="naowee-dropdown" id="zonaDropdown" data-value="">
+        <label class="naowee-dropdown__label" for="zonaTrigger">Zona asignada</label>
+        <div class="naowee-dropdown__trigger" id="zonaTrigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" onclick="toggleDropdown('zonaDropdown')" onkeydown="handleDropdownKey(event,'zonaDropdown')">
+          <span class="naowee-dropdown__placeholder" id="zonaLabel">Selecciona una zona</span>
+          <div class="naowee-dropdown__controls">
+            <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+        </div>
+        <div class="naowee-dropdown__menu" role="listbox">
+          <div class="naowee-dropdown__option" data-val="" onclick="selectDropdown('zonaDropdown','','Selecciona una zona')">Sin zona asignada</div>
+          <div class="naowee-dropdown__option" data-val="Centro" onclick="selectDropdown('zonaDropdown','Centro','Centro')">Centro</div>
+          <div class="naowee-dropdown__option" data-val="Norte" onclick="selectDropdown('zonaDropdown','Norte','Norte')">Norte</div>
+          <div class="naowee-dropdown__option" data-val="Sur" onclick="selectDropdown('zonaDropdown','Sur','Sur')">Sur</div>
+          <div class="naowee-dropdown__option" data-val="Oriente" onclick="selectDropdown('zonaDropdown','Oriente','Oriente')">Oriente</div>
+          <div class="naowee-dropdown__option" data-val="Occidente" onclick="selectDropdown('zonaDropdown','Occidente','Occidente')">Occidente</div>
+        </div>
+      </div>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Nombre completo <span class="req">*</span></label>
-        <input type="text" id="formName" placeholder="Ej: Juan David Lopez" oninput="validateForm()"/>
-      </div>
-      <div class="form-group">
-        <label>Correo electr&oacute;nico <span class="req">*</span></label>
-        <input type="email" id="formEmail" placeholder="Ej: juan.lopez@gmail.com" oninput="validateForm()"/>
-      </div>
-      <div class="form-group">
-        <label>Tel&eacute;fono</label>
-        <input type="tel" id="formPhone" placeholder="Ej: 315 092 0923"/>
-      </div>
-      <div class="form-group">
-        <label>Zona asignada</label>
-        <select id="formZona">
-          <option value="">Seleccionar zona</option>
-          <option value="Centro">Centro</option>
-          <option value="Norte">Norte</option>
-          <option value="Sur">Sur</option>
-          <option value="Oriente">Oriente</option>
-          <option value="Occidente">Occidente</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-link" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-accent" id="btnSubmit" disabled onclick="submitForm()">Crear digitador</button>
-    </div>
+
+    <footer class="naowee-modal__footer naowee-modal__footer--end">
+      <button class="naowee-btn naowee-btn--mute naowee-btn--large" type="button" onclick="closeModal()">Cancelar</button>
+      <button class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnSubmit" disabled onclick="submitForm()">Crear digitador</button>
+    </footer>
   </div>
 </div>
 
-<!-- DELETE CONFIRMATION MODAL -->
-<div class="modal-overlay" id="deleteOverlay" onclick="closeDeleteOutside(event)">
-  <div class="modal modal--small">
-    <div class="modal-header">
-      <h2>Eliminar digitador</h2>
-      <button class="modal-close" onclick="closeDeleteModal()" aria-label="Cerrar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="confirm-icon">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<!-- DELETE CONFIRMATION MODAL (DS naowee-modal) -->
+<div class="naowee-modal-overlay" id="deleteOverlay" onclick="closeDeleteOutside(event)" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+  <div class="naowee-modal naowee-modal--fixed-footer digi-modal digi-modal--confirm">
+    <header class="naowee-modal__header">
+      <div class="naowee-modal__title-group">
+        <div class="confirm-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h2 class="naowee-modal__title" id="deleteTitle">Eliminar digitador</h2>
       </div>
-      <p class="confirm-text">
-        ¿Estás seguro que deseas eliminar a <strong id="deleteDigiName">este digitador</strong>?
-        <br/><span class="confirm-sub">Esta acción no se puede deshacer. Las competencias asignadas quedarán sin digitador.</span>
-      </p>
+      <button class="naowee-modal__dismiss" type="button" onclick="closeDeleteModal()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+
+    <div class="naowee-modal__body">
+      <p>¿Estás seguro que deseas eliminar a <strong id="deleteDigiName">este digitador</strong>?</p>
+      <p class="confirm-sub">Esta acción no se puede deshacer. Las competencias asignadas quedarán sin digitador.</p>
     </div>
-    <div class="modal-footer">
-      <button class="btn-link" onclick="closeDeleteModal()">Cancelar</button>
-      <button class="btn btn-danger" onclick="confirmDelete()">Eliminar digitador</button>
-    </div>
+
+    <footer class="naowee-modal__footer naowee-modal__footer--end">
+      <button class="naowee-btn naowee-btn--mute naowee-btn--large" type="button" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="naowee-btn naowee-btn--loud naowee-btn--large btn-danger-loud" type="button" onclick="confirmDelete()">Eliminar digitador</button>
+    </footer>
   </div>
 </div>
 
@@ -744,19 +758,76 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// DS DROPDOWN — toggle, select, keyboard, outside click
+function toggleDropdown(id) {
+  var dd = document.getElementById(id);
+  var isOpen = dd.classList.toggle('naowee-dropdown--open');
+  var trig = dd.querySelector('.naowee-dropdown__trigger');
+  if (trig) trig.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  if (isOpen) {
+    document.querySelectorAll('.naowee-dropdown.naowee-dropdown--open').forEach(function(other){
+      if (other !== dd) {
+        other.classList.remove('naowee-dropdown--open');
+        var t = other.querySelector('.naowee-dropdown__trigger');
+        if (t) t.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+}
+function selectDropdown(id, value, label) {
+  var dd = document.getElementById(id);
+  if (!dd) return;
+  dd.dataset.value = value;
+  var ph = dd.querySelector('.naowee-dropdown__placeholder');
+  if (ph) {
+    ph.textContent = label;
+    ph.classList.toggle('naowee-dropdown__placeholder--filled', !!value);
+  }
+  dd.querySelectorAll('.naowee-dropdown__option').forEach(function(o){
+    o.classList.toggle('naowee-dropdown__option--selected', o.getAttribute('data-val') === value);
+  });
+  dd.classList.remove('naowee-dropdown--open');
+  var trig = dd.querySelector('.naowee-dropdown__trigger');
+  if (trig) trig.setAttribute('aria-expanded', 'false');
+}
+function handleDropdownKey(e, id) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleDropdown(id);
+  } else if (e.key === 'Escape') {
+    var dd = document.getElementById(id);
+    if (dd) dd.classList.remove('naowee-dropdown--open');
+  }
+}
+document.addEventListener('click', function(e){
+  document.querySelectorAll('.naowee-dropdown.naowee-dropdown--open').forEach(function(dd){
+    if (!dd.contains(e.target)) {
+      dd.classList.remove('naowee-dropdown--open');
+      var t = dd.querySelector('.naowee-dropdown__trigger');
+      if (t) t.setAttribute('aria-expanded', 'false');
+    }
+  });
+});
+
 // MODAL CREATE / EDIT (modo dinamico via data-mode)
 var editingId = null;
+var ZONA_LABELS = {
+  '': 'Selecciona una zona',
+  'Centro': 'Centro', 'Norte': 'Norte', 'Sur': 'Sur',
+  'Oriente': 'Oriente', 'Occidente': 'Occidente'
+};
 
 function openModal() {
   var ov = document.getElementById('modalOverlay');
   ov.dataset.mode = 'create';
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Crear nuevo digitador';
+  document.getElementById('modalSubtitle').textContent = 'Completa los datos del digitador. Recibirá un correo con las instrucciones de acceso.';
   document.getElementById('btnSubmit').textContent = 'Crear digitador';
   document.getElementById('formName').value = '';
   document.getElementById('formEmail').value = '';
   document.getElementById('formPhone').value = '';
-  document.getElementById('formZona').value = '';
+  selectDropdown('zonaDropdown', '', 'Selecciona una zona');
   document.getElementById('btnSubmit').disabled = true;
   ov.classList.add('open');
 }
@@ -767,11 +838,13 @@ function openEditModal(id) {
   ov.dataset.mode = 'edit';
   editingId = id;
   document.getElementById('modalTitle').textContent = 'Editar digitador';
+  document.getElementById('modalSubtitle').textContent = 'Actualiza los datos de ' + d.name + '.';
   document.getElementById('btnSubmit').textContent = 'Guardar cambios';
   document.getElementById('formName').value = d.name || '';
   document.getElementById('formEmail').value = d.email || '';
   document.getElementById('formPhone').value = d.phone || '';
-  document.getElementById('formZona').value = d.zona || '';
+  var zona = d.zona || '';
+  selectDropdown('zonaDropdown', zona, ZONA_LABELS[zona] || 'Selecciona una zona');
   document.getElementById('btnSubmit').disabled = !(d.name && d.email);
   ov.classList.add('open');
 }
@@ -792,7 +865,7 @@ function submitForm() {
   var email = document.getElementById('formEmail').value.trim();
   if (!name || !email) return;
   var phone = document.getElementById('formPhone').value.trim();
-  var zona = document.getElementById('formZona').value;
+  var zona = document.getElementById('zonaDropdown').dataset.value || '';
   var mode = document.getElementById('modalOverlay').dataset.mode;
   if (mode === 'edit' && editingId != null) {
     var idx = digitadores.findIndex(function(x){ return x.id === editingId });

@@ -232,38 +232,34 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 }
 .digi-card-footer svg{color:var(--accent);flex-shrink:0}
 
-/* MODAL — overrides para el patrón DS naowee-modal en este page */
-/* overflow:visible permite que el menu del dropdown se proyecte por encima
-   del modal sin quedar enmascarado por el overflow:clip del DS.
-   Trade-off: las hijas con bg propio (header/footer en --fixed-*) ya no
-   heredan el clip rounded del modal — por eso re-aplicamos border-radius
-   explicito a sus esquinas para mantener el shape del DS (20px). */
+/* MODAL — overrides para el patrón DS naowee-modal en este page.
+   Padding UNIFORME 24px en header/body/footer → la X y los botones
+   tienen el mismo respiro en las 4 direcciones (top, right, bottom, left).
+   overflow:visible para que el menu del dropdown no quede enmascarado.
+   Border-radius explicito en cada hija con bg propio para preservar
+   el shape rounded del DS (20px) cuando el modal sale de overflow:clip. */
 .digi-modal{
   width:520px;max-width:520px;overflow:visible;
   border-radius:var(--naowee-border-radius-containers-default,20px);
-  /* Cero padding bottom: el footer ya cubre el borde inferior del modal
-     y mantiene el corner-radius via su propia regla. Asi evitamos que el
-     bloque de botones tenga 64px de aire por debajo (32 modal + 32 footer)
-     mientras tiene solo 18-20 por encima — paddings ahora simetricos. */
-  padding-bottom:0;
+  padding:0;  /* sin padding del modal: header/body/footer cubren el shape */
 }
 .digi-modal .naowee-modal__header{
   border-top-left-radius:var(--naowee-border-radius-containers-default,20px);
   border-top-right-radius:var(--naowee-border-radius-containers-default,20px);
-}
-.digi-modal .naowee-modal__footer{
-  border-bottom-left-radius:var(--naowee-border-radius-containers-default,20px);
-  border-bottom-right-radius:var(--naowee-border-radius-containers-default,20px);
-  /* Divider sobre el contenido — separa CTAs del body.
-     Padding simetrico 20 vertical / 32 horizontal en las 4 direcciones
-     respecto al grupo de botones (mismo respiro arriba y abajo). */
-  border-top:1px solid var(--border);
-  margin-top:18px;
-  padding:20px 32px !important;
+  padding:24px !important;  /* simetrico — X queda 24px de cada borde */
 }
 .digi-modal .naowee-modal__body{
   display:flex;flex-direction:column;gap:14px;
   overflow:visible;
+  padding:0 24px 24px !important;  /* sides 24, bottom 24, top hereda del header */
+}
+.digi-modal .naowee-modal__footer{
+  border-bottom-left-radius:var(--naowee-border-radius-containers-default,20px);
+  border-bottom-right-radius:var(--naowee-border-radius-containers-default,20px);
+  /* Divider sobre el contenido — separa CTAs del body */
+  border-top:1px solid var(--border);
+  margin-top:0;
+  padding:24px !important;  /* simetrico — Guardar cambios queda 24px de cada borde */
 }
 /* Dropdown menu por encima del header/footer/cualquier sibling */
 .digi-modal .naowee-dropdown__menu{ z-index:20 }

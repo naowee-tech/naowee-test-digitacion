@@ -74,26 +74,120 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Sidebar logos institucionales (Ministerio del Deporte + SUID)
-   Reemplaza el bloque <svg class="naowee-logo"> por dos imágenes con divider.
-   Las clases coexisten con la estructura actual del sidebar de Digitación.
+   SIDEBAR — full setup (paridad con módulo Incentivos)
+
+   Aplica:
+   - Logos institucionales Ministerio + SUID con divider
+   - Easing Apple-style en collapse/expand (cubic-bezier(.32,.72,0,1) 360ms)
+   - Breathing lateral del nav-row (margin 0 10px)
+   - Animación de entrada de la barra naranja activa
+   - Fade+shrink suave de labels al colapsar (en vez de display:none)
+   - Hover/active como cuadrado 40x40 cuando está colapsado
+   - Active state colorea el stroke del icono al accent
    ═══════════════════════════════════════════════════════════════════════════ */
-.sidebar-logo{ gap:12px }
+
+/* Sidebar: easing Apple-style en transición de ancho */
+.sidebar{
+  transition:width .36s cubic-bezier(.32,.72,0,1),min-width .36s cubic-bezier(.32,.72,0,1) !important;
+}
+
+/* Sidebar logo bar: layout y logos institucionales */
+.sidebar-logo{ gap:14px; padding:0 20px }
+.sidebar-logo .sb-logo-img:first-of-type{ margin-left:auto }
+.sidebar-logo .sb-logo-img:last-of-type{ margin-right:auto }
 .sb-logo-img{
-  height:40px;width:auto;flex-shrink:0;object-fit:contain;
+  height:46px;width:auto;display:block;flex-shrink:0;object-fit:contain;
   transition:height .25s cubic-bezier(.32,.72,0,1),opacity .2s;
 }
 .logo-sep{
-  width:1px;height:28px;background:var(--border,#e7e9f3);flex-shrink:0;
+  width:1px;height:36px;background:var(--border,#e7e9f3);flex-shrink:0;
   transition:opacity .2s;
 }
 
-/* En sidebar colapsado: solo SUID visible (logo institucional principal) */
+/* Burger button: animación al colapsar */
+.burger-btn svg{ transition:transform .3s cubic-bezier(.4,0,.2,1) }
+.sidebar.collapsed .burger-btn svg{ transform:rotate(180deg) }
+
+/* Nav rows: breathing lateral + transiciones suaves */
+.nav-row{
+  margin:0 10px;
+  transition:background .12s,padding .25s cubic-bezier(.4,0,.2,1),
+             justify-content .25s,margin .28s cubic-bezier(.32,.72,0,1) !important;
+}
+.nav-row .lbl{
+  white-space:nowrap;overflow:hidden;
+  max-width:200px;opacity:1;
+  transition:opacity .2s ease .18s, max-width .36s cubic-bezier(.32,.72,0,1) .04s !important;
+}
+.nav-row .nav-arrow{ transition:opacity .14s ease }
+
+/* ═══ Active bar — animación de entrada estilo Apple ═══ */
+.active-bar{
+  left:-6px !important;
+  transform-origin:center;
+  animation:digiActiveBarIn .42s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes digiActiveBarIn{
+  0%   { opacity:0; transform:translateX(-8px) scaleY(.2) }
+  55%  { opacity:1 }
+  100% { opacity:1; transform:translateX(0) scaleY(1) }
+}
+
+/* Active state: colorea el stroke del icono al accent (cuando el SVG no
+   trae color hardcoded). Aplica también para iconos secundarios del row. */
+.nav-row.active .icon svg path,
+.nav-row.active .icon svg rect,
+.nav-row.active .icon svg circle,
+.nav-row.active .icon svg line{
+  stroke:var(--accent,#d74009);
+  transition:stroke .25s ease;
+}
+
+/* ═══ Collapsed state — fade+shrink suave en vez de display:none ═══ */
+.sidebar.collapsed{ width:72px; min-width:72px; overflow:hidden }
 .sidebar.collapsed .sb-logo-img:first-of-type,
-.sidebar.collapsed .logo-sep{ display:none }
+.sidebar.collapsed .logo-sep,
+.sidebar.collapsed .nav-section{ display:none !important }
 .sidebar.collapsed .sb-logo-img{ height:32px }
 
-/* Responsive: en pantallas pequeñas oculta el logo Ministerio (decisión de marca) */
+/* Override del display:none original para los labels: usar fade+shrink */
+.sidebar.collapsed .nav-row .lbl,
+.sidebar.collapsed .nav-row .nav-arrow{
+  display:flex !important;
+  max-width:0 !important;opacity:0 !important;
+  pointer-events:none;margin:0 !important;
+  transition:opacity .14s ease, max-width .3s cubic-bezier(.32,.72,0,1) .04s !important;
+}
+
+/* Layout interno cuando está colapsado */
+.sidebar.collapsed .sidebar-logo{ justify-content:center;padding:0 }
+.sidebar.collapsed .nav-row{
+  justify-content:center;padding:0;gap:0;background:transparent;
+  margin:0 10px;
+}
+.sidebar.collapsed .nav-row:hover,
+.sidebar.collapsed .nav-row.active:hover{ background:transparent }
+.sidebar.collapsed .nav-row .icon{ margin-left:0;position:relative;z-index:1 }
+
+/* Hover/active en colapsado: cuadrado 40x40 centrado en el icono */
+.sidebar.collapsed .nav-row::before{
+  content:'';position:absolute;left:50%;top:50%;
+  width:40px;height:40px;border-radius:8px;
+  transform:translate(-50%,-50%);
+  background:transparent;pointer-events:none;
+  transition:background .2s cubic-bezier(.32,.72,0,1);
+  z-index:0;
+}
+.sidebar.collapsed .nav-row:hover::before{ background:#f5f6fa }
+.sidebar.collapsed .nav-row.active::before{ background:#fff3e6 }
+.sidebar.collapsed .nav-row.active:hover::before{ background:#ffe4cf }
+
+/* La barra naranja vertical no aplica en colapsado: el cuadrado accent
+   ya cumple la función de indicador activo. */
+.sidebar.collapsed .active-bar{ display:none }
+
+/* Responsive: en pantallas pequeñas oculta el logo Ministerio + sep
+   (decisión de marca — el SUID es el principal). */
 @media (max-width:640px){
   .sidebar-logo{ gap:8px }
   .sb-logo-img:first-of-type,

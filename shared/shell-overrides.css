@@ -230,3 +230,66 @@
   .sb-logo-img:first-of-type,
   .logo-sep{ display:none }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tooltip global [data-tooltip] — para botones icon-only y otros elementos
+   sin label visible. Uso: <button data-tooltip="Editar">...</button>
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-tooltip]{ position:relative }
+[data-tooltip]::after{
+  content: attr(data-tooltip);
+  position:absolute;bottom:calc(100% + 6px);left:50%;
+  transform:translateX(-50%) translateY(4px);
+  padding:6px 10px;background:#282834;color:#fff;
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:500;line-height:1;
+  border-radius:6px;white-space:nowrap;letter-spacing:.1px;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:1000;
+}
+[data-tooltip]::before{
+  content:'';position:absolute;bottom:calc(100% + 1px);left:50%;
+  transform:translateX(-50%) translateY(4px);
+  border:5px solid transparent;border-top-color:#282834;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:1000;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus-visible::before{
+  opacity:1;transform:translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Icon-only ghost buttons — paridad con naowee-btn--mute (transparent + accent
+   on hover), pero square 1:1 sin texto.
+   Uso: <button class="icon-btn-ghost" data-tooltip="...">...svg...</button>
+   ═══════════════════════════════════════════════════════════════════════════ */
+.icon-btn-ghost{
+  width:32px;height:32px;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;
+  border-radius:8px;color:var(--text-secondary,#646587);
+  transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.icon-btn-ghost svg{ width:16px;height:16px;display:block }
+.icon-btn-ghost:hover{
+  background:var(--naowee-color-orange-100,#fff3e6);
+  color:var(--accent,#d74009);
+}
+.icon-btn-ghost:focus-visible{
+  outline:none;
+  background:var(--naowee-color-orange-100,#fff3e6);
+  color:var(--accent,#d74009);
+  box-shadow:0 0 0 3px rgba(215,64,9,.18);
+}
+.icon-btn-ghost:active{ background:#ffe4cf }
+
+/* Variante destructiva — para acciones como "Eliminar" */
+.icon-btn-ghost.is-danger:hover{ background:#fef2f2;color:#dc2626 }
+.icon-btn-ghost.is-danger:focus-visible{
+  background:#fef2f2;color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18);
+}
+.icon-btn-ghost.is-danger:active{ background:#fee2e2 }

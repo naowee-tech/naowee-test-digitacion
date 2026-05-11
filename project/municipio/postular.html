@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Postular proyecto · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { formatoFecha, formatoMoneda } from '../shared/states.js';
+  import {
+    renderStepper, renderFooter, mountWizard,
+    fileDrop, mountFileDrops, mountCheckboxes,
+    renderReview, renderSuccess,
+    textfield, textarea, dropdown, bindDropdowns
+  } from '../shared/wizard-page.js';
+
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'postular' });
+
+  const convId = new URLSearchParams(location.search).get('conv') || ProjectData.getConvocatorias().find(c => c.estado === 'abierta')?.id;
+  const conv = ProjectData.getConvocatorias().find(c => c.id === convId);
+
+  const STEPS = [
+    { label: 'Datos del proyecto' },
+    { label: 'Localización' },
+    { label: 'Representante legal' },
+    { label: 'Carta de intención' },
+    { label: 'Revisar' }
+  ];
+
+  const tipoSolicitudOptions = ['Construcción nueva', 'Mejoramiento', 'Adecuación', 'Dotación'];
+  const faseOptions = ['Fase I — Diseños', 'Fase II — Obra', 'Fase III — Obra y Dotación'];
+  const fuentes = conv?.fuentes || [];
+
+  const wizardRoot = document.getElementById('pageContent');
+  wizardRoot.innerHTML = `
+    <div class="page-fade-in wz-page">
+      <div class="wz-page__header">
+        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver a Mi panel</a>
+          <h1 class="wz-page__title">Postular proyecto</h1>
+        <p class="wz-page__subtitle">Registro Básico Indispensable — Resolución 933 de 2024 · Art. 1.1.1</p>
+      </div>
+
+      <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
+        <div class="naowee-message__header">
+          <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <span class="naowee-message__title">Postulando a: ${conv?.nombre || '—'}</span>
+        </div>
+        <div class="naowee-message__text">${conv?.id || ''} · Bienio ${conv?.bienio || ''} · Cierra ${conv ? formatoFecha(conv.cierre) : '—'} · Tope por proyecto: ${conv ? formatoMoneda(conv.montoMaximoProyecto) : '—'}</div>
+      </div>
+
+      <form id="formPostular" class="wz-card" novalidate>
+        <div class="wz-stepper-wrap">
+          ${renderStepper(STEPS)}
+        </div>
+
+        <div class="wz-body" data-wz-body>
+          <!-- PASO 1: Datos del proyecto -->
+          <div class="wz-step-panel is-active" data-panel="1">
+            <div class="wz-section">Identificación</div>
+            ${textfield({ label: 'Nombre del proyecto', name: 'nombre', required: true, placeholder: 'Ej: Construcción Coliseo Cubierto Quibdó', minlength: 10, maxlength: 200 })}
+            <div class="wz-grid-2">
+              ${dropdown({ label: 'Tipo de proyecto', name: 'tipo', required: true, options: ['Infraestructura'], value: 'Infraestructura' })}
+              ${dropdown({ label: 'Fase', name: 'fase', required: true, options: faseOptions })}
+            </div>
+            <div class="wz-grid-2">
+              ${dropdown({ label: 'Tipo de solicitud', name: 'tipoSolicitud', required: true, options: tipoSolicitudOptions })}
+              ${textfield({ label: 'Tipología de escenario', name: 'tipologia', placeholder: 'Coliseo cubierto, polideportivo, cancha…' })}
+            </div>
+          </div>
+
+          <!-- PASO 2: Localización + financiación -->
+          <div class="wz-step-panel" data-panel="2">
+            <div class="wz-section">Localización del predio</div>
+            <div class="wz-grid-2">
+              ${textfield({ label: 'Departamento', name: 'departamento', required: true, value: 'Chocó' })}
+              ${textfield({ label: 'Municipio', name: 'municipio', required: true, value: 'Quibdó' })}
+            </div>
+            ${textfield({ label: 'Dirección del predio', name: 'direccion', required: true, placeholder: 'Calle 22 con Carrera 5, Barrio La Yesquita', minlength: 10, maxlength: 250 })}
+            <div class="wz-grid-2">
+              ${textfield({ label: 'Coordenadas — Latitud', name: 'lat', type: 'number', placeholder: '5.6919' })}
+              ${textfield({ label: 'Coordenadas — Longitud', name: 'lng', type: 'number', placeholder: '-76.6583' })}
+            </div>
+
+            <div class="wz-section">Financiación</div>
+            <div class="wz-grid-3">
+              ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuesto', type: 'number', required: true, placeholder: '4800000000' })}
+              ${textfield({ label: 'Monto solicitado al Mindeporte', name: 'monto', type: 'number', required: true, helper: `Tope: ${conv ? formatoMoneda(conv.montoMaximoProyecto) : '—'}` })}
+              ${textfield({ label: 'Contrapartida municipal', name: 'contrapartida', type: 'number' })}
+            </div>
+
+            <div class="wz-section">Fuentes de cofinanciación</div>
+            <p class="naowee-helper" style="margin:-6px 0 12px">Selecciona al menos una fuente.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+              ${fuentes.map(f => `
+                <label class="naowee-checkbox" style="padding:10px 12px;border:1.5px solid var(--border-default-strong, #d0d4e6);border-radius:8px;cursor:pointer;background:#fff">
+                  <input type="checkbox" name="cofinanciacion" value="${f}"/>
+                  <span class="naowee-checkbox__box">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.5 4.9c.3-.3.7-.3.9 0 .3.3.3.7 0 .9L7.1 11.1c-.1.1-.3.2-.4.2-.2 0-.3-.1-.5-.2L3.5 8.5c-.3-.3-.3-.7 0-1 .3-.3.7-.3.9 0L6.7 9.7l4.8-4.8z"/></svg>
+                  </span>
+                  <span class="naowee-checkbox__label" style="font-size:12.5px">${f}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- PASO 3: Representante legal -->
+          <div class="wz-step-panel" data-panel="3">
+            <div class="wz-section">Datos del representante legal</div>
+            <div class="wz-grid-2">
+              ${textfield({ label: 'Nombre completo', name: 'repNombre', required: true, maxlength: 150 })}
+              ${textfield({ label: 'Documento de identidad', name: 'repDoc', required: true, placeholder: 'CC 11.806.443' })}
+            </div>
+            <div class="wz-grid-2">
+              ${textfield({ label: 'Cargo', name: 'repCargo', required: true, value: 'Alcalde Municipal' })}
+              ${textfield({ label: 'Contacto', name: 'repContacto', placeholder: '+57 311 ...' })}
+            </div>
+          </div>
+
+          <!-- PASO 4: Carta de intención -->
+          <div class="wz-step-panel" data-panel="4">
+            <div class="wz-section">Carta de intención</div>
+            <p style="font-size:13px;color:var(--text-secondary);margin:-4px 0 12px">PDF firmada por el representante legal. Vigencia 30 días desde la postulación.</p>
+            ${fileDrop({
+              name: 'carta',
+              title: 'Subir Carta de Intención',
+              hint: 'PDF · firmada · vigencia 30 días',
+              accept: '.pdf',
+              required: true
+            })}
+          </div>
+
+          <!-- PASO 5: Revisar y enviar -->
+          <div class="wz-step-panel" data-panel="5">
+            <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 18px">Verifica los datos antes de enviar. Recibirás un radicado al confirmar.</p>
+            <div id="reviewBox"></div>
+          </div>
+        </div>
+
+        ${renderFooter({
+          cancelHref: 'dashboard.html',
+          publishLabel: 'Enviar postulación',
+          publishIconHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>'
+        })}
+      </form>
+    </div>
+  `;
+
+  const form = document.getElementById('formPostular');
+
+  /* Bind helpers */
+  bindDropdowns(form);
+  mountFileDrops(form);
+  mountCheckboxes(form);
+
+  /* Estilo selected en checkbox de fuentes (highlight del label completo) */
+  form.querySelectorAll('input[name="cofinanciacion"]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const lbl = inp.closest('label.naowee-checkbox');
+      if (!lbl) return;
+      lbl.style.borderColor = inp.checked ? 'var(--accent)' : 'var(--border-default-strong, #d0d4e6)';
+      lbl.style.background = inp.checked ? 'var(--orange-bg)' : '#fff';
+    });
+  });
+
+  /* Render review en paso 5 al avanzar */
+  function buildReview() {
+    const fd = new FormData(form);
+    const cofin = fd.getAll('cofinanciacion');
+    const carta = fd.get('carta');
+    const groups = [
+      {
+        title: 'Datos del proyecto',
+        rows: [
+          ['Nombre', fd.get('nombre')],
+          ['Tipo', fd.get('tipo')],
+          ['Fase', fd.get('fase')],
+          ['Tipo de solicitud', fd.get('tipoSolicitud')],
+          ['Tipología', fd.get('tipologia') || '—']
+        ]
+      },
+      {
+        title: 'Localización',
+        rows: [
+          ['Departamento', fd.get('departamento')],
+          ['Municipio', fd.get('municipio')],
+          ['Dirección', fd.get('direccion')],
+          ['Coordenadas', `${fd.get('lat') || '—'}, ${fd.get('lng') || '—'}`]
+        ]
+      },
+      {
+        title: 'Financiación',
+        rows: [
+          ['Presupuesto total', fd.get('presupuesto') ? formatoMoneda(parseInt(fd.get('presupuesto'))) : '—'],
+          ['Monto solicitado', fd.get('monto') ? formatoMoneda(parseInt(fd.get('monto'))) : '—'],
+          ['Contrapartida', fd.get('contrapartida') ? formatoMoneda(parseInt(fd.get('contrapartida'))) : '—'],
+          ['Fuentes', cofin.length
+            ? `<div class="wz-pill-list">${cofin.map(f => `<span class="wz-pill">${f}</span>`).join('')}</div>`
+            : '<span style="color:var(--text-secondary)">Ninguna seleccionada</span>']
+        ]
+      },
+      {
+        title: 'Representante legal',
+        rows: [
+          ['Nombre', fd.get('repNombre') || '—'],
+          ['Documento', fd.get('repDoc') || '—'],
+          ['Cargo', fd.get('repCargo') || '—'],
+          ['Contacto', fd.get('repContacto') || '—']
+        ]
+      },
+      {
+        title: 'Carta de intención',
+        rows: [
+          ['Archivo', carta?.name ? `📎 ${carta.name} · ${(carta.size/1024).toFixed(0)} KB` : '<span style="color:var(--text-secondary)">No adjunta</span>']
+        ]
+      }
+    ];
+    document.getElementById('reviewBox').innerHTML = renderReview(groups);
+  }
+
+  /* Wizard control */
+  const wizard = mountWizard({
+    scope: form,
+    totalSteps: STEPS.length,
+    /* validateStep desactivado por ahora — HANDOFF: reactivar cuando se cierre el alcance de campos */
+    validateStep: (panel, step) => {
+      /* Construir review al entrar al paso 5 */
+      if (step === STEPS.length - 1 || step === 4) {
+        /* siguiente paso será 5 → preparar review */
+        setTimeout(buildReview, 50);
+      }
+      return true;
+    },
+    onPublish: () => {
+      const fd = new FormData(form);
+      const cofin = fd.getAll('cofinanciacion');
+      const numero = String(ProjectData.getProyectos().length + 1).padStart(3,'0');
+      const id = `PROJ-2026-${numero}`;
+      const radicado = `RAD-2026-${numero}-${convId}`;
+      const ahora = new Date().toISOString();
+      const cartaFile = fd.get('carta');
+
+      const nuevo = {
+        idUnico: id,
+        radicado,
+        convocatoriaId: convId,
+        tipo: fd.get('tipo'),
+        nombre: fd.get('nombre'),
+        municipio: fd.get('municipio'),
+        departamento: fd.get('departamento'),
+        direccionPredio: fd.get('direccion'),
+        coordenadas: { lat: parseFloat(fd.get('lat')) || null, lng: parseFloat(fd.get('lng')) || null },
+        presupuesto: parseInt(fd.get('presupuesto')) || 0,
+        montoSolicitado: parseInt(fd.get('monto')) || 0,
+        contrapartida: parseInt(fd.get('contrapartida')) || 0,
+        cofinanciacion: cofin,
+        fase: fd.get('fase'),
+        tipoSolicitud: fd.get('tipoSolicitud'),
+        tipologia: fd.get('tipologia'),
+        representante: {
+          nombre: fd.get('repNombre'),
+          documento: fd.get('repDoc'),
+          cargo: fd.get('repCargo'),
+          contacto: fd.get('repContacto')
+        },
+        formuladora: { nombre: ProjectData.getPerfilData('municipio').entidad },
+        estado: 'presentado',
+        priorizado: false,
+        cartaIntencion: cartaFile?.name ? { name: cartaFile.name, size: cartaFile.size } : null,
+        observaciones: [],
+        historial: [
+          { ts: ahora, actor: 'municipio', evento: 'Postulación enviada', estado: 'presentado' },
+          { ts: ahora, actor: 'sistema', evento: `Radicado emitido: ${radicado}`, estado: 'presentado' }
+        ],
+        fechaPostulacion: ahora
+      };
+
+      ProjectData.addProyecto(nuevo);
+      ProjectData.pushNotificacion({
+        perfil: 'revisor',
+        tipo: 'nueva',
+        titulo: 'Nueva postulación recibida',
+        detalle: `${id} · ${fd.get('municipio')} · ${fd.get('nombre')}`
+      });
+      ProjectData.update(s => {
+        const c = s.convocatorias.find(x => x.id === convId);
+        if (c) c.postulaciones = (c.postulaciones || 0) + 1;
+      });
+
+      renderSuccess(form, {
+        title: '¡Postulación enviada con éxito!',
+        message: 'Tu proyecto fue radicado y notificado al equipo revisor del Ministerio. Recibirás novedades en tu panel.',
+        stamp: `Radicado · ${radicado}`,
+        ctaLabel: 'Ver mi proyecto',
+        onContinue: () => { window.location.href = `proyecto-perfil.html?id=${id}&nuevo=1`; }
+      });
+    }
+  });
+</script>
+</body>
+</html>

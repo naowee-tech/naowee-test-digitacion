@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Convocatorias activas · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { formatoMoneda, formatoFecha } from '../shared/states.js';
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'convocatorias' });
+
+  const convocatorias = ProjectData.getConvocatorias();
+
+  function diasRest(c) { return Math.ceil((new Date(c.cierre)-new Date())/86400000); }
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+      <div class="naowee-page-header">
+        <div class="naowee-page-header__main">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver a Mi panel</a>
+          <h1>Convocatorias activas</h1>
+          <p>Convocatorias publicadas por el Ministerio del Deporte para presentar proyectos.</p>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(420px,1fr))">
+        ${convocatorias.map(c => {
+          const dias = diasRest(c);
+          const isOpen = c.estado === 'abierta';
+          return `
+            <div class="naowee-card">
+              <div class="naowee-card__header">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--text-secondary);margin-bottom:6px">${c.id} · Bienio ${c.bienio}</div>
+                  <div class="naowee-card__title">${c.nombre}</div>
+                </div>
+                <span class="naowee-badge naowee-badge--${isOpen ? 'positive' : 'neutral'} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${isOpen ? 'Abierta' : 'Cerrada'}</span>
+              </div>
+              <div class="naowee-card__body">
+                <p style="font-size:13px;line-height:1.5;color:var(--text-secondary);margin-bottom:14px">${c.descripcion}</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                  <div><div style="font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-secondary);text-transform:uppercase">Cierre</div><strong style="font-size:13px">${formatoFecha(c.cierre, true)}</strong></div>
+                  <div><div style="font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-secondary);text-transform:uppercase">Tope por proyecto</div><strong style="font-size:13px;color:var(--green)">${formatoMoneda(c.montoMaximoProyecto)}</strong></div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  ${(c.fuentes||[]).slice(0,4).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="font-size:10.5px">${f}</span>`).join('')}
+                </div>
+              </div>
+              <div class="naowee-card__footer" style="justify-content:space-between">
+                ${isOpen ? `<span class="countdown ${dias < 15 ? 'countdown--urgent' : ''}">${dias} día${dias===1?'':'s'} para cerrar</span>` : '<span></span>'}
+                ${isOpen ? `<a class="naowee-btn naowee-btn--loud" href="postular.html?conv=${c.id}">Postular proyecto →</a>` : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">No disponible</span>'}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+</script>
+</body>
+</html>

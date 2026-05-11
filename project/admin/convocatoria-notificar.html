@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Notificación a municipios · Convocatoria · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509x">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { formatoFecha, formatoMoneda, fechaCorta } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'convocatorias' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const c = ProjectData.getConvocatorias().find(x => x.id === id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!c) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>
+        <a class="naowee-btn naowee-btn--quiet" href="convocatorias.html">Volver al listado</a>
+      </div>`;
+  } else {
+    if (!c.notificacion) c.notificacion = ProjectData.defaultNotificacion(c);
+
+    /* ════════ Iconos ════════ */
+    const ICONS = {
+      back:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+      edit:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+      send:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+      mail:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+      bell:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+      sms:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+      clock:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      empty:  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>',
+      arrowL: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>',
+      arrowR: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>',
+      check:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>',
+      close:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+      circle: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>'
+    };
+
+    /* ════════ Helpers de presentación ════════ */
+    function estadoBadge(estado) {
+      const map = {
+        pendiente:   { v: 'neutral',     l: 'Borrador' },
+        programada:  { v: 'informative', l: 'Programada' },
+        enviada:     { v: 'positive',    l: 'Enviada' },
+        con_fallas:  { v: 'caution',     l: 'Enviada con fallas' }
+      };
+      const s = map[estado] || map.pendiente;
+      return `<span class="naowee-badge naowee-badge--${s.v} naowee-badge--quiet">${s.l}</span>`;
+    }
+
+    function canalChip(label, icon, on) {
+      return `<span class="notif-chip ${on ? '' : 'notif-chip--off'}">${icon}${label}${on ? '' : ' · off'}</span>`;
+    }
+
+    function programacionTexto(p) {
+      if (p.tipo === 'inmediato') return 'Envío inmediato al confirmar';
+      if (p.fechaProgramada) return `Programado · ${formatoFecha(p.fechaProgramada, true)}`;
+      return 'Programado · sin fecha definida';
+    }
+
+    /* Construye el timeline de trazabilidad combinando estado + envío + edición */
+    function buildTimeline(n) {
+      const items = [];
+      items.push({
+        v: 'informative', icon: ICONS.edit,
+        title: 'Notificación creada (borrador)',
+        meta: 'Configuración inicial generada desde la convocatoria'
+      });
+      if (n.estado === 'programada' && n.programacion?.fechaProgramada) {
+        items.push({
+          v: 'informative', icon: ICONS.clock,
+          title: 'Envío programado',
+          meta: `Disparo automático: ${formatoFecha(n.programacion.fechaProgramada, true)}`
+        });
+      }
+      if (n.envio) {
+        items.push({
+          v: n.envio.conFalla > 0 ? 'caution' : 'positive',
+          icon: ICONS.send,
+          title: n.envio.conFalla > 0
+            ? `Envío realizado con ${n.envio.conFalla} falla${n.envio.conFalla === 1 ? '' : 's'}`
+            : 'Envío realizado exitosamente',
+          meta: `${formatoFecha(n.envio.ts, true)} · ${n.envio.exitosos} exitoso${n.envio.exitosos === 1 ? '' : 's'} · ${n.envio.conFalla} con falla`
+        });
+        n.envio.fallos?.forEach(f => {
+          items.push({
+            v: 'negative', icon: ICONS.empty,
+            title: `Falla en entrega · ${f.municipio}`,
+            meta: `Canal: ${f.canal} · ${f.motivo}`
+          });
+        });
+      }
+      return items;
+    }
+
+    /* ════════ Render: Página de detalle ════════ */
+    function renderDetail() {
+      const n = c.notificacion;
+      const totalDestinatarios = n.destinatarios.municipios.length + (n.destinatarios.adicionales?.length || 0);
+      const muestraMunis = n.destinatarios.municipios.slice(0, 6);
+      const restantes = n.destinatarios.municipios.length - muestraMunis.length;
+      const timeline = buildTimeline(n);
+
+      pageContent.innerHTML = `
+        <div class="page-fade-in">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="convocatoria-detalle.html?id=${c.id}" style="margin-bottom:14px">${ICONS.back}Volver a la convocatoria</a>
+          <div class="naowee-page-header naowee-page-header--centered">
+            <div class="naowee-page-header__main">
+              <h1>Notificación a municipios</h1>
+              <p>Configura el mensaje, los canales y la programación del envío. Los destinatarios se calculan a partir del alcance territorial de la convocatoria.</p>
+            </div>
+            <div class="naowee-page-header__actions">
+              <button type="button" class="naowee-btn naowee-btn--mute" id="btnEditar">${ICONS.edit} Editar notificación</button>
+              <button type="button" class="naowee-btn naowee-btn--loud" id="btnEnviarAhora">${ICONS.send} Enviar ahora</button>
+            </div>
+          </div>
+
+          <div class="notif-cta-bar notif-cta-bar--meta-only">
+            <div class="notif-cta-bar__meta">
+              <div class="notif-cta-bar__title">Configuración actual ${estadoBadge(n.estado)}</div>
+              <div class="notif-cta-bar__sub">Última actualización ${n.envio ? formatoFecha(n.envio.ts) : 'no enviada aún'}</div>
+            </div>
+          </div>
+
+          <div class="naowee-card proj-tabs-card">
+            <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+              <button class="naowee-tab naowee-tab--selected" data-tab="detalles" role="tab" type="button">Detalles de la notificación</button>
+              <button class="naowee-tab" data-tab="destinatarios" role="tab" type="button">Destinatarios <span class="tab-count">${totalDestinatarios}</span></button>
+              <button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial${timeline.length ? ` <span class="tab-count">${timeline.length}</span>` : ''}</button>
+              <span class="naowee-tabs__indicator"></span>
+            </div>
+
+            <!-- Tab: Detalles -->
+            <div class="proj-tab-panel" data-panel="detalles">
+              <dl class="proj-data" style="grid-template-columns:1fr">
+                <div>
+                  <dt>Asunto</dt>
+                  <dd style="font-weight:600;font-size:14.5px">${n.asunto}</dd>
+                </div>
+                <div>
+                  <dt>Cuerpo del mensaje</dt>
+                  <dd><div class="notif-preview">${n.cuerpo}</div></dd>
+                </div>
+              </dl>
+
+              <dl class="proj-data" style="margin-top:24px">
+                <div>
+                  <dt>Canales activos</dt>
+                  <dd>
+                    <div class="notif-badge-row">
+                      <span class="naowee-badge naowee-badge--${n.canales.correo ? 'caution' : 'neutral'} naowee-badge--quiet">${ICONS.mail} Correo institucional</span>
+                      <span class="naowee-badge naowee-badge--${n.canales.plataforma ? 'caution' : 'neutral'} naowee-badge--quiet">${ICONS.bell} Notificación in-app</span>
+                      <span class="naowee-badge naowee-badge--${n.canales.sms ? 'caution' : 'neutral'} naowee-badge--quiet">${ICONS.sms} SMS${n.canales.sms ? '' : ' · off'}</span>
+                    </div>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Programación</dt>
+                  <dd>
+                    <span class="notif-inline-line">${ICONS.clock}<span>${programacionTexto(n.programacion)}</span></span>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- Tab: Destinatarios -->
+            <div class="proj-tab-panel" data-panel="destinatarios" hidden>
+              <div class="notif-tab-subhead">
+                <strong>${n.destinatarios.municipios.length}</strong> municipios calculados desde el alcance territorial${n.destinatarios.adicionales?.length ? ` · <strong>${n.destinatarios.adicionales.length}</strong> destinatarios adicionales` : ''}
+              </div>
+              <div class="notif-recipient-list">
+                ${n.destinatarios.municipios.map(m => `
+                  <div class="notif-recipient-row">
+                    <div class="notif-recipient-row__avatar">${m.municipio.charAt(0)}</div>
+                    <div class="notif-recipient-row__main">
+                      <div class="notif-recipient-row__name">${m.municipio}</div>
+                      <div class="notif-recipient-row__email">${m.email}</div>
+                    </div>
+                    <div class="notif-recipient-row__meta">
+                      <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">${m.depto}</span>
+                      <span class="notif-recipient-row__dane">DANE ${m.dane}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              ${n.destinatarios.adicionales?.length ? `
+                <dl class="proj-data" style="grid-template-columns:1fr;margin-top:24px">
+                  <div>
+                    <dt>Destinatarios adicionales (${n.destinatarios.adicionales.length})</dt>
+                    <dd style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;color:var(--text-primary)">${n.destinatarios.adicionales.join(', ')}</dd>
+                  </div>
+                </dl>
+              ` : ''}
+            </div>
+
+            <!-- Tab: Historial — patrón timeline de proyecto-detalle -->
+            <div class="proj-tab-panel" data-panel="historial" hidden>
+              ${timeline.length === 0 ? `
+                <div class="naowee-empty-state">
+                  <div class="naowee-empty-state__msg">Sin eventos registrados aún. Aparecerán aquí cuando guardes cambios o realices el primer envío.</div>
+                </div>
+              ` : `
+                <div class="hist-summary">
+                  <span>${timeline.length} evento${timeline.length === 1 ? '' : 's'} en el historial</span>
+                </div>
+                <div class="timeline">
+                  ${timeline.map(it => {
+                    const dotClass = it.v === 'positive' ? 'green'
+                      : it.v === 'caution' ? 'orange'
+                      : it.v === 'negative' ? 'orange'
+                      : it.v === 'informative' ? 'blue' : 'gray';
+                    return `
+                      <div class="timeline-item">
+                        <div class="timeline-dot ${dotClass}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <div class="timeline-content">
+                          <div class="timeline-title">${it.title}</div>
+                          <div class="timeline-date">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                            ${it.meta}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnEditar').addEventListener('click', openModal);
+      document.getElementById('btnEnviarAhora').addEventListener('click', handleEnviarAhora);
+
+      /* Tabs interaction (mover indicator + cambiar panel) — patrón proyecto-detalle */
+      const tabsEl = pageContent.querySelector('.naowee-tabs');
+      const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+      const positionIndicator = (tab) => {
+        const r = tab.getBoundingClientRect();
+        const parent = tabsEl.getBoundingClientRect();
+        indicator.style.width = r.width + 'px';
+        indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+      };
+      const initial = tabsEl.querySelector('.naowee-tab--selected');
+      if (initial) requestAnimationFrame(() => positionIndicator(initial));
+      tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const key = tab.dataset.tab;
+          tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+          pageContent.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
+          positionIndicator(tab);
+        });
+      });
+    }
+
+    /* ════════ Modal Wizard (3 pasos) ════════ */
+    let modalState = null;
+
+    function openModal() {
+      const n = c.notificacion;
+      /* Snapshot editable (no muta hasta guardar) */
+      modalState = {
+        step: 1,
+        adicionales: (n.destinatarios.adicionales || []).join(', '),
+        asunto: n.asunto,
+        cuerpo: n.cuerpo,
+        canales: { ...n.canales },
+        programacion: { ...n.programacion }
+      };
+
+      const overlay = document.createElement('div');
+      overlay.className = 'nm-overlay';
+      overlay.innerHTML = renderModal();
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+      bindModal(overlay);
+    }
+
+    function renderModal() {
+      const STEPS = [
+        { n: 1, label: 'Destinatarios' },
+        { n: 2, label: 'Mensaje' },
+        { n: 3, label: 'Envío' }
+      ];
+      return `
+        <div class="nm-modal" role="dialog" aria-modal="true" aria-labelledby="nmTitle">
+          <div class="nm-header">
+            <div class="nm-header__main">
+              <div class="nm-header__title" id="nmTitle">Editar notificación</div>
+              <div class="nm-header__sub">${c.id} · ${c.nombre || ''}</div>
+            </div>
+            <button type="button" class="nm-header__close" data-nm-close aria-label="Cerrar">${ICONS.close}</button>
+          </div>
+
+          <div class="nm-stepper-wrap">
+            <div class="naowee-stepper naowee-stepper--pulse" id="nmStepper">
+              ${STEPS.map((s, i) => `
+                <div class="naowee-stepper__step ${s.n === 1 ? 'naowee-stepper__step--active' : ''}" data-step="${s.n}">
+                  <span class="naowee-stepper__number">${s.n}</span>
+                  <span class="naowee-stepper__label">${s.label}</span>
+                </div>
+                ${i < STEPS.length - 1 ? `<div class="naowee-stepper__connector" data-after="${s.n}"></div>` : ''}
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="nm-body">
+            ${renderStep1()}
+            ${renderStep2()}
+            ${renderStep3()}
+          </div>
+
+          <div class="nm-footer">
+            <button type="button" class="naowee-btn naowee-btn--mute" data-nm-close>Cancelar</button>
+            <div class="nm-footer__spacer"></div>
+            <button type="button" class="naowee-btn naowee-btn--quiet" id="nmPrev" style="display:none">${ICONS.arrowL} Anterior</button>
+            <button type="button" class="naowee-btn naowee-btn--loud" id="nmNext">Continuar ${ICONS.arrowR}</button>
+            <button type="button" class="naowee-btn naowee-btn--loud" id="nmSave" style="display:none">${ICONS.check} Guardar cambios</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStep1() {
+      const m = c.notificacion.destinatarios.municipios;
+      return `
+        <div class="nm-step is-active" data-nm-step="1">
+          <div class="nm-section-title">Municipios destinatarios (${m.length})</div>
+          <p class="notif-helper" style="margin-bottom:10px">Calculados desde el alcance territorial de la convocatoria. No editables desde aquí.</p>
+          <div class="nm-recipients">
+            ${m.map(mu => `
+              <div class="nm-recipients__row">
+                <div>
+                  <div class="nm-recipients__name">${mu.municipio}</div>
+                  <div class="nm-recipients__sub">${mu.email} · DANE ${mu.dane}</div>
+                </div>
+                <span class="nm-recipients__depto">${mu.depto}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="nm-section-title">Destinatarios adicionales (opcional)</div>
+          <textarea class="notif-textarea" data-nm-field="adicionales" placeholder="correo1@ejemplo.com, correo2@ejemplo.com — separar por comas. Máx. 50 correos.">${modalState.adicionales}</textarea>
+          <span class="notif-helper">Para copiar a gobernaciones, delegados o actores estratégicos.</span>
+        </div>
+      `;
+    }
+
+    function renderStep2() {
+      return `
+        <div class="nm-step" data-nm-step="2">
+          <div class="nm-section-title">Asunto</div>
+          <input type="text" class="notif-input" data-nm-field="asunto" maxlength="200" value="${modalState.asunto.replace(/"/g, '&quot;')}">
+          <span class="notif-helper"><span data-nm-count="asunto">${modalState.asunto.length}</span> / 200 caracteres</span>
+
+          <div class="nm-section-title">Cuerpo del mensaje</div>
+          <textarea class="notif-textarea notif-textarea--lg" data-nm-field="cuerpo" maxlength="5000">${modalState.cuerpo}</textarea>
+          <span class="notif-helper"><span data-nm-count="cuerpo">${modalState.cuerpo.length}</span> / 5.000 caracteres</span>
+
+          <div class="nm-var-hint">
+            <code>{nombre_municipio}</code>
+            <code>{fecha_cierre}</code>
+            <code>{tope_proyecto}</code>
+            <code>{enlace_plataforma}</code>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStep3() {
+      const cn = modalState.canales;
+      const p = modalState.programacion;
+      return `
+        <div class="nm-step" data-nm-step="3">
+          <div class="nm-section-title">Canales de envío</div>
+          <div class="notif-channels">
+            <label class="notif-channel">
+              <input type="checkbox" data-nm-field="canalCorreo" ${cn.correo ? 'checked' : ''}>
+              <span class="notif-channel__check"></span>
+              <span class="notif-channel__icon">${ICONS.mail}</span>
+              <span class="notif-channel__body">
+                <span class="notif-channel__name">Correo electrónico institucional</span>
+                <span class="notif-channel__sub">Al correo registrado de cada municipio</span>
+              </span>
+            </label>
+            <label class="notif-channel">
+              <input type="checkbox" data-nm-field="canalPlataforma" ${cn.plataforma ? 'checked' : ''}>
+              <span class="notif-channel__check"></span>
+              <span class="notif-channel__icon">${ICONS.bell}</span>
+              <span class="notif-channel__body">
+                <span class="notif-channel__name">Notificación dentro de la plataforma</span>
+                <span class="notif-channel__sub">Banner destacado en el dashboard del usuario municipal</span>
+              </span>
+            </label>
+            <label class="notif-channel">
+              <input type="checkbox" data-nm-field="canalSms" ${cn.sms ? 'checked' : ''}>
+              <span class="notif-channel__check"></span>
+              <span class="notif-channel__icon">${ICONS.sms}</span>
+              <span class="notif-channel__body">
+                <span class="notif-channel__name">SMS al representante legal</span>
+                <span class="notif-channel__sub">Al número registrado del representante (si existe)</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="nm-section-title">Programación</div>
+          <div class="notif-radio-group">
+            <label class="notif-radio">
+              <input type="radio" name="nmTipoEnvio" value="inmediato" ${p.tipo === 'inmediato' ? 'checked' : ''}>
+              <span class="notif-radio__check"></span>
+              <span class="notif-radio__body">
+                <span class="notif-radio__name">Inmediato</span>
+                <span class="notif-radio__sub">El envío se dispara al guardar y enviar</span>
+              </span>
+            </label>
+            <label class="notif-radio">
+              <input type="radio" name="nmTipoEnvio" value="programado" ${p.tipo === 'programado' ? 'checked' : ''}>
+              <span class="notif-radio__check"></span>
+              <span class="notif-radio__body">
+                <span class="notif-radio__name">Programado</span>
+                <span class="notif-radio__sub">Define fecha y hora futura de envío</span>
+              </span>
+            </label>
+          </div>
+          <div data-nm-fecha-wrap style="display:${p.tipo === 'programado' ? 'block' : 'none'};margin-top:14px">
+            <span class="notif-field__label" style="display:block;margin-bottom:6px">Fecha y hora del envío</span>
+            <input type="datetime-local" class="notif-input" data-nm-field="fechaProgramada" value="${p.fechaProgramada || ''}">
+            <span class="notif-helper">Debe ser una fecha futura.</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindModal(overlay) {
+      const close = () => closeModal(overlay);
+      overlay.querySelectorAll('[data-nm-close]').forEach(b => b.addEventListener('click', close));
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', escListener);
+      function escListener(e) {
+        if (e.key === 'Escape') {
+          close();
+          document.removeEventListener('keydown', escListener);
+        }
+      }
+
+      /* Sincroniza state al cambiar inputs */
+      overlay.addEventListener('input', e => {
+        const f = e.target.dataset.nmField;
+        if (f === 'asunto') {
+          modalState.asunto = e.target.value;
+          overlay.querySelector('[data-nm-count="asunto"]').textContent = e.target.value.length;
+        } else if (f === 'cuerpo') {
+          modalState.cuerpo = e.target.value;
+          overlay.querySelector('[data-nm-count="cuerpo"]').textContent = e.target.value.length;
+        } else if (f === 'adicionales') {
+          modalState.adicionales = e.target.value;
+        } else if (f === 'fechaProgramada') {
+          modalState.programacion.fechaProgramada = e.target.value;
+        }
+      });
+      overlay.addEventListener('change', e => {
+        const f = e.target.dataset.nmField;
+        if (f === 'canalCorreo')    modalState.canales.correo = e.target.checked;
+        if (f === 'canalPlataforma') modalState.canales.plataforma = e.target.checked;
+        if (f === 'canalSms')       modalState.canales.sms = e.target.checked;
+        if (e.target.name === 'nmTipoEnvio') {
+          modalState.programacion.tipo = e.target.value;
+          overlay.querySelector('[data-nm-fecha-wrap]').style.display = e.target.value === 'programado' ? 'block' : 'none';
+        }
+      });
+
+      /* Navegación stepper */
+      overlay.querySelector('#nmNext').addEventListener('click', () => goStep(overlay, modalState.step + 1));
+      overlay.querySelector('#nmPrev').addEventListener('click', () => goStep(overlay, modalState.step - 1));
+      overlay.querySelector('#nmSave').addEventListener('click', () => saveModal(overlay));
+
+      /* Click en stepper para saltar a paso completado */
+      overlay.querySelectorAll('.naowee-stepper__step').forEach(s => {
+        s.addEventListener('click', () => {
+          const target = parseInt(s.dataset.step);
+          if (target <= modalState.step) goStep(overlay, target);
+        });
+      });
+    }
+
+    function goStep(overlay, target) {
+      if (target < 1 || target > 3) return;
+      modalState.step = target;
+      overlay.querySelectorAll('.nm-step').forEach(s => s.classList.toggle('is-active', parseInt(s.dataset.nmStep) === target));
+      overlay.querySelectorAll('.naowee-stepper__step').forEach(s => {
+        const n = parseInt(s.dataset.step);
+        s.classList.toggle('naowee-stepper__step--active', n === target);
+        s.classList.toggle('naowee-stepper__step--completed', n < target);
+      });
+      overlay.querySelectorAll('.naowee-stepper__connector').forEach(c => {
+        const after = parseInt(c.dataset.after);
+        c.classList.toggle('naowee-stepper__connector--completed', after < target);
+      });
+      overlay.querySelector('#nmPrev').style.display = target === 1 ? 'none' : 'inline-flex';
+      overlay.querySelector('#nmNext').style.display = target === 3 ? 'none' : 'inline-flex';
+      overlay.querySelector('#nmSave').style.display = target === 3 ? 'inline-flex' : 'none';
+      overlay.querySelector('.nm-body').scrollTop = 0;
+    }
+
+    function closeModal(overlay) {
+      overlay.classList.remove('is-open');
+      setTimeout(() => overlay.remove(), 240);
+    }
+
+    function saveModal(overlay) {
+      /* Validación mínima */
+      if (!modalState.asunto.trim() || !modalState.cuerpo.trim()) {
+        toast({ variant: 'caution', title: 'Faltan datos requeridos', message: 'El asunto y el cuerpo del mensaje no pueden estar vacíos.' });
+        goStep(overlay, 2);
+        return;
+      }
+      if (!modalState.canales.correo && !modalState.canales.plataforma && !modalState.canales.sms) {
+        toast({ variant: 'caution', title: 'Selecciona al menos un canal', message: 'Activa correo, plataforma o SMS para continuar.' });
+        goStep(overlay, 3);
+        return;
+      }
+      if (modalState.programacion.tipo === 'programado') {
+        const f = modalState.programacion.fechaProgramada;
+        if (!f || new Date(f) <= new Date()) {
+          toast({ variant: 'caution', title: 'Fecha programada inválida', message: 'Debe ser una fecha y hora futura.' });
+          goStep(overlay, 3);
+          return;
+        }
+      }
+
+      const adicionales = modalState.adicionales.split(',').map(s => s.trim()).filter(Boolean);
+      ProjectData.setConvocatoria(c.id, conv => {
+        conv.notificacion = conv.notificacion || ProjectData.defaultNotificacion(conv);
+        conv.notificacion.asunto = modalState.asunto;
+        conv.notificacion.cuerpo = modalState.cuerpo;
+        conv.notificacion.canales = { ...modalState.canales };
+        conv.notificacion.programacion = { ...modalState.programacion };
+        conv.notificacion.destinatarios.adicionales = adicionales;
+        if (modalState.programacion.tipo === 'programado' && conv.notificacion.estado === 'pendiente') {
+          conv.notificacion.estado = 'programada';
+        }
+        return conv;
+      });
+
+      /* Re-leer convocatoria actualizada */
+      const fresh = ProjectData.getConvocatorias().find(x => x.id === c.id);
+      c.notificacion = fresh.notificacion;
+
+      closeModal(overlay);
+      renderDetail();
+      toast({
+        variant: 'positive',
+        title: 'Cambios guardados',
+        message: modalState.programacion.tipo === 'programado'
+          ? 'La notificación quedó programada. Puedes seguir editando antes del envío.'
+          : 'La configuración se actualizó correctamente.'
+      });
+    }
+
+    /* ════════ Enviar ahora (CTA del bar) ════════ */
+    function handleEnviarAhora() {
+      const n = c.notificacion;
+      if (!n.canales.correo && !n.canales.plataforma && !n.canales.sms) {
+        toast({ variant: 'caution', title: 'Sin canales activos', message: 'Edita la notificación y selecciona al menos un canal antes de enviar.' });
+        return;
+      }
+      ProjectData.enviarNotificacion(c.id);
+      const fresh = ProjectData.getConvocatorias().find(x => x.id === c.id);
+      c.notificacion = fresh.notificacion;
+      renderDetail();
+      const conFalla = c.notificacion.envio?.conFalla || 0;
+      if (conFalla > 0) {
+        toast({
+          variant: 'caution',
+          title: 'Envío realizado con fallas',
+          message: `${c.notificacion.envio.exitosos} exitosos · ${conFalla} con falla. Revisa el historial.`
+        });
+      } else {
+        toast({
+          variant: 'positive',
+          title: 'Notificación enviada',
+          message: `${c.notificacion.envio.exitosos} destinatarios recibieron el mensaje.`
+        });
+      }
+    }
+
+    /* ════════ Inicial ════════ */
+    renderDetail();
+
+    /* Si llega ?edit=1 abre el modal automáticamente */
+    if (new URLSearchParams(location.search).get('edit') === '1') {
+      setTimeout(openModal, 200);
+    }
+  }
+</script>
+</body>
+</html>

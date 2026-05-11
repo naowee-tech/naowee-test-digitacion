@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Concepto de favorabilidad · Revisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { formatoMoneda, formatoFecha } from '../shared/states.js';
+  ProjectData.setPerfil('revisor');
+  mountShell({ activeId: 'concepto' });
+
+  const conConcepto = ProjectData.getProyectos(p => p.estado === 'concepto_favorable' || p.estado === 'en_inversion');
+  const enProceso = ProjectData.getProyectos(p => p.estado === 'etapa_documental');
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+      <div class="naowee-page-header">
+        <div class="naowee-page-header__main">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver a Inicio</a>
+          <h1>Conceptos de favorabilidad</h1>
+          <p>Conceptos emitidos automáticamente cuando todas las áreas técnicas + documentación general están aprobadas.</p>
+        </div>
+      </div>
+
+      ${enProceso.length > 0 ? `
+        <div class="naowee-card" style="margin-bottom:20px">
+          <div class="naowee-card__header"><div class="naowee-card__title">En proceso de cierre</div><div class="naowee-card__subtitle">${enProceso.length} proyecto${enProceso.length>1?'s':''} ${enProceso.length>1?'esperan':'espera'} que se completen revisiones</div></div>
+          <div class="naowee-card__body" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(360px,1fr))">
+            ${enProceso.map(p => {
+              const aprobadas = p.docsTecnica?.areas.filter(a => a.estado === 'aprobado').length || 0;
+              const total = p.docsTecnica?.areas.length || 8;
+              const docGenOk = p.docsGeneral?.estadoRevision === 'aprobado';
+              return `
+                <div class="proj-card" onclick="location.href='doc-tecnica.html?id=${p.idUnico}'">
+                  <div class="proj-card__head">
+                    <div><div class="proj-card__rad">${p.radicado}</div><div class="proj-card__title">${p.nombre}</div></div>
+                  </div>
+                  <div style="display:flex;gap:8px;font-size:11.5px">
+                    <span class="naowee-badge naowee-badge--${docGenOk?'positive':'caution'} naowee-badge--quiet">${docGenOk?'✓':'○'} Doc. general</span>
+                    <span class="naowee-badge naowee-badge--${aprobadas===total?'positive':'caution'} naowee-badge--quiet">${aprobadas}/${total} áreas técnicas</span>
+                  </div>
+                  <div class="area-card__progress"><span style="width:${(aprobadas/total)*100}%"></span></div>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="naowee-card">
+        <div class="naowee-card__header"><div class="naowee-card__title">Conceptos emitidos</div><div class="naowee-card__subtitle">${conConcepto.length} concepto${conConcepto.length!==1?'s':''} de favorabilidad</div></div>
+        ${conConcepto.length === 0 ? `
+          <div class="naowee-card__body"><div class="naowee-empty-state"><div class="naowee-empty-state__title">Sin conceptos emitidos aún</div><div class="naowee-empty-state__msg">Apenas se aprueben todas las revisiones de un proyecto, el concepto se emite automáticamente.</div></div></div>
+        ` : `
+          <table class="naowee-table naowee-table--in-card" style="border-radius:0;border:0">
+            <thead><tr><th>Certificado</th><th>Proyecto</th><th>Municipio</th><th class="numeric">Presupuesto</th><th>Fecha emisión</th><th>Estado actual</th></tr></thead>
+            <tbody>
+              ${conConcepto.map(p => `
+                <tr style="cursor:pointer" onclick="location.href='../admin/proyecto-detalle.html?id=${p.idUnico}'">
+                  <td><strong style="font-size:11px;color:var(--green)">${p.conceptoFavorabilidad?.certificado || '—'}</strong></td>
+                  <td><div style="font-weight:600">${p.nombre}</div></td>
+                  <td>${p.municipio}</td>
+                  <td class="numeric">${formatoMoneda(p.presupuesto)}</td>
+                  <td>${formatoFecha(p.conceptoFavorabilidad?.ts)}</td>
+                  <td><span class="naowee-badge naowee-badge--${p.estado === 'en_inversion' ? 'positive' : 'brand'} naowee-badge--quiet">${p.estado === 'en_inversion' ? '✓ En inversión' : 'Concepto favorable'}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
+      </div>
+    </div>
+  `;
+</script>
+</body>
+</html>

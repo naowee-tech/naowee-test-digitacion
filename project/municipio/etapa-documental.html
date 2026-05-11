@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Etapa documental · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+<style>
+  .tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:24px; }
+  .tab { padding:14px 20px; cursor:pointer; font-weight:600; font-size:14px; color:var(--text-secondary); border-bottom:2px solid transparent; transition:all .2s; }
+  .tab:hover { color:var(--text-primary); }
+  .tab.is-active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab-panel { display:none; }
+  .tab-panel.is-active { display:block; animation:pageFadeIn .3s ease both; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { ESTADOS_DOC, ESTADOS_AREA, formatoFecha } from '../shared/states.js';
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'documentos' });
+
+  /* Encontrar proyecto en etapa documental del municipio */
+  const id = new URLSearchParams(location.search).get('id');
+  let p = id ? ProjectData.getProyecto(id) : ProjectData.getProyectos(x => x.estado === 'etapa_documental' && ['Quibdó','Bahía Solano','Istmina','El Carmen de Atrato'].includes(x.municipio))[0];
+
+  if (!p) {
+    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">No tienes proyectos en etapa documental</div><div class="naowee-empty-state__msg">Tu proyecto pasa a etapa documental tras recibir el concepto favorable de postulación.</div><a class="naowee-btn naowee-btn--quiet" href="proyectos.html">Ver mis proyectos</a></div>`;
+  } else {
+    /* Asegurar estructura de docsGeneral y docsTecnica si no existen */
+    if (!p.docsGeneral) {
+      p.docsGeneral = { estadoRevision: 'pendiente', items: [] };
+    }
+    if (!p.docsTecnica) {
+      p.docsTecnica = {
+        areas: [
+          { id:'topografico', nombre:'Levantamiento topográfico', estado:'pendiente', items:6, aprobados:0 },
+          { id:'suelos', nombre:'Estudio de suelos', estado:'pendiente', items:6, aprobados:0 },
+          { id:'arquitectonico', nombre:'Diseño arquitectónico', estado:'pendiente', items:11, aprobados:0 },
+          { id:'estructural', nombre:'Diseño estructural', estado:'pendiente', items:7, aprobados:0 },
+          { id:'hidraulico', nombre:'Hidráulico, sanitario y pluvial', estado:'pendiente', items:10, aprobados:0 },
+          { id:'electrico', nombre:'Diseño eléctrico', estado:'pendiente', items:8, aprobados:0 },
+          { id:'ambiental', nombre:'Manejo, riesgos y ambiental', estado:'pendiente', items:7, aprobados:0 },
+          { id:'presupuesto', nombre:'Presupuesto', estado:'pendiente', items:12, aprobados:0 }
+        ]
+      };
+    }
+
+    const docsGeneralPlantilla = [
+      { id: 'doc-01', nombre: 'Carta de intención firmada', ref: 'Res. 933 Art. 1.1.1' },
+      { id: 'doc-02', nombre: 'Estudio de títulos del predio', ref: 'Res. 933 Art. 1.2.1' },
+      { id: 'doc-03', nombre: 'Certificado de tradición y libertad', ref: 'Res. 933 Art. 1.2.3' },
+      { id: 'doc-04', nombre: 'Plano catastral del predio', ref: 'Res. 933 Art. 1.2.4' },
+      { id: 'doc-05', nombre: 'Certificado de uso del suelo', ref: 'Res. 933 Art. 1.2.5' },
+      { id: 'doc-06', nombre: 'Concepto de Curaduría / licencia urbanística', ref: 'Res. 933 Art. 1.2.6' },
+      { id: 'doc-07', nombre: 'Plano de zonificación de amenazas', ref: 'Res. 933 Art. 1.2.7' },
+      { id: 'doc-08', nombre: 'Disponibilidad de servicios públicos', ref: 'Res. 933 Art. 1.2.8' },
+      { id: 'doc-09', nombre: 'Certificación de no afectación ambiental', ref: 'Res. 933 Art. 2.1.1' },
+      { id: 'doc-10', nombre: 'Documento de análisis del proyecto', ref: 'Res. 933 Art. 2.2.1' }
+    ];
+
+    /* Mezclar items existentes con plantilla */
+    const docsGeneralVista = docsGeneralPlantilla.map(plt => {
+      const existente = p.docsGeneral.items.find(i => i.id === plt.id);
+      return existente || { ...plt, estado: 'pendiente', archivo: null };
+    });
+
+    const totalGeneral = docsGeneralVista.length;
+    const aprobadosGen = docsGeneralVista.filter(d => d.estado === 'aprobado').length;
+    const pendientesGen = docsGeneralVista.filter(d => d.estado === 'pendiente' || !d.archivo).length;
+
+    document.getElementById('pageContent').innerHTML = `
+      <div class="page-fade-in">
+        <div class="naowee-page-header">
+          <div class="naowee-page-header__main">
+            <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver a Mi panel</a>
+          <h1>Etapa documental</h1>
+            <p>${p.nombre} · ${p.radicado}</p>
+          </div>
+          <div class="naowee-page-header__actions">
+            <span class="naowee-badge naowee-badge--brand naowee-badge--quiet"><span class="naowee-badge__dot"></span>Etapa documental</span>
+          </div>
+        </div>
+
+        <div class="naowee-message naowee-message--informative" role="status">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+            <span class="naowee-message__title">Resolución 933 de 2024 — 42 documentos requeridos</span>
+          </div>
+          <div class="naowee-message__text">Bloque 1 (Básicos): 15 docs · Bloque 2 (General): 10 docs · Bloque 3 (Técnico por área): 17 docs</div>
+        </div>
+
+        <div class="tabs">
+          <div class="tab is-active" data-tab="general">📋 Documentación General · ${aprobadosGen}/${totalGeneral}</div>
+          <div class="tab" data-tab="tecnica">🔧 Documentación Técnica · 8 áreas</div>
+        </div>
+
+        <div class="tab-panel is-active" id="panel-general">
+          <div class="naowee-card">
+            <div class="naowee-card__header">
+              <div><div class="naowee-card__title">Bloque 1 + 2 · Documentación general</div><div class="naowee-card__subtitle">Un único revisor del Ministerio aprueba o rechaza cada documento</div></div>
+              <div style="margin-left:auto;display:flex;gap:6px"><span class="naowee-badge naowee-badge--positive naowee-badge--quiet">${aprobadosGen} aprobados</span><span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">${pendientesGen} pendientes</span></div>
+            </div>
+            <div class="naowee-card__body">
+              <div class="doc-list">
+                ${docsGeneralVista.map(d => {
+                  const e = ESTADOS_DOC[d.estado] || ESTADOS_DOC.pendiente;
+                  return `
+                    <div class="doc-row">
+                      <div class="doc-row__icon">📄</div>
+                      <div class="doc-row__main">
+                        <div class="doc-row__title">${d.nombre}</div>
+                        <div class="doc-row__sub">${d.ref || ''} ${d.archivo ? `· ${d.archivo}` : ''} ${d.subidoEn ? `· subido ${formatoFecha(d.subidoEn)}` : ''}</div>
+                      </div>
+                      <div class="doc-row__actions">
+                        <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+                        ${!d.archivo ? `<button class="naowee-btn naowee-btn--quiet naowee-btn--small" data-upload="${d.id}">Subir →</button>` : `<button class="naowee-btn naowee-btn--quiet naowee-btn--small" data-upload="${d.id}">Reemplazar</button>`}
+                      </div>
+                    </div>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-tecnica">
+          <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:14px">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+              <span class="naowee-message__title">Revisión por áreas técnicas</span>
+            </div>
+            <div class="naowee-message__text">Cada área tiene un revisor distinto. Todos los revisores ven toda la documentación pero gestionan solo su área. El concepto favorable se emite cuando las 8 áreas estén aprobadas.</div>
+          </div>
+          <div class="area-grid">
+            ${p.docsTecnica.areas.map(a => {
+              const e = ESTADOS_AREA[a.estado];
+              const pct = a.items > 0 ? (a.aprobados / a.items * 100) : 0;
+              return `
+                <div class="area-card" data-area="${a.id}">
+                  <div class="area-card__head">
+                    <div class="area-card__title">${a.nombre}</div>
+                    <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+                  </div>
+                  <div class="area-card__progress"><span style="width:${pct}%"></span></div>
+                  <div class="area-card__stats"><span>${a.aprobados} de ${a.items} ítems</span><span>${Math.round(pct)}%</span></div>
+                  <div class="area-card__revisor">${a.revisor ? `👤 ${a.revisor}` : 'Sin revisor asignado'}</div>
+                  <button class="naowee-btn naowee-btn--quiet naowee-btn--small" style="margin-top:10px;width:100%">Cargar archivos</button>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    /* Tab switch */
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('is-active'));
+        document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('is-active'));
+        t.classList.add('is-active');
+        document.getElementById(`panel-${t.dataset.tab}`).classList.add('is-active');
+      });
+    });
+
+    /* Upload sim */
+    document.querySelectorAll('[data-upload]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const docId = btn.dataset.upload;
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = '.pdf';
+        inp.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          ProjectData.setProyecto(p.idUnico, x => {
+            const items = x.docsGeneral.items || [];
+            const idx = items.findIndex(i => i.id === docId);
+            const data = { id: docId, archivo: file.name, estado: 'pendiente', subidoEn: new Date().toISOString() };
+            if (idx >= 0) items[idx] = { ...items[idx], ...data }; else items.push(data);
+            x.docsGeneral.items = items;
+            return x;
+          });
+          location.reload();
+        };
+        inp.click();
+      });
+    });
+  }
+</script>
+</body>
+</html>

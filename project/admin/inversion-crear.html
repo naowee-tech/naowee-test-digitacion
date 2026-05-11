@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Activar inversión · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { formatoMoneda } from '../shared/states.js';
+  import {
+    renderStepper, renderFooter, mountWizard,
+    renderReview, renderSuccess,
+    textfield, bindDropdowns
+  } from '../shared/wizard-page.js';
+
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'inversion' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const p = ProjectData.getProyecto(id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!p || p.estado !== 'concepto_favorable') {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Proyecto no disponible para activar</div>
+        <p class="naowee-empty-state__msg">Solo proyectos con concepto favorable pueden activarse en inversión.</p>
+        <a class="naowee-btn naowee-btn--quiet" href="inversion.html">Volver a inversión</a>
+      </div>`;
+  } else {
+    const STEPS = [
+      { label: 'Datos de la inversión' },
+      { label: 'Confirmar activación' }
+    ];
+    const isInfra = p.tipo === 'infraestructura';
+
+    /* Smart back: respeta el contexto de origen */
+    const ref = document.referrer;
+    let backHref, backLabel;
+    if (ref.includes('proyecto-detalle.html')) {
+      backHref = `proyecto-detalle.html?id=${p.idUnico}`;
+      backLabel = 'Volver al proyecto';
+    } else if (ref.includes('inversion.html')) {
+      backHref = 'inversion.html';
+      backLabel = 'Volver a inversión';
+    } else {
+      backHref = 'inversion.html';
+      backLabel = 'Volver a inversión';
+    }
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in wz-page">
+        <div class="wz-page__header">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>${backLabel}</a>
+          <h1 class="wz-page__title">Activar inversión</h1>
+          <p class="wz-page__subtitle">${p.nombre} · ${p.municipio}</p>
+        </div>
+
+        <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:18px">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="naowee-message__title">Concepto favorable emitido</span>
+          </div>
+          <div class="naowee-message__text">${p.conceptoFavorabilidad?.observaciones || 'Proyecto cumple con la totalidad de requisitos.'}</div>
+        </div>
+
+        <form id="formInversion" class="wz-card" novalidate>
+          <div class="wz-stepper-wrap">
+            ${renderStepper(STEPS)}
+          </div>
+
+          <div class="wz-body" data-wz-body>
+            <!-- PASO 1: Datos -->
+            <div class="wz-step-panel is-active" data-panel="1">
+              <div class="wz-section">Datos de la inversión</div>
+              <div class="wz-grid-2">
+                ${textfield({ label: 'Monto aprobado (COP)', name: 'monto', type: 'number', required: true, value: String(p.montoSolicitado || 0), helper: `Solicitado: ${formatoMoneda(p.montoSolicitado || 0)}` })}
+                ${textfield({ label: 'BPIN', name: 'bpin', required: true, placeholder: '2026000000000', helper: 'Código BPIN de 13 dígitos', maxlength: 13 })}
+              </div>
+              <div class="wz-grid-2">
+                ${textfield({ label: 'Centro de costo', name: 'centroCosto', required: true, placeholder: 'CC-MIN-DEP-2026-XXX' })}
+                ${textfield({ label: 'Ejecutor', name: 'ejecutor', required: true, value: p.formuladora?.nombre || '' })}
+              </div>
+
+              ${isInfra ? `
+                <div class="naowee-message naowee-message--informative" role="status" style="margin-top:8px;margin-bottom:18px">
+                  <div class="naowee-message__header">
+                    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                    <span class="naowee-message__title">Registro SUID del escenario</span>
+                  </div>
+                  <div class="naowee-message__text">Al activar este proyecto se habilitará el formulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</div>
+                </div>
+                <div class="wz-section">SUID (opcional)</div>
+                ${textfield({ label: 'Código SUID', name: 'suid', placeholder: 'SUID-CHO-XXX-001', helper: 'Se puede asignar después' })}
+              ` : ''}
+            </div>
+
+            <!-- PASO 2: Confirmar -->
+            <div class="wz-step-panel" data-panel="2">
+              <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 18px">Verifica los datos antes de activar la inversión. Una vez activada, el proyecto entra a la tabla nacional.</p>
+              <div id="reviewBox"></div>
+            </div>
+          </div>
+
+          ${renderFooter({
+            cancelHref: `proyecto-detalle.html?id=${p.idUnico}`,
+            saveDraft: false,
+            publishLabel: 'Activar inversión',
+            publishIconHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>'
+          })}
+        </form>
+      </div>
+    `;
+
+    const form = document.getElementById('formInversion');
+    bindDropdowns(form);
+
+    function buildReview() {
+      const fd = new FormData(form);
+      const monto = parseInt(fd.get('monto')) || 0;
+      const groups = [
+        {
+          title: 'Inversión',
+          rows: [
+            ['Monto aprobado', formatoMoneda(monto)],
+            ['BPIN', fd.get('bpin') || '—'],
+            ['Centro de costo', fd.get('centroCosto') || '—'],
+            ['Ejecutor', fd.get('ejecutor') || '—'],
+            ...(isInfra ? [['SUID', fd.get('suid') || '<span style="color:var(--text-secondary)">Se asignará después</span>']] : [])
+          ]
+        },
+        {
+          title: 'Proyecto',
+          rows: [
+            ['ID', p.idUnico],
+            ['Nombre', p.nombre],
+            ['Municipio', `${p.municipio} · ${p.departamento}`],
+            ['Tipo', p.tipo || '—']
+          ]
+        }
+      ];
+      document.getElementById('reviewBox').innerHTML = renderReview(groups);
+    }
+
+    mountWizard({
+      scope: form,
+      totalSteps: STEPS.length,
+      validateStep: (panel, step) => {
+        if (step === 1) setTimeout(buildReview, 50);
+        return true;
+      },
+      onPublish: () => {
+        const fd = new FormData(form);
+        const monto = parseInt(fd.get('monto')) || 0;
+        const ahora = new Date().toISOString();
+        ProjectData.setProyecto(p.idUnico, x => {
+          x.estado = 'en_inversion';
+          x.inversion = {
+            activadaEn: ahora,
+            montoAprobado: monto,
+            bpin: fd.get('bpin'),
+            centroCosto: fd.get('centroCosto'),
+            ejecutor: fd.get('ejecutor'),
+            suidEscenario: fd.get('suid') || null
+          };
+          x.historial = x.historial || [];
+          x.historial.push({
+            ts: ahora,
+            actor: 'admin',
+            evento: `Inversión activada · ${formatoMoneda(monto)}`,
+            estado: 'en_inversion'
+          });
+          return x;
+        });
+
+        renderSuccess(form, {
+          title: '¡Inversión activada!',
+          message: 'El proyecto entró a la tabla nacional de inversión. Se notificó al municipio y al revisor sobre el cambio de estado.',
+          stamp: `${p.idUnico} · ${formatoMoneda(monto)}`,
+          ctaLabel: 'Volver a inversión',
+          onContinue: () => { window.location.href = 'inversion.html'; }
+        });
+      }
+    });
+  }
+</script>
+</body>
+</html>

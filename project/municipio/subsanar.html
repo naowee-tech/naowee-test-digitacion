@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Subsanar postulación · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+<style>
+  .subs-obs {
+    border: 1.5px solid var(--orange-border, #ffbf75);
+    border-radius: 12px;
+    padding: 14px 16px 4px;
+    background: var(--orange-bg, #fff3e6);
+    margin-bottom: 16px;
+  }
+  .subs-obs__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .subs-obs__chip {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    color: var(--accent, #d74009);
+    text-transform: uppercase;
+  }
+  .subs-obs__date {
+    font-size: 11px;
+    color: var(--text-secondary, #646587);
+    white-space: nowrap;
+  }
+  .subs-obs__body {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--text-primary, #282834);
+    margin: 0 0 12px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js';
+  import { formatoFecha } from '../shared/states.js';
+  import {
+    renderStepper, renderFooter, mountWizard,
+    fileDrop, mountFileDrops,
+    renderReview, renderSuccess,
+    textarea
+  } from '../shared/wizard-page.js';
+
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'mis-proyectos' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const p = ProjectData.getProyecto(id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!p) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>
+        <a class="naowee-btn naowee-btn--quiet" href="dashboard.html">Volver</a>
+      </div>`;
+  } else {
+    const observaciones = p.observaciones || [];
+    const STEPS = [
+      { label: 'Responder observaciones' },
+      { label: 'Revisar y enviar' }
+    ];
+
+    /* Smart back: proyecto-perfil si vino de ahí, sino dashboard */
+    const ref = document.referrer;
+    const backHref = ref.includes('proyecto-perfil.html') ? `proyecto-perfil.html?id=${p.idUnico}`
+      : ref.includes('proyectos.html') ? 'proyectos.html'
+      : 'dashboard.html';
+    const backLabel = backHref.includes('proyecto-perfil') ? 'Volver al proyecto'
+      : backHref === 'proyectos.html' ? 'Volver a mis proyectos'
+      : 'Volver al panel';
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in wz-page">
+        <div class="wz-page__header">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>${backLabel}</a>
+          <h1 class="wz-page__title">Subsanar postulación</h1>
+          <p class="wz-page__subtitle">${p.nombre} · ${observaciones.length} observación${observaciones.length === 1 ? '' : 'es'} a subsanar</p>
+        </div>
+
+        <form id="formSubs" class="wz-card" novalidate>
+          <div class="wz-stepper-wrap">
+            ${renderStepper(STEPS)}
+          </div>
+
+          <div class="wz-body" data-wz-body>
+            <!-- PASO 1: Responder cada observación -->
+            <div class="wz-step-panel is-active" data-panel="1">
+              <div class="wz-section">Observaciones del revisor</div>
+              <p style="font-size:13px;color:var(--text-secondary);margin:-4px 0 14px">Responde cada observación con texto y, si aplica, adjunta el documento corregido.</p>
+
+              ${observaciones.length === 0
+                ? `<div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:0">
+                     <div class="naowee-message__header">
+                       <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                       <span class="naowee-message__title">Sin observaciones pendientes</span>
+                     </div>
+                     <div class="naowee-message__text">Esta postulación no tiene observaciones registradas para subsanar.</div>
+                   </div>`
+                : observaciones.map((o, i) => `
+                    <div class="subs-obs">
+                      <div class="subs-obs__head">
+                        <span class="subs-obs__chip">Obs. ${i + 1} · ${o.area || 'general'} · ${o.tipo || 'observación'}</span>
+                        <span class="subs-obs__date">${formatoFecha(o.ts)}</span>
+                      </div>
+                      <p class="subs-obs__body">${o.detalle || ''}</p>
+                      ${textarea({ label: 'Tu respuesta', name: `respuesta_${i}`, required: true, placeholder: 'Describe cómo se subsanó esta observación…', maxlength: 1000, rows: 3 })}
+                      ${fileDrop({ name: `soporte_${i}`, title: 'Adjuntar documento de soporte', hint: 'PDF, JPG o PNG · opcional', accept: '.pdf,.jpg,.jpeg,.png' })}
+                    </div>
+                  `).join('')}
+            </div>
+
+            <!-- PASO 2: Revisar -->
+            <div class="wz-step-panel" data-panel="2">
+              <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 18px">Confirma las respuestas antes de enviar la subsanación a revisión.</p>
+              <div id="reviewBox"></div>
+            </div>
+          </div>
+
+          ${renderFooter({
+            cancelHref: `proyecto-perfil.html?id=${p.idUnico}`,
+            saveDraft: false,
+            publishLabel: 'Enviar subsanación'
+          })}
+        </form>
+      </div>
+    `;
+
+    const form = document.getElementById('formSubs');
+    mountFileDrops(form);
+
+    /* Si no hay observaciones, ocultamos el botón Continuar y mostramos solo Cancelar */
+    if (observaciones.length === 0) {
+      form.querySelector('[data-wz-next]').style.display = 'none';
+    }
+
+    function buildReview() {
+      const fd = new FormData(form);
+      const groups = observaciones.map((o, i) => {
+        const soporte = fd.get(`soporte_${i}`);
+        return {
+          title: `Obs. ${i + 1} · ${o.area || 'general'}`,
+          rows: [
+            ['Observación', (o.detalle || '—').toString()],
+            ['Tu respuesta', (fd.get(`respuesta_${i}`) || '<span style="color:var(--text-secondary)">Sin respuesta</span>').toString().slice(0, 400)],
+            ['Soporte', soporte?.name ? `📎 ${soporte.name} · ${(soporte.size/1024).toFixed(0)} KB` : '<span style="color:var(--text-secondary)">No adjunto</span>']
+          ]
+        };
+      });
+      document.getElementById('reviewBox').innerHTML = renderReview(groups);
+    }
+
+    mountWizard({
+      scope: form,
+      totalSteps: STEPS.length,
+      validateStep: (panel, step) => {
+        if (step === 1) setTimeout(buildReview, 50);
+        return true;
+      },
+      onPublish: () => {
+        const ahora = new Date().toISOString();
+        ProjectData.setProyecto(p.idUnico, x => {
+          x.estado = 'en_revision';
+          x.historial = x.historial || [];
+          x.historial.push({
+            ts: ahora,
+            actor: 'municipio',
+            evento: `Subsanación enviada · ${(x.observaciones || []).length} observaciones respondidas`,
+            estado: 'en_revision'
+          });
+          return x;
+        });
+        ProjectData.pushNotificacion({
+          perfil: 'revisor',
+          tipo: 'subsanacion',
+          titulo: 'Postulación subsanada',
+          detalle: `${p.idUnico} · ${p.nombre} · listo para revisión`
+        });
+
+        renderSuccess(form, {
+          title: 'Subsanación enviada',
+          message: 'Tu postulación volvió a revisión. El equipo del Ministerio recibirá la notificación y emitirá el concepto en los próximos días.',
+          stamp: `${observaciones.length} observación${observaciones.length === 1 ? '' : 'es'} respondida${observaciones.length === 1 ? '' : 's'}`,
+          ctaLabel: 'Volver al proyecto',
+          onContinue: () => { window.location.href = `proyecto-perfil.html?id=${p.idUnico}`; }
+        });
+      }
+    });
+  }
+</script>
+</body>
+</html>

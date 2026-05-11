@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Project — Postulación de Proyectos · Naowee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="shared/shell.css">
+<link rel="stylesheet" href="shared/pages.css?v=20260509t">
+<style>
+  body{
+    background: linear-gradient(135deg, #fff 0%, #fff8f0 50%, #fff 100%);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  .landing { max-width: 980px; width: 100%; }
+  .landing__head { text-align: center; margin-bottom: 36px; }
+  .landing__logos { display: inline-flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+  .landing__logos img { height: 46px; }
+  .landing__logos .sep { width: 1px; height: 36px; background: var(--border); }
+  .landing__title { font-size: 30px; font-weight: 800; letter-spacing: -.4px; margin-bottom: 8px; }
+  .landing__title span { background: linear-gradient(95deg,#FF7500 0%,#d74009 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .landing__sub   { color: var(--text-secondary); font-size: 15px; max-width: 560px; margin: 0 auto; }
+  .role-grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .role-card {
+    background: #fff; border: 2px solid var(--border);
+    border-radius: var(--radius-xl); padding: 28px 24px;
+    text-align: left; cursor: pointer; text-decoration: none;
+    color: var(--text-primary);
+    transition: transform .25s cubic-bezier(.32,.72,0,1), box-shadow .25s, border-color .25s;
+    position: relative; overflow: hidden;
+  }
+  .role-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--c, var(--accent));
+    transform: translateX(-4px); transition: transform .25s;
+  }
+  .role-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.08);
+    border-color: var(--c, var(--accent));
+  }
+  .role-card:hover::before { transform: translateX(0); }
+  .role-card__avatar {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; margin-bottom: 16px;
+    background: var(--bg-c); color: var(--c);
+  }
+  .role-card__role { font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--c); margin-bottom: 6px; }
+  .role-card__title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .role-card__name  { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; }
+  .role-card__perms {
+    display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .role-card__perms li { display: flex; align-items: center; gap: 6px; }
+  .role-card__perms li::before { content: '✓'; color: var(--c); font-weight: 700; }
+  .role-card__cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 700; color: var(--c);
+  }
+  .landing__foot {
+    margin-top: 36px; text-align: center; font-size: 12px; color: var(--text-secondary);
+  }
+  .landing__foot button {
+    background: none; border: 1px solid var(--border-dark); padding: 6px 12px;
+    border-radius: 99px; font-size: 11.5px; cursor: pointer; color: var(--text-secondary);
+    margin-left: 8px; font-family: inherit;
+    transition: all .15s;
+  }
+  .landing__foot button:hover { background: var(--grey-bg); color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<main class="landing">
+  <header class="landing__head">
+    <div class="landing__logos">
+      <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" onerror="this.style.display='none'"/>
+      <span class="sep"></span>
+      <img src="shared/logos/naowee.svg" alt="Naowee" onerror="this.style.display='none'"/>
+    </div>
+    <h1 class="landing__title">Módulo <span>Project</span> — Postulación de Proyectos</h1>
+    <p class="landing__sub">
+      Sistema E2E de postulación, revisión y aprobación de proyectos de infraestructura deportiva
+      en el marco de la Resolución 933 de 2024 del Ministerio del Deporte.
+    </p>
+  </header>
+
+  <section class="role-grid">
+    <a href="admin/dashboard.html"
+       class="role-card"
+       data-perfil="admin"
+       style="--c:#FF7500;--bg-c:#fff3e6">
+      <div class="role-card__avatar">AR</div>
+      <div class="role-card__role">Ministerio · Admin</div>
+      <div class="role-card__title">Administrador de Convocatorias</div>
+      <div class="role-card__name">Andrea Rodríguez Jaraba</div>
+      <ul class="role-card__perms">
+        <li>Crear y publicar convocatorias</li>
+        <li>Activar inversión de proyectos</li>
+        <li>Tabla nacional de presupuestos</li>
+      </ul>
+      <span class="role-card__cta">Entrar →</span>
+    </a>
+
+    <a href="municipio/dashboard.html"
+       class="role-card"
+       data-perfil="municipio"
+       style="--c:#1f78d1;--bg-c:#eef5ff">
+      <div class="role-card__avatar">CM</div>
+      <div class="role-card__role">Entidad Territorial</div>
+      <div class="role-card__title">Alcaldía / Municipio</div>
+      <div class="role-card__name">Carlos Mosquera · Alcaldía de Quibdó</div>
+      <ul class="role-card__perms">
+        <li>Postular proyectos de infraestructura</li>
+        <li>Cargar documentación general y técnica</li>
+        <li>Solicitar prórrogas y subsanar</li>
+      </ul>
+      <span class="role-card__cta">Entrar →</span>
+    </a>
+
+    <a href="revisor/dashboard.html"
+       class="role-card"
+       data-perfil="revisor"
+       style="--c:#7c3aed;--bg-c:#f3edff">
+      <div class="role-card__avatar">JA</div>
+      <div class="role-card__role">Ministerio · Revisor</div>
+      <div class="role-card__title">Revisor del Equipo Técnico</div>
+      <div class="role-card__name">Juan Manuel Ávila</div>
+      <ul class="role-card__perms">
+        <li>Revisar postulaciones (15 días)</li>
+        <li>Checklist documental general y por área</li>
+        <li>Emitir concepto de favorabilidad</li>
+      </ul>
+      <span class="role-card__cta">Entrar →</span>
+    </a>
+  </section>
+
+  <footer class="landing__foot">
+    Demo del módulo Project — datos simulados ·
+    <button id="resetBtn" type="button">Reiniciar datos</button>
+  </footer>
+</main>
+
+<script type="module">
+  import ProjectData from './shared/data.js';
+
+  document.querySelectorAll('[data-perfil]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      ProjectData.setPerfil(card.dataset.perfil);
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('¿Reiniciar todos los datos a la semilla demo?')) {
+      ProjectData.reset();
+      window.location.reload();
+    }
+  });
+</script>
+</body>
+</html>

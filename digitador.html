@@ -6,6 +6,7 @@
 <title>Naowee – Mi digitación</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="design-system.css"/>
+<link rel="stylesheet" href="shared/shell-overrides.css"/>
 <style>
 /* ═══════════════════════════════════════════════════════════
    DESIGN TOKENS — Naowee + Andes DS (from Figma)
@@ -116,80 +117,73 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 /* ═══ PAGE CONTENT ════════════════════════════════════════ */
 .page{flex:1;overflow:hidden;padding:20px 28px 0;background:var(--bg);display:flex;flex-direction:column;min-height:0}
 
-.page-title{font-size:22px;font-weight:600;color:var(--text-primary);margin-bottom:4px;flex-shrink:0}
+.page-title{font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:18px;flex-shrink:0;letter-spacing:-.01em}
 .page-sub{font-size:13px;color:var(--text-secondary);margin-bottom:20px}
 
-/* ═══ STAT CARDS ═════════════════════════════════════════ */
-.stats-row{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;flex-shrink:0}
+/* ═══ STAT CARDS — paridad con .sum-card de Incentivos ═══════════════════
+   Sin border, soft shadow, sin hover state (estado fijo informativo).
+   Layout compacto: ring chico (44px) + numero/label a la derecha. */
+.stats-row{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;flex-shrink:0}
 .stat-card{
-  flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-xl);padding:20px;display:flex;align-items:center;gap:16px;
-  transition:all .2s;cursor:default;
+  flex:1;min-width:160px;background:#fff;border:none;
+  border-radius:12px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;cursor:default;
+  box-shadow:0 1px 3px rgba(145,158,171,.08), 0 6px 16px rgba(145,158,171,.10);
 }
-.stat-card:hover{box-shadow:var(--shadow-sm);transform:translateY(-2px)}
-.stat-ring{position:relative;width:56px;height:56px;flex-shrink:0}
-.stat-ring svg{transform:rotate(-90deg)}
+/* Sin hover: paridad explicita con .sum-card de Incentivos */
+.stat-card:hover{box-shadow:0 1px 3px rgba(145,158,171,.08), 0 6px 16px rgba(145,158,171,.10);transform:none}
+.stat-ring{position:relative;width:44px;height:44px;flex-shrink:0}
+.stat-ring svg{transform:rotate(-90deg);width:44px;height:44px}
 .stat-ring .stat-num{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:600;color:var(--text-primary);
+  font-size:15px;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums;letter-spacing:-.01em;
 }
-.stat-label{font-size:13px;color:var(--text-secondary);font-weight:500}
+.stat-content{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat-label{font-size:13px;color:var(--text-secondary);font-weight:600;white-space:nowrap}
+.stat-icon-mini{display:flex;align-items:center;color:var(--text-secondary)}
 
-/* ═══ SEARCH + FILTER BAR ════════════════════════════════ */
-.search-bar{display:flex;gap:12px;margin-bottom:20px;align-items:center;justify-content:space-between;flex-shrink:0}
-.search-wrap{position:relative;width:300px}
-.search-input{
-  width:100%;height:42px;padding:0 34px 0 38px;border:1px solid var(--border-dark);
-  border-radius:var(--radius-md);font-family:var(--font);font-size:13px;color:var(--text-primary);
-  background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='5' stroke='%23646587' stroke-width='1.3'/%3E%3Cpath d='M11 11l3 3' stroke='%23646587' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E") 12px center no-repeat;
-  outline:none;transition:border-color .15s;
-}
-.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.1)}
-.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:none;cursor:pointer;display:none;align-items:center;justify-content:center;border-radius:50%;color:var(--text-secondary);transition:background .12s,color .12s}
-.search-clear:hover{background:var(--border);color:var(--text-primary)}
-.search-wrap.has-value .search-clear{display:flex}
-.filter-select{
-  height:42px;padding:0 30px 0 12px;border:1px solid var(--border-dark);
-  border-radius:var(--radius-md);background:var(--surface);font-family:var(--font);
-  font-size:13px;color:var(--text-primary);appearance:none;cursor:pointer;outline:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23646587' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 8px center;
-  transition:border-color .15s;
-}
-.filter-select:focus{border-color:var(--accent)}
+/* ═══ SEARCH + FILTER BAR — DS naowee-searchbox + naowee-dropdown ═══════ */
+/* Layout left-aligned: search + dropdown se quedan a la izquierda */
+.search-bar{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-shrink:0;flex-wrap:wrap}
 
-/* ═══ FLOATING DROPDOWN (custom selects) ═══ */
-.float-dd-wrap{position:relative;display:inline-block}
-.float-dd-trigger{
-  height:42px;padding:0 32px 0 12px;border:1px solid var(--border-dark);border-radius:var(--radius-md);
-  background:var(--surface);font-family:var(--font);font-size:13px;color:var(--text-primary);
-  cursor:pointer;display:block;line-height:42px;transition:all .15s;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;position:relative;
+/* DS naowee-searchbox tunings: 42px height, 320 ancho */
+.search-bar .naowee-searchbox{width:320px;flex-shrink:0}
+.search-bar .naowee-searchbox__input-wrap{
+  display:flex;align-items:center;gap:8px;
+  height:42px;padding:0 12px;
+  background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-md);
+  transition:border-color .15s,box-shadow .15s;
 }
-.float-dd-trigger:hover{border-color:var(--accent)}
-.float-dd-trigger.open{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.1)}
-.float-dd-trigger::after{
-  content:'';position:absolute;right:12px;top:50%;width:7px;height:7px;
-  background:none;border:none;
-  border-right:1.5px solid var(--text-secondary);border-bottom:1.5px solid var(--text-secondary);
-  transform:translateY(-60%) rotate(45deg);transition:transform .2s;
+.search-bar .naowee-searchbox__input-wrap:hover{border-color:#9ca0c0}
+.search-bar .naowee-searchbox__input-wrap:focus-within{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12);
 }
-.float-dd-trigger.open::after{transform:translateY(-30%) rotate(-135deg)}
-.float-dd-menu{
-  position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:160px;
-  background:var(--surface);border:1px solid var(--border-dark);
-  border-radius:var(--radius-md);
-  box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:999;
-  max-height:0;overflow:hidden;opacity:0;pointer-events:none;
-  transition:max-height .25s cubic-bezier(.4,0,.2,1),opacity .2s;
+.search-bar .naowee-searchbox__icon{
+  width:16px;height:16px;flex-shrink:0;color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;
 }
-.float-dd-menu.open{max-height:260px;overflow-y:auto;opacity:1;pointer-events:auto}
-.float-dd-opt{
-  padding:10px 14px;font-size:13px;color:var(--text-primary);cursor:pointer;
-  display:flex;align-items:center;gap:8px;transition:background .12s;
+.search-bar .naowee-searchbox__icon svg{width:16px;height:16px}
+.search-bar .naowee-searchbox__input{
+  flex:1;min-width:0;height:100%;
+  border:none;background:transparent;outline:none;
+  font-size:13px;font-family:var(--font);color:var(--text-primary);
 }
-.float-dd-opt:hover{background:#f5f6fa}
-.float-dd-opt.selected{background:var(--orange-bg);color:var(--accent);font-weight:500}
+.search-bar .naowee-searchbox__input::placeholder{color:var(--text-secondary)}
+.search-bar .naowee-searchbox__clear{
+  width:22px;height:22px;border:none;background:transparent;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  border-radius:6px;color:var(--text-secondary);flex-shrink:0;
+  transition:background .12s;
+}
+.search-bar .naowee-searchbox__clear:hover{background:#f0f1f7;color:var(--text-primary)}
+.search-bar .naowee-searchbox__clear svg{width:13px;height:13px}
+.search-bar .naowee-searchbox.has-value .naowee-searchbox__clear{display:inline-flex}
+
+/* naowee-dropdown del status — compacto: ancho de su contenido, sin
+   margin-left:auto (queda pegado al search a la izquierda). */
+.search-bar .naowee-dropdown{width:auto;flex-shrink:0}
+.search-bar .naowee-dropdown__trigger{height:42px;min-width:0;width:fit-content;padding:0 36px 0 14px}
+.search-bar .naowee-dropdown__placeholder{flex:0 1 auto}
 
 /* ═══ TWO-COLUMN LAYOUT ══════════════════════════════════ */
 .dash-layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:stretch;flex:1;min-height:0;overflow:hidden}
@@ -208,14 +202,10 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 .comp-list-scroll::-webkit-scrollbar{width:4px}
 .comp-list-scroll::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:4px}
 .comp-list-scroll::-webkit-scrollbar-track{background:transparent}
-.comp-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:12px}
-.comp-tab{
-  padding:8px 16px;font-size:13px;font-weight:500;
-  color:var(--text-secondary);cursor:pointer;transition:all .15s;border:none;background:none;
-  font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px;
-}
-.comp-tab:hover{color:var(--text-primary)}
-.comp-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* DS naowee-segment para tabs (Todos/Individual/Conjunto) */
+.comp-tabs{margin-bottom:12px}
+.comp-tabs.naowee-segment{height:34px;width:100%}
+.comp-tabs .naowee-segment__item{font-size:12px;padding:0 12px;flex:1}
 
 .comp-card{
   background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);
@@ -225,15 +215,20 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 .comp-card:hover{border-color:var(--border-dark);box-shadow:var(--shadow-sm)}
 .comp-card.selected{border-color:var(--naranja);box-shadow:0 0 0 3px rgba(255,117,0,.15)}
 .comp-card-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+/* Status badges — paridad naowee-badge --quiet --small del DS:
+   pill suave con dot, sin border marcado, semantico por color. */
 .comp-status{
-  font-size:10px;font-weight:600;padding:3px 10px;border-radius:var(--radius-full);
-  white-space:nowrap;display:inline-flex;align-items:center;line-height:1;margin-left:auto;flex-shrink:0;
+  display:inline-flex;align-items:center;gap:4px;
+  height:18px;padding:0 7px;border-radius:9999px;
+  font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.2px;
+  white-space:nowrap;border:none;flex-shrink:0;line-height:1;margin-left:auto;
 }
+.comp-status::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;background:currentColor}
 .comp-para-badge{position:absolute;top:5px;right:6px;font-size:13px;line-height:1}
-.comp-status.en-digitacion{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.comp-status.en-pausa{background:var(--orange-bg);color:var(--naranja);border:1px solid var(--orange-border)}
-.comp-status.asignada{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border-dark)}
-.comp-status.finalizada{background:#e8f4ff;color:var(--blue-info);border:1px solid #b8daff}
+.comp-status.en-digitacion{background:#e6f4e7;color:#15803d}
+.comp-status.en-pausa{background:#fff3e6;color:#b45309}
+.comp-status.asignada{background:#f0f1f7;color:#646587}
+.comp-status.finalizada{background:#dbe9ff;color:#1e40af}
 .comp-sport-name{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:2px;flex:1;min-width:0}
 .comp-sport-detail{font-size:12px;color:var(--text-secondary);margin-bottom:8px}
 .comp-progress{display:flex;align-items:center;gap:10px}
@@ -259,37 +254,65 @@ body{font-family:var(--font);background:var(--surface);color:var(--text-primary)
 .pause-banner-text{font-size:14px;font-weight:600;color:var(--blue-info)}
 .pause-banner-sub{font-size:11px;font-weight:400;color:var(--text-secondary);margin-top:2px}
 .detail-panel.paused .match-card{opacity:.55;pointer-events:none}
-.detail-panel.paused .detail-actions .btn-orange{opacity:.4;pointer-events:none}
+.detail-panel.paused .detail-actions .naowee-btn--loud{opacity:.4;pointer-events:none}
 .detail-empty{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   height:300px;color:var(--text-secondary);gap:10px;text-align:center;
 }
 .detail-empty-icon{font-size:40px;opacity:.3}
-.detail-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+/* Detail tags — paridad naowee-badge --quiet --small */
+/* Detail tags — paridad naowee-badge --quiet --small */
 .detail-tag{
-  font-size:11px;font-weight:500;padding:4px 12px;border-radius:var(--radius-full);
-  display:inline-flex;align-items:center;line-height:1;
+  display:inline-flex;align-items:center;gap:4px;
+  height:20px;padding:0 8px;border-radius:9999px;
+  font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.2px;
+  white-space:nowrap;border:none;line-height:1;
 }
-.detail-tag.green{background:var(--green-bg);color:var(--green)}
-.detail-tag.blue{background:var(--blue-bg);color:var(--blue-info)}
-.detail-tag.gray{background:#f5f6fa;color:var(--text-secondary)}
-.detail-tag.gold{background:#fffbea;color:#a16207}
-.detail-sport-title{font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:4px}
+.detail-tag::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;background:currentColor}
+.detail-tag.green{background:#e6f4e7;color:#15803d}
+.detail-tag.blue{background:#dbe9ff;color:#1e40af}
+.detail-tag.gray{background:#f0f1f7;color:#646587}
+.detail-tag.gold{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e}
+.detail-tag.gold::before{background:#92400e}
+
+/* ═══ DETAIL HEADER — patron card-header con actions a la derecha ═══ */
+.detail-header{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  margin-bottom:16px;flex-wrap:wrap;
+}
+.detail-header__title-group{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.detail-header__title{
+  font-size:20px;font-weight:700;color:var(--text-primary);
+  line-height:1.25;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:10px;
+}
+.detail-header__title-emoji{font-size:24px;line-height:1;flex-shrink:0}
+.detail-header__meta{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12px;color:var(--text-secondary);
+}
+.detail-header__code{
+  font-size:12px;color:var(--text-secondary);
+  font-variant-numeric:tabular-nums;
+}
+.detail-header__code::before{
+  content:'·';margin:0 6px 0 2px;color:var(--text-secondary);
+}
+.detail-header__actions{display:flex;gap:8px;flex-shrink:0;align-items:center}
+
+/* Divider sutil antes de las secciones */
+.detail-divider{
+  border:none;border-top:1px solid var(--border);
+  margin:0 0 18px;
+}
+
+/* Compatibilidad con clases viejas (por si quedan referencias) */
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.detail-sport-title{font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
 .detail-code{font-size:12px;color:var(--text-secondary);margin-bottom:16px}
 .detail-actions{display:flex;gap:10px;margin-bottom:24px}
 
-.btn{
-  display:flex;align-items:center;gap:7px;height:40px;padding:0 20px;
-  border-radius:var(--radius-md);font-size:13px;font-weight:600;font-family:var(--font);
-  cursor:pointer;border:none;transition:opacity .12s,background .12s;
-}
-.btn:hover{opacity:.88}
-.btn:active{transform:scale(.97)}
-.btn-outline{background:transparent;border:none;color:var(--accent);transition:all .15s}
-.btn-outline:hover{background:var(--orange-bg);border-radius:var(--radius-lg)}
-.btn-orange{background:var(--accent);color:#fff;border-radius:var(--radius-lg)}
-.btn-accent{background:var(--accent);color:#fff;border-radius:var(--radius-lg)}
-.btn-sm{height:34px;padding:0 14px;font-size:12px;border-radius:var(--radius-sm)}
+/* btn helpers removidos — los botones usan naowee-btn del DS */
 
 .section-title{
   font-size:13px;font-weight:600;color:var(--text-primary);
@@ -537,7 +560,6 @@ input.score-big:hover:not(:focus){border-bottom-color:var(--border-dark)}
 }
 .btn-link{background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);padding:8px 14px;border-radius:var(--radius-md);transition:background .15s}
 .btn-link:hover{background:var(--orange-bg)}
-.btn-orange:disabled{background:#c8cce0;border-color:#c8cce0;color:#8a90a8;cursor:not-allowed;pointer-events:none;opacity:1}
 
 /* Toast */
 .digi-toast{position:fixed;bottom:32px;right:32px;background:var(--green-bg);border:1.5px solid var(--green-border);border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:flex-start;gap:12px;min-width:300px;max-width:400px;z-index:3000;box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateY(20px);opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
@@ -1078,16 +1100,9 @@ input.score-big:hover:not(:focus){border-bottom-color:var(--border-dark)}
     <button class="burger-btn" onclick="toggleSidebar()">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.5 12H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 16H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 8H18.5" stroke="#8788AB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <svg class="naowee-logo" viewBox="0 0 177 33.22" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28.11 33.21c-1.25 0-2.42-.48-3.31-1.36a4.67 4.67 0 01-1.37-3.29l.02-16.73-5.92 5.91a1.6 1.6 0 01-1.75.35 1.6 1.6 0 01-.99-1.47V1.6c0-.88.72-1.6 1.6-1.6h8.59c4.3 0 7.8 3.48 7.8 7.76v20.8c0 2.56-2.1 4.65-4.67 4.65zm-3.05-26.85c.2 0 .41.04.61.12.6.25.99.83.99 1.48l-.02 20.6c0 .39.15.76.43 1.03.28.28.64.43 1.04.43.8 0 1.46-.65 1.46-1.46V7.76c0-2.52-2.06-4.57-4.59-4.57H18v9.56l5.92-5.92c.31-.31.72-.47 1.14-.47" fill="#F49C1C"/>
-      <path d="M16.39 33.21H7.8C3.5 33.21 0 29.73 0 25.45V4.65C0 2.09 2.1 0 4.67 0c1.25 0 2.42.49 3.31 1.36.88.88 1.37 2.05 1.36 3.29L9.33 21.38l5.92-5.91c.46-.46 1.15-.6 1.75-.35.6.25.99.83.99 1.47v15.02c0 .88-.72 1.6-1.6 1.6M4.67 3.19c-.81 0-1.47.65-1.47 1.46v20.8c0 2.52 2.06 4.57 4.59 4.57h7V20.46l-5.92 5.92c-.46.46-1.15.6-1.75.35a1.6 1.6 0 01-.99-1.47L6.14 4.65c0-.39-.15-.76-.43-1.03a1.45 1.45 0 00-1.04-.43" fill="#FF7500"/>
-      <path d="M71.59 24.93h-.31c-.6.72-1.32 1.34-2.16 1.86-.84.52-1.93.77-3.25.77-3.95 0-7.12-2.37-7.12-6.5 0-4.68 3.49-6.42 7.78-6.42 1.25 0 2.27.1 3.07.29.81.19 1.47.39 1.99.6v-.58c0-1.01-.4-1.84-1.21-2.49-.8-.66-1.8-.99-2.99-.99-1.77 0-3.26.73-4.48 2.21l-3.7-2.52c2.03-2.53 4.79-3.79 8.29-3.79 2.96 0 5.22.69 6.77 2.07 1.56 1.38 2.34 3.42 2.34 6.13v11.88h-5.02v-2.52zm0-5.69c-.6-.28-1.21-.51-1.85-.68-.64-.17-1.33-.25-2.08-.25-1.22 0-2.16.26-2.82.79-.66.53-1 1.18-1 1.95 0 .78.32 1.39.96 1.86.64.47 1.37.7 2.2.7.67 0 1.3-.12 1.87-.37.57-.24 1.06-.57 1.46-.97.4-.4.71-.86.93-1.39.22-.53.33-1.08.33-1.65" fill="#002B5B"/>
-      <path d="M89.28 7.37c5.06 0 10.12 3.57 10.12 10.1 0 6.52-5.06 10.1-10.12 10.1-5.06 0-10.11-3.58-10.11-10.1 0-6.53 5.05-10.1 10.11-10.1zm0 15.51c2.41 0 5.02-1.67 5.02-5.42 0-3.74-2.61-5.42-5.02-5.42s-5.02 1.68-5.02 5.42c0 3.75 2.61 5.42 5.02 5.42z" fill="#002B5B"/>
-      <path d="M101.96 7.37h5.72l3.15 12.65h.27l3.78-12.65h5.25l3.82 12.65h.27l3.11-12.65h5.64l-6.11 20.2h-5.49l-3.81-12.74h-.27l-3.81 12.74h-5.41l-6.11-20.2z" fill="#002B5B"/>
-      <path d="M154.68 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.12-4.24-10.12-10.1 0-5.71 4.23-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.1.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.15 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
-      <path d="M176.69 22.38c-.88 1.55-2.07 2.8-3.56 3.75-1.49.95-3.31 1.43-5.47 1.43-5.56 0-10.11-4.24-10.11-10.1 0-5.71 4.22-10.1 9.92-10.1 5.53 0 9.53 4.22 9.53 9.94v.93h-14.36c.33 2.43 2.12 4.65 5.17 4.65 2.27 0 3.81-1.38 4.55-2.95l4.24 2.09.09.36zm-4.63-7.35c-.39-1.92-2.17-3.52-4.59-3.52-2.2 0-4.14 1.44-4.67 3.52h9.26z" fill="#002B5B"/>
-      <path d="M53.69 27.57c-1.38 0-2.5-1.02-2.5-2.29V15.66c0-2.05-1.82-3.72-4.07-3.72-2.24 0-4.07 1.67-4.07 3.72v9.62c0 1.26-1.12 2.29-2.5 2.29s-2.5-1.02-2.5-2.29V15.66c0-4.57 4.07-8.29 9.07-8.29s9.07 3.72 9.07 8.29v9.62c0 1.26-1.12 2.29-2.5 2.29" fill="#002B5B"/>
-    </svg>
+    <img src="shared/logos/ministerio.svg" alt="Ministerio del Deporte" class="sb-logo-img"/>
+    <div class="logo-sep"></div>
+    <img src="shared/logos/suid.png" alt="SUID" class="sb-logo-img"/>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">DASHBOARD</div>
@@ -1139,20 +1154,32 @@ input.score-big:hover:not(:focus){border-bottom-color:var(--border-dark)}
     <!-- STAT CARDS -->
     <div class="stats-row" id="statsRow"></div>
 
-    <!-- SEARCH + FILTER -->
+    <!-- SEARCH + FILTER (DS naowee-searchbox + naowee-dropdown) -->
     <div class="search-bar">
-      <div class="search-wrap" id="searchWrap">
-        <input class="search-input" id="searchInp" type="text" placeholder="Buscar competencia..." oninput="onSearchInput(this)"/>
-        <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar búsqueda"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <div class="naowee-searchbox" id="searchWrap">
+        <div class="naowee-searchbox__input-wrap">
+          <span class="naowee-searchbox__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" class="naowee-searchbox__input" id="searchInp" placeholder="Buscar competencia…" oninput="onSearchInput(this)"/>
+          <button type="button" class="naowee-searchbox__clear" id="searchClear" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="float-dd-wrap" id="statusDDWrap">
-        <div class="float-dd-trigger" id="statusTrigger" onclick="toggleStatusDD()">Todos</div>
-        <div class="float-dd-menu" id="statusMenu">
-          <div class="float-dd-opt selected" onclick="pickStatus('todos','Todos',this)">Todos</div>
-          <div class="float-dd-opt" onclick="pickStatus('en-digitacion','En digitación',this)">En digitación</div>
-          <div class="float-dd-opt" onclick="pickStatus('asignada','Asignadas',this)">Asignadas</div>
-          <div class="float-dd-opt" onclick="pickStatus('en-pausa','En pausa',this)">En pausa</div>
-          <div class="float-dd-opt" onclick="pickStatus('finalizada','Finalizadas',this)">Finalizadas</div>
+      <div class="naowee-dropdown" id="statusDDWrap" data-value="todos">
+        <div class="naowee-dropdown__trigger" id="statusTrigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" onclick="toggleStatusDD()" onkeydown="handleStatusDDKey(event)">
+          <span class="naowee-dropdown__placeholder" id="statusLabel">Todos</span>
+          <div class="naowee-dropdown__controls">
+            <span class="naowee-dropdown__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+        </div>
+        <div class="naowee-dropdown__menu" role="listbox">
+          <div class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="todos" onclick="pickStatus('todos','Todos')">Todos</div>
+          <div class="naowee-dropdown__option" data-val="en-digitacion" onclick="pickStatus('en-digitacion','En digitación')">En digitación</div>
+          <div class="naowee-dropdown__option" data-val="asignada" onclick="pickStatus('asignada','Asignadas')">Asignadas</div>
+          <div class="naowee-dropdown__option" data-val="en-pausa" onclick="pickStatus('en-pausa','En pausa')">En pausa</div>
+          <div class="naowee-dropdown__option" data-val="finalizada" onclick="pickStatus('finalizada','Finalizadas')">Finalizadas</div>
         </div>
       </div>
     </div>
@@ -1163,10 +1190,11 @@ input.score-big:hover:not(:focus){border-bottom-color:var(--border-dark)}
       <div class="comp-col-sticky">
         <div class="comp-list-header">
           <span class="comp-list-title" id="compCount">MIS COMPETENCIAS · (0)</span>
-          <div class="comp-tabs">
-            <button class="comp-tab active" onclick="filterType('todos',this)">Todos</button>
-            <button class="comp-tab" onclick="filterType('individual',this)">Individual</button>
-            <button class="comp-tab" onclick="filterType('conjunto',this)">Conjunto</button>
+          <div class="comp-tabs naowee-segment naowee-segment--small" id="compTypeSegment" role="tablist">
+            <span class="naowee-segment__pill naowee-segment__pill--no-anim" aria-hidden="true"></span>
+            <button class="naowee-segment__item naowee-segment__item--active" type="button" role="tab" data-val="todos" onclick="filterType('todos',this)">Todos</button>
+            <button class="naowee-segment__item" type="button" role="tab" data-val="individual" onclick="filterType('individual',this)">Individual</button>
+            <button class="naowee-segment__item" type="button" role="tab" data-val="conjunto" onclick="filterType('conjunto',this)">Conjunto</button>
           </div>
         </div>
         <div class="comp-list-scroll"><div id="compList"></div></div>
@@ -1912,6 +1940,13 @@ function init(){
   setTimeout(adjustCompListHeight, 50);
   window.addEventListener('resize', adjustCompListHeight);
 
+  /* DS naowee-segment: posiciona la pill bajo el item activo */
+  const seg = document.getElementById('compTypeSegment');
+  positionSegmentPill(seg, false);
+  window.addEventListener('load', () => positionSegmentPill(seg, false));
+  window.addEventListener('resize', () => positionSegmentPill(seg, true));
+  setTimeout(() => positionSegmentPill(seg, false), 100);
+
   /* ── Global: clear "0" on focus for all numeric score inputs ── */
   document.addEventListener('focusin', function(e){
     const el = e.target;
@@ -1962,20 +1997,20 @@ function renderStats(){
 
   const row = document.getElementById('statsRow');
   row.innerHTML = stats.map(s => {
-    const r = 22, circ = 2*Math.PI*r;
-    const dash = circ * s.pct;
+    const r = 18, circ = 2*Math.PI*r;
+    const dash = circ * (isFinite(s.pct) ? s.pct : 0);
     const gap = circ - dash;
     return `<div class="stat-card">
       <div class="stat-ring">
-        <svg width="56" height="56" viewBox="0 0 56 56">
-          <circle cx="28" cy="28" r="${r}" fill="none" stroke="#f0f0f0" stroke-width="5"/>
-          <circle cx="28" cy="28" r="${r}" fill="none" stroke="${s.color}" stroke-width="5"
+        <svg viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="${r}" fill="none" stroke="#f0f0f0" stroke-width="4"/>
+          <circle cx="22" cy="22" r="${r}" fill="none" stroke="${s.color}" stroke-width="4"
             stroke-dasharray="${dash} ${gap}" stroke-linecap="round"/>
         </svg>
         <div class="stat-num">${s.count}</div>
       </div>
-      <div>
-        <div style="font-size:11px;margin-bottom:2px">${s.icon}</div>
+      <div class="stat-content">
+        <div class="stat-icon-mini">${s.icon}</div>
         <div class="stat-label">${s.label}</div>
       </div>
     </div>`;
@@ -2057,25 +2092,63 @@ function filterByStatus(v){
   currentFilter = v;
   renderCompetitions();
 }
+/* DS naowee-dropdown handlers — open/close + select value */
 function toggleStatusDD(){
-  const trigger = document.getElementById('statusTrigger');
-  const menu = document.getElementById('statusMenu');
-  const isOpen = menu.classList.contains('open');
-  trigger.classList.toggle('open',!isOpen);
-  menu.classList.toggle('open',!isOpen);
+  const dd = document.getElementById('statusDDWrap');
+  const trig = document.getElementById('statusTrigger');
+  const isOpen = dd.classList.toggle('naowee-dropdown--open');
+  trig.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
-function pickStatus(val, label, el){
-  document.getElementById('statusTrigger').textContent = label;
-  document.getElementById('statusTrigger').classList.remove('open');
-  document.getElementById('statusMenu').classList.remove('open');
-  document.querySelectorAll('#statusMenu .float-dd-opt').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
+function pickStatus(val, label){
+  const dd = document.getElementById('statusDDWrap');
+  dd.dataset.value = val;
+  document.getElementById('statusLabel').textContent = label;
+  dd.querySelectorAll('.naowee-dropdown__option').forEach(o => {
+    o.classList.toggle('naowee-dropdown__option--selected', o.getAttribute('data-val') === val);
+  });
+  dd.classList.remove('naowee-dropdown--open');
+  document.getElementById('statusTrigger').setAttribute('aria-expanded', 'false');
   filterByStatus(val);
+}
+function handleStatusDDKey(e){
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatusDD(); }
+  else if (e.key === 'Escape') document.getElementById('statusDDWrap').classList.remove('naowee-dropdown--open');
+}
+document.addEventListener('click', function(e){
+  const dd = document.getElementById('statusDDWrap');
+  if (dd && !dd.contains(e.target)) {
+    dd.classList.remove('naowee-dropdown--open');
+    const trig = document.getElementById('statusTrigger');
+    if (trig) trig.setAttribute('aria-expanded', 'false');
+  }
+});
+
+/* DS naowee-segment helpers para los tabs (Todos/Individual/Conjunto) */
+function positionSegmentPill(seg, animate){
+  if(!seg) return;
+  const pill = seg.querySelector('.naowee-segment__pill');
+  const active = seg.querySelector('.naowee-segment__item--active');
+  if(!pill || !active) return;
+  const segRect = seg.getBoundingClientRect();
+  const actRect = active.getBoundingClientRect();
+  const x = actRect.left - segRect.left - parseFloat(getComputedStyle(seg).borderLeftWidth || 0);
+  if(animate){
+    pill.classList.remove('naowee-segment__pill--no-anim');
+    pill.style.setProperty('--segment-pill-x', x + 'px');
+    pill.style.width = actRect.width + 'px';
+  } else {
+    pill.classList.add('naowee-segment__pill--no-anim');
+    pill.style.setProperty('--segment-pill-x', x + 'px');
+    pill.style.width = actRect.width + 'px';
+    requestAnimationFrame(() => requestAnimationFrame(() => pill.classList.remove('naowee-segment__pill--no-anim')));
+  }
 }
 function filterType(t, btn){
   currentTypeFilter = t;
-  document.querySelectorAll('.comp-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  const seg = document.getElementById('compTypeSegment');
+  seg.querySelectorAll('.naowee-segment__item').forEach(b => b.classList.remove('naowee-segment__item--active'));
+  btn.classList.add('naowee-segment__item--active');
+  positionSegmentPill(seg, true);
   renderCompetitions();
 }
 
@@ -2117,27 +2190,35 @@ function renderDetail(id){
       </div>
     </div>` : ''}
 
-    <div class="detail-tags">
-      <span class="detail-tag ${isPaused ? 'blue' : 'green'}">${{
-        'en-digitacion':'En digitación',
-        'asignada':'Asignada',
-        'en-pausa':'En pausa',
-        'finalizada':'Finalizada'
-      }[comp.status]}</span>
-      <span class="detail-tag gray">${comp.sistema}</span>
-      ${comp.medallas ? '<span class="detail-tag gold">🏅 Con Medallas</span>':''}
+    <div class="detail-header">
+      <div class="detail-header__title-group">
+        <h2 class="detail-header__title">
+          <span class="detail-header__title-emoji">${sport.emoji}</span>
+          <span>${sport.label} ${comp.genero} ${comp.categoria}</span>
+        </h2>
+        <div class="detail-header__meta">
+          <span class="detail-tag ${isPaused ? 'blue' : 'green'}">${{
+            'en-digitacion':'En digitación',
+            'asignada':'Asignada',
+            'en-pausa':'En pausa',
+            'finalizada':'Finalizada'
+          }[comp.status]}</span>
+          <span class="detail-tag gray">${comp.sistema}</span>
+          ${comp.medallas ? '<span class="detail-tag gold">🏅 Con Medallas</span>':''}
+          <span class="detail-header__code">${comp.code} · Juegos Departamentales Cundinamarca 2024</span>
+        </div>
+      </div>
+      <div class="detail-header__actions">
+        ${comp.status!=='finalizada' ? `
+        <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="pauseComp(${comp.id})"${isPaused ? ' style="color:var(--green)"' : ''}>
+          ${isPaused ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2l8 5-8 5V2z" fill="currentColor"/></svg>' : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>'}
+          ${isPaused?'Reanudar':'Pausar'}
+        </button>
+        ${!isPaused ? '<button class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="finalizeComp('+comp.id+')">Finalizar</button>' : ''}
+        ` : '<span class="detail-tag green" style="font-size:12px;padding:0 12px;height:24px">Competencia finalizada</span>'}
+      </div>
     </div>
-    <div class="detail-sport-title">${sport.emoji} ${sport.label} ${comp.genero} ${comp.categoria}</div>
-    <div class="detail-code">${comp.code} · Juegos Departamentales Cundinamarca 2024</div>
-    <div class="detail-actions">
-      ${comp.status!=='finalizada' ? `
-      <button class="btn btn-outline btn-sm" onclick="pauseComp(${comp.id})"${isPaused ? ' style="color:var(--green)"' : ''}>
-        ${isPaused ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2l8 5-8 5V2z" fill="currentColor"/></svg>' : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>'}
-        ${isPaused?'Reanudar':'Pausar'}
-      </button>
-      ${!isPaused ? '<button class="btn btn-orange btn-sm" onclick="finalizeComp('+comp.id+')">Finalizar</button>' : ''}
-      `:'<span class="detail-tag green" style="font-size:13px;padding:6px 16px">Competencia finalizada</span>'}
-    </div>
+    <hr class="detail-divider"/>
 
     ${inProgress.length > 0 ? `
     <div class="section-title">
@@ -2176,7 +2257,7 @@ function renderInProgressCard(match, comp, sport){
       <div class="match-phase">${match.phase}</div>
       <div class="match-name">${teamLabel} · <span style="color:var(--blue-info);font-weight:500">Parcial guardado</span></div>
     </div>
-    <button class="btn btn-outline btn-sm" onclick="openScoringModal('${comp.sport}', ${JSON.stringify(match).replace(/"/g,'&quot;')}, ${comp.id})">
+    <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="openScoringModal('${comp.sport}', ${JSON.stringify(match).replace(/"/g,'&quot;')}, ${comp.id})">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10l6-6 2 2-6 6H2v-2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Continuar
     </button>
@@ -2198,11 +2279,11 @@ function renderMatchCard(match, comp, sport){
       <div class="match-name">${teamLabel}</div>
     </div>
     ${isReady ?
-      `<button class="btn btn-outline btn-sm" onclick="openScoringModal('${comp.sport}', ${JSON.stringify(match).replace(/"/g,'&quot;')}, ${comp.id})">
+      `<button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="openScoringModal('${comp.sport}', ${JSON.stringify(match).replace(/"/g,'&quot;')}, ${comp.id})">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         Digitar
       </button>` :
-      `<button class="btn btn-outline btn-sm" onclick="startMatch(${comp.id},${match.id})" style="color:var(--green)">
+      `<button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="startMatch(${comp.id},${match.id})" style="color:var(--green)">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2l8 5-8 5V2z" fill="currentColor"/></svg>
         Iniciar
       </button>`
@@ -2229,7 +2310,7 @@ function renderDoneCard(match, comp, sport){
       <div class="match-phase">${match.phase}</div>
       ${resultHtml}
     </div>
-    <button class="btn btn-outline btn-sm" style="pointer-events:none">
+    <button class="naowee-btn naowee-btn--mute naowee-btn--small" style="pointer-events:none">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5C3 1.5 1 7 1 7s2 5.5 6 5.5 6-5.5 6-5.5-2-5.5-6-5.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
       Ver
     </button>
@@ -2318,7 +2399,7 @@ function finalizeComp(id){
     </div>
 
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid var(--border)">
-      <button class="btn btn-outline btn-sm" onclick="closeConfirmModal()">Cancelar</button>
+      <button class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="closeConfirmModal()">Cancelar</button>
       <button class="btn btn-sm" id="finalizeBtn" disabled onclick="doFinalize(${id})" style="background:#dc2626;color:#fff">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Finalizar definitivamente

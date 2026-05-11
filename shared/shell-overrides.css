@@ -1,0 +1,317 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   shell-overrides.css — Overrides cosméticos sobre design-system.css
+   Origen: alineación con módulo de Incentivos (mismo patrón visual SUID).
+   Pendiente: migrar tokens y override de btn--loud al DS oficial
+   (naowee-tech/naowee-design-system).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── ELEVATION LOUD (naranja) — para CTAs primarios ──
+     Aplicado vía override del DS (btn--loud:hover/focus/active).
+     Mismos valores que el módulo Incentivos.
+  */
+  --naowee-shadow-loud-xs: 0 2px 6px rgba(215,64,9,.14);
+  --naowee-shadow-loud-sm: 0 4px 12px rgba(215,64,9,.18);
+  --naowee-shadow-loud-md: 0 6px 16px rgba(215,64,9,.22);
+  --naowee-shadow-loud-lg: 0 10px 28px rgba(215,64,9,.32);
+  --naowee-shadow-loud-xl: 0 16px 40px rgba(215,64,9,.38);
+
+  /* Versión brand (naranja claro) para hovers de variantes alternas */
+  --naowee-shadow-brand-md: 0 6px 16px rgba(255,117,0,.24);
+  --naowee-shadow-brand-lg: 0 12px 32px rgba(255,117,0,.30);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Override DS: naowee-btn--loud hover/focus/active
+   El hover NO cambia el fill, solo aplica la elevation naranja.
+   Reduce el "flash" del color y proyecta identidad de marca.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.naowee-btn--loud:hover,
+.naowee-btn--loud:focus-visible{
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: var(--naowee-shadow-loud-md);
+}
+.naowee-btn--loud.naowee-btn--large:hover,
+.naowee-btn--loud.naowee-btn--large:focus-visible{
+  box-shadow: var(--naowee-shadow-loud-lg);
+}
+.naowee-btn--loud:active{
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: var(--naowee-shadow-loud-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Elevation glow para CTAs primarios CUSTOM de Digitación
+   (mismo background:var(--accent) #d74009 — equivalentes a "loud").
+
+   IMPORTANTE: NUNCA aplica el glow a botones disabled — el :not(:disabled)
+   se valida en cada selector de hover/focus/active.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.btn-orange:not(:disabled):hover, .btn-orange:not(:disabled):focus-visible,
+.btn-accent:not(:disabled):hover, .btn-accent:not(:disabled):focus-visible,
+.btn--primary:not(:disabled):hover, .btn--primary:not(:disabled):focus-visible,
+.btn-digitar:not(:disabled):hover, .btn-digitar:not(:disabled):focus-visible,
+.btn-new:not(:disabled):hover, .btn-new:not(:disabled):focus-visible,
+.btn-nuevo:not(:disabled):hover, .btn-nuevo:not(:disabled):focus-visible,
+.btn-next:not(:disabled):hover, .btn-next:not(:disabled):focus-visible,
+.am-btn-assign:not([disabled]):hover, .am-btn-assign:not([disabled]):focus-visible{
+  outline: none;
+  box-shadow: var(--naowee-shadow-loud-md);
+  transition: box-shadow .18s ease, transform .15s ease;
+}
+
+.btn-new:not(:disabled):hover, .btn-new:not(:disabled):focus-visible,
+.btn-nuevo:not(:disabled):hover, .btn-nuevo:not(:disabled):focus-visible{
+  box-shadow: var(--naowee-shadow-loud-lg);
+}
+
+.btn-orange:not(:disabled):active,
+.btn-accent:not(:disabled):active,
+.btn--primary:not(:disabled):active,
+.btn-digitar:not(:disabled):active,
+.btn-new:not(:disabled):active,
+.btn-nuevo:not(:disabled):active,
+.btn-next:not(:disabled):active,
+.am-btn-assign:not([disabled]):active{
+  box-shadow: var(--naowee-shadow-loud-xs);
+}
+
+/* Estado disabled de los CTAs primarios — paridad con DS (loud:disabled).
+   Background gray-300 + texto gray-500 → clarísimo "no clickable",
+   en vez del orange-with-opacity que parecía un "active light". */
+.btn-orange:disabled,
+.btn-accent:disabled,
+.btn--primary:disabled,
+.btn-digitar:disabled,
+.btn-new:disabled,
+.btn-nuevo:disabled,
+.btn-next:disabled,
+.am-btn-assign[disabled]{
+  background:var(--naowee-color-fill-disabled,#dcdfea) !important;
+  color:var(--naowee-color-text-disabled,#8788ab) !important;
+  cursor:not-allowed !important;
+  box-shadow:none !important;
+  opacity:1 !important;
+  pointer-events:none;
+  border-color:transparent !important;
+}
+/* SVGs internos: targets path/rect/circle/line para vencer cualquier
+   stroke="white" hardcoded en el markup (las presentation attributes
+   de SVG tienen specificity 0). */
+.btn-orange:disabled svg path, .btn-orange:disabled svg rect, .btn-orange:disabled svg circle, .btn-orange:disabled svg line,
+.btn-accent:disabled svg path, .btn-accent:disabled svg rect, .btn-accent:disabled svg circle, .btn-accent:disabled svg line,
+.btn--primary:disabled svg path, .btn--primary:disabled svg rect, .btn--primary:disabled svg circle, .btn--primary:disabled svg line,
+.btn-digitar:disabled svg path, .btn-digitar:disabled svg rect, .btn-digitar:disabled svg circle, .btn-digitar:disabled svg line,
+.btn-new:disabled svg path, .btn-new:disabled svg rect, .btn-new:disabled svg circle, .btn-new:disabled svg line,
+.btn-nuevo:disabled svg path, .btn-nuevo:disabled svg rect, .btn-nuevo:disabled svg circle, .btn-nuevo:disabled svg line,
+.btn-next:disabled svg path, .btn-next:disabled svg rect, .btn-next:disabled svg circle, .btn-next:disabled svg line,
+.am-btn-assign[disabled] svg path, .am-btn-assign[disabled] svg rect, .am-btn-assign[disabled] svg circle, .am-btn-assign[disabled] svg line{
+  stroke:var(--naowee-color-icon-disabled,#8788ab) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR — full setup (paridad con módulo Incentivos)
+
+   Aplica:
+   - Logos institucionales Ministerio + SUID con divider
+   - Easing Apple-style en collapse/expand (cubic-bezier(.32,.72,0,1) 360ms)
+   - Breathing lateral del nav-row (margin 0 10px)
+   - Animación de entrada de la barra naranja activa
+   - Fade+shrink suave de labels al colapsar (en vez de display:none)
+   - Hover/active como cuadrado 40x40 cuando está colapsado
+   - Active state colorea el stroke del icono al accent
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Sidebar: easing Apple-style en transición de ancho */
+.sidebar{
+  transition:width .36s cubic-bezier(.32,.72,0,1),min-width .36s cubic-bezier(.32,.72,0,1) !important;
+}
+
+/* Sidebar logo bar: layout y logos institucionales */
+.sidebar-logo{ gap:14px; padding:0 20px }
+.sidebar-logo .sb-logo-img:first-of-type{ margin-left:auto }
+.sidebar-logo .sb-logo-img:last-of-type{ margin-right:auto }
+.sb-logo-img{
+  height:46px;width:auto;display:block;flex-shrink:0;object-fit:contain;
+  transition:height .25s cubic-bezier(.32,.72,0,1),opacity .2s;
+}
+.logo-sep{
+  width:1px;height:36px;background:var(--border,#e7e9f3);flex-shrink:0;
+  transition:opacity .2s;
+}
+
+/* Burger button: animación al colapsar */
+.burger-btn svg{ transition:transform .3s cubic-bezier(.4,0,.2,1) }
+.sidebar.collapsed .burger-btn svg{ transform:rotate(180deg) }
+
+/* Nav rows: breathing lateral + transiciones suaves */
+.nav-row{
+  margin:0 10px;
+  transition:background .12s,padding .25s cubic-bezier(.4,0,.2,1),
+             justify-content .25s,margin .28s cubic-bezier(.32,.72,0,1) !important;
+}
+.nav-row .lbl{
+  white-space:nowrap;overflow:hidden;
+  max-width:200px;opacity:1;
+  transition:opacity .2s ease .18s, max-width .36s cubic-bezier(.32,.72,0,1) .04s !important;
+}
+.nav-row .nav-arrow{ transition:opacity .14s ease }
+
+/* ═══ Active bar — animación de entrada estilo Apple ═══ */
+.active-bar{
+  left:-6px !important;
+  transform-origin:center;
+  animation:digiActiveBarIn .42s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes digiActiveBarIn{
+  0%   { opacity:0; transform:translateX(-8px) scaleY(.2) }
+  55%  { opacity:1 }
+  100% { opacity:1; transform:translateX(0) scaleY(1) }
+}
+
+/* Active state: colorea el stroke del icono al accent (cuando el SVG no
+   trae color hardcoded). Aplica también para iconos secundarios del row. */
+.nav-row.active .icon svg path,
+.nav-row.active .icon svg rect,
+.nav-row.active .icon svg circle,
+.nav-row.active .icon svg line{
+  stroke:var(--accent,#d74009);
+  transition:stroke .25s ease;
+}
+
+/* ═══ Collapsed state — fade+shrink suave en vez de display:none ═══ */
+.sidebar.collapsed{ width:72px; min-width:72px; overflow:hidden }
+/* Oculta TODOS los logos en colapsado (paridad con Incentivos): solo
+   queda visible el burger button en el sidebar-logo. */
+.sidebar.collapsed .sb-logo-img,
+.sidebar.collapsed .logo-sep,
+.sidebar.collapsed .nav-section{ display:none !important }
+
+/* Override del display:none original para los labels: usar fade+shrink */
+.sidebar.collapsed .nav-row .lbl,
+.sidebar.collapsed .nav-row .nav-arrow{
+  display:flex !important;
+  max-width:0 !important;opacity:0 !important;
+  pointer-events:none;margin:0 !important;
+  transition:opacity .14s ease, max-width .3s cubic-bezier(.32,.72,0,1) .04s !important;
+}
+
+/* Layout interno cuando está colapsado */
+.sidebar.collapsed .sidebar-logo{ justify-content:center;padding:0 }
+.sidebar.collapsed .nav-row{
+  justify-content:center;padding:0;gap:0;background:transparent;
+  margin:0 10px;
+}
+.sidebar.collapsed .nav-row:hover,
+.sidebar.collapsed .nav-row.active:hover{ background:transparent }
+.sidebar.collapsed .nav-row .icon{ margin-left:0;position:relative;z-index:1 }
+
+/* Hover/active en colapsado: cuadrado 40x40 centrado en el icono */
+.sidebar.collapsed .nav-row::before{
+  content:'';position:absolute;left:50%;top:50%;
+  width:40px;height:40px;border-radius:8px;
+  transform:translate(-50%,-50%);
+  background:transparent;pointer-events:none;
+  transition:background .2s cubic-bezier(.32,.72,0,1);
+  z-index:0;
+}
+.sidebar.collapsed .nav-row:hover::before{ background:#f5f6fa }
+.sidebar.collapsed .nav-row.active::before{ background:#fff3e6 }
+.sidebar.collapsed .nav-row.active:hover::before{ background:#ffe4cf }
+
+/* La barra naranja vertical no aplica en colapsado: el cuadrado accent
+   ya cumple la función de indicador activo. */
+.sidebar.collapsed .active-bar{ display:none }
+
+/* Responsive: en pantallas pequeñas oculta el logo Ministerio + sep
+   (decisión de marca — el SUID es el principal). */
+@media (max-width:640px){
+  .sidebar-logo{ gap:8px }
+  .sb-logo-img:first-of-type,
+  .logo-sep{ display:none }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tabla — estilo unificado de encabezados (paridad cross-page)
+   - MAYÚSCULAS con letter-spacing generoso (legibilidad)
+   - Tamaño compacto (11px) — más pequeño que el body
+   - Weight 700 (bold) para jerarquía visual clara
+   - Color secondary (no compite con el contenido de la fila)
+   ═══════════════════════════════════════════════════════════════════════════ */
+table thead th,
+table th[scope="col"],
+table th[scope="row"]{
+  font-family:'Inter',sans-serif !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  letter-spacing:.6px !important;
+  text-transform:uppercase !important;
+  color:var(--text-secondary,#646587) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tooltip global [data-tooltip] — para botones icon-only y otros elementos
+   sin label visible. Uso: <button data-tooltip="Editar">...</button>
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-tooltip]{ position:relative }
+[data-tooltip]::after{
+  content: attr(data-tooltip);
+  position:absolute;bottom:calc(100% + 6px);left:50%;
+  transform:translateX(-50%) translateY(4px);
+  padding:6px 10px;background:#282834;color:#fff;
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:500;line-height:1;
+  border-radius:6px;white-space:nowrap;letter-spacing:.1px;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:1000;
+}
+[data-tooltip]::before{
+  content:'';position:absolute;bottom:calc(100% + 1px);left:50%;
+  transform:translateX(-50%) translateY(4px);
+  border:5px solid transparent;border-top-color:#282834;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:1000;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus-visible::before{
+  opacity:1;transform:translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Icon-only ghost buttons — paridad con naowee-btn--mute (transparent + accent
+   on hover), pero square 1:1 sin texto.
+   Uso: <button class="icon-btn-ghost" data-tooltip="...">...svg...</button>
+   ═══════════════════════════════════════════════════════════════════════════ */
+.icon-btn-ghost{
+  width:32px;height:32px;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;
+  border-radius:8px;
+  /* Color accent en idle (paridad con naowee-btn--mute: text-accent) */
+  color:var(--accent,#d74009);
+  transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.icon-btn-ghost svg{ width:16px;height:16px;display:block }
+.icon-btn-ghost:hover{
+  background:var(--naowee-color-orange-100,#fff3e6);
+  color:var(--accent,#d74009);
+}
+.icon-btn-ghost:focus-visible{
+  outline:none;
+  background:var(--naowee-color-orange-100,#fff3e6);
+  color:var(--accent,#d74009);
+  box-shadow:0 0 0 3px rgba(215,64,9,.18);
+}
+.icon-btn-ghost:active{ background:#ffe4cf }
+
+/* Variante destructiva — idle también accent (signaling "interactive"),
+   pero hover/focus/active cambian a rojo (signal "danger imminent"). */
+.icon-btn-ghost.is-danger{ color:var(--accent,#d74009) }
+.icon-btn-ghost.is-danger:hover{ background:#fef2f2;color:#dc2626 }
+.icon-btn-ghost.is-danger:focus-visible{
+  background:#fef2f2;color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18);
+}
+.icon-btn-ghost.is-danger:active{ background:#fee2e2;color:#dc2626 }

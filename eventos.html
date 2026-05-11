@@ -103,23 +103,12 @@
 .eventos-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp .4s .3s ease both}
 .eventos-toolbar{display:flex;align-items:center;gap:14px;padding:20px 24px 12px;flex-wrap:wrap}
 .eventos-title{font-size:16px;font-weight:700;color:var(--text-primary);margin-right:4px}
-.search-wrap{position:relative;flex:1;min-width:180px;max-width:320px}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
-.search-inp{width:100%;height:38px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);color:var(--text-primary);padding:0 12px 0 36px;outline:none;transition:border-color .15s}
-.search-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(215,64,9,.12)}
-.search-inp::placeholder{color:var(--text-secondary)}
-
-/* Tabs DS — override sizing para entrar en la toolbar sin parecer página completa */
-.eventos-toolbar .naowee-tabs{
-  border-bottom:none;
-  background:transparent;
-  gap:4px;
-  align-self:stretch;
-}
-.eventos-toolbar .naowee-tab{
-  height:38px;
-  padding:0 16px;
-  font-size:13px;
+/* Search pill DS (.search-pill global vive en naowee-tables.css).
+   Acá solo ajustamos el max-width al ancho de la toolbar. */
+.eventos-toolbar .search-pill{
+  flex:1;
+  min-width:200px;
+  max-width:340px;
 }
 
 .pag-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
@@ -295,15 +284,20 @@ tbody tr:hover .row-arrow{color:var(--accent);opacity:1}
       <div class="eventos-card">
         <div class="eventos-toolbar">
           <span class="eventos-title">Eventos</span>
-          <div class="search-wrap">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <input class="search-inp" id="searchInp" type="text" placeholder="Buscar evento o deporte" oninput="renderEvents()"/>
+          <!-- Search input DS pill (.search-pill — circular + clear button) -->
+          <div class="search-pill" id="searchPill" data-filled="false">
+            <svg class="search-pill__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input class="search-pill__input" id="searchInp" type="text" placeholder="Buscar evento o deporte" oninput="onSearchInput()"/>
+            <button class="search-pill__clear" type="button" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+              <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
           </div>
-          <!-- Tabs DS oficial (.naowee-tabs / .naowee-tab) -->
-          <div class="naowee-tabs" role="tablist" aria-label="Filtrar eventos por estado">
-            <button class="naowee-tab naowee-tab--selected" id="tabTodos" onclick="setTab('todos')" role="tab" aria-selected="true">Todos</button>
-            <button class="naowee-tab" id="tabCurso" onclick="setTab('en-curso')" role="tab" aria-selected="false">En curso</button>
-            <button class="naowee-tab" id="tabFin" onclick="setTab('finalizado')" role="tab" aria-selected="false">Finalizado</button>
+          <!-- Filtro de estado: DS Segmented Control (no tabs) -->
+          <div class="naowee-segment naowee-segment--small" id="estadoSegment" role="tablist" aria-label="Filtrar eventos por estado">
+            <div class="naowee-segment__pill" id="segmentPill" aria-hidden="true"></div>
+            <button class="naowee-segment__item naowee-segment__item--active" id="tabTodos" onclick="setTab('todos')" data-value="todos" role="tab" aria-selected="true">Todos</button>
+            <button class="naowee-segment__item" id="tabCurso" onclick="setTab('en-curso')" data-value="en-curso" role="tab" aria-selected="false">En curso</button>
+            <button class="naowee-segment__item" id="tabFin" onclick="setTab('finalizado')" data-value="finalizado" role="tab" aria-selected="false">Finalizado</button>
           </div>
           <div class="pag-wrap">
             <span class="pag-label" id="pagLabel">Página 1 de 1</span>
@@ -454,16 +448,43 @@ let currentPage = 1;
 function setTab(tab) {
   currentTab = tab;
   currentPage = 1;
-  /* Toggle DS classes: --selected en la activa, quitarla del resto */
-  document.querySelectorAll('.naowee-tabs .naowee-tab').forEach(t => {
-    t.classList.remove('naowee-tab--selected');
+  /* Toggle DS segment: --active en el item, quitarla del resto */
+  document.querySelectorAll('#estadoSegment .naowee-segment__item').forEach(t => {
+    t.classList.remove('naowee-segment__item--active');
     t.setAttribute('aria-selected', 'false');
   });
   const map = {todos:'tabTodos','en-curso':'tabCurso',finalizado:'tabFin'};
   const activeEl = document.getElementById(map[tab]);
-  activeEl.classList.add('naowee-tab--selected');
+  activeEl.classList.add('naowee-segment__item--active');
   activeEl.setAttribute('aria-selected', 'true');
+  updateSegmentPill(activeEl);
   renderEvents();
+}
+
+/* Mueve la pill del segment a la posición del item activo.
+   Usa offsetLeft/offsetWidth medidos contra el contenedor, escribe
+   --segment-pill-x + width inline para disparar la transición CSS. */
+function updateSegmentPill(activeEl) {
+  const pill = document.getElementById('segmentPill');
+  if (!pill || !activeEl) return;
+  const offsetX = activeEl.offsetLeft;
+  const w = activeEl.offsetWidth;
+  pill.style.setProperty('--segment-pill-x', offsetX + 'px');
+  pill.style.width = w + 'px';
+}
+
+/* Search pill handlers — toggle data-filled para mostrar el clear button. */
+function onSearchInput() {
+  const inp = document.getElementById('searchInp');
+  document.getElementById('searchPill').setAttribute('data-filled', inp.value.length > 0 ? 'true' : 'false');
+  renderEvents();
+}
+function clearSearch() {
+  const inp = document.getElementById('searchInp');
+  inp.value = '';
+  document.getElementById('searchPill').setAttribute('data-filled', 'false');
+  renderEvents();
+  inp.focus();
 }
 
 function renderFaseDots(fase) {
@@ -536,6 +557,22 @@ function changePage(dir) {
 }
 
 renderEvents();
+
+/* Posiciona el pill del segment en la opción activa inicial ("Todos") +
+   recalcula en resize. Sin animación en el primer render para evitar
+   el deslizado desde 0,0. */
+window.addEventListener('load', () => {
+  const initial = document.querySelector('#estadoSegment .naowee-segment__item--active');
+  const pill = document.getElementById('segmentPill');
+  pill.classList.add('naowee-segment__pill--no-anim');
+  updateSegmentPill(initial);
+  /* Reactivamos la animación en el siguiente frame */
+  requestAnimationFrame(() => pill.classList.remove('naowee-segment__pill--no-anim'));
+});
+window.addEventListener('resize', () => {
+  const active = document.querySelector('#estadoSegment .naowee-segment__item--active');
+  if (active) updateSegmentPill(active);
+});
 </script>
 </body>
 </html>

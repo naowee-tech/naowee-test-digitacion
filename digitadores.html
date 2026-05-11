@@ -359,10 +359,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
     </div>
 
-    <!-- SEARCH -->
-    <div class="search-bar">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input type="text" id="searchInput" placeholder="Buscar digitador por nombre, email, zona" oninput="filterCards()"/>
+    <!-- SEARCH (DS pill + clear button) -->
+    <div class="search-pill" id="searchPill" data-filled="false" style="max-width:420px;margin-bottom:24px">
+      <svg class="search-pill__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <input class="search-pill__input" type="text" id="searchInput" placeholder="Buscar digitador por nombre, email, zona" oninput="onSearchInput()"/>
+      <button class="search-pill__clear" type="button" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+        <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
     </div>
 
     <!-- DIGITADORES GRID -->
@@ -582,7 +585,19 @@ function renderCards(list) {
   });
 }
 
-// SEARCH FILTER
+// SEARCH FILTER — handlers para el search-pill DS
+function onSearchInput() {
+  var input = document.getElementById('searchInput');
+  document.getElementById('searchPill').setAttribute('data-filled', input.value.length > 0 ? 'true' : 'false');
+  filterCards();
+}
+function clearSearch() {
+  var input = document.getElementById('searchInput');
+  input.value = '';
+  document.getElementById('searchPill').setAttribute('data-filled', 'false');
+  renderCards(digitadores);
+  input.focus();
+}
 function filterCards() {
   var q = document.getElementById('searchInput').value.toLowerCase().trim();
   if (!q) {

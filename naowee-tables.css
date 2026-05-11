@@ -41,6 +41,7 @@ table thead th,
 .btn.btn-next,
 .btn.btn-orange,
 .btn-nuevo,
+.btn-new,
 .naowee-btn.naowee-btn--loud {
   transition: box-shadow .25s cubic-bezier(.32,.72,0,1),
               transform .2s ease,
@@ -50,16 +51,18 @@ table thead th,
 .btn.btn-next:hover:not(:disabled):not([disabled]),
 .btn.btn-orange:hover:not(:disabled):not([disabled]),
 .btn-nuevo:hover:not(:disabled):not([disabled]),
+.btn-new:hover:not(:disabled):not([disabled]),
 .naowee-btn.naowee-btn--loud:hover:not(:disabled):not([disabled]) {
   box-shadow: 0 8px 22px rgba(215,64,9,.32),
               0 2px 6px rgba(215,64,9,.18) !important;
   transform: translateY(-1px) !important;
-  opacity: 1 !important; /* override .btn-next:hover{opacity:.9} y .btn-nuevo:hover{opacity:.88} legacy */
+  opacity: 1 !important; /* override .btn-*:hover{opacity:.9} legacy */
 }
 .btn.btn-accent:active:not(:disabled):not([disabled]),
 .btn.btn-next:active:not(:disabled):not([disabled]),
 .btn.btn-orange:active:not(:disabled):not([disabled]),
 .btn-nuevo:active:not(:disabled):not([disabled]),
+.btn-new:active:not(:disabled):not([disabled]),
 .naowee-btn.naowee-btn--loud:active:not(:disabled):not([disabled]) {
   transform: translateY(0) !important;
   box-shadow: 0 2px 8px rgba(215,64,9,.22) !important;
@@ -102,4 +105,160 @@ table thead th,
    ═══════════════════════════════════════════════════════════════ */
 .naowee-pagination {
   align-items: center !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BADGES — migración legacy → DS feedback tokens
+   ───────────────────────────────────────────────────────────────
+   Mapea las clases legacy del repo digitación a los tokens
+   oficiales del DS (--naowee-color-feedback-*). Mantiene los
+   nombres de clase originales para evitar tocar markup, solo
+   reemplaza los colores custom por los del sistema.
+
+   Variants:
+     • positive    → completada / finalizada (verde)
+     • caution     → en pausa / advertencia  (naranja DS)
+     • negative    → error / cancelada       (rojo)
+     • informative → asignada / próximo      (azul)
+     • neutral     → creada / pendiente      (gris)
+     • brand       → en digitación / activa  (orange-700)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Baseline shared by all legacy badge classes — pill shape + DS sizing */
+.badge-est,
+.badge-sis,
+.digi-card .badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 3px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  border: 1px solid transparent !important;
+}
+
+/* En digitación / activa — brand orange-100 fill, orange-700 text */
+.badge-est.digitacion,
+.digi-card .badge.en-digitacion {
+  background: var(--naowee-color-feedback-fill-caution-quiet, #fff3e6) !important;
+  color: var(--naowee-color-feedback-text-caution-loud, #d74009) !important;
+  border-color: transparent !important;
+}
+
+/* En pausa — caution DS (amber/orange) */
+.badge-est.pausa,
+.digi-card .badge.en-pausa {
+  background: var(--naowee-color-feedback-fill-caution-quiet, #fff3e6) !important;
+  color: var(--naowee-color-feedback-text-caution-loud, #d74009) !important;
+  border-color: transparent !important;
+}
+
+/* Finalizada / completada — positive DS (green) */
+.badge-est.finalizada,
+.digi-card .badge.finalizada {
+  background: var(--naowee-color-feedback-fill-positive-quiet, #e6f4e7) !important;
+  color: var(--naowee-color-feedback-text-positive-loud, #1f8923) !important;
+  border-color: transparent !important;
+}
+
+/* Asignada / próximo — informative DS (blue) */
+.badge-est.asignada,
+.digi-card .badge.asignada {
+  background: var(--naowee-color-feedback-fill-informative-quiet, #cef4ff) !important;
+  color: var(--naowee-color-feedback-text-informative-loud, #006aff) !important;
+  border-color: transparent !important;
+}
+
+/* Creada / sin asignar — neutral DS (gray) */
+.badge-est.creada,
+.badge-sis {
+  background: var(--naowee-color-feedback-fill-neutral-quiet, #f0f2f5) !important;
+  color: var(--naowee-color-text-secondary, #646587) !important;
+  border-color: transparent !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEARCH PILL — input redondeado + clear button (DS-aligned)
+   ───────────────────────────────────────────────────────────────
+   Wrapper component que envuelve un <input> con icono lupa + clear
+   button. Usado en lista.html, digitadores.html, coordinadores.html.
+
+   Markup:
+     <div class="search-pill" data-filled="false">
+       <svg class="search-pill__icon">…lupa…</svg>
+       <input class="search-pill__input" oninput="..."/>
+       <button class="search-pill__clear" aria-label="Limpiar">
+         <svg>…✕…</svg>
+       </button>
+     </div>
+
+   JS responsibility: agregar/quitar data-filled="true" cuando el
+   input tiene valor; click del clear button vacía el input y
+   redispara el filtro.
+   ═══════════════════════════════════════════════════════════════ */
+.search-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 6px 0 14px;
+  border: 1px solid var(--border-dark, #d0d4e6);
+  border-radius: 9999px;
+  background: var(--surface, #fff);
+  transition: border-color .15s ease, box-shadow .15s ease;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+  box-sizing: border-box;
+}
+.search-pill:focus-within {
+  border-color: var(--accent, #d74009);
+  box-shadow: 0 0 0 3px rgba(215,64,9,.12);
+}
+.search-pill__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary, #646587);
+  flex-shrink: 0;
+}
+.search-pill__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font, 'Inter', sans-serif);
+  font-size: 13px;
+  color: var(--text-primary, #282834);
+  padding: 0;
+}
+.search-pill__input::placeholder {
+  color: var(--text-secondary, #646587);
+}
+.search-pill__clear {
+  display: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary, #646587);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s ease, color .12s ease;
+}
+.search-pill[data-filled="true"] .search-pill__clear {
+  display: inline-flex;
+}
+.search-pill__clear:hover {
+  background: var(--naowee-color-interactive-fill-quiet-hover, #ffe4cf);
+  color: var(--accent, #d74009);
+}
+.search-pill__clear svg {
+  width: 14px;
+  height: 14px;
 }

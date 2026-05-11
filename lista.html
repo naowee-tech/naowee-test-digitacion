@@ -347,7 +347,13 @@ tbody tr{animation:fadeInUp .3s ease-out;animation-fill-mode:both}
     <div class="table-card">
       <!-- Filters + Pagination -->
       <div class="filters-row">
-        <input class="search-input" id="searchInput" type="text" placeholder="Buscar por nombre, codigo, deporte, prue..."/>
+        <div class="search-pill" id="searchPill" data-filled="false">
+          <svg class="search-pill__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input class="search-pill__input" id="searchInput" type="text" placeholder="Buscar por nombre, código, deporte, prueba..."/>
+          <button class="search-pill__clear" type="button" onclick="clearSearch()" aria-label="Limpiar búsqueda">
+            <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
         <div class="filter-dd" id="sistemaDD">
           <div class="filter-dd-trigger" onclick="toggleFilterDD('sistemaDD')">
             <span class="filter-dd-label" id="sistemaLabel">Todos los sistemas</span>
@@ -362,10 +368,21 @@ tbody tr{animation:fadeInUp .3s ease-out;animation-fill-mode:both}
           </div>
           <div class="filter-dd-menu" id="eventoMenu"></div>
         </div>
-        <div class="pagination">
-          P&aacute;gina <input class="page-input" value="1"/> de <span id="totalCount">0</span>
-          <button class="page-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-          <button class="page-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <!-- Paginación DS oficial (naowee-pagination--small) -->
+        <div class="naowee-pagination naowee-pagination--small" style="margin-left:auto" role="navigation" aria-label="Paginación de competencias">
+          <div class="naowee-pagination__pages">
+            <span class="naowee-pagination__label">P&aacute;gina</span>
+            <input class="naowee-pagination__input" id="pageInput" value="1" aria-label="Página actual"/>
+            <span class="naowee-pagination__total">de <strong id="totalCount">0</strong></span>
+          </div>
+          <div class="naowee-pagination__controls">
+            <button class="naowee-pagination__btn" type="button" aria-label="P&aacute;gina anterior">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="naowee-pagination__btn" type="button" aria-label="P&aacute;gina siguiente">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <div class="table-wrap">
@@ -1019,10 +1036,22 @@ function renderTable(){
 }
 
 // Event listeners
+// Search input — actualiza filtro + toggle del clear button del pill wrapper
 document.getElementById('searchInput').addEventListener('input', function(){
   searchQuery = this.value;
+  document.getElementById('searchPill').setAttribute('data-filled', this.value.length > 0 ? 'true' : 'false');
   renderTable();
 });
+
+// Clear button del search pill — limpia input + redispara filtro
+function clearSearch(){
+  const input = document.getElementById('searchInput');
+  input.value = '';
+  searchQuery = '';
+  document.getElementById('searchPill').setAttribute('data-filled', 'false');
+  renderTable();
+  input.focus();
+}
 
 // Close filter dropdowns on outside click
 document.addEventListener('click', function(e){

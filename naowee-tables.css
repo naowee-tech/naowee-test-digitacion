@@ -1,0 +1,62 @@
+/* ═══════════════════════════════════════════════════════════════
+   NAOWEE TABLES — header gris + título en MAYÚSCULAS
+   ───────────────────────────────────────────────────────────────
+   Patrón canónico Naowee para encabezados de tabla:
+     • Fondo gris suave (#f5f6fa)
+     • Texto en UPPERCASE
+     • Letter-spacing .5px para legibilidad
+     • Font-weight 700 (bold)
+     • Color secundario (#646587)
+     • Padding consistente
+
+   Usa !important porque las páginas tienen <style> inline con
+   reglas previas más fuertes en orden de cascada.
+   ═══════════════════════════════════════════════════════════════ */
+table thead th,
+.naowee-table thead th {
+  text-transform: uppercase !important;
+  letter-spacing: .5px !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  color: var(--text-secondary, #646587) !important;
+  background: #f5f6fa !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRIMARY BUTTONS — glow elevation naranja en hover
+   ───────────────────────────────────────────────────────────────
+   Spec PLAYBOOK-REFINAMIENTO + paridad con shell + escenarios.
+   Aplica a clases legacy del repo digitación:
+     • .btn.btn-accent   (más común — modales, crear, asignar)
+     • .btn.btn-next     (stepper "Siguiente")
+     • .btn.btn-orange   (eventos table, etc.)
+     • .naowee-btn--loud (DS oficial — refuerza la regla)
+
+   Idle: mantiene background sin oscurecer
+   Hover: lift -1px + sombra accent
+   Active: vuelve al baseline con sombra interna sutil
+   ═══════════════════════════════════════════════════════════════ */
+.btn.btn-accent,
+.btn.btn-next,
+.btn.btn-orange,
+.naowee-btn.naowee-btn--loud {
+  transition: box-shadow .25s cubic-bezier(.32,.72,0,1),
+              transform .2s ease,
+              background .15s ease !important;
+}
+.btn.btn-accent:hover:not(:disabled):not([disabled]),
+.btn.btn-next:hover:not(:disabled):not([disabled]),
+.btn.btn-orange:hover:not(:disabled):not([disabled]),
+.naowee-btn.naowee-btn--loud:hover:not(:disabled):not([disabled]) {
+  box-shadow: 0 8px 22px rgba(215,64,9,.32),
+              0 2px 6px rgba(215,64,9,.18) !important;
+  transform: translateY(-1px) !important;
+  opacity: 1 !important; /* override .btn-next:hover{opacity:.9} legacy */
+}
+.btn.btn-accent:active:not(:disabled):not([disabled]),
+.btn.btn-next:active:not(:disabled):not([disabled]),
+.btn.btn-orange:active:not(:disabled):not([disabled]),
+.naowee-btn.naowee-btn--loud:active:not(:disabled):not([disabled]) {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(215,64,9,.22) !important;
+}

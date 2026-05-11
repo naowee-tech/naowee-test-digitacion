@@ -638,12 +638,26 @@
 .naowee-btn--full { width: 100%; }
 
 /* ── Hierarchy: Loud (Primary) ── */
+/* Glow elevation naranja en hover (paridad shell + escenarios + PLAYBOOK).
+   Mantiene background idle, agrega lift -1px + sombra accent. */
 .naowee-btn--loud {
   background: var(--naowee-color-interactive-fill-loud-idle);
   color: var(--naowee-color-text-inverse);
+  transition: box-shadow .25s cubic-bezier(.32,.72,0,1),
+              transform .2s ease,
+              background .15s ease;
 }
-.naowee-btn--loud:hover { background: var(--naowee-color-interactive-fill-loud-hover); }
-.naowee-btn--loud:active { background: var(--naowee-color-interactive-fill-loud-active); }
+.naowee-btn--loud:hover:not(:disabled):not([disabled]) {
+  background: var(--naowee-color-interactive-fill-loud-idle);
+  box-shadow: 0 8px 22px rgba(215,64,9,.32),
+              0 2px 6px rgba(215,64,9,.18);
+  transform: translateY(-1px);
+}
+.naowee-btn--loud:active:not(:disabled):not([disabled]) {
+  background: var(--naowee-color-interactive-fill-loud-active);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(215,64,9,.22);
+}
 .naowee-btn--loud:disabled,
 .naowee-btn--loud[disabled] {
   background: var(--naowee-color-interactive-fill-loud-disabled);

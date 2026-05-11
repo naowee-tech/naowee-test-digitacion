@@ -1,0 +1,33 @@
+/* ═══════════════════════════════════════════════════════════════
+   EMBED MODE — chrome hiding cuando la página corre dentro de un
+   iframe (shell de naowee-test-sidebar-shell, otros portales, etc.).
+
+   Se activa cuando embed-mode.js detecta window.self !== window.top
+   o cuando la URL trae ?embed=1. La detección setea
+   document.documentElement.dataset.embed = '1' antes del primer
+   paint, así que no hay flash del sidebar.
+
+   Reglas: ocultar sidebar + header del repo digitación, dejar
+   .main / .page ocupando todo el viewport del iframe.
+   ═══════════════════════════════════════════════════════════════ */
+
+html[data-embed="1"] .sidebar,
+html[data-embed="1"] .top-header {
+  display: none !important;
+}
+
+html[data-embed="1"] .shell {
+  height: 100vh;
+}
+
+html[data-embed="1"] .main {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+/* preview.html y similares que no usan .shell: garantizar que el
+   contenido del body llene el iframe sin scroll del shell exterior. */
+html[data-embed="1"] body {
+  overflow-x: hidden;
+}

@@ -128,11 +128,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .fase-name{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px}
 .fase-fechas{font-size:11px;color:var(--text-secondary);margin-bottom:6px}
 
-/* TABS */
-.tabs-bar{display:flex;gap:0;padding:12px 24px 0;border-bottom:1px solid var(--border);animation:fadeInUp .4s .15s ease both}
-.tab-btn{padding:10px 18px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;border:none;background:none;font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
-.tab-btn:hover{color:var(--text-primary)}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* TABS — usa DS oficial (.naowee-tabs / .naowee-tab).
+   Divider edge-to-edge: el border-bottom va en .tabs-bar (block-level,
+   full width) en lugar de en .naowee-tabs (flex, ancho de contenido).
+   Así la línea se extiende hasta los bordes del card de competencias. */
+.tabs-bar{
+  padding:12px 24px 0;
+  border-bottom:1px solid var(--border);
+  animation:fadeInUp .4s .15s ease both;
+}
+.tabs-bar .naowee-tabs{border-bottom:none}
 
 /* COMPETENCIAS TABLE CARD */
 .comp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp .4s .2s ease both}
@@ -154,22 +159,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .filter-dd-opt{padding:9px 14px;font-size:13px;color:var(--text-primary);cursor:pointer;transition:background .1s;white-space:nowrap}
 .filter-dd-opt:hover{background:#f5f6fa}
 .filter-dd-opt.selected{background:var(--orange-bg);color:var(--accent);font-weight:600}
-.pag-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
-.pag-label{font-size:12px;color:var(--text-secondary);white-space:nowrap}
-.pag-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-secondary);transition:all .15s;font-family:var(--font)}
-.pag-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-.pag-btn:disabled{opacity:.4;cursor:default}
+/* Pagination DS — wrapper que la empuja al final del toolbar. */
+.comp-toolbar .naowee-pagination{margin-left:auto}
 
-/* TABLE */
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-thead th{font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;padding:10px 16px;border-bottom:none;background:transparent;white-space:nowrap;letter-spacing:.3px}
-tbody td{font-size:13px;color:var(--text-primary);padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+/* TABLE — header gris flotante + bordes redondeados + inset (no edge-to-edge).
+   Las reglas finales de thead th vienen de naowee-tables.css (uppercase + bg
+   gris + font-weight 700) que se carga después con !important. */
+.table-wrap{overflow-x:auto;padding:8px 16px 16px}
+table{width:100%;border-collapse:separate;border-spacing:0;table-layout:auto}
+thead th{padding:12px 12px;white-space:nowrap;border:none;text-align:left}
+thead th:first-child{border-radius:12px 0 0 12px;padding-left:16px}
+thead th:last-child{border-radius:0 12px 12px 0;padding-right:16px}
+tbody td{font-size:13px;color:var(--text-primary);padding:14px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody td:first-child{padding-left:16px}
+tbody td:last-child{padding-right:16px}
 tbody tr:last-child td{border-bottom:none}
 tbody tr{transition:background .12s}
 tbody tr:hover{background:#fafbfd}
 .row-num{font-size:13px;font-weight:700;color:var(--text-secondary);width:30px}
-.comp-name{font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.comp-name{font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px}
 .comp-code{font-size:11px;color:var(--text-secondary);margin-top:1px;display:flex;align-items:center;gap:6px}
 .comp-cat{font-size:11px;color:var(--text-secondary)}
 .badge-sis{display:inline-flex;padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;white-space:nowrap;background:#f0f2f5;color:var(--text-secondary)}
@@ -178,7 +186,7 @@ tbody tr:hover{background:#fafbfd}
 .deporte-emoji{font-size:14px}
 .deporte-text{font-size:13px;color:var(--text-primary)}
 .modalidad-sub{font-size:11px;color:var(--text-secondary);margin-top:1px}
-.evento-text{font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.evento-text{font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
 .evento-sub{font-size:11px;color:var(--text-secondary)}
 .badge-est{display:inline-flex;padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;white-space:nowrap}
 .badge-est.digitacion{background:#fff3e6;color:var(--naranja)}
@@ -186,12 +194,34 @@ tbody tr:hover{background:#fafbfd}
 .badge-est.finalizada{background:var(--green-bg);color:var(--green)}
 .badge-est.asignada{background:#e8f4ff;color:#1f78d1}
 .badge-est.creada{background:#f0f2f5;color:var(--text-secondary)}
-.digi-cell{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.digi-cell{display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.digi-cell > span{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .digi-mini{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
 .assign-icon{color:var(--accent);flex-shrink:0}
-.action-btn{width:28px;height:28px;border:none;border-radius:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent);transition:all .15s;flex-shrink:0}
-.action-btn:hover{opacity:.7}
-.action-btn a{display:flex;align-items:center;justify-content:center;text-decoration:none}
+/* Icon button "Ver" — hover con bg pill suave (paridad con naowee-btn--mute
+   del DS: fill quiet sobre fondo translúcido + lift sutil). */
+.action-btn{
+  width:32px;height:32px;
+  border:none;border-radius:var(--radius-md);
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--accent);
+  transition:background .15s ease, transform .15s ease, box-shadow .15s ease;
+  flex-shrink:0;
+}
+.action-btn:hover{
+  background:var(--orange-bg);
+  transform:scale(1.08);
+}
+.action-btn:active{
+  transform:scale(.95);
+  background:#ffe1cf;
+}
+.action-btn:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(215,64,9,.18);
+}
+.action-btn a{display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit}
 .tab-placeholder{padding:48px 24px;text-align:center;color:var(--text-secondary);font-size:14px}
 .no-data{padding:40px 24px;text-align:center;color:var(--text-secondary);font-size:14px}
 
@@ -304,11 +334,13 @@ tbody tr:hover{background:#fafbfd}
     <!-- TABS (always visible) -->
     <div class="comp-card">
       <div class="tabs-bar">
-        <button class="tab-btn active" id="tabComp" onclick="setActiveTab('competencias')">Competencias</button>
-        <button class="tab-btn" id="tabInst" onclick="setActiveTab('instituciones')">Instituciones</button>
-        <button class="tab-btn" id="tabDep" onclick="setActiveTab('deportistas')">Deportistas</button>
-        <button class="tab-btn" id="tabPers" onclick="setActiveTab('personal')">Personal de apoyo</button>
-        <button class="tab-btn" id="tabRes" onclick="setActiveTab('resultados')">Resultados</button>
+        <div class="naowee-tabs" role="tablist" aria-label="Secciones del evento">
+          <button class="naowee-tab naowee-tab--selected" id="tabComp" onclick="setActiveTab('competencias')" role="tab" aria-selected="true">Competencias</button>
+          <button class="naowee-tab" id="tabInst" onclick="setActiveTab('instituciones')" role="tab" aria-selected="false">Instituciones</button>
+          <button class="naowee-tab" id="tabDep" onclick="setActiveTab('deportistas')" role="tab" aria-selected="false">Deportistas</button>
+          <button class="naowee-tab" id="tabPers" onclick="setActiveTab('personal')" role="tab" aria-selected="false">Personal de apoyo</button>
+          <button class="naowee-tab" id="tabRes" onclick="setActiveTab('resultados')" role="tab" aria-selected="false">Resultados</button>
+        </div>
       </div>
 
       <!-- COMPETENCIAS CONTENT -->
@@ -333,10 +365,19 @@ tbody tr:hover{background:#fafbfd}
               <div class="filter-dd-opt" onclick="pickSistema('multi')">Multi-sistema</div>
             </div>
           </div>
-          <div class="pag-wrap">
-            <span class="pag-label" id="compPagLabel">P&aacute;gina 1 de 1</span>
-            <button class="pag-btn" id="compBtnPrev" onclick="changeCompPage(-1)" disabled>&#8249;</button>
-            <button class="pag-btn" id="compBtnNext" onclick="changeCompPage(1)">&#8250;</button>
+          <!-- Paginación DS oficial (naowee-pagination--small) -->
+          <div class="naowee-pagination naowee-pagination--small" role="navigation" aria-label="Paginación de competencias">
+            <div class="naowee-pagination__pages">
+              <span class="naowee-pagination__label" id="compPagLabel">P&aacute;gina 1 de 1</span>
+            </div>
+            <div class="naowee-pagination__controls">
+              <button class="naowee-pagination__btn" id="compBtnPrev" onclick="changeCompPage(-1)" disabled aria-label="P&aacute;gina anterior">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="naowee-pagination__btn" id="compBtnNext" onclick="changeCompPage(1)" aria-label="P&aacute;gina siguiente">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         </div>
         <div class="table-wrap">
@@ -932,8 +973,8 @@ function renderFases(){
       <div class="fase-circle${isPending?' pending':''}${isDone?' done':''}${isActive?' active':''}">${isDone?'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':f.num}</div>
       <div class="fase-name"${isPending?' style="color:var(--text-secondary)"':''}>${f.nombre}</div>
       <div class="fase-fechas">${f.fechas}</div>
-      ${isActive?'<span class="badge-en-curso" style="background:var(--orange-bg);color:var(--naranja);border-color:var(--orange-border)">En curso</span>':''}
-      ${isDone?'<span class="badge-en-curso" style="background:var(--green-bg);color:var(--green)">Completada</span>':''}
+      ${isActive?'<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En curso</span>':''}
+      ${isDone?'<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Completada</span>':''}
     </div>`;
     if(i < fases.length - 1){
       const fillPct = isDone ? 100 : isActive ? 50 : 0;
@@ -1058,8 +1099,14 @@ const TAB_LABELS = {
 function setActiveTab(tab) {
   const tabs = ['tabComp','tabInst','tabDep','tabPers','tabRes'];
   const map = {competencias:'tabComp', instituciones:'tabInst', deportistas:'tabDep', personal:'tabPers', resultados:'tabRes'};
-  tabs.forEach(t => document.getElementById(t).classList.remove('active'));
-  document.getElementById(map[tab]).classList.add('active');
+  tabs.forEach(t => {
+    const el = document.getElementById(t);
+    el.classList.remove('naowee-tab--selected');
+    el.setAttribute('aria-selected', 'false');
+  });
+  const activeEl = document.getElementById(map[tab]);
+  activeEl.classList.add('naowee-tab--selected');
+  activeEl.setAttribute('aria-selected', 'true');
 
   if (tab === 'competencias') {
     document.getElementById('contentComp').style.display = '';

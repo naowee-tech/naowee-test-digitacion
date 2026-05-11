@@ -30,6 +30,7 @@ table thead th,
      • .btn.btn-accent   (más común — modales, crear, asignar)
      • .btn.btn-next     (stepper "Siguiente")
      • .btn.btn-orange   (eventos table, etc.)
+     • .btn-nuevo        (evento-detalle "Nuevo enfrentamiento")
      • .naowee-btn--loud (DS oficial — refuerza la regla)
 
    Idle: mantiene background sin oscurecer
@@ -39,6 +40,7 @@ table thead th,
 .btn.btn-accent,
 .btn.btn-next,
 .btn.btn-orange,
+.btn-nuevo,
 .naowee-btn.naowee-btn--loud {
   transition: box-shadow .25s cubic-bezier(.32,.72,0,1),
               transform .2s ease,
@@ -47,16 +49,57 @@ table thead th,
 .btn.btn-accent:hover:not(:disabled):not([disabled]),
 .btn.btn-next:hover:not(:disabled):not([disabled]),
 .btn.btn-orange:hover:not(:disabled):not([disabled]),
+.btn-nuevo:hover:not(:disabled):not([disabled]),
 .naowee-btn.naowee-btn--loud:hover:not(:disabled):not([disabled]) {
   box-shadow: 0 8px 22px rgba(215,64,9,.32),
               0 2px 6px rgba(215,64,9,.18) !important;
   transform: translateY(-1px) !important;
-  opacity: 1 !important; /* override .btn-next:hover{opacity:.9} legacy */
+  opacity: 1 !important; /* override .btn-next:hover{opacity:.9} y .btn-nuevo:hover{opacity:.88} legacy */
 }
 .btn.btn-accent:active:not(:disabled):not([disabled]),
 .btn.btn-next:active:not(:disabled):not([disabled]),
 .btn.btn-orange:active:not(:disabled):not([disabled]),
+.btn-nuevo:active:not(:disabled):not([disabled]),
 .naowee-btn.naowee-btn--loud:active:not(:disabled):not([disabled]) {
   transform: translateY(0) !important;
   box-shadow: 0 2px 8px rgba(215,64,9,.22) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GHOST / QUIET BUTTONS — hover canonical DS
+   ───────────────────────────────────────────────────────────────
+   Migra los ghost buttons legacy del repo digitación al hover
+   token oficial del DS (--naowee-color-interactive-fill-quiet-hover
+   = --naowee-color-orange-200). Aplica a:
+     • .back-nav      (links "Volver al inicio")
+     • .ver-link      (links "Ver todos" en widgets)
+     • .btn-link      (acciones inline en tablas)
+     • .naowee-btn--quiet (DS oficial — refuerza la regla)
+   ═══════════════════════════════════════════════════════════════ */
+.back-nav,
+.ver-link,
+.btn.btn-link {
+  transition: background .15s ease, color .15s ease !important;
+}
+.back-nav:hover,
+.ver-link:hover,
+.btn.btn-link:hover:not(:disabled):not([disabled]) {
+  background: var(--naowee-color-interactive-fill-quiet-hover) !important;
+  color: var(--naowee-color-text-accent, var(--accent)) !important;
+}
+.back-nav:active,
+.ver-link:active,
+.btn.btn-link:active:not(:disabled):not([disabled]) {
+  background: var(--naowee-color-interactive-fill-quiet-active) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGINATION — alinear label con los chevron buttons
+   ───────────────────────────────────────────────────────────────
+   El DS defaultea a align-items:flex-start, lo que desalinea el
+   label "Página X de Y" (line-height 16px) respecto a los botones
+   (32px height). Forzamos center para que queden a la misma altura.
+   ═══════════════════════════════════════════════════════════════ */
+.naowee-pagination {
+  align-items: center !important;
 }

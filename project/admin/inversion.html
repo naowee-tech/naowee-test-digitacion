@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512m">
 </head>
 <body>
 <div class="shell">
@@ -191,12 +191,15 @@
                         </span>
                       ` : ''}
                     </td>
-                    <td>
+                    <td class="inversion-table__suid">
                       ${suidCode
-                        ? `<a href="registro-suid.html?id=${p.idUnico}" class="naowee-badge naowee-badge--${suidInventariado ? 'positive' : 'caution'} naowee-badge--quiet" style="text-decoration:none;cursor:pointer" title="${suidInventariado ? 'Inventariado' : 'Diligenciar registro'}">
-                            ${suidCode}
+                        ? `<a href="registro-suid.html?id=${p.idUnico}"
+                              class="inversion-suid-pill ${suidInventariado ? 'is-done' : 'is-pending'}"
+                              title="${suidCode} · ${suidInventariado ? 'Inventariado' : 'Pendiente de diligenciar'}">
+                            <span class="inversion-suid-pill__dot" aria-hidden="true"></span>
+                            <span class="inversion-suid-pill__code">${suidCode}</span>
                           </a>`
-                        : `<a href="registro-suid.html?id=${p.idUnico}" style="font-size:11px;color:var(--accent);font-weight:600;text-decoration:none">Diligenciar →</a>`}
+                        : `<a href="registro-suid.html?id=${p.idUnico}" class="inversion-suid-cta">Diligenciar →</a>`}
                     </td>
                   </tr>
                 `;}).join('')}

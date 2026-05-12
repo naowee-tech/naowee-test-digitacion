@@ -13,6 +13,7 @@
 import ProjectData from './data.js';
 import { formatoMoneda } from './states.js';
 import { textfield, bindDropdowns, renderReview, runConfetti, validateRequired, bindValidationReset } from './wizard-page.js';
+import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -87,7 +88,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
 
             <div class="ai-section-title">Datos de la inversión</div>
             <div class="ai-grid-2">
-              ${textfield({ label: 'Monto aprobado (COP)', name: 'monto', type: 'text', required: true, value: String(p.montoSolicitado || 0), helper: `Solicitado: ${formatoMoneda(p.montoSolicitado || 0)}` })}
+              ${textfield({ label: 'Monto aprobado (COP)', name: 'monto', type: 'text', required: true, value: p.montoSolicitado || 0, helper: `Solicitado: ${formatoMoneda(p.montoSolicitado || 0)}`, mask: 'money' })}
               ${textfield({ label: 'BPIN', name: 'bpin', required: true, placeholder: '2026000000000', helper: 'Código BPIN de 13 dígitos', maxlength: 13 })}
               ${textfield({ label: 'Centro de costo', name: 'centroCosto', required: true, placeholder: 'CC-MIN-DEP-2026-XXX' })}
               ${textfield({ label: 'Ejecutor', name: 'ejecutor', required: true, value: p.formuladora?.nombre || '' })}
@@ -132,6 +133,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
   const form = overlay.querySelector('#activarInvForm');
   bindDropdowns(form);
   bindValidationReset(form);
+  bindMasksIn(form);
 
   /* ───── Navegación entre pasos (custom para modal) ───── */
   let currentStep = 1;
@@ -190,7 +192,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
   /* ───── Review (paso 2) ───── */
   function buildReview() {
     const fd = new FormData(form);
-    const monto = parseInt(fd.get('monto')) || 0;
+    const monto = unmask(fd.get('monto')) || 0;
     const groups = [
       {
         title: 'Inversión',
@@ -218,7 +220,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
   /* ───── Activar (paso 2 → success) ───── */
   btnActivar.addEventListener('click', () => {
     const fd = new FormData(form);
-    const monto = parseInt(fd.get('monto')) || 0;
+    const monto = unmask(fd.get('monto')) || 0;
     const bpin = fd.get('bpin') || '—';
     const centroCosto = fd.get('centroCosto') || '—';
     const ejecutor = fd.get('ejecutor') || '—';

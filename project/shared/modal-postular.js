@@ -13,6 +13,7 @@
 import ProjectData from './data.js';
 import { formatoFecha, formatoMoneda } from './states.js';
 import { textfield, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js';
+import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -177,16 +178,16 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
               ${dropdown({ label: 'Datum', name: 'datum', required: true, options: datums, value: 'MAGNA-SIRGAS' })}
             </div>
             <div class="ai-grid-2">
-              ${textfield({ label: 'Área del predio (m²)', name: 'areaPredio', type: 'text', required: true, placeholder: '2400' })}
-              ${textfield({ label: 'Aforo proyectado (personas)', name: 'aforo', type: 'text', required: true, placeholder: '1200' })}
+              ${textfield({ label: 'Área del predio (m²)', name: 'areaPredio', type: 'text', required: true, placeholder: '2.400', mask: 'money' })}
+              ${textfield({ label: 'Aforo proyectado (personas)', name: 'aforo', type: 'text', required: true, placeholder: '1.200', mask: 'money' })}
             </div>
 
             <div class="ai-section-title">Financiación del proyecto</div>
             <div class="ai-grid-2">
-              ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuesto', type: 'text', required: true, placeholder: '4800000000' })}
-              ${textfield({ label: 'Monto solicitado al Mindeporte', name: 'monto', type: 'text', required: true, helper: `Tope: ${formatoMoneda(conv.montoMaximoProyecto)}` })}
+              ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuesto', type: 'text', required: true, placeholder: '4.800.000.000', mask: 'money' })}
+              ${textfield({ label: 'Monto solicitado al Mindeporte', name: 'monto', type: 'text', required: true, helper: `Tope: ${formatoMoneda(conv.montoMaximoProyecto)}`, mask: 'money' })}
             </div>
-            ${textfield({ label: 'Contrapartida municipal (COP)', name: 'contrapartida', type: 'text', placeholder: '0 si no aplica' })}
+            ${textfield({ label: 'Contrapartida municipal (COP)', name: 'contrapartida', type: 'text', placeholder: '0 si no aplica', mask: 'money' })}
 
             <div class="ai-section-title">Fuentes de cofinanciación</div>
             <p style="font-size:12.5px;color:var(--text-secondary);margin:-6px 0 12px">Selecciona al menos una fuente disponible para esta convocatoria.</p>
@@ -248,6 +249,8 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   bindMultiselects(form);
   /* File uploader DS: drag-drop, progress simulado, validación accept/maxSize */
   bindFileUploads(form);
+  /* Máscara numérica (miles/millones) en campos con data-mask="money" */
+  bindMasksIn(form);
 
   /* ───── Navegación de pasos (igual a modal-activar-inversion) ───── */
   let currentStep = 1;
@@ -344,16 +347,16 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
         rows: [
           ['Dirección', fd.get('direccion') || '—'],
           ['Coordenadas', (fd.get('lat') || fd.get('lng')) ? `${fd.get('lat') || '—'}, ${fd.get('lng') || '—'} · <small>${fd.get('datum') || 'MAGNA-SIRGAS'}</small>` : '—'],
-          ['Área del predio', fd.get('areaPredio') ? `${parseInt(fd.get('areaPredio')).toLocaleString('es-CO')} m²` : '—'],
-          ['Aforo proyectado', fd.get('aforo') ? `${parseInt(fd.get('aforo')).toLocaleString('es-CO')} personas` : '—']
+          ['Área del predio', unmask(fd.get('areaPredio')) ? `${unmask(fd.get('areaPredio')).toLocaleString('es-CO')} m²` : '—'],
+          ['Aforo proyectado', unmask(fd.get('aforo')) ? `${unmask(fd.get('aforo')).toLocaleString('es-CO')} personas` : '—']
         ]
       },
       {
         title: 'Financiación',
         rows: [
-          ['Presupuesto total', fd.get('presupuesto') ? formatoMoneda(parseInt(fd.get('presupuesto'))) : '—'],
-          ['Monto solicitado', fd.get('monto') ? `<strong style="color:var(--accent)">${formatoMoneda(parseInt(fd.get('monto')))}</strong>` : '—'],
-          ['Contrapartida', fd.get('contrapartida') ? formatoMoneda(parseInt(fd.get('contrapartida'))) : '—'],
+          ['Presupuesto total', unmask(fd.get('presupuesto')) ? formatoMoneda(unmask(fd.get('presupuesto'))) : '—'],
+          ['Monto solicitado', unmask(fd.get('monto')) ? `<strong style="color:var(--accent)">${formatoMoneda(unmask(fd.get('monto')))}</strong>` : '—'],
+          ['Contrapartida', unmask(fd.get('contrapartida')) ? formatoMoneda(unmask(fd.get('contrapartida'))) : '—'],
           ['Fuentes', cofin.length
             ? cofin.map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('')
             : '<span style="color:var(--text-secondary);font-style:italic">Ninguna seleccionada</span>']
@@ -406,11 +409,11 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
         datum: fd.get('datum') || 'MAGNA-SIRGAS'
       },
       /* Características del predio y aforo (Res. 933 Art. 5 / Censo) */
-      areaPredio: parseInt(fd.get('areaPredio')) || null,
-      aforo: parseInt(fd.get('aforo')) || null,
-      presupuesto: parseInt(fd.get('presupuesto')) || 0,
-      montoSolicitado: parseInt(fd.get('monto')) || 0,
-      contrapartida: parseInt(fd.get('contrapartida')) || 0,
+      areaPredio: unmask(fd.get('areaPredio')) || null,
+      aforo: unmask(fd.get('aforo')) || null,
+      presupuesto: unmask(fd.get('presupuesto')) || 0,
+      montoSolicitado: unmask(fd.get('monto')) || 0,
+      contrapartida: unmask(fd.get('contrapartida')) || 0,
       cofinanciacion: cofin,
       fase: fd.get('fase') || '',
       tipoSolicitud: fd.get('tipoSolicitud') || '',

@@ -7,19 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512m">
 <style>
   /* ═══════════════════════════════════════════════════════════════════
-     Registro SUID — toda la lógica vive en un solo .naowee-card.
-     - Hero compacto integrado en el card header (no banner separado).
-     - 6 secciones accordion dentro del card body — divididas por borders
-       sutiles, NO cards anidados.
-     - Footer dentro del card (no sticky). Estructura final:
+     Registro SUID v2 — replica el flujo escenario-08-dashboard:
+     Pre-validación · Datos deportivos · Documentación.
 
-       .naowee-card.suid-card
-         ├─ .suid-hero (header del card con código + status)
-         ├─ .suid-sections (accordion list)
-         └─ .suid-actions (footer integrado, no sticky)
+     Toda la lógica en UN solo .naowee-card.suid-card.
+     Accordion sections + footer integrado (no sticky).
      ═══════════════════════════════════════════════════════════════════ */
   .suid-card {
     overflow: hidden;
@@ -61,15 +56,40 @@
     font-size: 10.5px; color: var(--text-secondary);
   }
 
-  /* Sections list — accordion plano, sin sombras anidadas */
+  /* Phase header — agrupa sections (Pre-validación, Datos deportivos, Documentación) */
+  .suid-phase {
+    padding: 18px 28px 6px;
+    background: #fafbfd;
+    border-top: 1px solid var(--border);
+  }
+  .suid-phase:first-of-type { border-top: 0; }
+  .suid-phase__num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 700;
+    margin-right: 8px;
+  }
+  .suid-phase__title {
+    font-size: 13.5px; font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  .suid-phase__hint {
+    font-size: 12px; color: var(--text-secondary);
+    margin: 4px 0 0 30px;
+  }
+
+  /* Accordion sections — plano, sin sombras anidadas */
   .suid-section {
     border-top: 1px solid var(--border);
     background: var(--surface);
   }
-  .suid-section:first-of-type { border-top: 0; }
   .suid-section__head {
     display: flex; align-items: center; gap: 12px;
-    padding: 18px 28px;
+    padding: 16px 28px;
     cursor: pointer;
     list-style: none;
     transition: background .12s;
@@ -77,16 +97,16 @@
   .suid-section__head::-webkit-details-marker { display: none; }
   .suid-section__head:hover { background: #fafbff; }
   .suid-section__num {
-    width: 28px; height: 28px; border-radius: 50%;
+    width: 26px; height: 26px; border-radius: 50%;
     background: var(--accent); color: #fff;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 12.5px; font-weight: 700; flex-shrink: 0;
+    font-size: 11.5px; font-weight: 700; flex-shrink: 0;
   }
   .suid-section[data-state="done"] .suid-section__num {
     background: var(--green, #1f8923);
   }
   .suid-section__head-body { flex: 1; min-width: 0; }
-  .suid-section__title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
+  .suid-section__title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
   .suid-section__hint {
     font-size: 12px; color: var(--text-secondary);
     margin-top: 2px;
@@ -98,45 +118,62 @@
   }
   .suid-section[open] .suid-section__chev { transform: rotate(180deg); }
   .suid-section__body {
-    padding: 4px 28px 24px;
+    padding: 4px 28px 22px;
     border-top: 1px dashed var(--border);
     margin-top: -2px;
   }
 
-  /* Grids dentro de las secciones */
+  /* Grids */
   .suid-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .suid-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .suid-grid-2 > *, .suid-grid-3 > * { min-width: 0; }
-  @media (max-width: 768px) {
-    .suid-grid-2, .suid-grid-3 { grid-template-columns: 1fr; }
+  .suid-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .suid-grid-2 > *, .suid-grid-3 > *, .suid-grid-4 > * { min-width: 0; }
+  @media (max-width: 900px) {
+    .suid-grid-3, .suid-grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .suid-grid-2, .suid-grid-3, .suid-grid-4 { grid-template-columns: 1fr; }
   }
 
-  /* Photo dropzone slots */
-  .suid-photo-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
+  /* Segmented radio (Sí/No, Recreativa/Alta competencia) */
+  .suid-segment {
+    display: inline-flex;
+    background: var(--surface, #fff);
+    border: 1px solid var(--border-dark, #d0d4e6);
+    border-radius: var(--radius-md, 8px);
+    padding: 3px;
+    gap: 2px;
   }
-  .suid-photo-slot {
-    aspect-ratio: 4 / 3;
-    border: 1.5px dashed var(--border-dark);
-    border-radius: var(--radius-md);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; color: var(--text-secondary);
-    cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+  .suid-segment__opt {
+    appearance: none; border: 0; background: transparent;
+    padding: 7px 16px;
+    font-family: inherit;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+  }
+  .suid-segment__opt.is-selected {
+    background: var(--accent, #d74009);
+    color: #fff;
+  }
+  .suid-segment__opt:hover:not(.is-selected) {
+    color: var(--text-primary);
     background: #fafbff;
   }
-  .suid-photo-slot:hover {
-    border-color: var(--accent); color: var(--accent);
-    background: #fff5ec;
+  .suid-field-label {
+    display: block;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
   }
-  .suid-photo-slot__icon svg { width: 24px; height: 24px; }
-  .suid-photo-slot__label { font-size: 11.5px; font-weight: 600; }
-  .suid-photo-hint {
-    font-size: 12px; color: var(--text-secondary);
-    margin: 12px 0 0;
+  .suid-field-label--required::after {
+    content: ' *';
+    color: #b42318;
   }
 
-  /* Chips toggle (modalidades + condiciones) — pattern DS pill */
+  /* Tag chips (multi-toggle) */
   .suid-chip-group {
     display: flex; flex-wrap: wrap; gap: 8px;
   }
@@ -178,7 +215,97 @@
     margin: 10px 0 0;
   }
 
-  /* Actions footer — integrado dentro del card, sin sticky */
+  /* Photo dropzone slots */
+  .suid-photo-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .suid-photo-slot {
+    aspect-ratio: 4 / 3;
+    border: 1.5px dashed var(--border-dark);
+    border-radius: var(--radius-md);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; color: var(--text-secondary);
+    cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+    background: #fafbff;
+    position: relative;
+    overflow: hidden;
+  }
+  .suid-photo-slot:hover {
+    border-color: var(--accent); color: var(--accent);
+    background: #fff5ec;
+  }
+  .suid-photo-slot.is-filled {
+    border-style: solid;
+    border-color: var(--green-border, #b7dfb9);
+    background: var(--green-bg, #e6f4e7);
+    color: var(--green, #1f8923);
+  }
+  .suid-photo-slot__icon svg { width: 24px; height: 24px; }
+  .suid-photo-slot__label { font-size: 11.5px; font-weight: 600; }
+  .suid-photo-slot__check { display: none; }
+  .suid-photo-slot.is-filled .suid-photo-slot__icon { display: none; }
+  .suid-photo-slot.is-filled .suid-photo-slot__check { display: flex; }
+  .suid-photo-hint {
+    font-size: 12px; color: var(--text-secondary);
+    margin: 12px 0 0;
+  }
+
+  /* Range info for lat/lng */
+  .suid-coord-hint {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-top: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .suid-coord-hint code {
+    background: #fafbfd; padding: 1px 5px;
+    border-radius: 3px; font-size: 11px;
+    font-family: 'SF Mono', Menlo, monospace;
+    color: var(--text-primary);
+  }
+
+  /* Validation message — informativo intra-section */
+  .suid-validation-message {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md, 8px);
+    margin-top: 14px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .suid-validation-message--positive {
+    background: var(--green-bg, #e6f4e7);
+    border: 1px solid var(--green-border, #b7dfb9);
+    color: var(--green, #1f8923);
+  }
+  .suid-validation-message--informative {
+    background: var(--blue-bg, #eef5ff);
+    border: 1px solid #bfd9f5;
+    color: var(--blue-info, #1f78d1);
+  }
+  .suid-validation-message__icon { flex-shrink: 0; margin-top: 1px; }
+
+  /* Description textarea — usar el patrón naowee-textfield--multiline manualmente */
+  .suid-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px 14px;
+    border: 1px solid #8788ab;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: #fff;
+    resize: vertical;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .suid-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(215,64,9,.12);
+  }
+
+  /* Action footer — integrado, no sticky */
   .suid-actions {
     border-top: 1px solid var(--border);
     background: #fafbfd;
@@ -202,7 +329,6 @@
   .suid-actions__cta {
     display: flex; gap: 10px;
   }
-  /* Botón "Inventariar escenario" en verde (acción completada/positiva) */
   .suid-actions__cta .naowee-btn--primary-positive {
     background: var(--green, #15803d) !important;
     border-color: var(--green, #15803d) !important;
@@ -213,6 +339,15 @@
   .suid-actions__cta .naowee-btn--primary-positive:hover {
     box-shadow: 0 8px 22px rgba(21,128,61,.35) !important;
     transform: translateY(-1px);
+  }
+
+  /* Numbered sub-step list dentro de "Datos deportivos" */
+  .suid-substep {
+    margin: 8px 0 18px 30px;
+    padding-left: 12px;
+    border-left: 2px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
   }
 
   @media (max-width: 700px) {
@@ -237,7 +372,9 @@
 <script type="module">
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260511g';
-  import { textfield, dropdown, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260512k';
+  import { textfield, textarea, dropdown, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260512m';
+  import { multiselect, bindMultiselects, validateRequired, bindValidationReset } from '../shared/wizard-page.js?v=20260512m';
+  import { bindMasksIn, unmask } from '../shared/masks.js';
   import { toast } from '../shared/toast.js';
 
   ProjectData.setPerfil('admin');
@@ -254,39 +391,58 @@
         <a class="naowee-btn naowee-btn--quiet" href="inversion.html">Volver a tabla de inversión</a>
       </div>`;
   } else {
-    /* SUID generado: usa el SUID guardado en inversion o genera uno provisional */
     const suidCode = p.inversion?.suidEscenario
       || p.registroSuid?.codigo
       || `SUID-${(p.departamento || 'COL').substring(0,3).toUpperCase()}-${(p.municipio || 'XXX').substring(0,3).toUpperCase()}-${String(Date.now()).slice(-3).padStart(3,'0')}`;
     const reg = p.registroSuid || {};
     const yaCompleto = reg.estado === 'completo';
 
-    /* Catálogos del DS de escenarios deportivos (Censo Mindeporte / Res. 933 Art.10) */
-    const tipologias = [
-      'Coliseo cubierto', 'Polideportivo', 'Estadio de fútbol', 'Pista atlética',
-      'Cancha sintética', 'Cancha múltiple', 'Cancha de béisbol', 'Patinódromo',
-      'Piscina olímpica', 'Skatepark', 'Velódromo', 'Centro de alto rendimiento',
-      'Gimnasio biosaludable', 'Cancha de tenis', 'Otro'
+    /* ═══ Catálogos del DS deportivo (Censo Mindeporte / Res. 933 Art.10) ═══ */
+    const ZONAS = ['Urbana', 'Rural'];
+    const TIPO_INFRA = ['Recreativa', 'Alta competencia'];
+    const TIPO_INFRA_GENERAL = [
+      'Coliseo', 'Polideportivo', 'Estadio', 'Cancha múltiple',
+      'Piscina', 'Pista atlética', 'Gimnasio', 'Centro de Alto Rendimiento'
     ];
-    const modalidades = [
+    const TIPOS_ESCENARIO = [
+      'Coliseo cubierto', 'Coliseo descubierto', 'Polideportivo',
+      'Estadio de fútbol', 'Pista atlética', 'Cancha sintética', 'Cancha múltiple',
+      'Cancha de béisbol', 'Patinódromo', 'Piscina olímpica',
+      'Piscina semi-olímpica', 'Skatepark', 'Velódromo',
+      'Centro de alto rendimiento', 'Gimnasio biosaludable', 'Cancha de tenis',
+      'Otro'
+    ];
+    const DISCIPLINAS = [
       'Fútbol', 'Baloncesto', 'Voleibol', 'Atletismo', 'Natación',
       'Boxeo', 'Lucha', 'Ciclismo', 'Patinaje', 'Tenis', 'Béisbol',
-      'Softbol', 'Tenis de mesa', 'Bádminton', 'Pesas', 'Judo', 'Karate', 'Taekwondo'
+      'Softbol', 'Tenis de mesa', 'Bádminton', 'Pesas', 'Judo', 'Karate',
+      'Taekwondo', 'Gimnasia', 'Rugby', 'Hockey'
     ];
-    const estadoConservacion = ['Excelente', 'Bueno', 'Regular', 'Deficiente', 'En construcción'];
-    const tipoAcceso = ['Público gratuito', 'Público con tarifa', 'Mixto', 'Restringido'];
-    const condicionesAcceso = ['Rampa accesible', 'Parqueadero', 'Baterías sanitarias adaptadas', 'Señalización Braille', 'Ascensor'];
+    const PROGRAMAS_MINDEPORTE = [
+      'Supérate-Intercolegiados', 'Hábitos y Estilos de Vida Saludable',
+      'Recreación para Adultos Mayores', 'Centros de Iniciación y Formación',
+      'Apoyo al Deportista', 'Atención a Personas con Discapacidad'
+    ];
+    const DOTACION_GENERAL = [
+      'Vestuarios', 'Baterías sanitarias', 'Iluminación nocturna', 'Graderías',
+      'Cubierta', 'Sistema de sonido', 'Marcador electrónico', 'Cámaras de seguridad',
+      'Parqueadero', 'Boletería', 'Cafetería', 'Enfermería'
+    ];
+    const ESTADO_CONSERVACION = ['Excelente', 'Bueno', 'Regular', 'Deficiente', 'En construcción'];
+    const TIPO_ACCESO = ['Público gratuito', 'Público con tarifa', 'Mixto', 'Restringido'];
+    const ACCESIBILIDAD = ['Rampa accesible', 'Parqueadero accesible', 'Baterías sanitarias adaptadas', 'Señalización Braille', 'Ascensor'];
 
     const checkIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
     const chevDown = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
     const imgPlus = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    const checkBig = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
     const heroIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
     const infoIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>`;
+    const mapIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
 
     const sectionDone = (cond) => cond ? 'data-state="done"' : '';
     const sectionNum = (cond, n) => cond ? checkIcon : String(n);
 
-    /* Render — TODO el contenido vive en un solo .naowee-card */
     document.getElementById('pageContent').innerHTML = `
       <div class="page-fade-in">
         <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="inversion.html">
@@ -296,14 +452,14 @@
 
         <div class="naowee-page-header naowee-page-header--centered" style="margin-bottom:8px">
           <div class="naowee-page-header__main">
-            <h1>Registro SUID del escenario</h1>
-            <p>Inventariar este escenario en el sistema nacional de escenarios deportivos. Los datos heredados de la postulación ya están precargados.</p>
+            <h1>Registro SUID del escenario deportivo</h1>
+            <p>Inventariar este escenario en el sistema nacional. Replica el flujo del módulo Escenarios — Resolución 933 Art. 10.</p>
           </div>
         </div>
 
         <article class="naowee-card suid-card">
 
-          <!-- Hero compacto integrado: código SUID + estado -->
+          <!-- Hero compacto: código SUID + estado -->
           <div class="suid-hero">
             <div class="suid-hero__icon">${heroIcon}</div>
             <div class="suid-hero__body">
@@ -319,16 +475,22 @@
             </div>
           </div>
 
-          <!-- Form: 6 accordion sections -->
           <form id="formSuid">
 
-            <!-- 1. Identificación heredada -->
+            <!-- ═══════════ FASE 1: PRE-VALIDACIÓN ═══════════ -->
+            <div class="suid-phase">
+              <span class="suid-phase__num">1</span>
+              <span class="suid-phase__title">Pre-validación</span>
+              <p class="suid-phase__hint">Verifica unicidad catastral y ubicación dentro de territorio colombiano.</p>
+            </div>
+
+            <!-- 1.1 Datos básicos -->
             <details class="suid-section" data-state="done" open>
               <summary class="suid-section__head">
                 <span class="suid-section__num">${checkIcon}</span>
                 <div class="suid-section__head-body">
-                  <div class="suid-section__title">Identificación del escenario</div>
-                  <div class="suid-section__hint">Heredado del proyecto · solo lectura</div>
+                  <div class="suid-section__title">Datos básicos del escenario</div>
+                  <div class="suid-section__hint">Heredado del proyecto · catastral requerido</div>
                 </div>
                 <span class="suid-section__chev">${chevDown}</span>
               </summary>
@@ -338,105 +500,249 @@
                   ${textfield({ label: 'Departamento', name: 'departamento', value: p.departamento || '' })}
                   ${textfield({ label: 'Municipio', name: 'municipio', value: p.municipio || '' })}
                 </div>
-                <div class="suid-grid-2" style="margin-top:18px">
-                  ${textfield({ label: 'Dirección', name: 'direccion', value: p.direccionPredio || '—' })}
-                  ${textfield({ label: 'Entidad ejecutora', name: 'ejecutorTxt', value: p.inversion?.ejecutor || p.formuladora?.nombre || '—' })}
+                <div class="suid-grid-2" style="margin-top:16px">
+                  ${textfield({ label: 'Número de registro catastral', name: 'catastral', required: true, placeholder: '760010100000-001-000-0001', value: reg.catastral || '', helper: 'Código catastral oficial · 19-22 dígitos' })}
+                  ${dropdown({ label: 'Zona', name: 'zona', required: true, options: ZONAS, value: reg.zona || '' })}
+                </div>
+                <div class="suid-validation-message suid-validation-message--positive" style="margin-top:14px">
+                  <span class="suid-validation-message__icon">${checkBig}</span>
+                  <div><strong>Catastral único.</strong> No existe otro escenario registrado con este número en el SUID nacional.</div>
                 </div>
               </div>
             </details>
 
-            <!-- 2. Clasificación del escenario -->
-            <details class="suid-section" ${sectionDone(reg.tipologia)} open>
+            <!-- 1.2 Georreferenciación -->
+            <details class="suid-section" ${sectionDone(reg.lat)} open>
               <summary class="suid-section__head">
-                <span class="suid-section__num">${sectionNum(reg.tipologia, 2)}</span>
+                <span class="suid-section__num">${sectionNum(reg.lat, 2)}</span>
                 <div class="suid-section__head-body">
-                  <div class="suid-section__title">Clasificación del escenario</div>
-                  <div class="suid-section__hint">Tipología y modalidades deportivas</div>
+                  <div class="suid-section__title">Georreferenciación</div>
+                  <div class="suid-section__hint">Coordenadas WGS84 · rango Colombia válido</div>
+                </div>
+                <span class="suid-section__chev">${chevDown}</span>
+              </summary>
+              <div class="suid-section__body">
+                <div class="suid-grid-3">
+                  ${textfield({ label: 'Latitud (decimal)', name: 'lat', required: true, placeholder: '4.7110', value: reg.lat || p.coordenadas?.lat || '', helper: 'Rango Colombia: −4.23 a 12.53' })}
+                  ${textfield({ label: 'Longitud (decimal)', name: 'lng', required: true, placeholder: '-74.0721', value: reg.lng || p.coordenadas?.lng || '', helper: 'Rango Colombia: −81.73 a −66.87' })}
+                  ${textfield({ label: 'Dirección del escenario', name: 'direccion', required: true, placeholder: 'Cra 30 # 45-12', value: reg.direccion || p.direccionPredio || '' })}
+                </div>
+                <div class="suid-grid-2" style="margin-top:16px">
+                  ${textfield({ label: 'Corregimiento / Vereda / Barrio', name: 'barrio', placeholder: 'Opcional', value: reg.barrio || '' })}
+                  <div style="display:flex;align-items:flex-end">
+                    <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" id="btnUbicarme">
+                      ${mapIcon} Marcar mi ubicación actual
+                    </button>
+                  </div>
+                </div>
+                <div class="suid-validation-message suid-validation-message--informative">
+                  <span class="suid-validation-message__icon">${infoIcon}</span>
+                  <div><strong>¿Cómo obtener coordenadas desde Google Maps?</strong> Ubique el marcador, haga clic derecho sobre el icono y seleccione la primera opción (decimales).</div>
+                </div>
+              </div>
+            </details>
+
+            <!-- ═══════════ FASE 2: DATOS DEPORTIVOS ═══════════ -->
+            <div class="suid-phase">
+              <span class="suid-phase__num">2</span>
+              <span class="suid-phase__title">Datos deportivos</span>
+              <p class="suid-phase__hint">Clasificación, características físicas, disciplinas y programas.</p>
+            </div>
+
+            <!-- 2.1 Identificación deportiva -->
+            <details class="suid-section" ${sectionDone(reg.tipoEscenario)} open>
+              <summary class="suid-section__head">
+                <span class="suid-section__num">${sectionNum(reg.tipoEscenario, 3)}</span>
+                <div class="suid-section__head-body">
+                  <div class="suid-section__title">Identificación deportiva</div>
+                  <div class="suid-section__hint">Centro alto rendimiento · tipo de infraestructura · tipo de escenario</div>
                 </div>
                 <span class="suid-section__chev">${chevDown}</span>
               </summary>
               <div class="suid-section__body">
                 <div class="suid-grid-2">
-                  ${dropdown({ label: 'Tipología principal', name: 'tipologia', required: true, options: tipologias, value: reg.tipologia || '' })}
-                  ${dropdown({ label: 'Estado de conservación', name: 'estadoConservacion', required: true, options: estadoConservacion, value: reg.estadoConservacion || '' })}
-                </div>
-
-                <div style="margin-top:22px">
-                  <label class="naowee-dropdown__label naowee-textfield__label--required" style="display:block;margin-bottom:10px">Modalidades deportivas que se practican</label>
-                  <div class="suid-chip-group" id="modalidadesChips">
-                    ${modalidades.map(m => `<button type="button" class="suid-chip ${(reg.modalidades || []).includes(m) ? 'is-selected' : ''}" data-mod="${m}">${m}</button>`).join('')}
+                  <div>
+                    <span class="suid-field-label suid-field-label--required">¿La sede es un Centro de Alto Rendimiento (CAR)?</span>
+                    <div class="suid-segment" id="segmentCar" role="radiogroup">
+                      <button type="button" class="suid-segment__opt ${reg.esCar === 'Sí' ? 'is-selected' : ''}" data-val="Sí">Sí</button>
+                      <button type="button" class="suid-segment__opt ${reg.esCar !== 'Sí' ? 'is-selected' : ''}" data-val="No">No</button>
+                    </div>
+                    <input type="hidden" name="esCar" value="${reg.esCar || 'No'}"/>
                   </div>
-                  <input type="hidden" name="modalidades" value="${(reg.modalidades || []).join(',')}"/>
-                  <p class="suid-hint">Selecciona todas las modalidades aplicables (mínimo 1).</p>
-                </div>
-              </div>
-            </details>
-
-            <!-- 3. Características físicas -->
-            <details class="suid-section" ${sectionDone(reg.areaPredio)}>
-              <summary class="suid-section__head">
-                <span class="suid-section__num">${sectionNum(reg.areaPredio, 3)}</span>
-                <div class="suid-section__head-body">
-                  <div class="suid-section__title">Características físicas</div>
-                  <div class="suid-section__hint">Áreas, aforo, dimensiones</div>
-                </div>
-                <span class="suid-section__chev">${chevDown}</span>
-              </summary>
-              <div class="suid-section__body">
-                <div class="suid-grid-3">
-                  ${textfield({ label: 'Área del predio (m²)', name: 'areaPredio', required: true, placeholder: '2400', value: reg.areaPredio || '' })}
-                  ${textfield({ label: 'Área construida (m²)', name: 'areaConstruida', required: true, placeholder: '1850', value: reg.areaConstruida || '' })}
-                  ${textfield({ label: 'Aforo (personas)', name: 'aforo', required: true, placeholder: '1200', value: reg.aforo || '' })}
+                  <div>
+                    <span class="suid-field-label suid-field-label--required">Tipo de infraestructura</span>
+                    <div class="suid-segment" id="segmentTipoInfra" role="radiogroup">
+                      ${TIPO_INFRA.map(t => `<button type="button" class="suid-segment__opt ${reg.tipoInfra === t ? 'is-selected' : (t === 'Recreativa' && !reg.tipoInfra) ? 'is-selected' : ''}" data-val="${t}">${t}</button>`).join('')}
+                    </div>
+                    <input type="hidden" name="tipoInfra" value="${reg.tipoInfra || 'Recreativa'}"/>
+                  </div>
                 </div>
                 <div class="suid-grid-2" style="margin-top:18px">
-                  ${textfield({ label: 'Año de construcción', name: 'anioConstruccion', placeholder: '2026', value: reg.anioConstruccion || '' })}
-                  ${textfield({ label: 'Número de pisos / niveles', name: 'pisos', placeholder: '1', value: reg.pisos || '' })}
+                  ${dropdown({ label: 'Tipo de infraestructura general', name: 'tipoInfraGeneral', required: true, options: TIPO_INFRA_GENERAL, value: reg.tipoInfraGeneral || '' })}
+                  ${dropdown({ label: 'Tipo de escenario', name: 'tipoEscenario', required: true, options: TIPOS_ESCENARIO, value: reg.tipoEscenario || '' })}
                 </div>
               </div>
             </details>
 
-            <!-- 4. Ubicación + acceso -->
-            <details class="suid-section" ${sectionDone(reg.tipoAcceso)}>
+            <!-- 2.2 Características físicas -->
+            <details class="suid-section" ${sectionDone(reg.areaPredio)}>
               <summary class="suid-section__head">
-                <span class="suid-section__num">${sectionNum(reg.tipoAcceso, 4)}</span>
+                <span class="suid-section__num">${sectionNum(reg.areaPredio, 4)}</span>
                 <div class="suid-section__head-body">
-                  <div class="suid-section__title">Ubicación geográfica y acceso</div>
-                  <div class="suid-section__hint">Coordenadas WGS84 · condiciones de accesibilidad</div>
+                  <div class="suid-section__title">Características físicas</div>
+                  <div class="suid-section__hint">Áreas, aforo, sub-espacios y estado de conservación</div>
                 </div>
                 <span class="suid-section__chev">${chevDown}</span>
               </summary>
               <div class="suid-section__body">
-                <div class="suid-grid-3">
-                  ${textfield({ label: 'Latitud (decimal)', name: 'lat', required: true, value: p.coordenadas?.lat || '' })}
-                  ${textfield({ label: 'Longitud (decimal)', name: 'lng', required: true, value: p.coordenadas?.lng || '' })}
-                  ${dropdown({ label: 'Tipo de acceso', name: 'tipoAcceso', required: true, options: tipoAcceso, value: reg.tipoAcceso || '' })}
+                <div class="suid-grid-4">
+                  ${textfield({ label: 'Cantidad de sub-espacios', name: 'cantidadSubespacios', value: reg.cantidadSubespacios || '1' })}
+                  ${textfield({ label: 'Año de construcción', name: 'anioConstruccion', placeholder: '2024', value: reg.anioConstruccion || '' })}
+                  ${textfield({ label: 'Pisos / niveles', name: 'pisos', value: reg.pisos || '1' })}
+                  ${dropdown({ label: 'Estado de conservación', name: 'estadoConservacion', required: true, options: ESTADO_CONSERVACION, value: reg.estadoConservacion || '' })}
+                </div>
+                <div class="suid-grid-3" style="margin-top:18px">
+                  <div class="naowee-textfield">
+                    <label class="naowee-textfield__label naowee-textfield__label--required">Área del predio (m²)</label>
+                    <div class="naowee-textfield__input-wrap">
+                      <input class="naowee-textfield__input" name="areaPredio" type="text" data-mask="money" required placeholder="2.400" value="${reg.areaPredio ? Number(reg.areaPredio).toLocaleString('es-CO') : ''}"/>
+                    </div>
+                  </div>
+                  <div class="naowee-textfield">
+                    <label class="naowee-textfield__label naowee-textfield__label--required">Área construida (m²)</label>
+                    <div class="naowee-textfield__input-wrap">
+                      <input class="naowee-textfield__input" name="areaConstruida" type="text" data-mask="money" required placeholder="1.850" value="${reg.areaConstruida ? Number(reg.areaConstruida).toLocaleString('es-CO') : ''}"/>
+                    </div>
+                  </div>
+                  <div class="naowee-textfield">
+                    <label class="naowee-textfield__label naowee-textfield__label--required">Aforo (personas)</label>
+                    <div class="naowee-textfield__input-wrap">
+                      <input class="naowee-textfield__input" name="aforo" type="text" data-mask="money" required placeholder="1.200" value="${reg.aforo ? Number(reg.aforo).toLocaleString('es-CO') : ''}"/>
+                    </div>
+                  </div>
                 </div>
 
-                <div style="margin-top:22px">
-                  <label class="naowee-dropdown__label" style="display:block;margin-bottom:10px">Condiciones de accesibilidad disponibles</label>
-                  <div class="suid-chip-group" id="condicionesChips">
-                    ${condicionesAcceso.map(c => `<button type="button" class="suid-chip ${(reg.condicionesAcceso || []).includes(c) ? 'is-selected' : ''}" data-cond="${c}">${c}</button>`).join('')}
+                ${(reg.cantidadSubespacios || 1) > 1 ? `
+                  <div class="suid-grid-2" style="margin-top:18px">
+                    <div>
+                      <span class="suid-field-label">¿Los sub-espacios comparten las mismas disciplinas?</span>
+                      <div class="suid-segment" id="segmentShareDisciplinas">
+                        <button type="button" class="suid-segment__opt is-selected" data-val="Sí">Sí</button>
+                        <button type="button" class="suid-segment__opt" data-val="No">No</button>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="suid-field-label">¿Comparten los mismos detalles físicos?</span>
+                      <div class="suid-segment" id="segmentShareDetalles">
+                        <button type="button" class="suid-segment__opt is-selected" data-val="Sí">Sí</button>
+                        <button type="button" class="suid-segment__opt" data-val="No">No</button>
+                      </div>
+                    </div>
                   </div>
-                  <input type="hidden" name="condicionesAcceso" value="${(reg.condicionesAcceso || []).join(',')}"/>
+                ` : ''}
+              </div>
+            </details>
+
+            <!-- 2.3 Disciplinas deportivas -->
+            <details class="suid-section" ${sectionDone((reg.disciplinas || []).length > 0)}>
+              <summary class="suid-section__head">
+                <span class="suid-section__num">${sectionNum((reg.disciplinas || []).length > 0, 5)}</span>
+                <div class="suid-section__head-body">
+                  <div class="suid-section__title">Disciplinas deportivas que alberga</div>
+                  <div class="suid-section__hint">Mínimo 1 · selecciona todas las modalidades que se practican</div>
+                </div>
+                <span class="suid-section__chev">${chevDown}</span>
+              </summary>
+              <div class="suid-section__body">
+                <div class="suid-chip-group" id="disciplinasChips">
+                  ${DISCIPLINAS.map(m => `<button type="button" class="suid-chip ${(reg.disciplinas || []).includes(m) ? 'is-selected' : ''}" data-disc="${m}">${m}</button>`).join('')}
+                </div>
+                <input type="hidden" name="disciplinas" value="${(reg.disciplinas || []).join(',')}"/>
+                <p class="suid-hint">${DISCIPLINAS.length} disciplinas disponibles en el catálogo nacional.</p>
+              </div>
+            </details>
+
+            <!-- 2.4 Dotación y servicios -->
+            <details class="suid-section" ${sectionDone((reg.dotacion || []).length > 0)}>
+              <summary class="suid-section__head">
+                <span class="suid-section__num">${sectionNum((reg.dotacion || []).length > 0, 6)}</span>
+                <div class="suid-section__head-body">
+                  <div class="suid-section__title">Dotación y servicios generales</div>
+                  <div class="suid-section__hint">Servicios e instalaciones disponibles</div>
+                </div>
+                <span class="suid-section__chev">${chevDown}</span>
+              </summary>
+              <div class="suid-section__body">
+                <div class="suid-chip-group" id="dotacionChips">
+                  ${DOTACION_GENERAL.map(d => `<button type="button" class="suid-chip ${(reg.dotacion || []).includes(d) ? 'is-selected' : ''}" data-dot="${d}">${d}</button>`).join('')}
+                </div>
+                <input type="hidden" name="dotacion" value="${(reg.dotacion || []).join(',')}"/>
+
+                <div class="suid-grid-2" style="margin-top:22px">
+                  ${dropdown({ label: 'Tipo de acceso', name: 'tipoAcceso', required: true, options: TIPO_ACCESO, value: reg.tipoAcceso || '' })}
+                  <div>
+                    <span class="suid-field-label">Condiciones de accesibilidad</span>
+                    <div class="suid-chip-group" id="accesibilidadChips">
+                      ${ACCESIBILIDAD.map(c => `<button type="button" class="suid-chip ${(reg.accesibilidad || []).includes(c) ? 'is-selected' : ''}" data-acc="${c}">${c}</button>`).join('')}
+                    </div>
+                    <input type="hidden" name="accesibilidad" value="${(reg.accesibilidad || []).join(',')}"/>
+                  </div>
                 </div>
               </div>
             </details>
 
-            <!-- 5. Documentación fotográfica -->
+            <!-- 2.5 Programas y uso -->
+            <details class="suid-section" ${sectionDone(reg.descripcion)}>
+              <summary class="suid-section__head">
+                <span class="suid-section__num">${sectionNum(reg.descripcion, 7)}</span>
+                <div class="suid-section__head-body">
+                  <div class="suid-section__title">Programas y uso</div>
+                  <div class="suid-section__hint">Descripción · programas Mindeporte · población atendida</div>
+                </div>
+                <span class="suid-section__chev">${chevDown}</span>
+              </summary>
+              <div class="suid-section__body">
+                <div style="margin-bottom:18px">
+                  <span class="suid-field-label">Descripción del escenario</span>
+                  <textarea class="suid-textarea" name="descripcion" rows="3" placeholder="Describe brevemente el escenario, su contexto y particularidades técnicas...">${reg.descripcion || ''}</textarea>
+                </div>
+
+                <div style="margin-bottom:18px">
+                  ${multiselect({ name: 'programasMindeporte', label: 'Programas del Ministerio que se ejecutan', options: PROGRAMAS_MINDEPORTE, placeholder: 'Selecciona uno o más programas', helper: '6 programas disponibles del Ministerio del Deporte' })}
+                </div>
+
+                <div class="suid-grid-2">
+                  <div class="naowee-textfield">
+                    <label class="naowee-textfield__label">Población mensual atendida</label>
+                    <div class="naowee-textfield__input-wrap">
+                      <input class="naowee-textfield__input" name="poblacionMensual" type="text" data-mask="money" placeholder="1.500" value="${reg.poblacionMensual ? Number(reg.poblacionMensual).toLocaleString('es-CO') : ''}"/>
+                    </div>
+                  </div>
+                  ${textfield({ label: 'Otros usos (no deportivos)', name: 'otrosUsos', placeholder: 'Conciertos, eventos comunitarios...', value: reg.otrosUsos || '' })}
+                </div>
+              </div>
+            </details>
+
+            <!-- 2.6 Fotografías generales -->
             <details class="suid-section">
               <summary class="suid-section__head">
-                <span class="suid-section__num">5</span>
+                <span class="suid-section__num">8</span>
                 <div class="suid-section__head-body">
-                  <div class="suid-section__title">Documentación fotográfica</div>
-                  <div class="suid-section__hint">Mínimo 4 fotografías · vista exterior, interior, dotación, accesos</div>
+                  <div class="suid-section__title">Fotografías generales del escenario</div>
+                  <div class="suid-section__hint">Mínimo 4 fotografías · estado actual (últimos 6 meses)</div>
                 </div>
                 <span class="suid-section__chev">${chevDown}</span>
               </summary>
               <div class="suid-section__body">
+                <div class="suid-grid-2" style="margin-bottom:18px">
+                  ${textfield({ label: 'Fecha de captura de fotografías', name: 'fechaCaptura', type: 'date', required: true, value: reg.fechaCaptura || '', helper: 'Mínimo 6 meses antes de hoy · refleja el estado actual' })}
+                  <div></div>
+                </div>
                 <div class="suid-photo-grid">
                   ${['Fachada', 'Interior', 'Cancha/Pista', 'Vestuarios', 'Acceso', 'Dotación'].map((lbl, i) => `
-                    <div class="suid-photo-slot" data-photo="${i}">
+                    <div class="suid-photo-slot ${(reg.fotos || [])[i] ? 'is-filled' : ''}" data-photo="${i}">
                       <span class="suid-photo-slot__icon">${imgPlus}</span>
+                      <span class="suid-photo-slot__check">${checkBig}</span>
                       <span class="suid-photo-slot__label">${lbl}</span>
                     </div>
                   `).join('')}
@@ -445,29 +751,41 @@
               </div>
             </details>
 
-            <!-- 6. Información administrativa -->
+            <!-- ═══════════ FASE 3: DOCUMENTACIÓN ═══════════ -->
+            <div class="suid-phase">
+              <span class="suid-phase__num">3</span>
+              <span class="suid-phase__title">Documentación</span>
+              <p class="suid-phase__hint">Soportes administrativos del escenario.</p>
+            </div>
+
+            <!-- 3.1 Información administrativa -->
             <details class="suid-section">
               <summary class="suid-section__head">
-                <span class="suid-section__num">6</span>
+                <span class="suid-section__num">9</span>
                 <div class="suid-section__head-body">
                   <div class="suid-section__title">Información administrativa</div>
-                  <div class="suid-section__hint">Responsable, horarios, presupuesto operativo</div>
+                  <div class="suid-section__hint">Responsable · horarios · presupuesto operativo</div>
                 </div>
                 <span class="suid-section__chev">${chevDown}</span>
               </summary>
               <div class="suid-section__body">
                 <div class="suid-grid-2">
                   ${textfield({ label: 'Responsable administrativo', name: 'responsable', placeholder: 'Nombre completo', value: reg.responsable || p.representante?.nombre || '' })}
-                  ${textfield({ label: 'Contacto del escenario', name: 'contacto', placeholder: '+57 ...', value: reg.contacto || p.representante?.contacto || '' })}
+                  ${textfield({ label: 'Contacto del escenario', name: 'contacto', placeholder: '+57 311 234 5678', value: reg.contacto || p.representante?.contacto || '' })}
                 </div>
                 <div class="suid-grid-2" style="margin-top:16px">
                   ${textfield({ label: 'Horario de funcionamiento', name: 'horario', placeholder: 'Lun-Sáb 6 a.m. – 10 p.m.', value: reg.horario || '' })}
-                  ${textfield({ label: 'Presupuesto operativo anual (COP)', name: 'presupuestoOperativo', placeholder: '240000000', value: reg.presupuestoOperativo || '' })}
+                  <div class="naowee-textfield">
+                    <label class="naowee-textfield__label">Presupuesto operativo anual (COP)</label>
+                    <div class="naowee-textfield__input-wrap">
+                      <input class="naowee-textfield__input" name="presupuestoOperativo" type="text" data-mask="money" placeholder="240.000.000" value="${reg.presupuestoOperativo ? Number(reg.presupuestoOperativo).toLocaleString('es-CO') : ''}"/>
+                    </div>
+                  </div>
                 </div>
               </div>
             </details>
 
-            <!-- Footer integrado dentro del card — no sticky -->
+            <!-- Footer integrado — no sticky -->
             <div class="suid-actions">
               <div class="suid-actions__hint">
                 ${infoIcon}
@@ -485,13 +803,33 @@
       </div>
     `;
 
-    /* Bind canonical DS dropdowns (portal-to-body menu) */
-    bindDropdowns(document.getElementById('formSuid'));
+    const form = document.getElementById('formSuid');
 
-    /* Toggle chips (modalidades + condiciones) — sync hidden input para FormData */
-    const syncChips = (containerId, hiddenName, dataAttr) => {
+    /* Bind DS components */
+    bindDropdowns(form);
+    bindMultiselects(form);
+    bindValidationReset(form);
+    bindMasksIn(form);
+
+    /* ───── Segment toggles (CAR + tipo infra + share toggles) ───── */
+    const bindSegment = (containerId, hiddenName) => {
       const container = document.getElementById(containerId);
-      const hidden = document.querySelector(`input[name="${hiddenName}"]`);
+      const hidden = form.querySelector(`input[name="${hiddenName}"]`);
+      container?.querySelectorAll('.suid-segment__opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.suid-segment__opt').forEach(b => b.classList.remove('is-selected'));
+          btn.classList.add('is-selected');
+          if (hidden) hidden.value = btn.dataset.val;
+        });
+      });
+    };
+    bindSegment('segmentCar', 'esCar');
+    bindSegment('segmentTipoInfra', 'tipoInfra');
+
+    /* ───── Chip toggles (disciplinas, dotación, accesibilidad) ───── */
+    const bindChips = (containerId, hiddenName, dataAttr) => {
+      const container = document.getElementById(containerId);
+      const hidden = form.querySelector(`input[name="${hiddenName}"]`);
       container?.querySelectorAll(`[data-${dataAttr}]`).forEach(chip => {
         chip.addEventListener('click', () => {
           chip.classList.toggle('is-selected');
@@ -501,28 +839,73 @@
         });
       });
     };
-    syncChips('modalidadesChips', 'modalidades', 'mod');
-    syncChips('condicionesChips', 'condicionesAcceso', 'cond');
+    bindChips('disciplinasChips', 'disciplinas', 'disc');
+    bindChips('dotacionChips', 'dotacion', 'dot');
+    bindChips('accesibilidadChips', 'accesibilidad', 'acc');
 
-    /* Submit / Borrador */
+    /* ───── Photo slot toggle (mock — solo marca como llenado) ───── */
+    document.querySelectorAll('.suid-photo-slot').forEach(slot => {
+      slot.addEventListener('click', () => {
+        slot.classList.toggle('is-filled');
+      });
+    });
+
+    /* ───── "Marcar mi ubicación actual" (mock) ───── */
+    document.getElementById('btnUbicarme')?.addEventListener('click', () => {
+      const lat = form.querySelector('input[name="lat"]');
+      const lng = form.querySelector('input[name="lng"]');
+      if (lat) lat.value = p.coordenadas?.lat || '4.7110';
+      if (lng) lng.value = p.coordenadas?.lng || '-74.0721';
+      toast({ variant: 'informative', title: 'Ubicación capturada', message: 'Coordenadas extraídas del proyecto. Verifica antes de continuar.' });
+    });
+
+    /* ───── Validación lat/lng rango Colombia ───── */
+    const validarRangoColombia = () => {
+      const lat = parseFloat(form.querySelector('input[name="lat"]')?.value);
+      const lng = parseFloat(form.querySelector('input[name="lng"]')?.value);
+      if (isNaN(lat) || isNaN(lng)) return true;
+      const latOk = lat >= -4.23 && lat <= 12.53;
+      const lngOk = lng >= -81.73 && lng <= -66.87;
+      return latOk && lngOk;
+    };
+
+    /* ───── Recolectar todos los datos ───── */
     function recolectar() {
-      const fd = new FormData(document.getElementById('formSuid'));
+      const fd = new FormData(form);
       return {
         codigo: suidCode,
-        tipologia: fd.get('tipologia') || '',
-        estadoConservacion: fd.get('estadoConservacion') || '',
-        modalidades: (fd.get('modalidades') || '').split(',').filter(Boolean),
-        areaPredio: parseInt(fd.get('areaPredio')) || null,
-        areaConstruida: parseInt(fd.get('areaConstruida')) || null,
-        aforo: parseInt(fd.get('aforo')) || null,
+        /* Pre-validación */
+        catastral: fd.get('catastral') || '',
+        zona: fd.get('zona') || '',
+        lat: parseFloat(fd.get('lat')) || null,
+        lng: parseFloat(fd.get('lng')) || null,
+        direccion: fd.get('direccion') || '',
+        barrio: fd.get('barrio') || '',
+        /* Datos deportivos */
+        esCar: fd.get('esCar') || 'No',
+        tipoInfra: fd.get('tipoInfra') || '',
+        tipoInfraGeneral: fd.get('tipoInfraGeneral') || '',
+        tipoEscenario: fd.get('tipoEscenario') || '',
+        cantidadSubespacios: parseInt(fd.get('cantidadSubespacios')) || 1,
         anioConstruccion: fd.get('anioConstruccion') || '',
         pisos: fd.get('pisos') || '',
+        estadoConservacion: fd.get('estadoConservacion') || '',
+        areaPredio: unmask(fd.get('areaPredio')) || null,
+        areaConstruida: unmask(fd.get('areaConstruida')) || null,
+        aforo: unmask(fd.get('aforo')) || null,
+        disciplinas: (fd.get('disciplinas') || '').split(',').filter(Boolean),
+        dotacion: (fd.get('dotacion') || '').split(',').filter(Boolean),
         tipoAcceso: fd.get('tipoAcceso') || '',
-        condicionesAcceso: (fd.get('condicionesAcceso') || '').split(',').filter(Boolean),
+        accesibilidad: (fd.get('accesibilidad') || '').split(',').filter(Boolean),
+        descripcion: fd.get('descripcion') || '',
+        programasMindeporte: fd.getAll('programasMindeporte') || [],
+        poblacionMensual: unmask(fd.get('poblacionMensual')) || null,
+        otrosUsos: fd.get('otrosUsos') || '',
+        fechaCaptura: fd.get('fechaCaptura') || '',
         responsable: fd.get('responsable') || '',
         contacto: fd.get('contacto') || '',
         horario: fd.get('horario') || '',
-        presupuestoOperativo: parseInt(fd.get('presupuestoOperativo')) || null
+        presupuestoOperativo: unmask(fd.get('presupuestoOperativo')) || null
       };
     }
 
@@ -534,13 +917,35 @@
       toast({ variant: 'informative', title: 'Borrador guardado', message: 'Puedes retomar el registro SUID en cualquier momento.' });
     });
 
-    document.getElementById('formSuid').addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       const datos = recolectar();
-      if (!datos.tipologia || !datos.estadoConservacion || datos.modalidades.length === 0 || !datos.areaPredio || !datos.aforo || !datos.tipoAcceso) {
-        toast({ variant: 'negative', title: 'Faltan campos obligatorios', message: 'Completa tipología, modalidades, área del predio, aforo y tipo de acceso.' });
+
+      if (!datos.catastral || !datos.zona || !datos.lat || !datos.lng || !datos.direccion) {
+        toast({ variant: 'negative', title: 'Pre-validación incompleta', message: 'Completa catastral, zona, lat/lng y dirección.' });
         return;
       }
+      if (!validarRangoColombia()) {
+        toast({ variant: 'negative', title: 'Coordenadas fuera de rango', message: 'Lat: −4.23 a 12.53 · Lng: −81.73 a −66.87 (Colombia).' });
+        return;
+      }
+      if (!datos.tipoInfraGeneral || !datos.tipoEscenario || !datos.estadoConservacion) {
+        toast({ variant: 'negative', title: 'Identificación incompleta', message: 'Selecciona tipo de infraestructura, escenario y estado de conservación.' });
+        return;
+      }
+      if (datos.disciplinas.length === 0) {
+        toast({ variant: 'negative', title: 'Sin disciplinas', message: 'Selecciona al menos 1 disciplina deportiva.' });
+        return;
+      }
+      if (!datos.areaPredio || !datos.aforo) {
+        toast({ variant: 'negative', title: 'Faltan medidas', message: 'Completa área del predio y aforo.' });
+        return;
+      }
+      if (!datos.tipoAcceso) {
+        toast({ variant: 'negative', title: 'Falta tipo de acceso', message: 'Selecciona el tipo de acceso al escenario.' });
+        return;
+      }
+
       ProjectData.setProyecto(p.idUnico, x => {
         x.registroSuid = { ...datos, estado: 'completo', registradoEn: new Date().toISOString() };
         x.historial = x.historial || [];
@@ -551,7 +956,7 @@
         });
         return x;
       });
-      toast({ variant: 'positive', title: '¡Escenario inventariado!', message: `${suidCode} se agregó al inventario nacional de escenarios deportivos.` });
+      toast({ variant: 'positive', title: '¡Escenario inventariado!', message: `${suidCode} se agregó al inventario nacional.` });
       setTimeout(() => { window.location.href = 'inversion.html'; }, 1400);
     });
   }

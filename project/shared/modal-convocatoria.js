@@ -48,8 +48,12 @@ function nextCodigoConvocatoria() {
 }
 
 /* ═══ Component builders ═══ */
-function textfield({ label, name, type = 'text', required = false, placeholder = '', helper = '', minlength, maxlength, value = '', prefix = '' }) {
+function textfield({ label, name, type = 'text', required = false, placeholder = '', helper = '', minlength, maxlength, value = '', prefix = '', mask = '' }) {
   const id = `tf-${name}`;
+  /* Si hay mask, aplica el formato es-CO al value inicial para que el render coincida */
+  const displayValue = mask === 'money' && value !== '' && value !== null && value !== undefined
+    ? Number(String(value).replace(/\D/g, '')).toLocaleString('es-CO')
+    : value;
   return `
     <div class="naowee-textfield ${prefix ? 'naowee-textfield--with-prefix' : ''}" data-name="${name}">
       <label class="naowee-textfield__label ${required ? 'naowee-textfield__label--required' : ''}" for="${id}">${label}</label>
@@ -57,7 +61,8 @@ function textfield({ label, name, type = 'text', required = false, placeholder =
         ${prefix ? `<span class="naowee-textfield__prefix" aria-hidden="true">${prefix}</span>` : ''}
         <input class="naowee-textfield__input" id="${id}" name="${name}" type="${type}"
                ${required ? 'required' : ''} ${minlength ? `minlength="${minlength}"` : ''} ${maxlength ? `maxlength="${maxlength}"` : ''}
-               placeholder="${placeholder}" value="${value}"/>
+               ${mask ? `data-mask="${mask}"` : ''}
+               placeholder="${placeholder}" value="${displayValue}"/>
       </div>
       ${helper ? `<p class="naowee-helper">${helper}</p>` : ''}
     </div>

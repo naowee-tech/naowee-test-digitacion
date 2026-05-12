@@ -5,6 +5,9 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import ProjectData from './data.js';
+/* Job mock que mueve proyectos a `expirada` cuando vence el plazo
+   Res. 933 (15 días hábiles). Corre 1x por sesión al importar. */
+import './sla-expiry.js';
 
 const COLLAPSED_KEY = 'naowee-project-sidebar-collapsed';
 
@@ -163,7 +166,10 @@ function pathPrefix() {
 function renderHeader(perfil) {
   const data = ProjectData.getPerfilData(perfil);
   return `
-    <div style="display:flex;align-items:center;gap:14px;">
+    <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú" aria-expanded="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="header-brand-group">
       <span class="naowee-badge naowee-badge--brand">Módulo Project</span>
     </div>
     <div class="profile-switcher" id="profileSwitcher">
@@ -234,6 +240,12 @@ function renderDemoSwitcher(perfil) {
       <div class="demo-role-switcher__panel" id="demoSwitcherPanel">
         <div class="demo-role-switcher__panel-label">Cambiar de perfil (simulado)</div>
         <div class="demo-role-switcher__list">${items}</div>
+        <div class="demo-role-switcher__panel-footer">
+          <button type="button" class="demo-reset-btn" id="demoResetBtn" title="Restablece el mock data al estado original (útil después de probar acciones como activar inversión)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Reiniciar demo
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -278,6 +290,38 @@ function bindShell() {
   }
   setupTooltips();
 
+  /* Mobile menu — burger button en top header abre/cierra sidebar como drawer */
+  const mobBtn = document.getElementById('mobileMenuBtn');
+  if (mobBtn && sb) {
+    /* Backdrop click-out: cierra el sidebar tocando fuera */
+    let backdrop = document.querySelector('.sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'sidebar-backdrop';
+      document.body.appendChild(backdrop);
+    }
+    const setOpen = (open) => {
+      sb.classList.toggle('is-mobile-open', open);
+      backdrop.classList.toggle('is-visible', open);
+      mobBtn.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('sidebar-locked', open);
+    };
+    mobBtn.addEventListener('click', () => {
+      setOpen(!sb.classList.contains('is-mobile-open'));
+    });
+    backdrop.addEventListener('click', () => setOpen(false));
+    /* Cerrar al hacer click en un nav-row (navegación) */
+    sb.querySelectorAll('.nav-row').forEach(row => {
+      row.addEventListener('click', () => setOpen(false));
+    });
+    /* Cerrar si la pantalla se agranda */
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && sb.classList.contains('is-mobile-open')) {
+        setOpen(false);
+      }
+    });
+  }
+
   /* Profile dropdown */
   const ps = document.getElementById('profileSwitcher');
   const chip = document.getElementById('userChip');
@@ -311,6 +355,14 @@ function bindShell() {
         };
         window.location.href = pathPrefix() + map[next];
       });
+    });
+
+    /* Reiniciar demo: limpia localStorage y recarga el seed original */
+    document.getElementById('demoResetBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!confirm('¿Reiniciar la demo? Se restablecerán todos los proyectos al estado inicial (perderás cambios de prueba como activación de inversión, aprobaciones, devoluciones, etc.).')) return;
+      ProjectData.reset();
+      window.location.reload();
     });
   }
 
@@ -350,6 +402,46 @@ function mountNaoweeFooter() {
     <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
   `;
   document.body.appendChild(footer);
+  bindFooterScrollHide(footer);
+  window.__naoweeFooterBound = true;
+}
+
+/* Oculta el footer al scroll DOWN y lo reaparece al scroll UP, para
+   no interferir con la última fila de tablas largas. Escucha tanto
+   .page (scroll interno) como window (fallback). El handler corre
+   síncrono pero usa dead-zone + timestamp para evitar churn. */
+function bindFooterScrollHide(footer) {
+  const TRIGGER_PX = 8;       // umbral de delta antes de actuar
+  const TOP_OFFSET = 80;      // no ocultar si estamos cerca del top
+  const COOLDOWN_MS = 80;     // mínimo entre evaluaciones
+
+  function track(getY, el) {
+    let lastY = getY();
+    let lastT = 0;
+    const handler = () => {
+      const now = performance.now();
+      if (now - lastT < COOLDOWN_MS) return;
+      lastT = now;
+      const y = getY();
+      const delta = y - lastY;
+      if (Math.abs(delta) < TRIGGER_PX) return;
+      if (delta > 0 && y > TOP_OFFSET) {
+        footer.classList.add('is-hidden');
+      } else if (delta < 0) {
+        footer.classList.remove('is-hidden');
+      }
+      lastY = y;
+    };
+    el?.addEventListener('scroll', handler, { passive: true });
+  }
+
+  /* .page contiene el scroll interno en la mayoría de pantallas */
+  const pageEl = document.querySelector('.page');
+  if (pageEl) {
+    track(() => pageEl.scrollTop, pageEl);
+  }
+  /* window como fallback (por si una página específica no usa .page) */
+  track(() => window.scrollY || document.documentElement.scrollTop, window);
 }
 
 /* ───── PUBLIC API ───── */

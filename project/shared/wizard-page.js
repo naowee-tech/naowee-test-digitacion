@@ -13,7 +13,346 @@
    Re-exports: textfield, textarea, dropdown, checkbox, bindDropdowns
    ═══════════════════════════════════════════════════════════════════ */
 
-import { textfield, textarea, dropdown, checkbox, bindDropdowns } from './modal-convocatoria.js';
+import { textfield, textarea, dropdown, checkbox, bindDropdowns, fileUpload, bindFileUpload } from './modal-convocatoria.js';
+
+/* Helper plural: itera sobre todos los .naowee-file-uploader del scope y
+   les aplica el binder oficial (drag-drop, progress, validación). */
+export function bindFileUploads(scope) {
+  scope.querySelectorAll('.naowee-file-uploader').forEach(field => bindFileUpload(field));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   validateRequired — UX progresivo de validación de campos obligatorios.
+
+   Comportamiento:
+   - 1er intento de avanzar con campos vacíos → muestra error loud +
+     wiggle + autoscroll al primer campo con error. NO avanza.
+   - 2do intento (mismo step, sin haber llenado nada) → permite avanzar
+     igual, para no entorpecer la demo.
+
+   Detecta `required` en:
+   - input[required] dentro de .naowee-textfield
+   - .naowee-dropdown[data-name] con input[type=hidden][required]
+   - .naowee-multiselect con label--required que no tenga seleccion
+   - .naowee-file-uploader[required] sin archivo
+   - .naowee-checkbox required dentro de grids con label que termine en *
+   ═══════════════════════════════════════════════════════════════════ */
+const errorAttempts = new WeakMap(); // panel -> count
+
+/* Construye el markup canónico del DS Naowee para helper--negative:
+   <span class="naowee-helper naowee-helper--negative">
+     <span class="naowee-helper__badge"><svg badge negative .../></span>
+     {label}
+   </span>                                                                */
+function makeErrorHelper(text) {
+  const span = document.createElement('span');
+  span.className = 'naowee-helper naowee-helper--negative';
+  span.innerHTML = `
+    <span class="naowee-helper__badge">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-negative-loud,#b42318)"/>
+        <path d="M5.25 5.25h1.5v3h-1.5z" fill="#fff"/>
+        <circle cx="6" cy="3.75" r=".75" fill="#fff"/>
+      </svg>
+    </span>
+    ${text}
+  `;
+  return span;
+}
+
+export function validateRequired(panel) {
+  if (!panel) return true;
+  const errors = [];
+
+  /* Limpiar errores previos */
+  panel.querySelectorAll('.has-error').forEach(el => {
+    el.classList.remove('has-error');
+    el.querySelector('.naowee-helper--negative')?.remove();
+    /* Restaurar helpers ocultos */
+    el.querySelectorAll('.naowee-helper:not(.naowee-helper--negative), .naowee-file-uploader__hint').forEach(h => {
+      h.style.display = '';
+    });
+  });
+  panel.querySelectorAll('.is-wiggling').forEach(el => el.classList.remove('is-wiggling'));
+
+  /* Textfields required */
+  panel.querySelectorAll('.naowee-textfield').forEach(field => {
+    const input = field.querySelector('input[required], textarea[required]');
+    if (!input) return;
+    const val = (input.value || '').trim();
+    if (!val) {
+      field.classList.add('has-error');
+      const lblText = field.querySelector('.naowee-textfield__label')?.textContent?.trim().replace('*', '').trim() || 'Este campo';
+      const helperExisting = field.querySelector('.naowee-helper');
+      if (helperExisting) helperExisting.style.display = 'none';
+      const err = makeErrorHelper(`${lblText} es obligatorio`);
+      field.appendChild(err);
+      errors.push(field);
+    }
+  });
+
+  /* Dropdowns required — basta con el atributo [required] en el hidden input
+     (las clases --required del label varían entre helpers: algunos modales usan
+     naowee-textfield__label--required, otros naowee-dropdown__label--required). */
+  panel.querySelectorAll('.naowee-dropdown').forEach(field => {
+    const hidden = field.querySelector('input[type="hidden"][required]');
+    if (!hidden) return;
+    const val = (hidden.value || '').trim();
+    if (!val) {
+      field.classList.add('has-error');
+      const lblText = field.querySelector('.naowee-dropdown__label')?.textContent?.trim().replace('*', '').trim() || 'Selección';
+      const err = makeErrorHelper(`${lblText} es obligatorio`);
+      field.appendChild(err);
+      errors.push(field);
+    }
+  });
+
+  /* Multiselects required — no hay hidden[required] (los hidden se inyectan
+     dinámicamente al seleccionar). Marcamos required por cualquiera de las
+     dos clases --required del DS o por *.naowee-dropdown__label--required. */
+  panel.querySelectorAll('.naowee-multiselect').forEach(field => {
+    const lblHas = field.querySelector(
+      '.naowee-dropdown__label--required, .naowee-textfield__label--required'
+    );
+    if (!lblHas) return;
+    const checked = field.querySelectorAll('input[data-multivalue]:checked').length;
+    if (checked === 0) {
+      field.classList.add('has-error');
+      const lblText = field.querySelector('.naowee-dropdown__label, .naowee-textfield__label')?.textContent?.trim().replace('*', '').trim() || 'Selección';
+      const err = makeErrorHelper(`Selecciona al menos una opción de ${lblText}`);
+      field.appendChild(err);
+      errors.push(field);
+    }
+  });
+
+  /* File uploaders required */
+  panel.querySelectorAll('.naowee-file-uploader').forEach(field => {
+    const input = field.querySelector('input[type="file"]');
+    const lblReq = field.querySelector('.naowee-file-uploader__label--required');
+    if (!lblReq || !input) return;
+    if (!input.files || input.files.length === 0) {
+      field.classList.add('has-error');
+      const lblText = field.querySelector('.naowee-file-uploader__label')?.textContent?.trim() || 'Archivo';
+      const hint = field.querySelector('.naowee-file-uploader__hint');
+      if (hint) hint.style.display = 'none';
+      const err = makeErrorHelper(`${lblText} es obligatorio`);
+      field.appendChild(err);
+      errors.push(field);
+    }
+  });
+
+  /* Datepickers required — hidden input vacío con [required] */
+  panel.querySelectorAll('.naowee-datepicker-field').forEach(field => {
+    const hidden = field.querySelector('input[type="hidden"][required]');
+    if (!hidden) return;
+    const val = (hidden.value || '').trim();
+    if (!val) {
+      field.classList.add('has-error');
+      const lblText = field.querySelector('.naowee-textfield__label')?.textContent?.trim().replace('*', '').trim() || 'Fecha';
+      const err = makeErrorHelper(`${lblText} es obligatorio`);
+      field.appendChild(err);
+      errors.push(field);
+    }
+  });
+
+  if (errors.length === 0) {
+    errorAttempts.delete(panel);
+    return true;
+  }
+
+  /* 1er intento: muestra error, wiggle + scroll · NO avanza */
+  const prevAttempts = errorAttempts.get(panel) || 0;
+  errorAttempts.set(panel, prevAttempts + 1);
+
+  /* Wiggle a los primeros 5 (no abrumar visualmente) */
+  errors.slice(0, 5).forEach(el => {
+    el.classList.add('is-wiggling');
+    setTimeout(() => el.classList.remove('is-wiggling'), 600);
+  });
+
+  /* Autoscroll al primer campo con error */
+  const first = errors[0];
+  first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  /* Focus al primer input editable si existe */
+  setTimeout(() => {
+    const focusable = first.querySelector('input:not([type="hidden"]), textarea, select, button');
+    focusable?.focus({ preventScroll: true });
+  }, 350);
+
+  /* 2do intento: permite avanzar igual (para no entorpecer la demo) */
+  if (prevAttempts >= 1) {
+    errorAttempts.delete(panel);
+    return true;
+  }
+  return false;
+}
+
+/* Limpia el conteo de intentos cuando el usuario empieza a corregir */
+export function bindValidationReset(scope) {
+  const reset = (target) => {
+    const field = target.closest?.('.has-error');
+    if (!field) return;
+    field.classList.remove('has-error');
+    field.querySelector('.naowee-helper--negative')?.remove();
+    /* Restaurar helpers originales que se ocultaron */
+    field.querySelectorAll('.naowee-helper:not(.naowee-helper--negative), .naowee-file-uploader__hint').forEach(h => {
+      h.style.display = '';
+    });
+  };
+  scope.addEventListener('input', e => reset(e.target));
+  scope.addEventListener('change', e => reset(e.target));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Multiselect dropdown — DS Naowee · selecciona múltiples opciones
+   con chips visibles en el trigger y menú dropdown con checkboxes.
+
+   Devuelve markup HTML. El form recoge los valores con FormData.getAll(name)
+   porque cada opción seleccionada inyecta un <input type="hidden">.
+
+   API:
+   - name: clave del FormData
+   - label: etiqueta visible
+   - options: ['Fútbol', 'Baloncesto', ...]
+   - placeholder: texto cuando no hay nada seleccionado
+   - required: bool
+   - helper: texto auxiliar bajo el campo
+   ═══════════════════════════════════════════════════════════════════ */
+const multiselectCheckSVG = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/></svg>`;
+
+export function multiselect({ name, label, options = [], placeholder = 'Seleccionar...', required = false, helper = '' }) {
+  return `
+    <div class="naowee-multiselect" data-name="${name}">
+      <label class="naowee-dropdown__label ${required ? 'naowee-dropdown__label--required' : ''}">${label}</label>
+      <div class="naowee-multiselect__trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+        <div class="naowee-multiselect__chips" data-chips>
+          <span class="naowee-multiselect__placeholder">${placeholder}</span>
+        </div>
+      </div>
+      <div class="naowee-multiselect__menu" role="listbox">
+        ${helper ? `<div class="naowee-multiselect__hint">${helper}</div>` : ''}
+        ${options.map(opt => `
+          <label class="naowee-multiselect__option" data-value="${opt}">
+            <span class="naowee-checkbox">
+              <input type="checkbox" data-multivalue="${opt}"/>
+              <span class="naowee-checkbox__box">${multiselectCheckSVG}</span>
+            </span>
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div data-hidden-inputs></div>
+    </div>
+  `;
+}
+
+/* Binder plural — portal del menu al <body> (escapa overflow del modal),
+   actualiza chips, hidden inputs según selección. Cierra al hacer click fuera. */
+export function bindMultiselects(scope) {
+  scope.querySelectorAll('.naowee-multiselect').forEach(ms => {
+    const name = ms.dataset.name;
+    const trigger = ms.querySelector('.naowee-multiselect__trigger');
+    const chipsEl = ms.querySelector('[data-chips]');
+    const hiddenWrap = ms.querySelector('[data-hidden-inputs]');
+    const menu = ms.querySelector('.naowee-multiselect__menu');
+    const xSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+    /* Portar el menú al body para escapar overflow:auto del modal__body */
+    document.body.appendChild(menu);
+
+    const positionMenu = () => {
+      const rect = trigger.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.left = rect.left + 'px';
+      menu.style.width = rect.width + 'px';
+      menu.style.zIndex = '9999';
+      /* Default: abajo del trigger */
+      menu.style.top = (rect.bottom + 6) + 'px';
+      requestAnimationFrame(() => {
+        const menuH = menu.offsetHeight || 280;
+        const spaceBelow = window.innerHeight - rect.bottom - 16;
+        const spaceAbove = rect.top - 16;
+        if (menuH > spaceBelow && spaceAbove > spaceBelow) {
+          menu.style.top = Math.max(8, rect.top - menuH - 6) + 'px';
+        } else if (menuH > spaceBelow) {
+          menu.style.maxHeight = Math.max(160, spaceBelow) + 'px';
+          menu.style.overflowY = 'auto';
+        }
+      });
+    };
+
+    function rebuildChips() {
+      const checked = Array.from(ms.querySelectorAll('input[data-multivalue]:checked')).map(i => i.dataset.multivalue);
+      if (checked.length === 0) {
+        chipsEl.innerHTML = '<span class="naowee-multiselect__placeholder">Seleccionar...</span>';
+      } else if (checked.length <= 4) {
+        chipsEl.innerHTML = checked.map(v => `
+          <span class="naowee-multiselect__chip">
+            ${v}
+            <button type="button" class="naowee-multiselect__chip-remove" data-remove="${v}" aria-label="Quitar ${v}">${xSVG}</button>
+          </span>
+        `).join('');
+      } else {
+        chipsEl.innerHTML = checked.slice(0, 3).map(v => `
+          <span class="naowee-multiselect__chip">
+            ${v}
+            <button type="button" class="naowee-multiselect__chip-remove" data-remove="${v}" aria-label="Quitar ${v}">${xSVG}</button>
+          </span>
+        `).join('') + `<span class="naowee-multiselect__count">+${checked.length - 3}</span>`;
+      }
+      /* Hidden inputs para que FormData.getAll(name) retorne todo */
+      hiddenWrap.innerHTML = checked.map(v => `<input type="hidden" name="${name}" value="${v}"/>`).join('');
+      chipsEl.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const val = btn.dataset.remove;
+          const inp = ms.querySelector(`input[data-multivalue="${CSS.escape(val)}"]`);
+          if (inp) { inp.checked = false; inp.closest('.naowee-checkbox')?.classList.remove('naowee-checkbox--checked'); }
+          rebuildChips();
+        });
+      });
+    }
+
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = ms.classList.contains('is-open');
+      document.querySelectorAll('.naowee-multiselect.is-open').forEach(m => {
+        m.classList.remove('is-open');
+        m.querySelector('.naowee-multiselect__menu')?.classList.remove('is-open');
+      });
+      ms.classList.toggle('is-open', !wasOpen);
+      menu.classList.toggle('is-open', !wasOpen);
+      trigger.setAttribute('aria-expanded', String(!wasOpen));
+      if (!wasOpen) positionMenu();
+    });
+    /* Re-posicionar al scrollear/resize */
+    window.addEventListener('scroll', () => { if (ms.classList.contains('is-open')) positionMenu(); }, true);
+    window.addEventListener('resize', () => { if (ms.classList.contains('is-open')) positionMenu(); });
+    trigger.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger.click(); }
+      if (e.key === 'Escape') { ms.classList.remove('is-open'); trigger.setAttribute('aria-expanded', 'false'); }
+    });
+    menu.querySelectorAll('.naowee-multiselect__option').forEach(opt => {
+      const inp = opt.querySelector('input[data-multivalue]');
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        inp.checked = !inp.checked;
+        opt.querySelector('.naowee-checkbox')?.classList.toggle('naowee-checkbox--checked', inp.checked);
+        rebuildChips();
+      });
+    });
+    /* Click fuera cierra el menu (verifica ms Y menu porque está portado al body) */
+    document.addEventListener('click', e => {
+      if (!ms.contains(e.target) && !menu.contains(e.target)) {
+        ms.classList.remove('is-open');
+        menu.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    rebuildChips();
+  });
+}
 
 const checkSVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>`;
 const arrowLeft = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`;
@@ -299,4 +638,5 @@ export function runConfetti(wrap) {
 }
 
 /* Re-exports — los formularios solo necesitan importar wizard-page.js */
-export { textfield, textarea, dropdown, checkbox, bindDropdowns };
+export { textfield, textarea, dropdown, checkbox, bindDropdowns, fileUpload, bindFileUpload };
+/* multiselect / validateRequired / bindValidationReset ya exportados arriba */

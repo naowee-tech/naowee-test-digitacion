@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260510c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -111,6 +111,56 @@
   }
   .dg-summary__actions { display: flex; gap: 10px; }
 
+  /* CTAs semánticos del summary con elevation tokens globales */
+  .btn-aprobar-doc {
+    background: #15803d !important; color: #fff !important; border-color: #15803d !important;
+    display: inline-flex; align-items: center; gap: 6px;
+    box-shadow: var(--shadow-green-cta);
+    transition: background .15s, border-color .15s, box-shadow .15s, transform .12s;
+  }
+  .btn-aprobar-doc:hover:not(:disabled) {
+    background: #166f30 !important; border-color: #166f30 !important;
+    box-shadow: var(--shadow-green-cta-hover);
+    transform: translateY(-1px);
+  }
+  .btn-devolver-doc {
+    background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
+    box-shadow: var(--shadow-accent-cta);
+    transition: background .15s, border-color .15s, box-shadow .15s, transform .12s;
+  }
+  .btn-devolver-doc:hover:not(:disabled) {
+    background: #b8350a !important; border-color: #b8350a !important;
+    transform: translateY(-1px);
+  }
+  /* Disabled state: sin elevation, sin transform — el disabled gris del DS toma el control */
+  .btn-aprobar-doc:disabled, .btn-devolver-doc:disabled {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  /* Disabled del DS oficial: gray-500 sobre gray-50, no tinted del color semántico */
+  .btn-aprobar-doc:disabled, .btn-devolver-doc:disabled {
+    background: var(--naowee-color-surface-disabled, #f5f6fa) !important;
+    color: var(--naowee-color-text-disabled, #9C9EBF) !important;
+    border-color: var(--naowee-color-border-disabled, #e7e9f3) !important;
+    cursor: not-allowed;
+  }
+  .btn-aprobar-doc:disabled svg, .btn-devolver-doc:disabled svg {
+    color: var(--naowee-color-icon-disabled, #9C9EBF) !important;
+    stroke: var(--naowee-color-icon-disabled, #9C9EBF) !important;
+  }
+
+  /* Read-only pill (cuando docsGeneral ya está aprobada) */
+  .dg-readonly-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 700;
+  }
+  .dg-readonly-pill svg { width: 13px; height: 13px; }
+  .dg-readonly-pill--cumple { background: var(--green-bg); color: var(--green); }
+  .dg-readonly-pill--nocumple { background: var(--red-bg); color: #c01818; }
+  .dg-readonly-pill--na { background: var(--blue-bg); color: var(--blue-info); }
+  .dg-readonly-pill--empty { background: #f5f6fa; color: var(--text-secondary); }
+
   /* Hero del proyecto en detalle */
   .dg-hero {
     background: var(--surface); border: 1px solid var(--border);
@@ -137,7 +187,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
   import { formatoMoneda, fechaCorta } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -339,13 +389,34 @@
           </div>
         </div>
 
-        <div class="dg-hero">
-          <div class="dg-hero__main">
-            <span class="dg-hero__rad">${(p.radicado || '—').split('-CONV-')[0]}</span>
-            <span class="dg-hero__title">${p.nombre}</span>
-            <span class="dg-hero__meta">${p.municipio}${p.departamento ? `, ${p.departamento}` : ''} · ${p.tipoSolicitud || ''}</span>
+        <!-- Hero canónico project-hero (con banderín + paddings consistentes) -->
+        <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
+          ${p.priorizado ? `
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto priorizado por el Ministerio">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+              <span class="prio-ribbon__tooltip" role="tooltip">Priorizado por el Ministerio</span>
+            </span>
+          ` : ''}
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${(p.radicado || '—').split('-CONV-')[0]}</div>
+              <h1 class="project-hero__title" style="font-size:20px">${p.nombre}</h1>
+              <div class="project-hero__meta">
+                <span>${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</span>
+                <span>${p.formuladora?.nombre || ''}</span>
+                <span>${p.tipoSolicitud || ''}${p.fase ? ` · ${p.fase}` : ''}</span>
+              </div>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--brand naowee-badge--quiet"><span class="naowee-badge__dot"></span>Etapa documental</span>
+                ${aprobado ? '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet"><span class="naowee-badge__dot"></span>Documentación general aprobada</span>' : ''}
+              </div>
+            </div>
+            <div class="project-hero__right">
+              <div class="project-hero__label">Presupuesto del proyecto</div>
+              <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
+              <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
+            </div>
           </div>
-          <span class="dg-hero__amount">${formatoMoneda(p.presupuesto)}</span>
         </div>
 
         ${aprobado ? `
@@ -377,6 +448,22 @@
                 ${bloque.items.map(it => {
                   const sel = checklist[it.n];
                   const itemClass = sel === 'cumple' ? 'is-cumple' : sel === 'nocumple' ? 'is-nocumple' : sel === 'na' ? 'is-na' : '';
+                  if (aprobado) {
+                    /* Read-only: pill inline en lugar de toggle editable */
+                    const pill = sel === 'cumple'   ? `<span class="dg-readonly-pill dg-readonly-pill--cumple">${ICONS.check} Cumple</span>`
+                             :  sel === 'nocumple' ? `<span class="dg-readonly-pill dg-readonly-pill--nocumple">${ICONS.x} No cumple</span>`
+                             :  sel === 'na'       ? `<span class="dg-readonly-pill dg-readonly-pill--na">N/A</span>`
+                             :                       `<span class="dg-readonly-pill dg-readonly-pill--empty">Sin verificar</span>`;
+                    return `
+                      <div class="dg-item ${itemClass}" data-item="${it.n}">
+                        <div class="dg-item__num">${it.n}</div>
+                        <div class="dg-item__main">
+                          <div class="dg-item__text">${it.item}</div>
+                          <div class="dg-item__ref">${it.ref}</div>
+                        </div>
+                        ${pill}
+                      </div>`;
+                  }
                   return `
                     <div class="dg-item ${itemClass}" data-item="${it.n}">
                       <div class="dg-item__num">${it.n}</div>
@@ -404,12 +491,12 @@
               <span class="dg-summary__stat" style="color:#c01818"><strong id="summaryNocumple">0</strong> no cumple</span>
               <span class="dg-summary__stat" style="color:var(--blue-info)"><strong id="summaryNa">0</strong> N/A</span>
             </div>
-            <div class="dg-summary__actions">
-              <button type="button" class="naowee-btn naowee-btn--mute" id="btnDevolver">Devolver con observaciones</button>
-              <button type="button" class="naowee-btn naowee-btn--loud" id="btnAprobar" ${aprobado ? 'disabled' : ''}>
-                ${ICONS.check} Aprobar documentación general
-              </button>
-            </div>
+            ${aprobado ? '' : `
+              <div class="dg-summary__actions">
+                <button type="button" class="naowee-btn btn-devolver-doc" id="btnDevolver">Devolver con observaciones</button>
+                <button type="button" class="naowee-btn btn-aprobar-doc" id="btnAprobar">${ICONS.check} Aprobar documentación general</button>
+              </div>
+            `}
           </div>
         </div>
       </div>
@@ -420,10 +507,32 @@
 
     function updateSummary() {
       const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
-      document.getElementById('summaryDone').textContent = all.length;
-      document.getElementById('summaryCumple').textContent = all.filter(v => v === 'cumple').length;
-      document.getElementById('summaryNocumple').textContent = all.filter(v => v === 'nocumple').length;
-      document.getElementById('summaryNa').textContent = all.filter(v => v === 'na').length;
+      const done = all.length;
+      const cumple = all.filter(v => v === 'cumple').length;
+      const nocumple = all.filter(v => v === 'nocumple').length;
+      const na = all.filter(v => v === 'na').length;
+      document.getElementById('summaryDone').textContent = done;
+      document.getElementById('summaryCumple').textContent = cumple;
+      document.getElementById('summaryNocumple').textContent = nocumple;
+      document.getElementById('summaryNa').textContent = na;
+
+      const btnAprobar = document.getElementById('btnAprobar');
+      const btnDevolver = document.getElementById('btnDevolver');
+      /* En aprobado los botones no existen (se omiten en el render), nada que actualizar */
+      if (!btnAprobar || !btnDevolver) return;
+      const allDone = done === totalItems;
+      /* Aprobar: todos verificados y 0 "no cumple" */
+      btnAprobar.disabled = !allDone || nocumple > 0;
+      btnAprobar.title = !allDone
+        ? `Faltan ${totalItems - done} ítem${totalItems - done === 1 ? '' : 's'} por verificar`
+        : nocumple > 0
+        ? `No se puede aprobar: ${nocumple} ítem${nocumple === 1 ? '' : 's'} en "No cumple" requiere${nocumple === 1 ? '' : 'n'} devolución`
+        : '';
+      /* Devolver: al menos 1 "no cumple" */
+      btnDevolver.disabled = nocumple === 0;
+      btnDevolver.title = nocumple === 0
+        ? 'No hay observaciones para devolver — marca al menos un ítem como "No cumple"'
+        : `Devolver con ${nocumple} ${nocumple === 1 ? 'observación' : 'observaciones'} al municipio`;
     }
     updateSummary();
     /* Refresh progress bars per bloque */
@@ -437,8 +546,8 @@
       });
     }
 
-    /* Click en cada toggle */
-    document.querySelectorAll('.dg-item').forEach(itemEl => {
+    /* Click en cada toggle — solo en modo editable */
+    if (!aprobado) document.querySelectorAll('.dg-item').forEach(itemEl => {
       const n = itemEl.dataset.item;
       itemEl.querySelectorAll('.dg-toggle__btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -464,17 +573,16 @@
       });
     });
 
-    /* Aprobar */
-    document.getElementById('btnAprobar').addEventListener('click', () => {
-      const allDone = CHECKLIST.every(bl => bl.items.every(it => ['cumple','nocumple','na'].includes(state[it.n])));
-      if (!allDone) {
-        toast({ variant: 'caution', title: 'Checklist incompleto', message: 'Marca todos los ítems antes de aprobar la documentación.' });
+    /* Aprobar — solo si todos verificados Y 0 "no cumple" (la lógica también está en el disabled) */
+    document.getElementById('btnAprobar')?.addEventListener('click', () => {
+      const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+      const allDone = all.length === totalItems;
+      const noCumpleCount = all.filter(v => v === 'nocumple').length;
+      if (!allDone || noCumpleCount > 0) {
+        toast({ variant: 'caution', title: 'No se puede aprobar', message: !allDone ? 'Marca todos los ítems antes de aprobar.' : `Hay ${noCumpleCount} ítem(s) en "No cumple". La documentación debe devolverse.` });
         return;
       }
-      const noCumpleCount = Object.values(state).filter(v => v === 'nocumple').length;
-      if (noCumpleCount > 0) {
-        if (!confirm(`Hay ${noCumpleCount} ítem${noCumpleCount === 1 ? '' : 's'} marcado${noCumpleCount === 1 ? '' : 's'} como "No cumple". ¿Aprobar la documentación general de todos modos?`)) return;
-      }
+      if (!confirm('¿Aprobar la documentación general?')) return;
       ProjectData.setProyecto(p.idUnico, x => {
         x.docsGeneral = x.docsGeneral || {};
         x.docsGeneral.checklist = { ...state };
@@ -487,7 +595,7 @@
       setTimeout(() => { window.location.href = 'doc-general.html'; }, 800);
     });
 
-    document.getElementById('btnDevolver').addEventListener('click', () => {
+    document.getElementById('btnDevolver')?.addEventListener('click', () => {
       const noCumpleCount = Object.values(state).filter(v => v === 'nocumple').length;
       if (noCumpleCount === 0) {
         toast({ variant: 'caution', title: 'Sin ítems para devolver', message: 'Marca al menos un ítem como "No cumple" antes de devolver.' });

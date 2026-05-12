@@ -31,7 +31,10 @@ export const ESTADOS_AREA = {
   pendiente:   { label: 'Pendiente',   color: 'neutral' },
   en_revision: { label: 'En revisión', color: 'caution' },
   aprobado:    { label: 'Aprobado',    color: 'positive' },
-  devuelto:    { label: 'Devuelto',    color: 'negative' }
+  /* devuelto = subsanable por el municipio (corregible)
+     rechazado = no subsanable, requiere replantear el proyecto (Res. 933 Art. 9) */
+  devuelto:    { label: 'Devuelto a subsanación', color: 'caution' },
+  rechazado:   { label: 'Rechazado',   color: 'negative' }
 };
 
 /* Transiciones permitidas — fuente de verdad de la lógica E2E */

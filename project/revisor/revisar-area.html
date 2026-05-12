@@ -7,7 +7,276 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
+<style>
+  /* ─── Hero strip del proyecto + área ─── */
+  .ra-hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 16px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .ra-hero__icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ra-hero__icon svg { width: 22px; height: 22px; }
+  .ra-hero__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ra-hero__rad { font-size: 11px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
+  .ra-hero__title { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+  .ra-hero__meta { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ─── Bloque de items con header tipo dash-table ─── */
+  .ra-bloque {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    margin-bottom: 0;
+  }
+  .ra-bloque__head {
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    background: linear-gradient(180deg, #fafbff 0%, var(--surface) 100%);
+  }
+  .ra-bloque__title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .ra-bloque__sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  .ra-progress {
+    display: flex; align-items: center; gap: 10px; min-width: 220px;
+  }
+  .ra-progress-bar {
+    flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .ra-progress-bar > span {
+    display: block; height: 100%; background: var(--green); border-radius: 99px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .ra-progress-text {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  /* ─── Items ─── */
+  .ra-item {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    gap: 16px; align-items: center;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .ra-item:last-child { border-bottom: 0; }
+  .ra-item:hover { background: #fafbff; }
+  .ra-item__num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg, #f5f6fa); color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    transition: background .15s, color .15s;
+  }
+  .ra-item.is-cumple .ra-item__num { background: var(--green-bg); color: var(--green); }
+  .ra-item.is-nocumple .ra-item__num { background: var(--red-bg); color: #c01818; }
+  .ra-item.is-na .ra-item__num { background: var(--blue-bg); color: var(--blue-info); }
+  .ra-item__main { min-width: 0; }
+  .ra-item__text { font-size: 13.5px; line-height: 1.45; color: var(--text-primary); }
+  .ra-item__ref {
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* Segmented toggle (igual a doc-general) */
+  .ra-toggle {
+    display: inline-flex; gap: 0;
+    border: 1px solid var(--border-dark); border-radius: var(--radius-md);
+    overflow: hidden; background: #fff;
+  }
+  .ra-toggle__btn {
+    padding: 7px 12px; min-width: 84px;
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    background: #fff; color: var(--text-secondary);
+    border: 0; border-right: 1px solid var(--border);
+    cursor: pointer; transition: all .12s;
+    display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+  }
+  .ra-toggle__btn:last-child { border-right: 0; }
+  .ra-toggle__btn:hover { background: var(--bg, #f5f6fa); color: var(--text-primary); }
+  .ra-toggle__btn.is-active--cumple { background: var(--green); color: #fff; border-color: var(--green); }
+  .ra-toggle__btn.is-active--nocumple { background: #c01818; color: #fff; border-color: #c01818; }
+  .ra-toggle__btn.is-active--na { background: var(--blue-info); color: #fff; border-color: var(--blue-info); }
+  .ra-toggle__btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* Sticky footer con summary */
+  .ra-summary {
+    position: sticky; bottom: 0; z-index: 5;
+    background: var(--surface); border-top: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    box-shadow: 0 -8px 20px -8px rgba(15, 17, 35, 0.08);
+  }
+  .ra-summary__stats {
+    display: flex; gap: 18px; font-size: 13px; color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+  .ra-summary__stat strong {
+    color: var(--text-primary); font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .ra-summary__actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+  /* Acción semántica: devolver = naranja, aprobar = verde (con elevation token global) */
+  .btn-aprobar {
+    background: #15803d !important; color: #fff !important; border-color: #15803d !important;
+    box-shadow: var(--shadow-green-cta);
+    transition: background .15s, border-color .15s, box-shadow .15s, transform .12s;
+  }
+  .btn-aprobar:hover:not(:disabled) {
+    background: #166f30 !important; border-color: #166f30 !important;
+    box-shadow: var(--shadow-green-cta-hover);
+    transform: translateY(-1px);
+  }
+  .btn-devolver-area {
+    background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
+    box-shadow: var(--shadow-accent-cta);
+    transition: background .15s, border-color .15s, box-shadow .15s, transform .12s;
+  }
+  .btn-devolver-area:hover:not(:disabled) {
+    background: #b8350a !important; border-color: #b8350a !important;
+    transform: translateY(-1px);
+  }
+  /* Disabled state: sin elevation, gris del DS */
+  .btn-aprobar:disabled, .btn-devolver-area:disabled {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  /* Disabled del DS oficial: gray-500 sobre gray-50, sin tinted del color semántico */
+  .btn-aprobar:disabled, .btn-devolver-area:disabled {
+    background: var(--naowee-color-surface-disabled, #f5f6fa) !important;
+    color: var(--naowee-color-text-disabled, #9C9EBF) !important;
+    border-color: var(--naowee-color-border-disabled, #e7e9f3) !important;
+    cursor: not-allowed;
+  }
+  .btn-aprobar:disabled svg, .btn-devolver-area:disabled svg {
+    color: var(--naowee-color-icon-disabled, #9C9EBF) !important;
+    stroke: var(--naowee-color-icon-disabled, #9C9EBF) !important;
+  }
+
+  /* ─── Modal de confirmación (devolución / aprobación) ─── */
+  .ra-modal-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .ra-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .ra-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 560px; max-height: 92vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15, 17, 35, .35), 0 0 0 1px var(--border);
+    transform: translateY(16px) scale(.97); opacity: 0;
+    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  .ra-modal-overlay.is-open .ra-modal { transform: translateY(0) scale(1); opacity: 1; }
+
+  .ra-modal__hero {
+    padding: 32px 28px 20px; text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .ra-modal__hero--success {
+    background: linear-gradient(180deg, var(--green-bg) 0%, #fff 80%);
+  }
+  .ra-modal__hero--caution {
+    background: linear-gradient(180deg, var(--orange-bg) 0%, #fff 80%);
+  }
+  .ra-modal__icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .ra-modal__icon--success { background: var(--green); color: #fff; box-shadow: 0 8px 24px rgba(21,128,61,.3); animation: raPop .4s cubic-bezier(.18,.89,.32,1.28); }
+  .ra-modal__icon--caution { background: var(--accent); color: #fff; box-shadow: 0 8px 24px rgba(215,64,9,.3); }
+  .ra-modal__icon svg { width: 30px; height: 30px; stroke: #fff; }
+  @keyframes raPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .ra-modal__title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .ra-modal__subtitle { font-size: 13.5px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; max-width: 420px; margin-inline: auto; }
+
+  .ra-modal__body { padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; }
+  .ra-modal__row {
+    display: grid; grid-template-columns: 110px 1fr; gap: 14px;
+    font-size: 13px;
+  }
+  .ra-modal__row dt {
+    font-size: 11px; font-weight: 700; letter-spacing: .35px;
+    color: var(--text-secondary); text-transform: uppercase;
+    align-self: center;
+  }
+  .ra-modal__row dd { color: var(--text-primary); font-weight: 500; margin: 0; }
+  .ra-modal__row dd strong { font-weight: 700; }
+
+  .ra-modal__obs-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-top: 4px;
+  }
+  .ra-modal__obs-item {
+    display: flex; gap: 10px;
+    padding: 10px 12px;
+    background: var(--red-bg); border: 1px solid #ffc4bb;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+  }
+  .ra-modal__obs-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #c01818; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .ra-modal__obs-text { color: var(--text-primary); line-height: 1.4; }
+  .ra-modal__obs-ref { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .ra-modal__footer {
+    padding: 16px 28px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* Confetti — partículas SVG absolutas */
+  .ra-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .ra-confetti span {
+    position: absolute; top: -10px;
+    width: 8px; height: 14px; border-radius: 2px;
+    opacity: 0; animation: raConfetti 1.8s cubic-bezier(.16, 1, .3, 1) forwards;
+  }
+  @keyframes raConfetti {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(420px) rotate(720deg); opacity: 0; }
+  }
+
+  /* ─── Read-only view: cuando el área ya fue aprobada o devuelta ─── */
+  .ra-item--ro {
+    grid-template-columns: 36px 1fr auto;
+  }
+  .ra-readonly-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 700;
+  }
+  .ra-readonly-pill svg { width: 13px; height: 13px; }
+  .ra-readonly-pill--cumple { background: var(--green-bg); color: var(--green); }
+  .ra-readonly-pill--nocumple { background: var(--red-bg); color: #c01818; }
+  .ra-readonly-pill--na { background: var(--blue-bg); color: var(--blue-info); }
+  .ra-readonly-pill--empty { background: #f5f6fa; color: var(--text-secondary); }
+</style>
 </head>
 <body>
 <div class="shell">
@@ -21,12 +290,14 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js';
-  import { ESTADOS_AREA } from '../shared/states.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
+  import { ESTADOS_AREA, formatoMoneda } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'doc-tecnica' });
 
-  /* Checklist 8 áreas Res. 933 (extracto) */
+  /* Checklist 8 áreas Res. 933 */
   const AREAS = {
     topografico: { nombre: 'Levantamiento Topográfico', items: [
       { n:1, item:'Informe de levantamiento topográfico/arquitectónico presente, sellado y firmado.', ref:'Art. 3.1.1' },
@@ -84,107 +355,265 @@
     ]}
   };
 
+  /* Iconos semánticos por área (mismos que doc-tecnica) */
+  function iconForArea(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('topogr')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l4-8 4 4 5-10 5 14"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/><circle cx="11" cy="15" r="1.2" fill="currentColor"/><circle cx="16" cy="5" r="1.2" fill="currentColor"/></svg>';
+    if (n.includes('suelo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>';
+    if (n.includes('arquitect')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>';
+    if (n.includes('estructur')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18" rx="1"/><rect x="15" y="3" width="6" height="18" rx="1"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="14" x2="15" y2="14"/></svg>';
+    if (n.includes('hidr')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5C8 7 6 10.5 6 13.5a6 6 0 0012 0c0-3-2-6.5-6-11z"/></svg>';
+    if (n.includes('eléct') || n.includes('electric')) return '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L4.5 14h6L9 22l8.5-12h-6L13 2z"/></svg>';
+    if (n.includes('ambient') || n.includes('riesg') || n.includes('manejo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>';
+    if (n.includes('presup')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+  }
+
+  const ICONS = {
+    back: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    checkBig: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>',
+    revert:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>'
+  };
+
   const id = new URLSearchParams(location.search).get('id');
   const areaId = new URLSearchParams(location.search).get('area');
   const p = ProjectData.getProyecto(id);
   const areaInfo = AREAS[areaId];
+  const pageContent = document.getElementById('pageContent');
 
   if (!p || !areaInfo) {
-    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Área no encontrada</div><a class="naowee-btn naowee-btn--quiet" href="doc-tecnica.html">Volver</a></div>`;
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Área no encontrada</div>
+        <a class="naowee-btn naowee-btn--quiet" href="doc-tecnica.html">Volver</a>
+      </div>`;
   } else {
     const areaState = p.docsTecnica.areas.find(a => a.id === areaId);
-    const e = ESTADOS_AREA[areaState.estado];
+    const e = ESTADOS_AREA[areaState.estado] || { label: areaState.estado, color: 'neutral' };
+    const aprobado = areaState.estado === 'aprobado';
+    const devuelto = areaState.estado === 'devuelto';
+    const readOnly = aprobado || devuelto;
 
-    /* Smart back: doc-tecnica del proyecto si vino de ahí, sino dashboard */
     const ref = document.referrer;
     const backHref = ref.includes('doc-tecnica.html') ? `doc-tecnica.html?id=${p.idUnico}` : 'dashboard.html';
     const backLabel = backHref.includes('doc-tecnica.html') ? 'Volver a áreas técnicas' : 'Volver al panel';
 
-    document.getElementById('pageContent').innerHTML = `
-      <div class="page-fade-in">
-        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>${backLabel}</a>
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:8px 0 24px">
-          <div>
-            <h1 style="margin-bottom:4px">${areaInfo.nombre}</h1>
-            <p style="color:var(--text-secondary)">${p.nombre} · ${p.idUnico}</p>
-          </div>
-          <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${e.label}</span>
-        </div>
+    /* Estado del checklist en memoria (recupera del backend si existe) */
+    const initialChecklist = areaState.checklist || {};
+    const state = { ...initialChecklist };
+    const totalItems = areaInfo.items.length;
 
-        <div class="naowee-message naowee-message--informative" role="status">
-          <div class="naowee-message__header">
-            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-            <span class="naowee-message__title">Checklist técnico — ${areaInfo.items.length} ítems</span>
-          </div>
-          <div class="naowee-message__text">Marca cumple/no cumple/N/A para cada ítem. Las observaciones se devuelven a subsanación documental.</div>
-        </div>
+    function renderPage() {
+      pageContent.innerHTML = `
+        <div class="page-fade-in">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}" style="margin-bottom:14px">${ICONS.back}${backLabel}</a>
 
-        <div class="naowee-card">
-          <div class="naowee-card__header"><div class="naowee-card__title">Ítems de verificación · ${areaInfo.nombre}</div></div>
-          <div class="naowee-card__body">
-            ${areaInfo.items.map(it => `
-              <div style="display:grid;grid-template-columns:30px 1fr auto;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
-                <div style="font-size:13px;font-weight:700;color:var(--text-secondary)">${it.n}</div>
-                <div>
-                  <div style="font-size:13.5px;font-weight:500;line-height:1.4">${it.item}</div>
-                  <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">Res. 933 ${it.ref}</div>
-                </div>
-                <div style="display:flex;gap:4px">
-                  <button class="check-btn check-btn--si" data-item="${it.n}" data-r="si">✓ Sí</button>
-                  <button class="check-btn check-btn--no" data-item="${it.n}" data-r="no">✗ No</button>
-                  <button class="check-btn" data-item="${it.n}" data-r="na">N/A</button>
+          <div class="naowee-page-header naowee-page-header--centered">
+            <div class="naowee-page-header__main">
+              <h1>Revisión de área técnica</h1>
+              <p>Marca cada ítem del checklist. Las observaciones marcadas como "No cumple" se devuelven al municipio para subsanación.</p>
+            </div>
+          </div>
+
+          <!-- Hero strip del área + proyecto -->
+          <section class="ra-hero">
+            <div class="ra-hero__icon">${iconForArea(areaInfo.nombre)}</div>
+            <div class="ra-hero__main">
+              <span class="ra-hero__rad">${(p.radicado || '—').split('-CONV-')[0]} · ${areaInfo.nombre}</span>
+              <span class="ra-hero__title">${p.nombre}</span>
+              <span class="ra-hero__meta">${p.municipio}${p.departamento ? `, ${p.departamento}` : ''} · ${p.tipoSolicitud || ''}</span>
+            </div>
+            <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+          </section>
+
+          ${aprobado ? `
+            <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:18px">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="naowee-message__title">Área aprobada</span>
+              </div>
+              <div class="naowee-message__text">Aprobada por <strong>${areaState.revisor || 'el revisor'}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. La decisión es final — esta vista es solo de consulta.</div>
+            </div>
+          ` : devuelto ? `
+            <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+                <span class="naowee-message__title">Área devuelta al municipio</span>
+              </div>
+              <div class="naowee-message__text">Devuelta por <strong>${areaState.revisor || 'el revisor'}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. Esperando subsanación del municipio. Esta vista es solo de consulta.</div>
+            </div>
+          ` : `
+            <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:14px">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__title">Lógica de decisión</span>
+              </div>
+              <div class="naowee-message__text"><strong>Aprobar área</strong> solo se habilita si todos los ítems están marcados como Cumple o N/A. <strong>Devolver a subsanación</strong> requiere al menos un ítem en No cumple — el área completa se devuelve al municipio para corrección.</div>
+            </div>
+          `}
+
+          <section class="ra-bloque" id="bloqueChecklist">
+            <div class="ra-bloque__head">
+              <div>
+                <div class="ra-bloque__title">${readOnly ? 'Resultado de verificación' : 'Ítems de verificación'} · ${areaInfo.nombre}</div>
+                <div class="ra-bloque__sub">${readOnly ? 'Estado final del checklist al cierre de la revisión.' : 'Marca cada ítem como Cumple, No cumple o No aplica.'}</div>
+              </div>
+              <div class="ra-progress">
+                <div class="ra-progress-bar"><span id="bloqueProgress" style="width:0%"></span></div>
+                <span class="ra-progress-text" id="bloqueProgressText">0 de ${totalItems} verificados</span>
+              </div>
+            </div>
+            <div>
+              ${areaInfo.items.map(it => {
+                const sel = state[it.n];
+                const itemClass = sel === 'cumple' ? 'is-cumple' : sel === 'nocumple' ? 'is-nocumple' : sel === 'na' ? 'is-na' : '';
+                if (readOnly) {
+                  /* Vista read-only: badge inline en lugar de toggle */
+                  const pill = sel === 'cumple'   ? `<span class="ra-readonly-pill ra-readonly-pill--cumple">${ICONS.check} Cumple</span>`
+                           :  sel === 'nocumple' ? `<span class="ra-readonly-pill ra-readonly-pill--nocumple">${ICONS.x} No cumple</span>`
+                           :  sel === 'na'       ? `<span class="ra-readonly-pill ra-readonly-pill--na">N/A</span>`
+                           :                       `<span class="ra-readonly-pill ra-readonly-pill--empty">Sin verificar</span>`;
+                  return `
+                    <div class="ra-item ra-item--ro ${itemClass}" data-item="${it.n}">
+                      <div class="ra-item__num">${it.n}</div>
+                      <div class="ra-item__main">
+                        <div class="ra-item__text">${it.item}</div>
+                        <div class="ra-item__ref">Res. 933 · ${it.ref}</div>
+                      </div>
+                      ${pill}
+                    </div>`;
+                }
+                return `
+                  <div class="ra-item ${itemClass}" data-item="${it.n}">
+                    <div class="ra-item__num">${it.n}</div>
+                    <div class="ra-item__main">
+                      <div class="ra-item__text">${it.item}</div>
+                      <div class="ra-item__ref">Res. 933 · ${it.ref}</div>
+                    </div>
+                    <div class="ra-toggle" role="group">
+                      <button type="button" class="ra-toggle__btn ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple">${ICONS.check} Cumple</button>
+                      <button type="button" class="ra-toggle__btn ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple">${ICONS.x} No cumple</button>
+                      <button type="button" class="ra-toggle__btn ${sel === 'na' ? 'is-active--na' : ''}" data-r="na">N/A</button>
+                    </div>
+                  </div>`;
+              }).join('')}
+            </div>
+            ${readOnly ? `
+              <div class="ra-summary">
+                <div class="ra-summary__stats">
+                  <span class="ra-summary__stat"><strong id="sumDone">0</strong> / ${totalItems} verificados</span>
+                  <span class="ra-summary__stat" style="color:var(--green)"><strong id="sumCumple">0</strong> cumple</span>
+                  <span class="ra-summary__stat" style="color:#c01818"><strong id="sumNocumple">0</strong> no cumple</span>
+                  <span class="ra-summary__stat" style="color:var(--blue-info)"><strong id="sumNa">0</strong> N/A</span>
                 </div>
               </div>
-            `).join('')}
-          </div>
-          <div class="naowee-card__footer">
-            <button class="naowee-btn naowee-btn--loud" data-action="devolver">Devolver área a subsanación</button>
-            <button class="naowee-btn naowee-btn--loud naowee-btn--success" data-action="aprobar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
-              Aprobar área
-            </button>
-          </div>
+            ` : `
+              <div class="ra-summary">
+                <div class="ra-summary__stats">
+                  <span class="ra-summary__stat"><strong id="sumDone">0</strong> / ${totalItems} verificados</span>
+                  <span class="ra-summary__stat" style="color:var(--green)"><strong id="sumCumple">0</strong> cumple</span>
+                  <span class="ra-summary__stat" style="color:#c01818"><strong id="sumNocumple">0</strong> no cumple</span>
+                  <span class="ra-summary__stat" style="color:var(--blue-info)"><strong id="sumNa">0</strong> N/A</span>
+                </div>
+                <div class="ra-summary__actions">
+                  <button type="button" class="naowee-btn btn-devolver-area" id="btnDevolver">${ICONS.revert} Devolver área a subsanación</button>
+                  <button type="button" class="naowee-btn btn-aprobar" id="btnAprobar">${ICONS.checkBig} Aprobar área</button>
+                </div>
+              </div>
+            `}
+          </section>
         </div>
-      </div>
+      `;
 
-      <style>
-        .check-btn { padding:6px 12px; border:1.5px solid var(--border-dark); background:#fff; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
-        .check-btn:hover { background:var(--grey-bg); }
-        .check-btn--si.is-active { background:var(--green-bg); color:var(--green); border-color:var(--green); }
-        .check-btn--no.is-active { background:var(--red-bg); color:#c01818; border-color:var(--red-border); }
-        .check-btn.is-active:not(.check-btn--si):not(.check-btn--no) { background:var(--blue-bg); color:var(--blue-info); border-color:var(--blue-border); }
-      </style>
-    `;
+      bindInteractions();
+      updateSummary();
+    }
 
-    document.querySelectorAll('.check-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const n = btn.dataset.item;
-        document.querySelectorAll(`.check-btn[data-item="${n}"]`).forEach(b => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
+    function updateSummary() {
+      const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+      const done = all.length;
+      const cumple = all.filter(v => v === 'cumple').length;
+      const nocumple = all.filter(v => v === 'nocumple').length;
+      const na = all.filter(v => v === 'na').length;
+
+      document.getElementById('sumDone').textContent = done;
+      document.getElementById('sumCumple').textContent = cumple;
+      document.getElementById('sumNocumple').textContent = nocumple;
+      document.getElementById('sumNa').textContent = na;
+
+      const pct = Math.round((done / totalItems) * 100);
+      document.getElementById('bloqueProgress').style.width = pct + '%';
+      document.getElementById('bloqueProgressText').textContent = `${done} de ${totalItems} verificados`;
+
+      const btnAprobar = document.getElementById('btnAprobar');
+      const btnDevolver = document.getElementById('btnDevolver');
+      /* En read-only los botones no existen, no hay nada que actualizar */
+      if (!btnAprobar || !btnDevolver) return;
+
+      const allDone = done === totalItems;
+      /* Aprobar: todos verificados y CERO "no cumple" */
+      btnAprobar.disabled = !allDone || nocumple > 0;
+      btnAprobar.title = !allDone
+        ? `Faltan ${totalItems - done} ítem${totalItems - done === 1 ? '' : 's'} por verificar`
+        : nocumple > 0
+        ? `No se puede aprobar: ${nocumple} ítem${nocumple === 1 ? '' : 's'} en "No cumple" requiere${nocumple === 1 ? '' : 'n'} devolución`
+        : '';
+
+      /* Devolver: al menos UN "no cumple" */
+      btnDevolver.disabled = nocumple === 0;
+      btnDevolver.title = nocumple === 0
+        ? 'No hay observaciones para devolver — marca al menos un ítem como "No cumple"'
+        : `Devolver con ${nocumple} ${nocumple === 1 ? 'observación' : 'observaciones'} al municipio`;
+    }
+
+    function bindInteractions() {
+      /* En read-only no hay toggles ni botones a bindear */
+      if (readOnly) return;
+
+      document.querySelectorAll('.ra-item').forEach(itemEl => {
+        const n = itemEl.dataset.item;
+        itemEl.querySelectorAll('.ra-toggle__btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+            const r = btn.dataset.r;
+            if (state[n] === r) {
+              delete state[n];
+              itemEl.classList.remove('is-cumple', 'is-nocumple', 'is-na');
+              btn.classList.remove('is-active--cumple', 'is-active--nocumple', 'is-active--na');
+            } else {
+              state[n] = r;
+              itemEl.classList.remove('is-cumple', 'is-nocumple', 'is-na');
+              itemEl.classList.add(r === 'cumple' ? 'is-cumple' : r === 'nocumple' ? 'is-nocumple' : 'is-na');
+              itemEl.querySelectorAll('.ra-toggle__btn').forEach(b => b.classList.remove('is-active--cumple', 'is-active--nocumple', 'is-active--na'));
+              btn.classList.add('is-active--' + r);
+            }
+            updateSummary();
+          });
+        });
       });
-    });
 
-    document.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = btn.dataset.action;
-        const yes = action === 'aprobar' ? 'APROBAR' : 'DEVOLVER';
-        if (!confirm(`¿${yes} el área ${areaInfo.nombre}?`)) return;
+      document.getElementById('btnAprobar').addEventListener('click', () => {
+        const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+        const allDone = all.length === totalItems;
+        const nocumple = all.filter(v => v === 'nocumple').length;
+        if (!allDone || nocumple > 0) {
+          toast({ variant: 'caution', title: 'No se puede aprobar', message: !allDone ? 'Marca todos los ítems antes de aprobar.' : `Hay ${nocumple} ítem(s) en "No cumple". El área debe devolverse.` });
+          return;
+        }
+        openApproveModal(() => {
         ProjectData.setProyecto(p.idUnico, x => {
           const ar = x.docsTecnica.areas.find(a => a.id === areaId);
-          if (action === 'aprobar') {
-            ar.estado = 'aprobado';
-            ar.aprobados = ar.items;
-            ar.revisor = 'Juan Manuel Ávila';
-            ar.revisadoEn = new Date().toISOString();
-          } else {
-            ar.estado = 'devuelto';
-            ar.revisor = 'Juan Manuel Ávila';
-            ar.revisadoEn = new Date().toISOString();
-          }
+          ar.estado = 'aprobado';
+          ar.aprobados = ar.items;
+          ar.checklist = { ...state };
+          ar.revisor = 'Juan Manuel Ávila';
+          ar.revisadoEn = new Date().toISOString();
           x.historial = x.historial || [];
-          x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `${action === 'aprobar' ? 'Aprobada' : 'Devuelta'} área ${areaInfo.nombre}` });
+          x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Área aprobada · ${areaInfo.nombre}` });
 
-          /* Si todas las áreas están aprobadas + doc general aprobada → emitir concepto */
+          /* Cierre automático del concepto */
           const todasAprobadas = x.docsTecnica.areas.every(a => a.estado === 'aprobado');
           const generalAprobada = x.docsGeneral && x.docsGeneral.estadoRevision === 'aprobado';
           if (todasAprobadas && generalAprobada) {
@@ -198,9 +627,154 @@
             x.historial.push({ ts: new Date().toISOString(), actor: 'sistema', evento: 'Concepto de favorabilidad emitido', estado: 'concepto_favorable' });
           }
         });
-        location.href = `doc-tecnica.html?id=${p.idUnico}`;
+        });
       });
-    });
+
+      document.getElementById('btnDevolver').addEventListener('click', () => {
+        const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+        const nocumple = all.filter(v => v === 'nocumple').length;
+        if (nocumple === 0) {
+          toast({ variant: 'caution', title: 'Sin ítems para devolver', message: 'Marca al menos un ítem como "No cumple" para devolver el área.' });
+          return;
+        }
+        /* Lista de ítems en no cumple para enviar al municipio */
+        const observaciones = areaInfo.items
+          .filter(it => state[it.n] === 'nocumple')
+          .map(it => ({ n: it.n, item: it.item, ref: it.ref }));
+        openReturnModal(observaciones, () => {
+        ProjectData.setProyecto(p.idUnico, x => {
+          const ar = x.docsTecnica.areas.find(a => a.id === areaId);
+          ar.estado = 'devuelto';
+          ar.checklist = { ...state };
+          ar.observaciones = observaciones;
+          ar.revisor = 'Juan Manuel Ávila';
+          ar.revisadoEn = new Date().toISOString();
+          x.historial = x.historial || [];
+          x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Área devuelta · ${areaInfo.nombre} · ${nocumple} observación(es)` });
+        });
+        ProjectData.pushNotificacion({
+          perfil: 'municipio',
+          tipo: 'subsanacion',
+          titulo: `Área técnica devuelta · ${areaInfo.nombre}`,
+          detalle: `${p.idUnico} · ${nocumple} ítem(s) requieren subsanación`
+        });
+        });
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       MODALES: confirmación de devolución y aprobación con confetti
+       ════════════════════════════════════════════════════════════════ */
+    function openReturnModal(observaciones, onConfirm) {
+      const ventanaDias = 15;
+      const fechaLimite = new Date(Date.now() + ventanaDias * 24 * 3600 * 1000);
+      const fechaLimiteStr = fechaLimite.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      const overlay = document.createElement('div');
+      overlay.className = 'ra-modal-overlay';
+      overlay.innerHTML = `
+        <div class="ra-modal" role="dialog" aria-modal="true" aria-labelledby="raModalTitle">
+          <div class="ra-modal__hero ra-modal__hero--caution">
+            <div class="ra-modal__icon ra-modal__icon--caution">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+            </div>
+            <div class="ra-modal__title" id="raModalTitle">Confirmar devolución</div>
+            <div class="ra-modal__subtitle">El área se devolverá al municipio con las observaciones marcadas. Tendrán ${ventanaDias} días hábiles para subsanar antes de que la postulación expire.</div>
+          </div>
+          <div class="ra-modal__body">
+            <dl class="ra-modal__row"><dt>Área</dt><dd><strong>${areaInfo.nombre}</strong></dd></dl>
+            <dl class="ra-modal__row"><dt>Proyecto</dt><dd>${p.nombre} · ${p.idUnico}</dd></dl>
+            <dl class="ra-modal__row"><dt>Plazo</dt><dd><strong>${ventanaDias} días hábiles</strong> · vence el ${fechaLimiteStr}</dd></dl>
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.35px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px">Observaciones a subsanar (${observaciones.length})</div>
+              <div class="ra-modal__obs-list">
+                ${observaciones.map(o => `
+                  <div class="ra-modal__obs-item">
+                    <span class="ra-modal__obs-num">${o.n}</span>
+                    <div>
+                      <div class="ra-modal__obs-text">${o.item}</div>
+                      <div class="ra-modal__obs-ref">Res. 933 · ${o.ref}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="ra-modal__footer">
+            <button type="button" class="naowee-btn naowee-btn--mute" data-close>Cancelar</button>
+            <button type="button" class="naowee-btn btn-devolver-area" data-confirm>${ICONS.revert} Confirmar devolución</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+      const close = () => {
+        overlay.classList.remove('is-open');
+        setTimeout(() => overlay.remove(), 240);
+      };
+      overlay.querySelector('[data-close]').addEventListener('click', close);
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      overlay.querySelector('[data-confirm]').addEventListener('click', () => {
+        close();
+        onConfirm();
+        toast({ variant: 'caution', title: 'Área devuelta', message: `${observaciones.length} observación(es) enviadas. El municipio tiene ${ventanaDias} días hábiles para subsanar.` });
+        setTimeout(() => { window.location.href = `doc-tecnica.html?id=${p.idUnico}`; }, 1200);
+      });
+    }
+
+    function openApproveModal(onConfirm) {
+      const overlay = document.createElement('div');
+      overlay.className = 'ra-modal-overlay';
+      /* Generar partículas de confetti */
+      const colors = ['#15803d', '#FF7500', '#1f78d1', '#7c3aed', '#FFC107', '#e91e63'];
+      const confettiPieces = Array.from({ length: 30 }, (_, i) => {
+        const left = Math.random() * 100;
+        const color = colors[i % colors.length];
+        const delay = Math.random() * 0.6;
+        const dur = 1.4 + Math.random() * 0.8;
+        return `<span style="left:${left}%;background:${color};animation-delay:${delay}s;animation-duration:${dur}s"></span>`;
+      }).join('');
+
+      overlay.innerHTML = `
+        <div class="ra-modal" role="dialog" aria-modal="true" aria-labelledby="raModalTitle">
+          <div class="ra-confetti">${confettiPieces}</div>
+          <div class="ra-modal__hero ra-modal__hero--success">
+            <div class="ra-modal__icon ra-modal__icon--success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="ra-modal__title" id="raModalTitle">¡Área aprobada!</div>
+            <div class="ra-modal__subtitle">Esta área cumple con todos los requisitos de la Resolución 933 de 2024. Cuando todas las áreas + documentación general estén aprobadas, se emitirá el concepto de favorabilidad automáticamente.</div>
+          </div>
+          <div class="ra-modal__body">
+            <dl class="ra-modal__row"><dt>Área</dt><dd><strong>${areaInfo.nombre}</strong></dd></dl>
+            <dl class="ra-modal__row"><dt>Proyecto</dt><dd>${p.nombre} · ${p.idUnico}</dd></dl>
+            <dl class="ra-modal__row"><dt>Aprobada por</dt><dd>Juan Manuel Ávila · ${new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</dd></dl>
+          </div>
+          <div class="ra-modal__footer">
+            <button type="button" class="naowee-btn naowee-btn--mute" data-close>Continuar revisando</button>
+            <button type="button" class="naowee-btn btn-aprobar" data-confirm>${ICONS.checkBig} Confirmar aprobación</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+      const close = () => {
+        overlay.classList.remove('is-open');
+        setTimeout(() => overlay.remove(), 240);
+      };
+      overlay.querySelector('[data-close]').addEventListener('click', close);
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      overlay.querySelector('[data-confirm]').addEventListener('click', () => {
+        close();
+        onConfirm();
+        toast({ variant: 'positive', title: 'Área aprobada', message: `"${areaInfo.nombre}" fue aprobada exitosamente.` });
+        setTimeout(() => { window.location.href = `doc-tecnica.html?id=${p.idUnico}`; }, 1200);
+      });
+    }
+
+    renderPage();
   }
 </script>
 </body>

@@ -7,7 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260509t">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
+<link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
 <div class="shell">
@@ -21,8 +22,9 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
   import { ESTADOS_POSTULACION, ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { openActivarInversionModal } from '../shared/modal-activar-inversion.js?v=20260512j';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'proyectos' });
 
@@ -60,30 +62,98 @@
           ${backLabel}
         </a>
 
-        <div class="project-hero">
-          <div>
-            <div class="project-hero__rad">${p.radicado || p.idUnico}</div>
-            <h1 class="project-hero__title">${p.nombre}</h1>
-            <div class="project-hero__meta">
-              <span>${p.municipio}, ${p.departamento || ''}</span>
-              <span>${p.formuladora?.nombre || ''}</span>
-              <span>Postulado: ${formatoFecha(p.fechaPostulacion)}</span>
-              <span>${p.tipoSolicitud || ''} · ${p.fase || ''}</span>
+        <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''} ${yaInversion ? 'project-hero--inversion' : ''}">
+          ${p.priorizado ? `
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto priorizado por el Ministerio">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+              <span class="prio-ribbon__tooltip" role="tooltip">Priorizado por el Ministerio</span>
+            </span>
+          ` : ''}
+
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${p.radicado || p.idUnico}</div>
+              <h1 class="project-hero__title">${p.nombre}</h1>
+              <div class="project-hero__meta">
+                <span>${p.municipio}, ${p.departamento || ''}</span>
+                <span>${p.formuladora?.nombre || ''}</span>
+                <span>Postulado: ${formatoFecha(p.fechaPostulacion)}</span>
+                <span>${p.tipoSolicitud || ''} · ${p.fase || ''}</span>
+              </div>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${est.label}</span>
+                ${p.tipo === 'infraestructura' ? '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Infraestructura</span>' : ''}
+              </div>
             </div>
-            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-              <span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${est.label}</span>
-              ${p.priorizado ? '<span class="naowee-badge naowee-badge--accent naowee-badge--quiet">Proyecto priorizado</span>' : ''}
-              ${p.tipo === 'infraestructura' ? '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Infraestructura</span>' : ''}
+            <div class="project-hero__right">
+              <div class="project-hero__label">Presupuesto del proyecto</div>
+              <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
+              <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
+              ${puedeActivar ? `<button type="button" class="naowee-btn naowee-btn--loud" id="btnActivarInv" style="margin-top:14px;background:#15803d !important;border-color:#15803d !important;box-shadow:var(--shadow-green-cta)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg> Activar inversión</button>` : ''}
             </div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--text-secondary);text-transform:uppercase">Presupuesto del proyecto</div>
-            <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
-            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
-            ${puedeActivar ? `<a class="naowee-btn naowee-btn--loud naowee-btn--success" href="inversion-crear.html?id=${p.idUnico}" style="margin-top:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg> Activar inversión</a>` : ''}
-            ${yaInversion ? `<div class="naowee-message naowee-message--positive" role="status" style="margin-top:14px"><div class="naowee-message__header"><span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="naowee-message__title">En inversión</span></div><div class="naowee-message__text">${formatoMoneda(p.inversion?.montoAprobado)} · BPIN ${p.inversion?.bpin}</div></div>` : ''}
-          </div>
+
+          ${yaInversion ? `
+            <div class="hero-cenefa hero-cenefa--inversion" role="status">
+              <span class="hero-cenefa__icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="hero-cenefa__label">Inversión activada</span>
+              <span class="hero-cenefa__sep" aria-hidden="true"></span>
+              <div class="hero-cenefa__stat">
+                <span class="hero-cenefa__stat-label">Monto aprobado</span>
+                <span class="hero-cenefa__stat-value">${formatoMoneda(p.inversion?.montoAprobado)}</span>
+              </div>
+              <span class="hero-cenefa__sep" aria-hidden="true"></span>
+              <div class="hero-cenefa__stat">
+                <span class="hero-cenefa__stat-label">BPIN</span>
+                <span class="hero-cenefa__stat-value hero-cenefa__stat-value--mono">${p.inversion?.bpin || '—'}</span>
+              </div>
+              ${p.inversion?.centroCosto ? `
+                <span class="hero-cenefa__sep" aria-hidden="true"></span>
+                <div class="hero-cenefa__stat">
+                  <span class="hero-cenefa__stat-label">Centro de costo</span>
+                  <span class="hero-cenefa__stat-value hero-cenefa__stat-value--mono">${p.inversion.centroCosto}</span>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
         </div>
+
+        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental'].includes(p.estado)) ? `
+          <!-- ═══ Asignación de revisor (Res. 933 Art. 3) ═══ -->
+          <div class="naowee-card revisor-asignacion-card">
+            <div class="revisor-asignacion__top">
+              <div>
+                <div class="revisor-asignacion__lbl">Revisor técnico asignado</div>
+                <div class="revisor-asignacion__hint">${p.revisor ? 'Puedes reasignar si el revisor está saturado o por especialidad.' : 'Asigna un revisor del pool técnico para iniciar la revisión.'}</div>
+              </div>
+              <div class="revisor-asignacion__current" id="revisorCurrent">
+                ${p.revisor ? (() => {
+                  const r = ProjectData.getRevisor(p.revisor);
+                  return r ? `
+                    <div class="ava-ring" style="width:36px;height:36px;background:${r.color}22;color:${r.color};font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
+                    <div>
+                      <div style="font-weight:700;font-size:13.5px">${r.nombre}</div>
+                      <div style="font-size:11.5px;color:var(--text-secondary)">${r.especialidad}</div>
+                    </div>
+                  ` : '<span style="color:var(--text-secondary);font-style:italic">Sin asignar</span>';
+                })() : '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet"><span class="naowee-badge__dot"></span>Sin asignar</span>'}
+              </div>
+            </div>
+            <div class="revisor-asignacion__pool" id="revisorPool">
+              ${ProjectData.getRevisores().map(r => `
+                <button type="button" class="revisor-chip ${p.revisor === r.id ? 'is-selected' : ''}" data-rev="${r.id}">
+                  <div class="ava-ring" style="width:28px;height:28px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
+                  <div style="text-align:left">
+                    <div style="font-weight:600;font-size:13px">${r.nombre}</div>
+                    <div style="font-size:11px;color:var(--text-secondary)">${r.especialidad} · ${r.cargaActiva} activos</div>
+                  </div>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
 
         <div class="naowee-card proj-tabs-card">
           <div class="naowee-tabs naowee-tabs--animated" role="tablist">
@@ -184,6 +254,43 @@
         tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
         document.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
         positionIndicator(tab);
+      });
+    });
+
+    /* Activar inversión: modal en vez de página dedicada */
+    document.getElementById('btnActivarInv')?.addEventListener('click', () => {
+      openActivarInversionModal({
+        proyectoId: p.idUnico,
+        onActivado: () => {
+          /* Refrescar la página para que el hero muestre "En inversión" con BPIN */
+          window.location.reload();
+        }
+      });
+    });
+
+    /* Asignación / reasignación de revisor (Res. 933 Art. 3) */
+    document.querySelectorAll('#revisorPool .revisor-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const revId = chip.dataset.rev;
+        const rev = ProjectData.getRevisor(revId);
+        if (!rev) return;
+        ProjectData.setProyecto(p.idUnico, x => {
+          x.revisor = revId;
+          x.historial = x.historial || [];
+          x.historial.push({
+            ts: new Date().toISOString(),
+            actor: 'admin',
+            evento: `Revisor ${rev.nombre} asignado (${rev.especialidad})`,
+            estado: x.estado
+          });
+          /* Si estaba "presentado" sin revisor, pasar a en_revision */
+          if (x.estado === 'presentado') {
+            x.estado = 'en_revision';
+            x.fechaInicioRevision = new Date().toISOString();
+          }
+          return x;
+        });
+        window.location.reload();
       });
     });
   }

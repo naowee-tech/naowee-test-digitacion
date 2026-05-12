@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260510c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
   import { formatoMoneda, formatoFecha } from '../shared/states.js';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'inversion' });
@@ -123,9 +123,20 @@
         <div class="panel-head">
           <div>
             <h3>Proyectos en inversión</h3>
-            <div class="sub">Bienio 2025-2026 · ${enInversion.length} proyecto${enInversion.length===1?'':'s'} activo${enInversion.length===1?'':'s'}</div>
+            <div class="sub">Bienio 2025-2026 · <span id="invCount">${enInversion.length}</span> proyecto${enInversion.length===1?'':'s'} activo${enInversion.length===1?'':'s'}</div>
           </div>
-          <a href="proyectos.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todos los proyectos</a>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <!-- Filtro por departamento (dropdown nativo, ligero) -->
+            <select id="filterDpto" class="naowee-dropdown__select" style="min-width:180px;padding:8px 12px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:inherit;background:#fff">
+              <option value="">Todos los departamentos</option>
+              ${[...new Set(enInversion.map(p => p.departamento).filter(Boolean))].sort().map(d => `<option value="${d}">${d}</option>`).join('')}
+            </select>
+            <button type="button" id="btnExportCsv" class="naowee-btn naowee-btn--mute naowee-btn--small">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+            <a href="proyectos.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todos</a>
+          </div>
         </div>
         <div class="panel-card__body" style="padding-bottom:14px">
           ${enInversion.length === 0 ? `
@@ -139,31 +150,45 @@
                   <th>BPIN</th>
                   <th>Proyecto</th>
                   <th>Municipio</th>
+                  <th>Ejecutor</th>
                   <th class="numeric">Presupuesto</th>
                   <th class="numeric">Aprobado</th>
-                  <th class="numeric">Activado</th>
+                  <th>Fuentes</th>
                   <th>SUID</th>
                 </tr>
               </thead>
               <tbody>
-                ${enInversion.map(p => `
-                  <tr onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'">
-                    <td><span class="code-cell">${p.inversion?.bpin || '—'}</span></td>
-                    <td class="name-cell">
+                ${enInversion.map(p => {
+                  const suidCode = p.inversion?.suidEscenario || p.registroSuid?.codigo;
+                  const suidInventariado = p.registroSuid?.estado === 'completo';
+                  return `
+                  <tr data-id="${p.idUnico}">
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" style="cursor:pointer"><span class="code-cell">${p.inversion?.bpin || '—'}</span></td>
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="name-cell" style="cursor:pointer">
                       <div class="name-cell__inner"><span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div>
                       <div class="meta-line">${p.inversion?.centroCosto || '—'}</div>
                     </td>
-                    <td>${p.municipio}<div class="meta-line" style="margin-top:2px">${p.departamento || ''}</div></td>
-                    <td class="numeric" style="font-weight:600">${formatoMoneda(p.presupuesto)}</td>
-                    <td class="numeric" style="font-weight:600;color:var(--green)">${formatoMoneda(p.inversion?.montoAprobado)}</td>
-                    <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px;white-space:nowrap">${formatoFecha(p.inversion?.activadaEn)}</td>
-                    <td>${p.inversion?.suidEscenario ? `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${p.inversion.suidEscenario}</span>` : '—'}</td>
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" style="cursor:pointer">${p.municipio}<div class="meta-line" style="margin-top:2px">${p.departamento || ''}</div></td>
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" style="cursor:pointer;font-size:12.5px">${p.inversion?.ejecutor || p.formuladora?.nombre || '—'}</td>
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="numeric" style="font-weight:600;cursor:pointer">${formatoMoneda(p.presupuesto)}</td>
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="numeric" style="font-weight:600;color:var(--green);cursor:pointer">${formatoMoneda(p.inversion?.montoAprobado)}</td>
+                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" style="cursor:pointer">
+                      ${(p.cofinanciacion || []).slice(0, 2).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:3px;font-size:10px">${f}</span>`).join('')}
+                      ${(p.cofinanciacion || []).length > 2 ? `<span style="font-size:11px;color:var(--text-secondary)">+${p.cofinanciacion.length - 2}</span>` : ''}
+                    </td>
+                    <td>
+                      ${suidCode
+                        ? `<a href="registro-suid.html?id=${p.idUnico}" class="naowee-badge naowee-badge--${suidInventariado ? 'positive' : 'caution'} naowee-badge--quiet" style="text-decoration:none;cursor:pointer" title="${suidInventariado ? 'Inventariado' : 'Diligenciar registro'}">
+                            ${suidCode}
+                          </a>`
+                        : `<a href="registro-suid.html?id=${p.idUnico}" style="font-size:11px;color:var(--accent);font-weight:600;text-decoration:none">Diligenciar →</a>`}
+                    </td>
                   </tr>
-                `).join('')}
+                `;}).join('')}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="4" style="text-align:right">Sumatoria total de inversión:</td>
+                  <td colspan="5" style="text-align:right">Sumatoria total de inversión:</td>
                   <td class="numeric" style="color:var(--green);font-size:14px">${formatoMoneda(totalInvertido)}</td>
                   <td colspan="2"></td>
                 </tr>
@@ -174,6 +199,59 @@
       </article>
     </div>
   `;
+
+  /* ═══ Filtro por departamento (filtra rows visibles) ═══ */
+  const filterDpto = document.getElementById('filterDpto');
+  const invCount = document.getElementById('invCount');
+  filterDpto?.addEventListener('change', () => {
+    const v = filterDpto.value;
+    let visibles = 0;
+    document.querySelectorAll('table.dash-table tbody tr').forEach(tr => {
+      const id = tr.dataset.id;
+      const proj = enInversion.find(p => p.idUnico === id);
+      const match = !v || proj?.departamento === v;
+      tr.style.display = match ? '' : 'none';
+      if (match) visibles++;
+    });
+    if (invCount) invCount.textContent = visibles;
+  });
+
+  /* ═══ Exportar CSV — descarga la tabla completa (sin filtro) ═══ */
+  document.getElementById('btnExportCsv')?.addEventListener('click', () => {
+    const v = filterDpto?.value;
+    const rows = v ? enInversion.filter(p => p.departamento === v) : enInversion;
+    const headers = ['BPIN', 'ID Proyecto', 'Nombre', 'Municipio', 'Departamento', 'Ejecutor', 'Presupuesto (COP)', 'Aprobado (COP)', 'Activado', 'SUID', 'Centro de costo', 'Fuentes'];
+    /* Helper: escapa comas y comillas internas (RFC 4180) */
+    const esc = (val) => {
+      const s = String(val ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csvLines = [headers.join(',')];
+    rows.forEach(p => {
+      csvLines.push([
+        p.inversion?.bpin || '',
+        p.idUnico,
+        p.nombre,
+        p.municipio,
+        p.departamento || '',
+        p.inversion?.ejecutor || p.formuladora?.nombre || '',
+        p.presupuesto || 0,
+        p.inversion?.montoAprobado || 0,
+        p.inversion?.activadaEn ? p.inversion.activadaEn.split('T')[0] : '',
+        p.inversion?.suidEscenario || p.registroSuid?.codigo || '',
+        p.inversion?.centroCosto || '',
+        (p.cofinanciacion || []).join(' | ')
+      ].map(esc).join(','));
+    });
+    /* BOM UTF-8 para que Excel respete acentos */
+    const blob = new Blob(['﻿' + csvLines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tabla-inversion-${new Date().toISOString().slice(0,10)}${v ? '-' + v.toLowerCase().replace(/[^a-z]/g, '') : ''}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 </script>
 </body>
 </html>

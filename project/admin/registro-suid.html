@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Registro SUID de Escenario · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
+<style>
+  /* Registro SUID — sección colapsable estilo "accordion" para 6 bloques */
+  .suid-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .suid-section__head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 22px; cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: background .15s, border-color .15s;
+  }
+  .suid-section__head:hover { background: #fafbff; }
+  .suid-section[open] .suid-section__head { border-bottom-color: var(--border); }
+  .suid-section__num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; flex-shrink: 0;
+  }
+  .suid-section[data-state="done"] .suid-section__num {
+    background: var(--green, #15803d);
+  }
+  .suid-section__title { flex: 1; font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
+  .suid-section__hint { font-size: 11px; color: var(--text-secondary); }
+  .suid-section__chev {
+    width: 22px; height: 22px; color: var(--text-secondary);
+    transition: transform .25s cubic-bezier(.32,.72,0,1);
+  }
+  .suid-section[open] .suid-section__chev { transform: rotate(180deg); }
+  .suid-section__body { padding: 20px 22px 22px; display: none; }
+  .suid-section[open] .suid-section__body { display: block; }
+
+  /* Grids dentro de las secciones */
+  .suid-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .suid-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 768px) {
+    .suid-grid-2, .suid-grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* Banner SUID generado */
+  .suid-banner {
+    background: linear-gradient(135deg, #fff3e6 0%, #ffe4cf 100%);
+    border: 1px solid var(--orange-border);
+    border-radius: var(--radius-lg); padding: 20px 24px;
+    margin-bottom: 22px;
+    display: flex; align-items: center; gap: 18px;
+  }
+  .suid-banner__icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .suid-banner__code {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 22px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: 0.5px;
+  }
+  .suid-banner__lbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .4px;
+    text-transform: uppercase; color: var(--text-secondary);
+  }
+
+  /* Botón "Agregar imagen" tipo dropzone */
+  .suid-photo-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .suid-photo-slot {
+    aspect-ratio: 4 / 3;
+    border: 1.5px dashed var(--border-dark);
+    border-radius: var(--radius-md);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; color: var(--text-secondary);
+    cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+    background: #fafbff;
+  }
+  .suid-photo-slot:hover {
+    border-color: var(--accent); color: var(--accent);
+    background: #fff5ec;
+  }
+  .suid-photo-slot__icon svg { width: 24px; height: 24px; }
+  .suid-photo-slot__label { font-size: 11.5px; font-weight: 600; }
+
+  /* Modalidades chips */
+  .modalidad-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .modalidad-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px;
+    background: #fff; border: 1.5px solid var(--border-dark);
+    border-radius: 999px;
+    font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+    cursor: pointer; transition: all .15s;
+  }
+  .modalidad-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .modalidad-chip.is-selected {
+    background: var(--orange-bg, #fff3e6);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Action footer sticky */
+  .suid-footer {
+    position: sticky; bottom: 0;
+    background: rgba(255,255,255,.96);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+    margin-top: 28px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .suid-footer__hint {
+    font-size: 12px; color: var(--text-secondary);
+    display: flex; align-items: center; gap: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
+  import { formatoMoneda } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'inversion' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const p = ProjectData.getProyecto(id);
+
+  if (!p || p.estado !== 'en_inversion') {
+    document.getElementById('pageContent').innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Proyecto no apto para Registro SUID</div>
+        <div class="naowee-empty-state__msg">Solo proyectos en estado <strong>En inversión</strong> de tipo Infraestructura pueden registrar escenario.</div>
+        <a class="naowee-btn naowee-btn--quiet" href="inversion.html">Volver a tabla de inversión</a>
+      </div>`;
+  } else {
+    /* SUID generado: usa el SUID guardado en inversion o genera uno provisional */
+    const suidCode = p.inversion?.suidEscenario
+      || p.registroSuid?.codigo
+      || `SUID-${(p.departamento || 'COL').substring(0,3).toUpperCase()}-${(p.municipio || 'XXX').substring(0,3).toUpperCase()}-${String(Date.now()).slice(-3).padStart(3,'0')}`;
+    const reg = p.registroSuid || {};
+    const yaCompleto = reg.estado === 'completo';
+
+    /* Catálogos del DS de escenarios deportivos (Censo Mindeporte / Res. 933 Art.10) */
+    const tipologias = [
+      'Coliseo cubierto', 'Polideportivo', 'Estadio de fútbol', 'Pista atlética',
+      'Cancha sintética', 'Cancha múltiple', 'Cancha de béisbol', 'Patinódromo',
+      'Piscina olímpica', 'Skatepark', 'Velódromo', 'Centro de alto rendimiento',
+      'Gimnasio biosaludable', 'Cancha de tenis', 'Otro'
+    ];
+    const modalidades = [
+      'Fútbol', 'Baloncesto', 'Voleibol', 'Atletismo', 'Natación',
+      'Boxeo', 'Lucha', 'Ciclismo', 'Patinaje', 'Tenis', 'Béisbol',
+      'Softbol', 'Tenis de mesa', 'Bádminton', 'Pesas', 'Judo', 'Karate', 'Taekwondo'
+    ];
+    const estadoConservacion = ['Excelente', 'Bueno', 'Regular', 'Deficiente', 'En construcción'];
+    const tipoAcceso = ['Público gratuito', 'Público con tarifa', 'Mixto', 'Restringido'];
+    const condicionesAcceso = ['Rampa accesible', 'Parqueadero', 'Baterías sanitarias adaptadas', 'Señalización Braille', 'Ascensor'];
+
+    const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>`;
+    const chevDown = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
+    const imgPlus = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+
+    document.getElementById('pageContent').innerHTML = `
+      <div class="page-fade-in">
+        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="inversion.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Volver a tabla de inversión
+        </a>
+
+        <!-- Hero con código SUID generado -->
+        <div class="suid-banner">
+          <div class="suid-banner__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div style="flex:1">
+            <div class="suid-banner__lbl">Identificador único nacional</div>
+            <div class="suid-banner__code">${suidCode}</div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">${p.nombre} · ${p.municipio}, ${p.departamento || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <span class="naowee-badge naowee-badge--${yaCompleto ? 'positive' : 'caution'} naowee-badge--quiet">
+              <span class="naowee-badge__dot"></span>${yaCompleto ? 'Inventariado' : 'Pendiente inventariar'}
+            </span>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:6px">Resolución 933 · Art. 10</div>
+          </div>
+        </div>
+
+        <h1 style="font-size:22px;font-weight:700;margin:0 0 6px">Registro SUID del escenario</h1>
+        <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 24px;max-width:680px">
+          Inventariar este escenario en el sistema nacional. Los datos heredados de la postulación
+          ya están precargados — solo agrega información específica del escenario una vez construido.
+        </p>
+
+        <form id="formSuid">
+
+          <!-- 1. Identificación heredada del proyecto -->
+          <details class="suid-section" data-state="done" open>
+            <summary class="suid-section__head">
+              <span class="suid-section__num">${checkIcon}</span>
+              <div style="flex:1">
+                <div class="suid-section__title">Identificación del escenario</div>
+                <div class="suid-section__hint">Heredado del proyecto · solo lectura</div>
+              </div>
+              <span class="suid-section__chev">${chevDown}</span>
+            </summary>
+            <div class="suid-section__body">
+              <div class="suid-grid-3">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Nombre del escenario</label>
+                  <input class="naowee-textfield__input" value="${p.nombre}" readonly/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Departamento</label>
+                  <input class="naowee-textfield__input" value="${p.departamento || ''}" readonly/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Municipio</label>
+                  <input class="naowee-textfield__input" value="${p.municipio}" readonly/>
+                </div>
+              </div>
+              <div class="suid-grid-2" style="margin-top:16px">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Dirección</label>
+                  <input class="naowee-textfield__input" value="${p.direccionPredio || '—'}" readonly/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Entidad ejecutora</label>
+                  <input class="naowee-textfield__input" value="${p.inversion?.ejecutor || p.formuladora?.nombre || '—'}" readonly/>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- 2. Clasificación del escenario -->
+          <details class="suid-section" ${reg.tipologia ? 'data-state="done"' : ''} open>
+            <summary class="suid-section__head">
+              <span class="suid-section__num">${reg.tipologia ? checkIcon : '2'}</span>
+              <div style="flex:1">
+                <div class="suid-section__title">Clasificación del escenario</div>
+                <div class="suid-section__hint">Tipología y modalidades deportivas</div>
+              </div>
+              <span class="suid-section__chev">${chevDown}</span>
+            </summary>
+            <div class="suid-section__body">
+              <div class="suid-grid-2">
+                <div class="naowee-dropdown" data-name="tipologia">
+                  <label class="naowee-dropdown__label naowee-dropdown__label--required">Tipología principal</label>
+                  <select class="naowee-dropdown__select" name="tipologia">
+                    <option value="">Seleccionar...</option>
+                    ${tipologias.map(t => `<option value="${t}" ${reg.tipologia === t ? 'selected' : ''}>${t}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="naowee-dropdown" data-name="estadoConservacion">
+                  <label class="naowee-dropdown__label naowee-dropdown__label--required">Estado de conservación</label>
+                  <select class="naowee-dropdown__select" name="estadoConservacion">
+                    <option value="">Seleccionar...</option>
+                    ${estadoConservacion.map(e => `<option value="${e}" ${reg.estadoConservacion === e ? 'selected' : ''}>${e}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top:18px">
+                <label class="naowee-dropdown__label naowee-dropdown__label--required" style="display:block;margin-bottom:8px">Modalidades deportivas que se practican</label>
+                <div class="modalidad-chips" id="modalidadesChips">
+                  ${modalidades.map(m => `<button type="button" class="modalidad-chip ${(reg.modalidades || []).includes(m) ? 'is-selected' : ''}" data-mod="${m}">${m}</button>`).join('')}
+                </div>
+                <input type="hidden" name="modalidades" value="${(reg.modalidades || []).join(',')}"/>
+                <p style="font-size:12px;color:var(--text-secondary);margin:8px 0 0">Selecciona todas las modalidades aplicables (mínimo 1).</p>
+              </div>
+            </div>
+          </details>
+
+          <!-- 3. Características físicas -->
+          <details class="suid-section" ${reg.areaPredio ? 'data-state="done"' : ''}>
+            <summary class="suid-section__head">
+              <span class="suid-section__num">${reg.areaPredio ? checkIcon : '3'}</span>
+              <div style="flex:1">
+                <div class="suid-section__title">Características físicas</div>
+                <div class="suid-section__hint">Áreas, aforo, dimensiones</div>
+              </div>
+              <span class="suid-section__chev">${chevDown}</span>
+            </summary>
+            <div class="suid-section__body">
+              <div class="suid-grid-3">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label naowee-textfield__label--required">Área del predio (m²)</label>
+                  <input class="naowee-textfield__input" name="areaPredio" type="text" value="${reg.areaPredio || ''}" placeholder="2400"/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label naowee-textfield__label--required">Área construida (m²)</label>
+                  <input class="naowee-textfield__input" name="areaConstruida" type="text" value="${reg.areaConstruida || ''}" placeholder="1850"/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label naowee-textfield__label--required">Aforo (personas)</label>
+                  <input class="naowee-textfield__input" name="aforo" type="text" value="${reg.aforo || ''}" placeholder="1200"/>
+                </div>
+              </div>
+              <div class="suid-grid-2" style="margin-top:18px">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Año de construcción</label>
+                  <input class="naowee-textfield__input" name="anioConstruccion" type="text" value="${reg.anioConstruccion || ''}" placeholder="2026"/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Número de pisos / niveles</label>
+                  <input class="naowee-textfield__input" name="pisos" type="text" value="${reg.pisos || ''}" placeholder="1"/>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- 4. Coordenadas y accesibilidad -->
+          <details class="suid-section" ${reg.tipoAcceso ? 'data-state="done"' : ''}>
+            <summary class="suid-section__head">
+              <span class="suid-section__num">${reg.tipoAcceso ? checkIcon : '4'}</span>
+              <div style="flex:1">
+                <div class="suid-section__title">Ubicación geográfica y acceso</div>
+                <div class="suid-section__hint">Coordenadas WGS84 · condiciones de accesibilidad</div>
+              </div>
+              <span class="suid-section__chev">${chevDown}</span>
+            </summary>
+            <div class="suid-section__body">
+              <div class="suid-grid-3">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label naowee-textfield__label--required">Latitud (decimal)</label>
+                  <input class="naowee-textfield__input" name="lat" type="text" value="${p.coordenadas?.lat || ''}" readonly/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label naowee-textfield__label--required">Longitud (decimal)</label>
+                  <input class="naowee-textfield__input" name="lng" type="text" value="${p.coordenadas?.lng || ''}" readonly/>
+                </div>
+                <div class="naowee-dropdown">
+                  <label class="naowee-dropdown__label naowee-dropdown__label--required">Tipo de acceso</label>
+                  <select class="naowee-dropdown__select" name="tipoAcceso">
+                    <option value="">Seleccionar...</option>
+                    ${tipoAcceso.map(t => `<option value="${t}" ${reg.tipoAcceso === t ? 'selected' : ''}>${t}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top:18px">
+                <label class="naowee-dropdown__label" style="display:block;margin-bottom:8px">Condiciones de accesibilidad disponibles</label>
+                <div class="modalidad-chips" id="condicionesChips">
+                  ${condicionesAcceso.map(c => `<button type="button" class="modalidad-chip ${(reg.condicionesAcceso || []).includes(c) ? 'is-selected' : ''}" data-cond="${c}">${c}</button>`).join('')}
+                </div>
+                <input type="hidden" name="condicionesAcceso" value="${(reg.condicionesAcceso || []).join(',')}"/>
+              </div>
+            </div>
+          </details>
+
+          <!-- 5. Documentación fotográfica -->
+          <details class="suid-section">
+            <summary class="suid-section__head">
+              <span class="suid-section__num">5</span>
+              <div style="flex:1">
+                <div class="suid-section__title">Documentación fotográfica</div>
+                <div class="suid-section__hint">Mínimo 4 fotografías · vista exterior, interior, dotación, accesos</div>
+              </div>
+              <span class="suid-section__chev">${chevDown}</span>
+            </summary>
+            <div class="suid-section__body">
+              <div class="suid-photo-grid">
+                ${['Fachada', 'Interior', 'Cancha/Pista', 'Vestuarios', 'Acceso', 'Dotación'].map((lbl, i) => `
+                  <div class="suid-photo-slot" data-photo="${i}">
+                    <span class="suid-photo-slot__icon">${imgPlus}</span>
+                    <span class="suid-photo-slot__label">${lbl}</span>
+                  </div>
+                `).join('')}
+              </div>
+              <p style="font-size:12px;color:var(--text-secondary);margin:12px 0 0">JPG/PNG · máx 5 MB por imagen · resolución mínima 1920×1080.</p>
+            </div>
+          </details>
+
+          <!-- 6. Información administrativa -->
+          <details class="suid-section">
+            <summary class="suid-section__head">
+              <span class="suid-section__num">6</span>
+              <div style="flex:1">
+                <div class="suid-section__title">Información administrativa</div>
+                <div class="suid-section__hint">Responsable, horarios, presupuesto operativo</div>
+              </div>
+              <span class="suid-section__chev">${chevDown}</span>
+            </summary>
+            <div class="suid-section__body">
+              <div class="suid-grid-2">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Responsable administrativo</label>
+                  <input class="naowee-textfield__input" name="responsable" value="${reg.responsable || p.representante?.nombre || ''}" placeholder="Nombre completo"/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Contacto del escenario</label>
+                  <input class="naowee-textfield__input" name="contacto" value="${reg.contacto || p.representante?.contacto || ''}" placeholder="+57 ..."/>
+                </div>
+              </div>
+              <div class="suid-grid-2" style="margin-top:16px">
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Horario de funcionamiento</label>
+                  <input class="naowee-textfield__input" name="horario" value="${reg.horario || ''}" placeholder="Lun-Sáb 6 a.m. – 10 p.m."/>
+                </div>
+                <div class="naowee-textfield">
+                  <label class="naowee-textfield__label">Presupuesto operativo anual estimado (COP)</label>
+                  <input class="naowee-textfield__input" name="presupuestoOperativo" value="${reg.presupuestoOperativo || ''}" placeholder="240000000"/>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <div class="suid-footer">
+            <div class="suid-footer__hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+              Los datos se asocian al SUID <strong>${suidCode}</strong> y al BPIN <strong>${p.inversion?.bpin || '—'}</strong>.
+            </div>
+            <div style="display:flex;gap:10px">
+              <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" id="btnSuidDraft">Guardar borrador</button>
+              <button type="submit" class="naowee-btn naowee-btn--loud naowee-btn--large" style="background:#15803d !important;border-color:#15803d !important">
+                ${checkIcon} Inventariar escenario
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    `;
+
+    /* ───── Toggle de chips (modalidades + condiciones) ───── */
+    document.getElementById('modalidadesChips')?.querySelectorAll('[data-mod]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('is-selected');
+        const sel = Array.from(document.querySelectorAll('#modalidadesChips .is-selected')).map(c => c.dataset.mod);
+        document.querySelector('input[name="modalidades"]').value = sel.join(',');
+      });
+    });
+    document.getElementById('condicionesChips')?.querySelectorAll('[data-cond]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('is-selected');
+        const sel = Array.from(document.querySelectorAll('#condicionesChips .is-selected')).map(c => c.dataset.cond);
+        document.querySelector('input[name="condicionesAcceso"]').value = sel.join(',');
+      });
+    });
+
+    /* ───── Submit / Borrador ───── */
+    function recolectar() {
+      const fd = new FormData(document.getElementById('formSuid'));
+      return {
+        codigo: suidCode,
+        tipologia: fd.get('tipologia'),
+        estadoConservacion: fd.get('estadoConservacion'),
+        modalidades: (fd.get('modalidades') || '').split(',').filter(Boolean),
+        areaPredio: parseInt(fd.get('areaPredio')) || null,
+        areaConstruida: parseInt(fd.get('areaConstruida')) || null,
+        aforo: parseInt(fd.get('aforo')) || null,
+        anioConstruccion: fd.get('anioConstruccion'),
+        pisos: fd.get('pisos'),
+        tipoAcceso: fd.get('tipoAcceso'),
+        condicionesAcceso: (fd.get('condicionesAcceso') || '').split(',').filter(Boolean),
+        responsable: fd.get('responsable'),
+        contacto: fd.get('contacto'),
+        horario: fd.get('horario'),
+        presupuestoOperativo: parseInt(fd.get('presupuestoOperativo')) || null
+      };
+    }
+
+    document.getElementById('btnSuidDraft').addEventListener('click', () => {
+      ProjectData.setProyecto(p.idUnico, x => {
+        x.registroSuid = { ...recolectar(), estado: 'borrador', actualizadoEn: new Date().toISOString() };
+        return x;
+      });
+      toast({ variant: 'informative', title: 'Borrador guardado', message: 'Puedes retomar el registro SUID en cualquier momento.' });
+    });
+
+    document.getElementById('formSuid').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const datos = recolectar();
+      if (!datos.tipologia || !datos.estadoConservacion || datos.modalidades.length === 0 || !datos.areaPredio || !datos.aforo || !datos.tipoAcceso) {
+        toast({ variant: 'negative', title: 'Faltan campos obligatorios', message: 'Completa tipología, modalidades, área del predio, aforo y tipo de acceso.' });
+        return;
+      }
+      ProjectData.setProyecto(p.idUnico, x => {
+        x.registroSuid = { ...datos, estado: 'completo', registradoEn: new Date().toISOString() };
+        x.historial = x.historial || [];
+        x.historial.push({
+          ts: new Date().toISOString(), actor: 'admin',
+          evento: `Escenario inventariado en SUID · ${suidCode}`,
+          estado: 'en_inversion'
+        });
+        return x;
+      });
+      toast({ variant: 'positive', title: '¡Escenario inventariado!', message: `${suidCode} se agregó al inventario nacional de escenarios deportivos.` });
+      setTimeout(() => { window.location.href = 'inversion.html'; }, 1400);
+    });
+  }
+</script>
+</body>
+</html>

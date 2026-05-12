@@ -552,6 +552,25 @@ a{color:inherit;text-decoration:none}
 .demo-role-switcher__list::-webkit-scrollbar{width:6px}
 .demo-role-switcher__list::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:3px}
 
+/* Footer del panel con botón "Reiniciar demo" */
+.demo-role-switcher__panel-footer{
+  border-top:1px solid var(--border);
+  padding:10px 12px;
+  margin-top:8px;
+}
+.demo-reset-btn{
+  display:flex;align-items:center;gap:8px;
+  width:100%;padding:8px 10px;
+  font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--text-secondary);background:transparent;
+  border:1px solid var(--border);border-radius:8px;
+  cursor:pointer;transition:background .15s,color .15s,border-color .15s;
+}
+.demo-reset-btn:hover{
+  color:var(--accent);background:var(--orange-bg);border-color:var(--orange-border);
+}
+.demo-reset-btn svg{flex-shrink:0;}
+
 .demo-role-switcher__item{
   display:flex;align-items:center;gap:10px;
   padding:8px 12px;border-radius:8px;
@@ -594,13 +613,20 @@ a{color:inherit;text-decoration:none}
   box-shadow:0 4px 12px rgba(40,40,52,.06);
   font-size:11.5px;color:var(--text-secondary);
   pointer-events:auto;
-  transition:opacity .25s ease, transform .25s ease;
+  transform:translateY(0);
+  transition:transform .32s cubic-bezier(.4, 0, .2, 1),
+             opacity .25s ease;
 }
-/* Estado oculto al scrollear up (animación estandarizada en incentivos) */
+/* Oculto cuando se hace scroll DOWN — reaparece al scroll UP.
+   Se desliza completamente fuera del viewport para no interferir con tablas. */
 .naowee-floating-footer.is-hidden{
   opacity:0;
-  transform:translateY(20px);
+  transform:translateY(140%);
   pointer-events:none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .naowee-floating-footer{ transition:opacity .2s ease; }
+  .naowee-floating-footer.is-hidden{ transform:none; }
 }
 .naowee-floating-footer__logo{height:18px;width:auto;display:block}
 .naowee-floating-footer__sep{width:1px;height:14px;background:var(--border);flex-shrink:0}
@@ -621,7 +647,45 @@ a{color:inherit;text-decoration:none}
 .page-placeholder p{margin:0;font-size:14px}
 
 /* RESPONSIVE */
-@media(max-width:900px){
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — shell layout
+   - >1024px: layout completo (default)
+   - 768-1024px (tablet): sidebar colapsado icon-only
+   - <768px (mobile): sidebar oculto, accesible via burger button (drawer)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Mobile menu button — solo visible <768px */
+.mobile-menu-btn{
+  display:none;
+  background:transparent;border:none;cursor:pointer;
+  width:44px;height:44px;
+  align-items:center;justify-content:center;
+  color:var(--text-primary);
+  border-radius:var(--radius-md);
+  margin-right:auto;
+  transition:background .15s;
+}
+.mobile-menu-btn:hover{background:#f5f6fa}
+.mobile-menu-btn:active{transform:scale(.96)}
+
+/* Header brand group — wrapper para badge "Módulo Project" */
+.header-brand-group{display:flex;align-items:center;gap:14px;margin-right:auto}
+
+/* Sidebar backdrop (móvil) — oscurece el resto cuando sidebar está abierto */
+.sidebar-backdrop{
+  position:fixed;inset:0;
+  background:rgba(15,17,35,.45);
+  opacity:0;pointer-events:none;
+  z-index:90;
+  transition:opacity .25s ease;
+}
+.sidebar-backdrop.is-visible{opacity:1;pointer-events:auto}
+
+/* Lock body scroll when mobile sidebar open */
+body.sidebar-locked{overflow:hidden}
+
+/* ═══ TABLET (≤1024px) — sidebar colapsado icon-only ═══ */
+@media(max-width:1024px){
   .sidebar{width:72px;min-width:72px;overflow:hidden}
   .sidebar .sb-logo-img,
   .sidebar .logo-sep,
@@ -629,7 +693,93 @@ a{color:inherit;text-decoration:none}
   .sidebar .nav-arrow,
   .sidebar .nav-section{display:none}
   .sidebar .sidebar-logo{justify-content:center;padding:0}
-  .sidebar .nav-row{justify-content:center;padding:0}
+  .sidebar .sidebar-logo .burger-btn{display:none} /* sin colapsar más */
+  .sidebar .nav-row{justify-content:center;padding:0;margin:0 8px}
   .sidebar .nav-row .icon{margin-left:0}
   .user-info{display:none}
+  .top-header{padding:0 16px}
+  .page{padding:20px 18px 80px}
+}
+
+/* ═══ MOBILE (≤768px) — sidebar como drawer overlay ═══ */
+@media(max-width:768px){
+  .shell{height:auto;min-height:100vh;display:block}
+  .main{height:auto;min-height:100vh}
+
+  /* Sidebar fuera del viewport, abre desde la izquierda */
+  .sidebar{
+    position:fixed;top:0;left:0;height:100vh;
+    width:280px;min-width:280px;max-width:85vw;
+    z-index:100;
+    transform:translateX(-100%);
+    transition:transform .32s cubic-bezier(.32,.72,0,1);
+    box-shadow:8px 0 28px rgba(15,17,35,.18);
+  }
+  .sidebar.is-mobile-open{transform:translateX(0)}
+  /* En mobile drawer mode, mostramos el sidebar completo, no colapsado */
+  .sidebar .sb-logo-img,
+  .sidebar .logo-sep,
+  .sidebar .lbl,
+  .sidebar .nav-arrow,
+  .sidebar .nav-section{display:initial}
+  .sidebar .lbl,
+  .sidebar .nav-arrow{display:flex}
+  .sidebar .nav-section{display:block}
+  .sidebar .sidebar-logo{justify-content:flex-start;padding:0 20px}
+  .sidebar .nav-row{justify-content:flex-start;padding:0 20px 0 0;margin:0 10px}
+  .sidebar .nav-row .icon{margin-left:20px}
+  .user-info{display:flex}
+
+  /* Burger visible solo en móvil */
+  .mobile-menu-btn{display:inline-flex}
+
+  /* Top header compacto */
+  .top-header{
+    height:64px;
+    padding:0 12px;
+    gap:8px;
+  }
+  .header-brand-group{margin-right:0}
+  .top-header .naowee-badge--brand{font-size:10px;padding:3px 7px}
+  .user-chip{padding:4px 6px 4px 4px;gap:6px}
+  .ava-ring{width:28px;height:28px;font-size:11px}
+  .user-chip__chevron{display:none}
+
+  /* Page: sin sidebar lateral, contenido full width */
+  .page{padding:16px 14px 100px}
+  :root{--header-h:64px}
+
+  /* Floating footer más compacto y sin solaparse con demo switcher */
+  .naowee-floating-footer{bottom:8px;right:8px;padding:6px 10px;font-size:10.5px}
+  .naowee-floating-footer__logo{height:14px}
+  .naowee-floating-footer__sep{height:10px}
+
+  /* Demo role switcher más pequeño y posicionado para no chocar con footer */
+  .demo-role-switcher{bottom:auto;top:14px;left:auto;right:60px;transform:none}
+  .demo-role-switcher__panel{
+    left:auto;right:0;transform:translate(0,6px);
+    width:280px;max-width:calc(100vw - 24px);
+  }
+  .demo-role-switcher.open .demo-role-switcher__panel{transform:translate(0,0)}
+
+  /* Esconder switcher de demo y footer cuando hay modal abierto en mobile —
+     el modal full-screen necesita todo el viewport */
+  body:has(.naowee-modal-overlay.is-open) .demo-role-switcher,
+  body:has(.naowee-modal-overlay.is-open) .naowee-floating-footer,
+  body.sidebar-locked .demo-role-switcher,
+  body.sidebar-locked .naowee-floating-footer {
+    display: none;
+  }
+
+  /* Profile dropdown más estrecho */
+  .profile-dd{width:calc(100vw - 24px);max-width:300px;right:0}
+}
+
+/* Móvil pequeño (≤420px) — ajustes finales */
+@media(max-width:420px){
+  .top-header{padding:0 8px}
+  .user-chip{border:none;background:transparent}
+  .user-chip__chevron{display:none}
+  .top-header .naowee-badge--brand{display:none}
+  .demo-role-switcher__lbl{display:none}
 }

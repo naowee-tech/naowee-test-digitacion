@@ -7,65 +7,136 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260510c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
 <style>
-  /* Hero del proyecto en detalle (mismo lenguaje que doc-general) */
-  .dt-hero {
+  /* ─── LIST page (sin id) — searchbox + tabla ─── */
+  .dt-hero { /* legacy del list page, no aplica en detail */ }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     HERO STRIP — Proyecto + Avance global + Monto en una sola fila
+     ═══════════════════════════════════════════════════════════════════ */
+  .dt-hero-strip {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 18px 22px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-radius: var(--radius-lg); padding: 20px 24px;
+    display: grid;
+    grid-template-columns: minmax(220px, 1.1fr) 1px minmax(260px, 1.4fr) auto;
+    gap: 24px; align-items: center;
     margin-bottom: 18px;
   }
-  .dt-hero__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .dt-hero__rad { font-size: 11.5px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
-  .dt-hero__title { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-  .dt-hero__meta { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
-  .dt-hero__amount { font-size: 18px; font-weight: 700; color: var(--green); white-space: nowrap; }
-
-  /* Resumen de avance global */
-  .dt-summary {
-    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px;
-    margin-bottom: 18px;
+  @media (max-width: 980px) {
+    .dt-hero-strip { grid-template-columns: 1fr; gap: 14px; }
+    .dt-hero-strip__divider { display: none; }
   }
-  .dt-stat {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 14px 16px;
-  }
-  .dt-stat__lbl { font-size: 11px; font-weight: 700; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
-  .dt-stat__val { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .dt-stat__val--green { color: var(--green); }
-  .dt-stat__val--orange { color: var(--accent); }
-  .dt-stat__val--red { color: #c01818; }
-  .dt-stat__val--gray { color: var(--text-secondary); }
-  @media (max-width: 760px) { .dt-summary { grid-template-columns: 1fr 1fr; } }
+  .dt-hero-strip__divider { width: 1px; background: var(--border); align-self: stretch; }
+  .dt-hero-strip__proj { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .dt-hero-strip__rad { font-size: 11px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
+  .dt-hero-strip__title { font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .dt-hero-strip__meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
-  /* Grid de las 8 áreas — mantenemos area-card pero refinamos */
+  .dt-hero-strip__progress { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .dt-hero-strip__progress-top { display: flex; align-items: baseline; gap: 10px; }
+  .dt-hero-strip__pct { font-size: 22px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .dt-hero-strip__pct-lbl { font-size: 12px; color: var(--text-secondary); }
+  .dt-hero-strip__progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .dt-hero-strip__progress-bar > span { display: block; height: 100%; background: var(--green); border-radius: 99px; transition: width .35s cubic-bezier(.4,0,.2,1); }
+  .dt-hero-strip__breakdown { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+
+  /* Mini pill compacto para el breakdown del hero */
+  .dt-mini-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: var(--radius-full);
+    font-size: 11.5px; font-weight: 600;
+  }
+  .dt-mini-pill__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dt-mini-pill strong { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dt-mini-pill--green { background: var(--green-bg); color: var(--green); }
+  .dt-mini-pill--green .dt-mini-pill__dot { background: var(--green); }
+  .dt-mini-pill--orange { background: var(--orange-bg); color: var(--accent); }
+  .dt-mini-pill--orange .dt-mini-pill__dot { background: var(--accent); }
+  .dt-mini-pill--red { background: var(--red-bg); color: #c01818; }
+  .dt-mini-pill--red .dt-mini-pill__dot { background: #c01818; }
+  .dt-mini-pill--gray { background: #f5f6fa; color: var(--text-secondary); }
+  .dt-mini-pill--gray .dt-mini-pill__dot { background: #9c9ebf; }
+
+  .dt-hero-strip__amount { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .dt-hero-strip__amount-lbl { font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--text-secondary); text-transform: uppercase; }
+  .dt-hero-strip__amount-val { font-size: 20px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; letter-spacing: -.01em; white-space: nowrap; }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     DETAIL — Layout 2 columnas: áreas (izquierda) + sidebar (derecha)
+     ═══════════════════════════════════════════════════════════════════ */
+  .dt-layout {
+    display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr); gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1100px) { .dt-layout { grid-template-columns: 1fr; } }
+  .dt-layout > * { min-width: 0; }
+
+  /* ── Columna izquierda: encabezado bloque + grid 2 cols de cards ── */
+  .dt-areas-section { display: flex; flex-direction: column; gap: 14px; }
+  .dt-areas-section__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 4px;
+  }
+  .dt-areas-section__title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  .dt-areas-section__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
   .dt-areas-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
   }
+  @media (max-width: 720px) { .dt-areas-grid { grid-template-columns: 1fr; } }
+
+  /* ── Card de área ── */
   .dt-area-card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 18px 18px 16px;
-    display: flex; flex-direction: column; gap: 10px;
-    cursor: pointer; transition: transform .2s, box-shadow .2s, border-color .2s;
-    position: relative;
+    border-radius: var(--radius-lg); padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative; overflow: hidden;
   }
   .dt-area-card:hover {
     transform: translateY(-2px); border-color: var(--border-dark);
-    box-shadow: 0 8px 18px -6px rgba(15, 17, 35, .12);
+    box-shadow: 0 8px 20px -6px rgba(15, 17, 35, .12);
   }
+  /* Strip lateral de color según estado */
+  .dt-area-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--strip-color, var(--border-dark)); opacity: 0;
+    transition: opacity .15s;
+  }
+  .dt-area-card[data-estado="aprobado"] { --strip-color: var(--green); }
+  .dt-area-card[data-estado="en_revision"] { --strip-color: var(--accent); }
+  .dt-area-card[data-estado="devuelto"] { --strip-color: #c01818; }
+  .dt-area-card[data-estado="pendiente"] { --strip-color: var(--border-dark); }
+  .dt-area-card::before { opacity: 1; }
+
   .dt-area-card__head {
     display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
   }
-  .dt-area-card__title {
-    font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3;
-    flex: 1; min-width: 0;
-  }
   .dt-area-card__icon {
-    width: 32px; height: 32px; border-radius: var(--radius-md);
+    width: 44px; height: 44px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    background: var(--orange-bg); color: var(--accent); flex-shrink: 0;
+    flex-shrink: 0;
   }
+  .dt-area-card[data-estado="aprobado"] .dt-area-card__icon {
+    background: var(--green-bg); color: var(--green);
+  }
+  .dt-area-card[data-estado="en_revision"] .dt-area-card__icon {
+    background: var(--orange-bg); color: var(--accent);
+  }
+  .dt-area-card[data-estado="devuelto"] .dt-area-card__icon {
+    background: var(--red-bg); color: #c01818;
+  }
+  .dt-area-card[data-estado="pendiente"] .dt-area-card__icon {
+    background: #f5f6fa; color: var(--text-secondary);
+  }
+  .dt-area-card__icon svg { width: 22px; height: 22px; }
+
+  .dt-area-card__title {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .dt-area-card__progress-wrap { display: flex; flex-direction: column; gap: 6px; }
   .dt-area-card__progress {
     height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
   }
@@ -77,23 +148,116 @@
     display: flex; align-items: center; justify-content: space-between;
     font-size: 11.5px; color: var(--text-secondary); font-weight: 600;
   }
-  .dt-area-card__revisor {
+  .dt-area-card__stats strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+  .dt-area-card__footer {
     display: flex; align-items: center; gap: 8px;
-    font-size: 12px; color: var(--text-secondary);
     padding-top: 10px; border-top: 1px dashed var(--border);
   }
   .dt-area-card__avatar {
     width: 22px; height: 22px; border-radius: 50%;
     background: var(--orange-bg); color: var(--accent);
     display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
   }
+  .dt-area-card__revisor {
+    font-size: 12px; color: var(--text-secondary); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dt-area-card__revisor--empty { font-style: italic; }
   .dt-area-card__cta {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 4px;
+    font-size: 11.5px; font-weight: 700; color: var(--accent);
+    display: inline-flex; align-items: center; gap: 4px;
   }
-  .dt-area-card__cta-text {
-    font-size: 12px; font-weight: 700; color: var(--accent);
+  .dt-area-card__cta svg { width: 12px; height: 12px; }
+
+  /* ── Columna derecha: sidebar con contexto del proyecto ── */
+  .dt-sidebar {
+    display: flex; flex-direction: column; gap: 14px;
+    position: sticky; top: 16px;
+  }
+  .dt-side-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px;
+  }
+  .dt-side-card__title {
+    font-size: 11px; font-weight: 700; letter-spacing: .4px;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Resumen proyecto */
+  .dt-proj-rad { font-size: 11.5px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
+  .dt-proj-title { font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-top: 4px; }
+  .dt-proj-meta { font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4; }
+  .dt-proj-amount {
+    font-size: 18px; font-weight: 700; color: var(--green);
+    margin-top: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* Progreso global */
+  .dt-progress-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .dt-progress-pct {
+    font-size: 22px; font-weight: 700; color: var(--text-primary);
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .dt-progress-lbl { font-size: 12px; color: var(--text-secondary); }
+  .dt-progress-bar {
+    height: 8px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .dt-progress-bar > span {
+    display: block; height: 100%; background: var(--green); border-radius: 99px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .dt-status-breakdown {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;
+  }
+  .dt-status-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: var(--radius-md);
+    font-size: 12px; font-weight: 600;
+  }
+  .dt-status-pill__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dt-status-pill__count { color: var(--text-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dt-status-pill--green { background: var(--green-bg); color: var(--green); }
+  .dt-status-pill--orange { background: var(--orange-bg); color: var(--accent); }
+  .dt-status-pill--red { background: var(--red-bg); color: #c01818; }
+  .dt-status-pill--gray { background: #f5f6fa; color: var(--text-secondary); }
+  .dt-status-pill--green .dt-status-pill__dot { background: var(--green); }
+  .dt-status-pill--orange .dt-status-pill__dot { background: var(--accent); }
+  .dt-status-pill--red .dt-status-pill__dot { background: #c01818; }
+  .dt-status-pill--gray .dt-status-pill__dot { background: #9c9ebf; }
+
+  /* Equipo de revisores */
+  .dt-team-list { display: flex; flex-direction: column; gap: 10px; }
+  .dt-team-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dt-team-row__avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .dt-team-row__avatar--empty {
+    background: #f5f6fa; color: var(--text-secondary);
+  }
+  .dt-team-row__main { flex: 1; min-width: 0; }
+  .dt-team-row__name { font-size: 12.5px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+  .dt-team-row__area { font-size: 11px; color: var(--text-secondary); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Acciones rápidas */
+  .dt-actions { display: flex; flex-direction: column; gap: 8px; }
+  .dt-actions .naowee-btn { width: 100%; justify-content: flex-start; }
+
+  /* ── List page hero (sin id) ── */
+  .dt-hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 22px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin-bottom: 18px;
   }
 </style>
 </head>
@@ -109,8 +273,9 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js';
-  import { ESTADOS_AREA, formatoMoneda } from '../shared/states.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
+  import { ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'doc-tecnica' });
@@ -125,9 +290,34 @@
     search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
-    grid:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
-    arrow: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'
+    arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+    alert: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></svg>',
+    notify:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+    download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>'
   };
+
+  /* ═══ Iconos semánticos por área técnica ═══ */
+  function iconForArea(areaName) {
+    const n = (areaName || '').toLowerCase();
+    /* Levantamiento topográfico */
+    if (n.includes('topogr')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l4-8 4 4 5-10 5 14"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/><circle cx="11" cy="15" r="1.2" fill="currentColor"/><circle cx="16" cy="5" r="1.2" fill="currentColor"/></svg>';
+    /* Estudio de suelos */
+    if (n.includes('suelo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/><path d="M5 7v10M19 7v10" stroke-dasharray="2 2"/></svg>';
+    /* Diseño arquitectónico */
+    if (n.includes('arquitect')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6M9 12h.01M15 12h.01"/></svg>';
+    /* Diseño estructural */
+    if (n.includes('estructur')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18" rx="1"/><rect x="15" y="3" width="6" height="18" rx="1"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="20" x2="15" y2="20"/></svg>';
+    /* Diseño hidráulico, sanitario y pluvial */
+    if (n.includes('hidr') || n.includes('sanit') || n.includes('pluv')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5C8 7 6 10.5 6 13.5a6 6 0 0012 0c0-3-2-6.5-6-11z"/></svg>';
+    /* Diseño eléctrico */
+    if (n.includes('eléct') || n.includes('elect')) return '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L4.5 14h6L9 22l8.5-12h-6L13 2z"/></svg>';
+    /* Planes de manejo, riesgos y ambiental */
+    if (n.includes('riesg') || n.includes('ambient') || n.includes('manejo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>';
+    /* Presupuesto */
+    if (n.includes('presup') || n.includes('cost')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+    /* Default: grid */
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+  }
 
   /* ════════════════════════════════════════════════════════════════
      Sin ?id → LISTA de proyectos
@@ -269,7 +459,7 @@
   }
 
   /* ════════════════════════════════════════════════════════════════
-     DETAIL: hero del proyecto + resumen + grid de las 8 áreas
+     DETAIL: layout 2 columnas (áreas + sidebar contextual)
      ════════════════════════════════════════════════════════════════ */
   function renderDetail() {
     const areas = p.docsTecnica?.areas || [];
@@ -278,6 +468,13 @@
     const enRevision = areas.filter(a => a.estado === 'en_revision').length;
     const devueltas = areas.filter(a => a.estado === 'devuelto').length;
     const pendientes = total - aprobadas - enRevision - devueltas;
+    const pctGlobal = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
+
+    const conRevisor = areas.filter(a => a.revisor);
+    const sinRevisor = areas.filter(a => !a.revisor);
+
+    /* Actividad reciente: eventos del historial con foco técnico */
+    const eventos = (p.historial || []).slice().reverse().slice(0, 4);
 
     pageContent.innerHTML = `
       <div class="page-fade-in">
@@ -288,69 +485,166 @@
             <h1>Áreas técnicas</h1>
             <p>Cada área tiene su propio revisor especializado. Todos pueden ver toda la documentación, pero solo gestionan su área.</p>
           </div>
-        </div>
-
-        <div class="dt-hero">
-          <div class="dt-hero__main">
-            <span class="dt-hero__rad">${(p.radicado || '—').split('-CONV-')[0]}</span>
-            <span class="dt-hero__title">${p.nombre}</span>
-            <span class="dt-hero__meta">${p.municipio}${p.departamento ? `, ${p.departamento}` : ''} · ${p.tipoSolicitud || ''}</span>
-          </div>
-          <span class="dt-hero__amount">${formatoMoneda(p.presupuesto)}</span>
-        </div>
-
-        <div class="dt-summary">
-          <div class="dt-stat">
-            <div class="dt-stat__lbl">Total áreas</div>
-            <div class="dt-stat__val">${total}</div>
-          </div>
-          <div class="dt-stat">
-            <div class="dt-stat__lbl">Aprobadas</div>
-            <div class="dt-stat__val dt-stat__val--green">${aprobadas}</div>
-          </div>
-          <div class="dt-stat">
-            <div class="dt-stat__lbl">En revisión</div>
-            <div class="dt-stat__val dt-stat__val--orange">${enRevision}</div>
-          </div>
-          <div class="dt-stat">
-            <div class="dt-stat__lbl">Devueltas / pendientes</div>
-            <div class="dt-stat__val ${devueltas > 0 ? 'dt-stat__val--red' : 'dt-stat__val--gray'}">${devueltas + pendientes}</div>
+          <div class="naowee-page-header__actions">
+            ${sinRevisor.length > 0 ? `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" id="btnAsignar">${ICONS.notify} Asignar revisores (${sinRevisor.length})</button>` : ''}
+            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnExportar">${ICONS.download} Exportar resumen</button>
           </div>
         </div>
 
-        <div class="dt-areas-grid">
-          ${areas.map(a => {
-            const e = ESTADOS_AREA[a.estado] || { label: a.estado, color: 'neutral' };
-            const pct = a.items > 0 ? (a.aprobados / a.items * 100) : 0;
-            const barColor = a.estado === 'aprobado' ? 'var(--green)'
-              : a.estado === 'devuelto' ? '#c01818'
-              : a.estado === 'en_revision' ? 'var(--accent)'
-              : 'var(--border-dark)';
-            const initial = (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase() || '?';
-            return `
-              <div class="dt-area-card" onclick="location.href='revisar-area.html?id=${p.idUnico}&area=${a.id}'">
-                <div class="dt-area-card__head">
-                  <div class="dt-area-card__icon">${ICONS.grid}</div>
-                  <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
-                </div>
-                <div class="dt-area-card__title">${a.nombre}</div>
-                <div class="dt-area-card__progress"><span style="width:${pct}%;background:${barColor}"></span></div>
-                <div class="dt-area-card__stats">
-                  <span>${a.aprobados} de ${a.items} ítems</span>
-                  <span>${Math.round(pct)}%</span>
-                </div>
-                <div class="dt-area-card__revisor">
-                  ${a.revisor ? `<span class="dt-area-card__avatar">${initial}</span><span>${a.revisor}</span>` : `<span style="color:var(--text-secondary);font-style:italic">Sin revisor asignado</span>`}
-                </div>
-                <div class="dt-area-card__cta">
-                  <span class="dt-area-card__cta-text">Revisar área</span>
-                  <span style="color:var(--accent)">${ICONS.arrow}</span>
-                </div>
-              </div>`;
-          }).join('')}
+        ${devueltas > 0 ? `
+          <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+              <span class="naowee-message__title">${devueltas} área${devueltas === 1 ? '' : 's'} devuelta${devueltas === 1 ? '' : 's'} con observaciones</span>
+            </div>
+            <div class="naowee-message__text">Requiere acción del municipio para subsanar antes de continuar.</div>
+            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" id="btnNotify">${ICONS.notify} Notificar municipio</button>
+          </div>
+        ` : ''}
+
+        <!-- Hero canónico project-hero con cenefa de progreso de áreas técnicas -->
+        <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
+          ${p.priorizado ? `
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto priorizado por el Ministerio">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+              <span class="prio-ribbon__tooltip" role="tooltip">Priorizado por el Ministerio</span>
+            </span>
+          ` : ''}
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${(p.radicado || '—').split('-CONV-')[0]}</div>
+              <h1 class="project-hero__title" style="font-size:20px">${p.nombre}</h1>
+              <div class="project-hero__meta">
+                <span>${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</span>
+                <span>${p.formuladora?.nombre || ''}</span>
+                <span>${p.tipoSolicitud || ''}${p.fase ? ` · ${p.fase}` : ''}</span>
+              </div>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--brand naowee-badge--quiet"><span class="naowee-badge__dot"></span>Etapa documental</span>
+                <span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Infraestructura</span>
+              </div>
+            </div>
+            <div class="project-hero__right">
+              <div class="project-hero__label">Presupuesto del proyecto</div>
+              <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
+              <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
+            </div>
+          </div>
+          <!-- Cenefa de progreso de áreas técnicas — edge-to-edge en la base del hero -->
+          <div class="hero-cenefa" style="background:linear-gradient(90deg,var(--orange-bg,#fff3e6) 0%,#fff8ef 60%,#fff 100%);border-top-color:var(--orange-border,#ffbf75)">
+            <div style="display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap">
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span style="font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${pctGlobal}%</span>
+                <span style="font-size:12px;color:var(--text-secondary)"><strong style="color:var(--text-primary)">${aprobadas}</strong> de ${total} áreas aprobadas</span>
+              </div>
+              <div style="flex:1;min-width:160px;height:6px;background:var(--grey-bg,#f5f6fa);border-radius:999px;overflow:hidden">
+                <span style="display:block;height:100%;width:${pctGlobal}%;background:linear-gradient(90deg,var(--green,#15803d),#27a13c);border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1)"></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:700">
+              <span class="naowee-badge naowee-badge--positive naowee-badge--quiet"><span class="naowee-badge__dot"></span>${aprobadas} aprobadas</span>
+              <span class="naowee-badge naowee-badge--caution naowee-badge--quiet"><span class="naowee-badge__dot"></span>${enRevision} en revisión</span>
+              <span class="naowee-badge naowee-badge--negative naowee-badge--quiet"><span class="naowee-badge__dot"></span>${devueltas} devueltas</span>
+              <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet"><span class="naowee-badge__dot"></span>${pendientes} pendientes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dt-layout">
+          <!-- ───── COLUMNA IZQUIERDA: 8 áreas técnicas ───── -->
+          <div class="dt-areas-section">
+            <div class="dt-areas-section__head">
+              <div>
+                <div class="dt-areas-section__title">Las 8 áreas técnicas</div>
+                <div class="dt-areas-section__sub">Click en una para entrar al detalle de revisión</div>
+              </div>
+            </div>
+            <div class="dt-areas-grid">
+              ${areas.map(a => {
+                const e = ESTADOS_AREA[a.estado] || { label: a.estado, color: 'neutral' };
+                const pct = a.items > 0 ? Math.round((a.aprobados / a.items) * 100) : 0;
+                const barColor = a.estado === 'aprobado' ? 'var(--green)'
+                  : a.estado === 'devuelto' ? '#c01818'
+                  : a.estado === 'en_revision' ? 'var(--accent)'
+                  : 'var(--border-dark)';
+                const initial = (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase() || '?';
+                return `
+                  <article class="dt-area-card" data-estado="${a.estado}" onclick="location.href='revisar-area.html?id=${p.idUnico}&area=${a.id}'">
+                    <div class="dt-area-card__head">
+                      <div class="dt-area-card__icon">${iconForArea(a.nombre)}</div>
+                      <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+                    </div>
+                    <div class="dt-area-card__title">${a.nombre}</div>
+                    <div class="dt-area-card__progress-wrap">
+                      <div class="dt-area-card__progress"><span style="width:${pct}%;background:${barColor}"></span></div>
+                      <div class="dt-area-card__stats">
+                        <span><strong>${a.aprobados}</strong> de ${a.items} ítems</span>
+                        <span>${pct}%</span>
+                      </div>
+                    </div>
+                    <div class="dt-area-card__footer">
+                      ${a.revisor
+                        ? `<span class="dt-area-card__avatar">${initial}</span>
+                           <span class="dt-area-card__revisor">${a.revisor}</span>`
+                        : `<span class="dt-area-card__avatar dt-area-card__avatar--empty" style="background:#f5f6fa;color:var(--text-secondary)">?</span>
+                           <span class="dt-area-card__revisor dt-area-card__revisor--empty">Sin revisor asignado</span>`}
+                      <span class="dt-area-card__cta">Revisar ${ICONS.arrow}</span>
+                    </div>
+                  </article>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- ───── COLUMNA DERECHA: solo Equipo de revisión ───── -->
+          <aside class="dt-sidebar">
+            <div class="dt-areas-section__head">
+              <div>
+                <div class="dt-areas-section__title">Equipo de revisión</div>
+                <div class="dt-areas-section__sub">${conRevisor.length} de ${total} áreas con revisor asignado</div>
+              </div>
+            </div>
+            <div class="dt-side-card">
+              <div class="dt-team-list">
+                ${conRevisor.map(a => {
+                  const initial = (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+                  return `
+                    <div class="dt-team-row">
+                      <span class="dt-team-row__avatar">${initial}</span>
+                      <div class="dt-team-row__main">
+                        <div class="dt-team-row__name">${a.revisor}</div>
+                        <div class="dt-team-row__area">${a.nombre}</div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+                ${sinRevisor.length > 0 ? `
+                  <div class="dt-team-row">
+                    <span class="dt-team-row__avatar dt-team-row__avatar--empty">?</span>
+                    <div class="dt-team-row__main">
+                      <div class="dt-team-row__name" style="color:var(--text-secondary);font-style:italic">${sinRevisor.length} área${sinRevisor.length === 1 ? '' : 's'} sin asignar</div>
+                      <div class="dt-team-row__area">${sinRevisor.map(a => a.nombre).join(' · ')}</div>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+          </aside>
         </div>
       </div>
     `;
+
+    /* Wire actions (placeholder con toast) */
+    document.getElementById('btnNotify')?.addEventListener('click', () => {
+      toast({ variant: 'positive', title: 'Notificación enviada', message: 'El municipio recibirá un correo con las observaciones de las áreas devueltas.' });
+    });
+    document.getElementById('btnAsignar')?.addEventListener('click', () => {
+      toast({ variant: 'informative', title: 'Asignación de revisores', message: 'Esta acción se habilitará cuando el módulo de gestión de equipo esté disponible.' });
+    });
+    document.getElementById('btnExportar')?.addEventListener('click', () => {
+      toast({ variant: 'informative', title: 'Resumen exportado', message: 'El reporte de áreas técnicas se descargará en breve.' });
+    });
   }
 </script>
 </body>

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260510c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512k">
 </head>
 <body>
 <div class="shell">
@@ -21,13 +21,23 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js';
+  import { mountShell } from '../shared/shell.js?v=20260511g';
   import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
-  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260509k';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260512k';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });
 
-  const convocatorias = ProjectData.getConvocatorias();
+  /* Conteo real de postulaciones por convocatoria (fuente de verdad consistente
+     con convocatoria-detalle.html). El campo c.postulaciones queda como fallback
+     histórico si nunca llegaron proyectos. */
+  const todosLosProyectos = ProjectData.getProyectos();
+  const convocatorias = ProjectData.getConvocatorias()
+    .slice()
+    .sort((a, b) => new Date(b.apertura) - new Date(a.apertura))
+    .map(c => {
+      const conteoReal = todosLosProyectos.filter(p => p.convocatoriaId === c.id).length;
+      return { ...c, postulaciones: conteoReal || c.postulaciones || 0 };
+    });
 
   function diasRestantes(cierre) {
     const ms = new Date(cierre) - new Date();

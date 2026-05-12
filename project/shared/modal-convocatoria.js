@@ -12,6 +12,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import ProjectData from './data.js';
+import { validateRequired, bindValidationReset } from './wizard-page.js';
 
 const FUENTES = [
   'SGP','OCAD-Paz','Recursos Propios Mindeporte','Recursos Propios Municipio',
@@ -47,12 +48,13 @@ function nextCodigoConvocatoria() {
 }
 
 /* ═══ Component builders ═══ */
-function textfield({ label, name, type = 'text', required = false, placeholder = '', helper = '', minlength, maxlength, value = '' }) {
+function textfield({ label, name, type = 'text', required = false, placeholder = '', helper = '', minlength, maxlength, value = '', prefix = '' }) {
   const id = `tf-${name}`;
   return `
-    <div class="naowee-textfield" data-name="${name}">
+    <div class="naowee-textfield ${prefix ? 'naowee-textfield--with-prefix' : ''}" data-name="${name}">
       <label class="naowee-textfield__label ${required ? 'naowee-textfield__label--required' : ''}" for="${id}">${label}</label>
       <div class="naowee-textfield__input-wrap">
+        ${prefix ? `<span class="naowee-textfield__prefix" aria-hidden="true">${prefix}</span>` : ''}
         <input class="naowee-textfield__input" id="${id}" name="${name}" type="${type}"
                ${required ? 'required' : ''} ${minlength ? `minlength="${minlength}"` : ''} ${maxlength ? `maxlength="${maxlength}"` : ''}
                placeholder="${placeholder}" value="${value}"/>
@@ -974,13 +976,17 @@ function modalStyles() {
       100% { transform: translateY(380px) rotate(720deg); opacity: 0 }
     }
 
-    /* Validation error: border y shadow rojo en el wrapper visible del campo */
-    .has-error .naowee-textfield__input-wrap,
-    .has-error .naowee-datepicker-field__input,
-    .has-error .naowee-dropdown__trigger,
-    .has-error .naowee-file-uploader__input-wrap {
-      border-color: #c01818 !important;
-      box-shadow: 0 0 0 3px rgba(192,24,24,.12) !important;
+    /* Validation error — scope con #convocatoriaOverlay para outspecify los
+       rules id-prefixed del mismo bloque (líneas 366+, 866+). Sin scope los
+       rules .has-error pierden contra el border-color base de los inputs. */
+    #convocatoriaOverlay .has-error .naowee-textfield__input-wrap,
+    #convocatoriaOverlay .has-error .naowee-datepicker-field__input,
+    #convocatoriaOverlay .has-error .naowee-dropdown__trigger,
+    #convocatoriaOverlay .has-error .naowee-multiselect__trigger,
+    #convocatoriaOverlay .has-error .naowee-file-uploader__input-wrap {
+      border-color: #b42318 !important;
+      background-color: #fff !important;
+      transition: none !important;
     }
     /* Shake on validation error */
     .naowee-shake { animation: convoShake .4s cubic-bezier(.36,.07,.19,.97) both; }
@@ -1679,16 +1685,31 @@ function bindDropdowns(scope) {
 
     const positionMenu = () => {
       const rect = trigger.getBoundingClientRect();
-      menu.style.top = (rect.bottom + 4) + 'px';
       menu.style.left = rect.left + 'px';
       /* Width fijo = ancho del trigger (no min-width que permite crecer) */
       menu.style.width = rect.width + 'px';
       menu.style.maxWidth = rect.width + 'px';
-      /* Anti-overflow inferior: si no cabe, abrir hacia arriba */
-      const menuH = menu.offsetHeight || 280;
-      if (rect.bottom + 4 + menuH > window.innerHeight - 16) {
-        menu.style.top = (rect.top - menuH - 4) + 'px';
-      }
+      /* Default: abrir hacia abajo justo debajo del trigger */
+      menu.style.top = (rect.bottom + 4) + 'px';
+      /* Anti-overflow: solo abrir hacia arriba si REALMENTE no cabe abajo Y
+         hay más espacio arriba que abajo (evita el "abre arriba" cuando
+         hay espacio suficiente). Mide después de visible para offsetHeight real. */
+      requestAnimationFrame(() => {
+        const menuH = menu.offsetHeight || 240;
+        const spaceBelow = window.innerHeight - rect.bottom - 16;
+        const spaceAbove = rect.top - 16;
+        if (menuH > spaceBelow && spaceAbove > spaceBelow) {
+          /* No cabe abajo y arriba hay más espacio → abrir arriba */
+          menu.style.top = Math.max(8, rect.top - menuH - 4) + 'px';
+        } else {
+          /* Cabe abajo (o arriba también es chiquito): mantener abajo */
+          menu.style.top = (rect.bottom + 4) + 'px';
+          /* Si el menu es más alto que el espacio disponible, limitar altura */
+          if (menuH > spaceBelow) {
+            menu.style.setProperty('max-height', Math.max(160, spaceBelow) + 'px', 'important');
+          }
+        }
+      });
     };
 
     /* Helpers para abrir/cerrar — DS oficial usa max-height:0 + opacity:0 en idle.
@@ -1928,33 +1949,12 @@ function bindMultiSelects(scope) {
 }
 
 /* ═══ Step navigation (validaciones desactivadas temporalmente para QA) ═══ */
+/* validateStep ahora delega en el canónico DS validateRequired (wizard-page.js):
+   - Helpers --negative loud con badge SVG oficial
+   - Wiggle + autoscroll + focus
+   - Progresivo: 2º click permite avanzar (no entorpecer demo) */
 function validateStep(panel) {
-  /* Valida todos los inputs/selects/textareas con atributo required dentro del panel.
-     Marca con .has-error y .naowee-shake los campos faltantes y devuelve false. */
-  const requireds = panel.querySelectorAll('[required]');
-  let firstInvalid = null;
-  requireds.forEach(el => {
-    const isFile = el.type === 'file';
-    const isHidden = el.type === 'hidden';
-    const value = (el.value || '').trim();
-    /* Para hidden inputs (datepicker/dropdown custom), value vacío = inválido */
-    const invalid = isFile ? (!el.files || el.files.length === 0) : !value;
-    /* Encontrar el wrapper visible del campo (datepicker-field, dropdown, textfield, file-uploader) */
-    const wrapper = el.closest('.naowee-datepicker-field, .naowee-dropdown, .naowee-textfield, .naowee-file-uploader') || el;
-    if (invalid) {
-      wrapper.classList.add('has-error');
-      wrapper.classList.add('naowee-shake');
-      setTimeout(() => wrapper.classList.remove('naowee-shake'), 500);
-      if (!firstInvalid) firstInvalid = wrapper;
-    } else {
-      wrapper.classList.remove('has-error');
-    }
-  });
-  if (firstInvalid) {
-    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return false;
-  }
-  return true;
+  return validateRequired(panel);
 }
 
 const checkSVGStepper = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>`;
@@ -2065,7 +2065,9 @@ export function openConvocatoriaModal({ onCreated } = {}) {
 
   const overlay = document.getElementById('convocatoriaOverlay');
   void overlay.offsetWidth;
-  setTimeout(() => overlay.classList.add('open'), 10);
+  /* Clase canónica del DS (.is-open) — la versión vieja usaba .open
+     pero pages.css solo estiliza .is-open, causaba modal invisible. */
+  setTimeout(() => overlay.classList.add('is-open'), 10);
 
   /* Cerrar */
   let closed = false;
@@ -2075,7 +2077,7 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     /* Cleanup: quitar popovers/menus que migraron al body */
     document.querySelectorAll('body > .naowee-datepicker--popover').forEach(p => p.remove());
     document.querySelectorAll('body > .naowee-dropdown__menu').forEach(m => m.remove());
-    overlay.classList.remove('open');
+    overlay.classList.remove('is-open');
     setTimeout(() => overlay.remove(), 200);
     document.removeEventListener('keydown', onEsc);
   };
@@ -2090,6 +2092,7 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   bindDropdowns(overlay);
   bindMultiSelects(overlay);
   bindDatepickers(overlay);
+  bindValidationReset(overlay);
 
   /* Bind native checkbox inputs: toggle .naowee-checkbox--checked en el label.
      El DS oficial tiene transition + transform scale(.5) al SVG que bloquea el opacity:1
@@ -2231,4 +2234,4 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   });
 }
 
-export { textfield, textarea, dropdown, checkbox, bindDropdowns };
+export { textfield, textarea, dropdown, checkbox, bindDropdowns, fileUpload, bindFileUpload };

@@ -46,18 +46,27 @@ const SEED = {
       entidad: 'Ministerio del Deporte',
       email: 'jm.avila@mindeporte.gov.co',
       avatar: 'JA',
-      color: '#7c3aed'
+      color: '#7c3aed',
+      /* Enlace al pool: con qué revisor del equipo estoy logueado.
+         Modelo: el equipo revisor ve todos los proyectos en revisión,
+         pero cada quien aprueba SOLO sus áreas (Res. 933 Art. 3 + transcripción 2026-04-29). */
+      revisorId: 'rev-001'
     }
   },
 
-  /* ═══ Pool de revisores técnicos del Ministerio ═══
-     Permite al admin asignar/reasignar postulaciones. Cada revisor
-     tiene una especialidad principal (Res. 933 Art. 3). */
+  /* ═══ Equipo revisor del Ministerio (Res. 933 Art. 3 + transcripción 29/04/2026) ═══
+     5 personas cubren 8 áreas técnicas + 1 documentación general.
+     • `especialidades` (array de keys) → mapeo automático área↔revisor.
+     • `especialidad` (string display) → label legacy para UI compacta.
+     Modelo definido por Andrea + Danna: "todos ven todo, cada quien
+     aprueba lo suyo" — no hay coordinador humano que asigna 1-1, la
+     asignación por área es automática por especialidad. */
   revisores: [
-    { id: 'rev-001', nombre: 'Juan Manuel Ávila',  especialidad: 'Arquitectónica + Estructural', avatar: 'JA', color: '#7c3aed', cargaActiva: 8 },
-    { id: 'rev-002', nombre: 'María Elena Cortés', especialidad: 'Hidrosanitario + Eléctrico',    avatar: 'MC', color: '#0d7a83', cargaActiva: 5 },
-    { id: 'rev-003', nombre: 'Carlos Beltrán',     especialidad: 'Suelos + Topográfico',         avatar: 'CB', color: '#b45309', cargaActiva: 6 },
-    { id: 'rev-004', nombre: 'Andrea Quintero',    especialidad: 'Ambiental + Presupuesto',      avatar: 'AQ', color: '#15803d', cargaActiva: 4 }
+    { id: 'rev-001', nombre: 'Juan Manuel Ávila',  especialidad: 'Arquitectónica + Estructural', especialidades: ['arquitectonico','estructural'], avatar: 'JA', color: '#7c3aed', cargaActiva: 8 },
+    { id: 'rev-002', nombre: 'María Elena Cortés', especialidad: 'Hidrosanitario + Eléctrico',   especialidades: ['hidrosanitario','electrico'],    avatar: 'MC', color: '#0d7a83', cargaActiva: 5 },
+    { id: 'rev-003', nombre: 'Carlos Beltrán',     especialidad: 'Suelos + Topográfico',         especialidades: ['suelos','topografico'],          avatar: 'CB', color: '#b45309', cargaActiva: 6 },
+    { id: 'rev-004', nombre: 'Andrea Quintero',    especialidad: 'Ambiental + Presupuesto',      especialidades: ['ambiental','presupuesto'],       avatar: 'AQ', color: '#15803d', cargaActiva: 4 },
+    { id: 'rev-005', nombre: 'Luis Felipe Rondón', especialidad: 'Documentación General',        especialidades: ['general'],                        avatar: 'LR', color: '#1f78d1', cargaActiva: 7 }
   ],
 
   convocatorias: [
@@ -1346,14 +1355,89 @@ const ProjectData = (() => {
     return load().perfiles[perfil || getPerfil()];
   }
 
+  /* ═══ Mapeo área → especialidad ═══
+     Normaliza nombres legacy (hidraulico → hidrosanitario) y keys del DS. */
+  const AREA_TO_SPECIALTY = {
+    topografico: 'topografico',
+    suelos: 'suelos',
+    arquitectonico: 'arquitectonico',
+    estructural: 'estructural',
+    hidraulico: 'hidrosanitario',
+    hidrosanitario: 'hidrosanitario',
+    electrico: 'electrico',
+    ambiental: 'ambiental',
+    presupuesto: 'presupuesto',
+    general: 'general'
+  };
+
+  /* Busca en el equipo revisor quién cubre una especialidad de área. */
+  function getRevisorPorArea(areaKey) {
+    const spec = AREA_TO_SPECIALTY[areaKey];
+    if (!spec) return null;
+    return getRevisores().find(r => (r.especialidades || []).includes(spec)) || null;
+  }
+
+  /* SLA: días estándar de revisión técnica (Res. 933 + acuerdo demo). */
+  const SLA_DIAS_REVISION = 15;
+
+  /* Enriquece un área con revisorId + asignadoEn + fechaLimite si faltan.
+     Idempotente: si ya tiene revisorId, retorna sin cambios. */
+  function enrichArea(area, fechaAsignacionBase) {
+    if (!area) return area;
+    if (area.revisorId && area.asignadoEn && area.fechaLimite) return area;
+    const r = area.revisorId ? getRevisor(area.revisorId) : getRevisorPorArea(area.id);
+    if (!r) return area;
+    const asignadoEn = area.asignadoEn || fechaAsignacionBase || new Date().toISOString();
+    let fechaLimite = area.fechaLimite;
+    if (!fechaLimite) {
+      const lim = new Date(asignadoEn);
+      lim.setDate(lim.getDate() + SLA_DIAS_REVISION);
+      fechaLimite = lim.toISOString();
+    }
+    return { ...area, revisorId: r.id, asignadoEn, fechaLimite };
+  }
+
+  /* Enriquece un proyecto: auto-asigna revisorId/SLA en cada área técnica
+     + en docsGeneral. Se llama en cada `getProyectos/getProyecto` para
+     mantener el seed legible sin contaminar el state guardado. */
+  function enrichProyecto(p) {
+    if (!p) return p;
+    /* Base date: cuando el proyecto entró a etapa documental (si existe),
+       si no, fecha de favorabilidad, si no, fecha de postulación. */
+    const fechaBase = (p.historial || []).find(h => h.estado === 'etapa_documental')?.ts
+      || p.fechaFavorable
+      || p.fechaPostulacion;
+    let next = p;
+    if (p.docsTecnica?.areas) {
+      next = { ...next, docsTecnica: { ...p.docsTecnica, areas: p.docsTecnica.areas.map(a => enrichArea(a, fechaBase)) } };
+    }
+    if (p.docsGeneral && !p.docsGeneral.revisorId) {
+      const rg = getRevisorPorArea('general');
+      if (rg) {
+        const asignadoEn = p.docsGeneral.asignadoEn || fechaBase || new Date().toISOString();
+        const lim = new Date(asignadoEn); lim.setDate(lim.getDate() + SLA_DIAS_REVISION);
+        next = { ...next, docsGeneral: { ...p.docsGeneral, revisorId: rg.id, asignadoEn, fechaLimite: p.docsGeneral.fechaLimite || lim.toISOString() } };
+      }
+    }
+    return next;
+  }
+
   function getProyectos(filter) {
     const s = load();
-    if (!filter) return s.proyectos;
-    return s.proyectos.filter(filter);
+    const arr = s.proyectos.map(enrichProyecto);
+    if (!filter) return arr;
+    return arr.filter(filter);
   }
 
   function getProyecto(id) {
-    return load().proyectos.find(p => p.idUnico === id || p.radicado === id);
+    const p = load().proyectos.find(p => p.idUnico === id || p.radicado === id);
+    return p ? enrichProyecto(p) : null;
+  }
+
+  /* Revisor del pool actualmente logueado (perfil revisor). */
+  function getRevisorActivo() {
+    const d = load().perfiles?.revisor;
+    return d?.revisorId ? getRevisor(d.revisorId) : null;
   }
 
   function setProyecto(id, mutator) {
@@ -1467,7 +1551,8 @@ const ProjectData = (() => {
     load, save, reset, update,
     setPerfil, getPerfil, getPerfilData,
     getProyectos, getProyecto, setProyecto, addProyecto,
-    getRevisores, getRevisor,
+    getRevisores, getRevisor, getRevisorActivo, getRevisorPorArea,
+    AREA_TO_SPECIALTY, SLA_DIAS_REVISION,
     getConvocatorias, addConvocatoria, setConvocatoria,
     defaultNotificacion, enviarNotificacion,
     pushHistorial, pushNotificacion,

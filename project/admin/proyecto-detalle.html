@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512m">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512n">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260511g';
+  import { mountShell } from '../shared/shell.js?v=20260512n';
   import { ESTADOS_POSTULACION, ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
   import { openActivarInversionModal } from '../shared/modal-activar-inversion.js?v=20260512m';
   ProjectData.setPerfil('admin');
@@ -120,40 +120,67 @@
           ` : ''}
         </div>
 
-        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental'].includes(p.estado)) ? `
-          <!-- ═══ Asignación de revisor (Res. 933 Art. 3) ═══ -->
-          <div class="naowee-card revisor-asignacion-card">
-            <div class="revisor-asignacion__top">
+        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental'].includes(p.estado)) ? (() => {
+          /* Equipo revisor: informativo, no seleccionable. Todos ven el proyecto,
+             pero cada quien aprueba SOLO sus áreas (modelo Andrea + Danna 29/04/2026). */
+          const equipo = ProjectData.getRevisores();
+          const areasDeEsteProyecto = p.docsTecnica?.areas || [];
+          /* Para cada revisor: qué áreas de este proyecto le tocan + estado agregado */
+          const equipoEnriquecido = equipo.map(r => {
+            const misAreas = r.especialidades?.includes('general')
+              ? (p.docsGeneral ? [{ nombre: 'Documentación general', estado: p.docsGeneral.estadoRevision || (p.docsGeneral.revisor ? 'en_revision' : 'pendiente') }] : [])
+              : areasDeEsteProyecto.filter(a => a.revisorId === r.id);
+            const aprobadas = misAreas.filter(a => a.estado === 'aprobado').length;
+            const enRevision = misAreas.filter(a => a.estado === 'en_revision' || (a.estado || '').startsWith('en_revision')).length;
+            const pendientes = misAreas.filter(a => a.estado === 'pendiente').length;
+            const devueltas = misAreas.filter(a => a.estado === 'devuelto').length;
+            return { r, misAreas, aprobadas, enRevision, pendientes, devueltas };
+          });
+          const totalAreas = areasDeEsteProyecto.length + (p.docsGeneral ? 1 : 0);
+          const totalAprobadas = equipoEnriquecido.reduce((s, e) => s + e.aprobadas, 0);
+          return `
+          <!-- ═══ Equipo revisor del Ministerio (Res. 933 Art. 3 + transcripción 29/04/2026) ═══
+               Modelo: todos ven el proyecto, cada quien aprueba lo suyo por especialidad.
+               Asignación automática por área (no por proyecto). -->
+          <div class="naowee-card equipo-revisor-card">
+            <div class="equipo-revisor__head">
               <div>
-                <div class="revisor-asignacion__lbl">Revisor técnico asignado</div>
-                <div class="revisor-asignacion__hint">${p.revisor ? 'Puedes reasignar si el revisor está saturado o por especialidad.' : 'Asigna un revisor del pool técnico para iniciar la revisión.'}</div>
+                <div class="equipo-revisor__title">Equipo revisor del Ministerio</div>
+                <div class="equipo-revisor__hint">Cada revisor recibe automáticamente las áreas de su especialidad. El admin puede reasignar un área puntual si un revisor está saturado.</div>
               </div>
-              <div class="revisor-asignacion__current" id="revisorCurrent">
-                ${p.revisor ? (() => {
-                  const r = ProjectData.getRevisor(p.revisor);
-                  return r ? `
-                    <div class="ava-ring" style="width:36px;height:36px;background:${r.color}22;color:${r.color};font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
-                    <div>
-                      <div style="font-weight:700;font-size:13.5px">${r.nombre}</div>
-                      <div style="font-size:11.5px;color:var(--text-secondary)">${r.especialidad}</div>
-                    </div>
-                  ` : '<span style="color:var(--text-secondary);font-style:italic">Sin asignar</span>';
-                })() : '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet"><span class="naowee-badge__dot"></span>Sin asignar</span>'}
+              <div class="equipo-revisor__progress" title="${totalAprobadas} de ${totalAreas} áreas aprobadas">
+                <div class="equipo-revisor__progress-val">${totalAprobadas}<span>/${totalAreas}</span></div>
+                <div class="equipo-revisor__progress-lbl">áreas aprobadas</div>
               </div>
             </div>
-            <div class="revisor-asignacion__pool" id="revisorPool">
-              ${ProjectData.getRevisores().map(r => `
-                <button type="button" class="revisor-chip ${p.revisor === r.id ? 'is-selected' : ''}" data-rev="${r.id}">
-                  <div class="ava-ring" style="width:28px;height:28px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
-                  <div style="text-align:left">
-                    <div style="font-weight:600;font-size:13px">${r.nombre}</div>
-                    <div style="font-size:11px;color:var(--text-secondary)">${r.especialidad} · ${r.cargaActiva} activos</div>
-                  </div>
-                </button>
-              `).join('')}
+            <div class="equipo-revisor__grid">
+              ${equipoEnriquecido.map(({ r, misAreas, aprobadas, enRevision, pendientes, devueltas }) => {
+                const total = misAreas.length;
+                const stateBits = [];
+                if (aprobadas > 0)  stateBits.push(`<span class="rev-stat rev-stat--ok">${aprobadas} aprobada${aprobadas===1?'':'s'}</span>`);
+                if (enRevision > 0) stateBits.push(`<span class="rev-stat rev-stat--info">${enRevision} en revisión</span>`);
+                if (devueltas > 0)  stateBits.push(`<span class="rev-stat rev-stat--warn">${devueltas} devuelta${devueltas===1?'':'s'}</span>`);
+                if (pendientes > 0) stateBits.push(`<span class="rev-stat rev-stat--mute">${pendientes} pendiente${pendientes===1?'':'s'}</span>`);
+                const pct = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
+                const isGeneral = r.especialidades?.includes('general');
+                return `
+                  <div class="equipo-revisor-card-item ${total === 0 ? 'is-idle' : ''}">
+                    <div class="equipo-revisor-card-item__top">
+                      <div class="ava-ring" style="width:36px;height:36px;background:${r.color}22;color:${r.color};font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${r.avatar}</div>
+                      <div style="flex:1;min-width:0">
+                        <div class="equipo-revisor-card-item__name">${r.nombre}</div>
+                        <div class="equipo-revisor-card-item__role">${isGeneral ? 'Doc. General' : r.especialidad}</div>
+                      </div>
+                    </div>
+                    <div class="equipo-revisor-card-item__meta">
+                      ${total === 0 ? '<span class="rev-stat rev-stat--mute">Sin áreas en este proyecto</span>' : stateBits.join('')}
+                    </div>
+                    ${total > 0 ? `<div class="equipo-revisor-card-item__bar"><span style="width:${pct}%"></span></div>` : ''}
+                  </div>`;
+              }).join('')}
             </div>
           </div>
-        ` : ''}
+        `;})() : ''}
 
         <div class="naowee-card proj-tabs-card">
           <div class="naowee-tabs naowee-tabs--animated" role="tablist">
@@ -213,21 +240,45 @@
 
         ${p.docsTecnica ? `
           <div class="naowee-card" style="margin-top:20px">
-            <div class="naowee-card__header"><div class="naowee-card__title">Áreas técnicas</div><div class="naowee-card__subtitle">Estado por área de revisión</div></div>
+            <div class="naowee-card__header">
+              <div class="naowee-card__title">Áreas técnicas</div>
+              <div class="naowee-card__subtitle">Cada área tiene revisor asignado por especialidad. SLA: 15 días desde la asignación (Res. 933).</div>
+            </div>
             <div class="naowee-card__body">
               <div class="area-grid">
                 ${p.docsTecnica.areas.map(a => {
                   const e = ESTADOS_AREA[a.estado];
                   const pct = a.items > 0 ? (a.aprobados / a.items * 100) : 0;
+                  const r = a.revisorId ? ProjectData.getRevisor(a.revisorId) : null;
+                  /* SLA: días restantes hasta fechaLimite. Solo aplica cuando NO está aprobada. */
+                  let slaHtml = '';
+                  if (a.fechaLimite && a.estado !== 'aprobado') {
+                    const ms = new Date(a.fechaLimite) - new Date();
+                    const dias = Math.ceil(ms / 86400000);
+                    const cls = dias < 0 ? 'sla-pill--vencido' : dias <= 3 ? 'sla-pill--urgent' : dias <= 7 ? 'sla-pill--warn' : 'sla-pill--ok';
+                    const lbl = dias < 0 ? `Vencido ${Math.abs(dias)}d` : dias === 0 ? 'Vence hoy' : `${dias}d restantes`;
+                    slaHtml = `<span class="sla-pill ${cls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${lbl}</span>`;
+                  }
                   return `
-                    <div class="area-card">
+                    <div class="area-card" data-area-id="${a.id}">
                       <div class="area-card__head">
                         <div class="area-card__title">${a.nombre}</div>
                         <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
                       </div>
                       <div class="area-card__progress"><span style="width:${pct}%"></span></div>
                       <div class="area-card__stats"><span>${a.aprobados} de ${a.items} ítems</span><span>${Math.round(pct)}%</span></div>
-                      <div class="area-card__revisor">${a.revisor || 'Sin asignar'}</div>
+                      <div class="area-card__footer">
+                        ${r ? `
+                          <div class="area-card__rev">
+                            <div class="ava-ring" style="width:24px;height:24px;background:${r.color}22;color:${r.color};font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
+                            <span class="area-card__rev-name" title="${r.nombre}">${r.nombre.split(' ').slice(0,2).join(' ')}</span>
+                          </div>
+                        ` : `<div class="area-card__rev"><span style="color:var(--text-secondary);font-style:italic;font-size:11.5px">Sin asignar</span></div>`}
+                        ${slaHtml}
+                        <button type="button" class="area-card__reassign" data-area="${a.id}" title="Reasignar a otro miembro del equipo" aria-label="Reasignar área">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                        </button>
+                      </div>
                     </div>`;
                 }).join('')}
               </div>
@@ -268,31 +319,80 @@
       });
     });
 
-    /* Asignación / reasignación de revisor (Res. 933 Art. 3) */
-    document.querySelectorAll('#revisorPool .revisor-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const revId = chip.dataset.rev;
-        const rev = ProjectData.getRevisor(revId);
-        if (!rev) return;
-        ProjectData.setProyecto(p.idUnico, x => {
-          x.revisor = revId;
-          x.historial = x.historial || [];
-          x.historial.push({
-            ts: new Date().toISOString(),
-            actor: 'admin',
-            evento: `Revisor ${rev.nombre} asignado (${rev.especialidad})`,
-            estado: x.estado
-          });
-          /* Si estaba "presentado" sin revisor, pasar a en_revision */
-          if (x.estado === 'presentado') {
-            x.estado = 'en_revision';
-            x.fechaInicioRevision = new Date().toISOString();
-          }
-          return x;
-        });
-        window.location.reload();
+    /* Reasignar área puntual (admin override) — abre menú emergente con el
+       equipo revisor para asignar a otro miembro. Solo afecta el área clicada. */
+    document.querySelectorAll('.area-card__reassign').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const areaId = btn.dataset.area;
+        const area = p.docsTecnica?.areas?.find(a => a.id === areaId);
+        if (!area) return;
+        openReassignMenu(btn, area);
       });
     });
+
+    function openReassignMenu(anchor, area) {
+      document.querySelector('.reassign-menu')?.remove();
+      const equipo = ProjectData.getRevisores().filter(r => !r.especialidades?.includes('general'));
+      const menu = document.createElement('div');
+      menu.className = 'reassign-menu';
+      menu.innerHTML = `
+        <div class="reassign-menu__title">Reasignar “${area.nombre}”</div>
+        <div class="reassign-menu__list">
+          ${equipo.map(r => {
+            const cubre = r.especialidades?.some(s => s === (ProjectData.AREA_TO_SPECIALTY?.[area.id]));
+            return `
+              <button type="button" class="reassign-menu__item ${area.revisorId === r.id ? 'is-current' : ''}" data-rev="${r.id}">
+                <div class="ava-ring" style="width:26px;height:26px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
+                <div style="flex:1;text-align:left">
+                  <div style="font-weight:600;font-size:13px">${r.nombre}</div>
+                  <div style="font-size:11px;color:var(--text-secondary)">${r.especialidad} · ${r.cargaActiva} activos${cubre ? ' · <strong style="color:var(--green)">especialista</strong>' : ''}</div>
+                </div>
+                ${area.revisorId === r.id ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+      document.body.appendChild(menu);
+      const rect = anchor.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 6) + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      menu.querySelectorAll('.reassign-menu__item').forEach(item => {
+        item.addEventListener('click', () => {
+          const revId = item.dataset.rev;
+          const rev = ProjectData.getRevisor(revId);
+          ProjectData.setProyecto(p.idUnico, x => {
+            const areas = x.docsTecnica?.areas || [];
+            const idx = areas.findIndex(a => a.id === area.id);
+            if (idx >= 0) {
+              areas[idx] = { ...areas[idx], revisorId: revId, asignadoEn: new Date().toISOString() };
+              const lim = new Date(); lim.setDate(lim.getDate() + 15);
+              areas[idx].fechaLimite = lim.toISOString();
+            }
+            x.historial = x.historial || [];
+            x.historial.push({
+              ts: new Date().toISOString(),
+              actor: 'admin',
+              evento: `Área “${area.nombre}” reasignada a ${rev.nombre}`,
+              estado: x.estado
+            });
+            return x;
+          });
+          menu.remove();
+          window.location.reload();
+        });
+      });
+      setTimeout(() => {
+        document.addEventListener('click', function close(ev) {
+          if (!menu.contains(ev.target)) {
+            menu.remove();
+            document.removeEventListener('click', close);
+          }
+        });
+      }, 50);
+    }
   }
 </script>
 </body>

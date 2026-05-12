@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512m">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512n">
 </head>
 <body>
 <div class="shell">
@@ -19,10 +19,44 @@
 </div>
 <div id="demoRoleSwitcherRoot"></div>
 
+<style>
+  /* Filtro DS canónico — variante medium (40px) y label visualmente oculto */
+  .filter-dpto-wrap { min-width: 220px; }
+  .filter-dpto-wrap .naowee-dropdown__label {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  /* Medium size override — el DS canónico es 48px; bajamos a 40px para filtros de tabla */
+  .filter-dpto-wrap .naowee-dropdown__trigger {
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 0 12px !important;
+    font-size: 13.5px !important;
+  }
+
+  /* Hover state en filas de la tabla de inversión */
+  .inversion-table tbody tr {
+    transition: background-color .12s ease;
+  }
+  .inversion-table tbody tr:hover {
+    background-color: #fafbfd;
+  }
+  /* Sumatoria del tfoot: bg sutil + borde superior para destacar */
+  .inversion-table tfoot tr {
+    background-color: #fafbfd;
+  }
+  .inversion-table tfoot td {
+    border-top: 2px solid var(--border) !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    font-weight: 700;
+  }
+</style>
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260511g';
+  import { mountShell } from '../shared/shell.js?v=20260512n';
   import { formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { dropdown, bindDropdowns } from '../shared/wizard-page.js';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'inversion' });
 
@@ -126,11 +160,19 @@
             <div class="sub">Bienio 2025-2026 · <span id="invCount">${enInversion.length}</span> proyecto${enInversion.length===1?'':'s'} activo${enInversion.length===1?'':'s'}</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <!-- Filtro por departamento (dropdown nativo, ligero) -->
-            <select id="filterDpto" class="naowee-dropdown__select" style="min-width:180px;padding:8px 12px;border:1px solid var(--border-dark);border-radius:var(--radius-md);font-size:13px;font-family:inherit;background:#fff">
-              <option value="">Todos los departamentos</option>
-              ${[...new Set(enInversion.map(p => p.departamento).filter(Boolean))].sort().map(d => `<option value="${d}">${d}</option>`).join('')}
-            </select>
+            <!-- Filtro por departamento (dropdown DS canónico) -->
+            <div class="filter-dpto-wrap">
+              ${dropdown({
+                label: 'Filtrar por departamento',
+                name: 'filterDpto',
+                placeholder: 'Todos los departamentos',
+                value: '',
+                options: [
+                  { value: '', label: 'Todos los departamentos' },
+                  ...[...new Set(enInversion.map(p => p.departamento).filter(Boolean))].sort().map(d => ({ value: d, label: d }))
+                ]
+              })}
+            </div>
             <button type="button" id="btnExportCsv" class="naowee-btn naowee-btn--mute naowee-btn--small">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Exportar CSV
@@ -206,8 +248,8 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="5" style="text-align:right">Sumatoria total de inversión:</td>
-                  <td class="numeric" style="color:var(--green);font-size:14px">${formatoMoneda(totalInvertido)}</td>
+                  <td colspan="5" style="text-align:right"><span id="invSubtotalLbl">Sumatoria total de inversión:</span></td>
+                  <td class="numeric" style="color:var(--green);font-size:14px"><span id="invSubtotal">${formatoMoneda(totalInvertido)}</span></td>
                   <td colspan="2"></td>
                 </tr>
               </tfoot>
@@ -218,20 +260,33 @@
     </div>
   `;
 
-  /* ═══ Filtro por departamento (filtra rows visibles) ═══ */
-  const filterDpto = document.getElementById('filterDpto');
+  /* ═══ Activar dropdowns DS canónicos en el page (portal + bind) ═══ */
+  bindDropdowns(document.getElementById('pageContent'));
+
+  /* ═══ Filtro por departamento (filtra rows visibles + recalcula subtotal) ═══ */
+  const filterDpto = document.querySelector('.naowee-dropdown[data-name="filterDpto"] input[type="hidden"]');
   const invCount = document.getElementById('invCount');
+  const invSubtotal = document.getElementById('invSubtotal');
+  const invSubtotalLbl = document.getElementById('invSubtotalLbl');
   filterDpto?.addEventListener('change', () => {
     const v = filterDpto.value;
     let visibles = 0;
+    let subtotal = 0;
     document.querySelectorAll('table.dash-table tbody tr').forEach(tr => {
       const id = tr.dataset.id;
       const proj = enInversion.find(p => p.idUnico === id);
       const match = !v || proj?.departamento === v;
       tr.style.display = match ? '' : 'none';
-      if (match) visibles++;
+      if (match) {
+        visibles++;
+        subtotal += proj?.inversion?.montoAprobado || 0;
+      }
     });
     if (invCount) invCount.textContent = visibles;
+    if (invSubtotal) invSubtotal.textContent = formatoMoneda(subtotal);
+    if (invSubtotalLbl) invSubtotalLbl.textContent = v
+      ? `Sumatoria de inversión · ${v}:`
+      : 'Sumatoria total de inversión:';
   });
 
   /* ═══ Exportar CSV — descarga la tabla completa (sin filtro) ═══ */

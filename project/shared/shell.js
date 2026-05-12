@@ -347,13 +347,14 @@ function bindShell() {
         e.preventDefault();
         const next = a.dataset.perfil;
         ProjectData.setPerfil(next);
-        /* Navegar al inicio del rol elegido */
+        /* Navegar al inicio del rol elegido con fade suave (sin salto) */
         const map = {
           admin: 'admin/dashboard.html',
           municipio: 'municipio/dashboard.html',
           revisor: 'revisor/dashboard.html'
         };
-        window.location.href = pathPrefix() + map[next];
+        ds.classList.remove('open');
+        fadeAndGo(pathPrefix() + map[next]);
       });
     });
 

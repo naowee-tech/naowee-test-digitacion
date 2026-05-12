@@ -457,7 +457,9 @@ a{color:inherit;text-decoration:none}
 .profile-dd__item--danger .profile-dd__icon{color:#d11f1f}
 
 /* PAGE */
-.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 72px}
+/* padding-bottom holgado para safe-area del demo role switcher (~60px) + naowee
+   floating footer (~38px) — evita que tapen la última fila de tablas largas. */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px 110px}
 
 /* ═══ Demo role switcher (pill flotante — solo sandbox) ═══
    Permite alternar entre los 14 roles para fines de demo, sin volver

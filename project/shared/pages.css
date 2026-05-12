@@ -1165,6 +1165,87 @@
 .dash-table tbody td:first-child { padding-left: 14px; }
 .dash-table tbody td:last-child  { padding-right: 14px; }
 
+/* ═══ Inversión table — columna Ejecutor truncada + Fuentes "+N" tooltip ═══ */
+.inversion-table__ejecutor {
+  /* 1 sola línea con ellipsis. max-width relativo al ancho de columna.
+     min-width 0 + display:block para que el ellipsis dispare correctamente. */
+  font-size: 12.5px !important;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inversion-table__fuentes {
+  white-space: nowrap;
+  position: relative;
+}
+.inversion-fuente__chip {
+  font-size: 10.5px !important;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.inversion-fuente__more {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 22px; min-width: 30px;
+  padding: 0 8px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--orange-bg, #fff3e6);
+  border: 1px solid var(--orange-border, #ffbf75);
+  color: var(--accent, #d74009);
+  font-size: 10.5px; font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  outline: none;
+  transition: background .12s, border-color .12s, transform .12s;
+}
+.inversion-fuente__more:hover,
+.inversion-fuente__more:focus-visible {
+  background: #ffe4cf;
+  border-color: var(--accent, #d74009);
+  transform: translateY(-1px);
+}
+.inversion-fuente__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%; transform: translateX(-50%) translateY(4px);
+  background: #282834;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 11.5px; font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(40,40,52,.22);
+  opacity: 0; pointer-events: none;
+  transition: opacity .15s cubic-bezier(.4,0,.2,1),
+              transform .15s cubic-bezier(.4,0,.2,1);
+  z-index: 100;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.inversion-fuente__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #282834;
+}
+.inversion-fuente__tooltip-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; color: rgba(255,255,255,.65);
+  margin-bottom: 2px;
+}
+.inversion-fuente__tooltip-row {
+  font-size: 12px;
+  font-weight: 500;
+}
+.inversion-fuente__more:hover .inversion-fuente__tooltip,
+.inversion-fuente__more:focus-visible .inversion-fuente__tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* Footer de tabla (sumatoria) */
 .dash-table tfoot td {
   padding: 14px 12px; border-top: 1px solid var(--border);

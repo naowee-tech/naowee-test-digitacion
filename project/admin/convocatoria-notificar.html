@@ -8,6 +8,89 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/pages.css?v=20260513i">
+<style>
+  /* ─── Modal de confirmación de envío (throttle + filtro no-postulantes) ─── */
+  .send-confirm-overlay {
+    position: fixed; inset: 0; z-index: 1200;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    animation: sendConfirmOverlayIn .22s ease forwards;
+  }
+  .send-confirm-overlay.is-closing { animation: sendConfirmOverlayOut .2s ease forwards; }
+  @keyframes sendConfirmOverlayIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes sendConfirmOverlayOut { from { opacity: 1 } to { opacity: 0 } }
+  .send-confirm-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 480px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15,17,35,.35), 0 0 0 1px var(--border);
+    overflow: hidden;
+    animation: sendConfirmModalIn .26s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes sendConfirmModalIn {
+    from { opacity: 0; transform: translateY(16px) scale(.97) }
+    to   { opacity: 1; transform: translateY(0) scale(1) }
+  }
+  .send-confirm-modal__hero {
+    padding: 24px 26px 16px; text-align: center;
+    background: linear-gradient(180deg, var(--orange-bg) 0%, #fff 80%);
+    border-bottom: 1px solid var(--border);
+  }
+  .send-confirm-modal__icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 8px 24px rgba(215,64,9,.3);
+  }
+  .send-confirm-modal__icon svg { width: 24px; height: 24px; }
+  .send-confirm-modal__title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+  .send-confirm-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+  .send-confirm-modal__body {
+    padding: 18px 26px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .send-confirm-modal__row {
+    display: grid; grid-template-columns: 140px 1fr; gap: 12px;
+    font-size: 12.5px; margin: 0;
+  }
+  .send-confirm-modal__row dt {
+    font-size: 11px; font-weight: 700; letter-spacing: .3px;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .send-confirm-modal__row dd { margin: 0; color: var(--text-primary); }
+  .send-confirm-modal__toggle {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px;
+    background: #fafbfd; border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 12.5px; cursor: pointer; margin-top: 6px;
+  }
+  .send-confirm-modal__toggle input { margin-top: 2px; cursor: pointer; }
+  .send-confirm-modal__toggle--force {
+    background: #fff8ee; border-color: #ffbf75;
+    color: #7a4a00;
+  }
+  .send-confirm-modal__throttle {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 12px 14px;
+    background: #fff0ee; border: 1px solid #ffc4bb;
+    border-radius: var(--radius-md);
+    font-size: 12.5px; line-height: 1.5;
+    margin-top: 4px;
+  }
+  .send-confirm-modal__throttle-icon {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #b42318; color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .send-confirm-modal__footer {
+    padding: 14px 26px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+</style>
 </head>
 <body>
 <div class="shell">
@@ -580,31 +663,127 @@
       });
     }
 
-    /* ════════ Enviar ahora (CTA del bar) ════════ */
-    function handleEnviarAhora() {
+    /* ════════ Enviar ahora (CTA del bar) ════════
+       Si es el primer envío → confirmación simple.
+       Si es un reenvío → modal con throttle status + toggle "solo no postulantes". */
+    async function handleEnviarAhora() {
       const n = c.notificacion;
       if (!n.canales.correo && !n.canales.plataforma && !n.canales.sms) {
         toast({ variant: 'caution', title: 'Sin canales activos', message: 'Edita la notificación y selecciona al menos un canal antes de enviar.' });
         return;
       }
-      ProjectData.enviarNotificacion(c.id);
+      const esReenvio = !!n.envio;
+      const opts = await openSendConfirmModal({ esReenvio });
+      if (!opts) return;
+      const res = ProjectData.enviarNotificacion(c.id, opts);
+      if (res.throttled) {
+        toast({
+          variant: 'caution',
+          title: 'Espera para reenviar',
+          message: `Faltan ${res.hoursRemaining}h para poder reenviar (throttle de ${ProjectData.NOTIF_THROTTLE_HOURS}h). Marca "Forzar reenvío" si es urgente.`
+        });
+        return;
+      }
+      if (res.empty) {
+        toast({
+          variant: 'caution',
+          title: 'Sin destinatarios',
+          message: 'Todos los municipios destinatarios ya postularon. No queda a quién reenviar.'
+        });
+        return;
+      }
       const fresh = ProjectData.getConvocatorias().find(x => x.id === c.id);
       c.notificacion = fresh.notificacion;
       renderDetail();
       const conFalla = c.notificacion.envio?.conFalla || 0;
+      const filtroAvisado = opts.soloNoPostulantes ? ' (solo no postulantes)' : '';
       if (conFalla > 0) {
         toast({
           variant: 'caution',
           title: 'Envío realizado con fallas',
-          message: `${c.notificacion.envio.exitosos} exitosos · ${conFalla} con falla. Revisa el historial.`
+          message: `${c.notificacion.envio.exitosos} exitosos · ${conFalla} con falla${filtroAvisado}. Revisa el historial.`
         });
       } else {
         toast({
           variant: 'positive',
-          title: 'Notificación enviada',
-          message: `${c.notificacion.envio.exitosos} destinatarios recibieron el mensaje.`
+          title: esReenvio ? 'Notificación reenviada' : 'Notificación enviada',
+          message: `${c.notificacion.envio.exitosos} destinatarios recibieron el mensaje${filtroAvisado}.`
         });
       }
+    }
+
+    /* Modal DS de confirmación de envío.
+       Si esReenvio = true: muestra throttle status + toggle "solo no postulantes" + forzar.
+       Si esReenvio = false: confirmación simple. */
+    function openSendConfirmModal({ esReenvio }) {
+      const inspect = ProjectData.inspectReenvio(c.id);
+      return new Promise(resolve => {
+        document.querySelector('.send-confirm-overlay')?.remove();
+        const overlay = document.createElement('div');
+        overlay.className = 'send-confirm-overlay';
+        overlay.innerHTML = `
+          <div class="send-confirm-modal">
+            <div class="send-confirm-modal__hero">
+              <div class="send-confirm-modal__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div class="send-confirm-modal__title">${esReenvio ? '¿Reenviar notificación?' : '¿Enviar notificación?'}</div>
+              <div class="send-confirm-modal__sub">${esReenvio
+                ? `Esta convocatoria ya tuvo un envío previo. Configura cómo reenviar.`
+                : `Se enviará el correo institucional con la plantilla cargada.`}
+              </div>
+            </div>
+            <div class="send-confirm-modal__body">
+              <dl class="send-confirm-modal__row"><dt>Total destinatarios</dt><dd><strong>${inspect.totalDestinatarios}</strong> municipios</dd></dl>
+              ${esReenvio ? `
+                <dl class="send-confirm-modal__row"><dt>Ya postularon</dt><dd><strong style="color:var(--green)">${inspect.totalDestinatarios - inspect.noPostulantesCount}</strong> municipios</dd></dl>
+                <dl class="send-confirm-modal__row"><dt>No postulantes</dt><dd><strong style="color:var(--accent)">${inspect.noPostulantesCount}</strong> municipios</dd></dl>
+              ` : ''}
+              ${esReenvio ? `
+                <label class="send-confirm-modal__toggle">
+                  <input type="checkbox" id="sendOnlyMissing" checked ${inspect.noPostulantesCount === 0 ? 'disabled' : ''}>
+                  <span>Reenviar <strong>solo a municipios que aún no han postulado</strong> ${inspect.noPostulantesCount === 0 ? '(no aplica · todos postularon)' : ''}</span>
+                </label>
+              ` : ''}
+              ${esReenvio && !inspect.canSend ? `
+                <div class="send-confirm-modal__throttle">
+                  <span class="send-confirm-modal__throttle-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                  <div>
+                    <div><strong>Throttle activo · Faltan ${inspect.hoursRemaining}h</strong></div>
+                    <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">Para evitar spam, el sistema bloquea reenvíos consecutivos en menos de ${ProjectData.NOTIF_THROTTLE_HOURS}h. Marca "Forzar reenvío" si es estrictamente necesario.</div>
+                  </div>
+                </div>
+                <label class="send-confirm-modal__toggle send-confirm-modal__toggle--force">
+                  <input type="checkbox" id="sendForce">
+                  <span><strong>Forzar reenvío</strong> (ignorar throttle)</span>
+                </label>
+              ` : ''}
+            </div>
+            <div class="send-confirm-modal__footer">
+              <button type="button" class="naowee-btn naowee-btn--mute" id="sendCancel">Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud" id="sendAccept">
+                ${esReenvio ? 'Reenviar' : 'Enviar ahora'}
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        const cleanup = () => {
+          overlay.classList.add('is-closing');
+          setTimeout(() => overlay.remove(), 200);
+          document.removeEventListener('keydown', onEsc);
+        };
+        const onEsc = e => { if (e.key === 'Escape') { cleanup(); resolve(null); } };
+        overlay.querySelector('#sendCancel').addEventListener('click', () => { cleanup(); resolve(null); });
+        overlay.addEventListener('click', e => { if (e.target === overlay) { cleanup(); resolve(null); } });
+        document.addEventListener('keydown', onEsc);
+        overlay.querySelector('#sendAccept').addEventListener('click', () => {
+          const soloNoPostulantes = overlay.querySelector('#sendOnlyMissing')?.checked || false;
+          const force = overlay.querySelector('#sendForce')?.checked || false;
+          cleanup();
+          resolve({ soloNoPostulantes, force });
+        });
+      });
     }
 
     /* ════════ Inicial ════════ */

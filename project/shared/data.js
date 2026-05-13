@@ -1687,26 +1687,80 @@ const ProjectData = (() => {
     };
   }
 
-  /* Marca una notificación como enviada con resultados simulados. */
-  function enviarNotificacion(convId) {
+  /* Throttle por defecto entre reenvíos consecutivos (Juanma 13/05/2026 min 42:30:
+     "no quiero que llegue 2 veces el email — soporte terrible"). */
+  const NOTIF_THROTTLE_HOURS = 24;
+
+  /* Devuelve metadata útil ANTES de reenviar (sin mutar estado):
+     - canSend: bool — true si pasa el throttle.
+     - hoursRemaining: horas restantes hasta poder reenviar.
+     - totalDestinatarios / noPostulantesCount: para mostrar en el modal. */
+  function inspectReenvio(convId) {
+    const c = getConvocatorias().find(x => x.id === convId);
+    if (!c) return { canSend: false, error: 'Convocatoria no encontrada' };
+    const ultimaTs = c.notificacion?.envio?.ts;
+    let hoursRemaining = 0;
+    let canSend = true;
+    if (ultimaTs) {
+      const horas = (Date.now() - new Date(ultimaTs).getTime()) / 3600000;
+      if (horas < NOTIF_THROTTLE_HOURS) {
+        canSend = false;
+        hoursRemaining = Math.ceil(NOTIF_THROTTLE_HOURS - horas);
+      }
+    }
+    const totalDestinatarios = c.notificacion?.destinatarios?.municipios?.length || 0;
+    /* Municipios que YA postularon a esta convocatoria */
+    const proyectosDeConv = load().proyectos.filter(p => p.convocatoriaId === convId);
+    const muniPostulantes = new Set(proyectosDeConv.map(p => p.municipio).filter(Boolean));
+    const noPostulantesCount = (c.notificacion?.destinatarios?.municipios || [])
+      .filter(d => !muniPostulantes.has(d.municipio)).length;
+    return { canSend, hoursRemaining, totalDestinatarios, noPostulantesCount, muniPostulantes };
+  }
+
+  /* Marca una notificación como enviada con resultados simulados.
+     opts:
+       - soloNoPostulantes: bool — si true, excluye municipios que ya
+         postularon a esta convocatoria.
+       - force: bool — si true, ignora el throttle (uso administrativo
+         para reenvíos manuales fuera de la ventana de 24h).
+     Retorna metadata útil para la UI. */
+  function enviarNotificacion(convId, opts = {}) {
+    const inspect = inspectReenvio(convId);
+    if (!inspect.canSend && !opts.force) {
+      return { ok: false, throttled: true, hoursRemaining: inspect.hoursRemaining };
+    }
+    let result = null;
     setConvocatoria(convId, c => {
       if (!c.notificacion) c.notificacion = defaultNotificacion(c);
-      const total = c.notificacion.destinatarios.municipios.length;
-      const conFalla = Math.random() < 0.3 ? 1 : 0; /* 30% de probabilidad de 1 falla */
+      /* Destinatarios efectivos: si soloNoPostulantes, filtrar */
+      const todos = c.notificacion.destinatarios.municipios || [];
+      const muniPostulantes = inspect.muniPostulantes || new Set();
+      const efectivos = opts.soloNoPostulantes
+        ? todos.filter(d => !muniPostulantes.has(d.municipio))
+        : todos;
+      const total = efectivos.length;
+      if (total === 0) {
+        result = { ok: false, empty: true };
+        return c;
+      }
+      const conFalla = Math.random() < 0.3 ? 1 : 0;
       const exitosos = total - conFalla;
       c.notificacion.estado = conFalla > 0 ? 'con_fallas' : 'enviada';
       c.notificacion.envio = {
         ts: new Date().toISOString(),
         exitosos,
         conFalla,
+        soloNoPostulantes: !!opts.soloNoPostulantes,
         fallos: conFalla > 0 ? [{
-          municipio: c.notificacion.destinatarios.municipios[total-1].municipio,
+          municipio: efectivos[total-1].municipio,
           canal: 'correo',
           motivo: 'Buzón institucional rebotó (cuota excedida)'
         }] : []
       };
+      result = { ok: true, exitosos, conFalla, total };
       return c;
     });
+    return result || { ok: false };
   }
 
   function pushHistorial(idProyecto, evento) {
@@ -1734,7 +1788,7 @@ const ProjectData = (() => {
     getUsuariosMunicipales, getUsuarioMunicipal,
     addUsuarioMunicipal, setUsuarioMunicipal, removeUsuarioMunicipal,
     getConvocatorias, addConvocatoria, setConvocatoria,
-    defaultNotificacion, enviarNotificacion,
+    defaultNotificacion, enviarNotificacion, inspectReenvio, NOTIF_THROTTLE_HOURS,
     pushHistorial, pushNotificacion,
     SEED
   };

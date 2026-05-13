@@ -679,6 +679,96 @@ function modalStyles() {
     .convo-area-card.is-checked .convo-area-card__rev {
       border-top-color: rgba(0,0,0,.06);
     }
+
+    /* ═══ Autocomplete de municipios (paso 2) ═══ */
+    .muni-autocomplete {
+      position: relative;
+      background: #fff;
+      border: 1.5px solid var(--border-dark, #d0d4e6);
+      border-radius: var(--radius-md, 8px);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .muni-autocomplete:focus-within {
+      border-color: var(--accent, #d74009);
+      box-shadow: 0 0 0 3px rgba(215,64,9,.15);
+    }
+    .muni-autocomplete__chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 10px;
+      min-height: 36px;
+      border-bottom: 1px dashed var(--border, #e7e9f3);
+    }
+    .muni-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 6px 4px 10px;
+      background: var(--orange-bg, #fff3e6);
+      border: 1px solid var(--orange-border, #ffbf75);
+      border-radius: var(--radius-full, 999px);
+      font-size: 12px;
+      animation: muniChipIn .18s ease both;
+    }
+    @keyframes muniChipIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+    .muni-chip__main { display: inline-flex; flex-direction: column; gap: 1px; }
+    .muni-chip__main strong { color: var(--text-primary, #282834); font-weight: 700; line-height: 1.1; }
+    .muni-chip__meta { color: var(--text-secondary, #646587); font-size: 10.5px; line-height: 1.1; }
+    .muni-chip__close {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,.06); border: 0;
+      color: var(--text-primary, #282834);
+      font-size: 14px; line-height: 1; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; transition: background .15s;
+    }
+    .muni-chip__close:hover { background: var(--accent, #d74009); color: #fff; }
+    .muni-chip__empty { font-size: 12px; color: var(--text-secondary, #646587); font-style: italic; }
+
+    .muni-autocomplete__input-wrap {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 12px;
+      height: 42px;
+    }
+    .muni-autocomplete__icon { color: var(--text-secondary, #646587); flex-shrink: 0; }
+    .muni-autocomplete__input {
+      flex: 1; border: 0; background: transparent;
+      font: inherit; font-size: 13px;
+      outline: none;
+    }
+
+    .muni-autocomplete__menu {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      max-height: 280px; overflow-y: auto;
+      background: #fff;
+      border: 1px solid var(--border-dark, #d0d4e6);
+      border-radius: var(--radius-md, 8px);
+      box-shadow: 0 12px 32px -8px rgba(0,0,0,.18);
+      z-index: 10;
+      padding: 4px;
+    }
+    .muni-autocomplete__opt {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      padding: 10px 12px;
+      background: transparent; border: 0;
+      cursor: pointer; text-align: left;
+      border-radius: 6px;
+      transition: background .12s;
+    }
+    .muni-autocomplete__opt:hover { background: var(--orange-bg, #fff3e6); }
+    .muni-autocomplete__opt-main { display: inline-flex; flex-direction: column; gap: 2px; flex: 1; }
+    .muni-autocomplete__opt-main strong { font-size: 13px; font-weight: 700; color: var(--text-primary, #282834); }
+    .muni-autocomplete__opt-meta { font-size: 11px; color: var(--text-secondary, #646587); }
+    .muni-autocomplete__opt-flags { display: inline-flex; gap: 4px; flex-shrink: 0; }
+    .muni-autocomplete__empty {
+      padding: 14px; text-align: center;
+      font-size: 12.5px; color: var(--text-secondary, #646587); font-style: italic;
+    }
+    /* Flag pills (espejo de admin/usuarios) */
+    .um-flag-pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 7px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      background: var(--orange-bg, #fff3e6); color: var(--accent, #d74009);
+    }
+    .um-flag-pill--pdet { background: #f3edff; color: #7c3aed; }
     /* Inputs dentro de un grid no agregan margen extra */
     .convo-grid-2 > .naowee-textfield,
     .convo-grid-2 > .naowee-dropdown,
@@ -1135,7 +1225,24 @@ function stepAlcance() {
       })}
     </div>
     <div id="muniWrap" style="display:none;margin-top:12px">
-      ${textarea({ label: 'Municipios específicos', name: 'municipios', helper: 'Lista de municipios separados por coma. Útil para convocatorias focalizadas (ZOMAC, PDET, priorizados).', rows: 2, placeholder: 'Quibdó, Bahía Solano, Istmina, …' })}
+      <!-- Autocomplete de municipios desde catálogo de usuarios (Juanma 13/05/2026 min 22:00):
+           reemplaza el textarea de texto libre por un combobox que sugiere
+           desde la lista real, evitando typos como "Kiddob" o "Vayaolano". -->
+      <label class="naowee-textfield__label naowee-textfield__label--required">Municipios específicos</label>
+      <div class="muni-autocomplete" id="muniAutocomplete">
+        <div class="muni-autocomplete__chips" id="muniChips" aria-live="polite"></div>
+        <div class="muni-autocomplete__input-wrap">
+          <svg class="muni-autocomplete__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="text" id="muniInput" class="muni-autocomplete__input" placeholder="Escribe el nombre de un municipio…" autocomplete="off">
+        </div>
+        <div class="muni-autocomplete__menu" id="muniMenu" hidden></div>
+      </div>
+      <p class="naowee-helper" style="font-size:11.5px;color:var(--text-secondary,#646587);margin-top:6px">
+        Sugerencias desde el catálogo de usuarios registrados. Si un municipio no aparece, agrégalo primero desde el panel
+        <strong>Usuarios y áreas</strong>.
+      </p>
+      <!-- Hidden inputs poblados dinámicamente al agregar/quitar chips para que FormData los recoja -->
+      <span id="muniHiddenInputs"></span>
     </div>
     <div class="convo-filters-block">
       <div class="convo-filters-block__label">Filtros adicionales <span class="convo-filters-block__hint">(opcional)</span></div>
@@ -2305,6 +2412,116 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   updateCobertura();
   coberturaHidden?.addEventListener('change', updateCobertura);
 
+  /* ═══ Autocomplete de municipios (combobox) ═══
+     Fuente: lista de usuariosMunicipales registrados en el panel admin/usuarios.
+     Cada chip = 1 municipio + tipo de entidad + ZOMAC/PDET visibles. */
+  (function setupMuniAutocomplete() {
+    const wrap   = overlay.querySelector('#muniAutocomplete');
+    const input  = overlay.querySelector('#muniInput');
+    const menu   = overlay.querySelector('#muniMenu');
+    const chips  = overlay.querySelector('#muniChips');
+    const hidden = overlay.querySelector('#muniHiddenInputs');
+    if (!wrap || !input || !menu) return;
+
+    const usuarios = ProjectData.getUsuariosMunicipales().filter(u => !!u.municipio);
+    /* Dedupe por nombre de municipio (un municipio puede tener varios usuarios) */
+    const seen = new Set();
+    const catalogo = usuarios.filter(u => {
+      const key = u.municipio.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const seleccionados = new Set();
+
+    function normalize(s) {
+      return (s || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    }
+    function renderChips() {
+      chips.innerHTML = '';
+      hidden.innerHTML = '';
+      [...seleccionados].forEach(muni => {
+        const u = catalogo.find(x => x.municipio === muni);
+        const chip = document.createElement('span');
+        chip.className = 'muni-chip';
+        chip.innerHTML = `
+          <span class="muni-chip__main">
+            <strong>${muni}</strong>
+            <span class="muni-chip__meta">${u?.departamento || ''}${u?.marcadores?.zomac ? ' · ZOMAC' : ''}${u?.marcadores?.pdet ? ' · PDET' : ''}</span>
+          </span>
+          <button type="button" class="muni-chip__close" aria-label="Quitar ${muni}">×</button>
+        `;
+        chip.querySelector('.muni-chip__close').addEventListener('click', e => {
+          e.preventDefault(); e.stopPropagation();
+          seleccionados.delete(muni);
+          renderChips();
+        });
+        chips.appendChild(chip);
+        /* hidden input para FormData */
+        const h = document.createElement('input');
+        h.type = 'hidden'; h.name = 'municipios'; h.value = muni;
+        hidden.appendChild(h);
+      });
+      /* Empty hint */
+      if (seleccionados.size === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'muni-chip__empty';
+        empty.textContent = 'Ningún municipio seleccionado';
+        chips.appendChild(empty);
+      }
+    }
+    function renderMenu(items) {
+      if (items.length === 0) {
+        menu.innerHTML = `<div class="muni-autocomplete__empty">Sin coincidencias. Crea el usuario desde "Usuarios y áreas".</div>`;
+      } else {
+        menu.innerHTML = items.map(u => `
+          <button type="button" class="muni-autocomplete__opt" data-muni="${u.municipio}">
+            <span class="muni-autocomplete__opt-main">
+              <strong>${u.municipio}</strong>
+              <span class="muni-autocomplete__opt-meta">${u.departamento} · ${u.tipoEntidad}</span>
+            </span>
+            <span class="muni-autocomplete__opt-flags">
+              ${u.marcadores?.zomac ? '<span class="um-flag-pill">ZOMAC</span>' : ''}
+              ${u.marcadores?.pdet ? '<span class="um-flag-pill um-flag-pill--pdet">PDET</span>' : ''}
+            </span>
+          </button>
+        `).join('');
+        menu.querySelectorAll('.muni-autocomplete__opt').forEach(opt => {
+          opt.addEventListener('click', e => {
+            e.preventDefault();
+            seleccionados.add(opt.dataset.muni);
+            input.value = '';
+            menu.hidden = true;
+            renderChips();
+            input.focus();
+          });
+        });
+      }
+      menu.hidden = false;
+    }
+    function search() {
+      const q = normalize(input.value.trim());
+      if (!q) { menu.hidden = true; return; }
+      const matches = catalogo
+        .filter(u => !seleccionados.has(u.municipio))
+        .filter(u => {
+          const m = normalize(u.municipio);
+          const d = normalize(u.departamento);
+          return m.includes(q) || d.includes(q);
+        })
+        .slice(0, 8);
+      renderMenu(matches);
+    }
+    input.addEventListener('input', search);
+    input.addEventListener('focus', search);
+    document.addEventListener('click', e => {
+      if (!wrap.contains(e.target)) menu.hidden = true;
+    });
+    /* Tag em-flag-pill ya está en pages.css del módulo Usuarios; aquí solo aprovechamos */
+    renderChips();
+  })();
+
   /* ═══ File uploads — naowee-file-uploader DS oficial ═══ */
   overlay.querySelectorAll('.naowee-file-uploader').forEach(field => bindFileUpload(field));
 
@@ -2384,7 +2601,9 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     const fuentes = fd.getAll('fuentes');
     const cobertura = fd.get('cobertura') || 'Nacional';
     const departamentos = fd.getAll('departamentos');
-    const municipiosTxt = (fd.get('municipios') || '').split(',').map(s => s.trim()).filter(Boolean);
+    /* Autocomplete: getAll() recoge cada hidden[name="municipios"] que el
+       combobox haya inyectado por cada chip seleccionado. */
+    const municipiosTxt = fd.getAll('municipios').map(s => (s || '').toString().trim()).filter(Boolean);
     const areasRequeridas = fd.getAll('areasRequeridas');
 
     const id = nextCodigoConvocatoria();

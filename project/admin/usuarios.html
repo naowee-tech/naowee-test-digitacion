@@ -94,47 +94,50 @@
     background: rgba(15, 17, 35, .55);
     display: flex; align-items: center; justify-content: center;
     padding: 24px;
-    opacity: 0; pointer-events: none;
-    transition: opacity .22s ease;
   }
-  .um-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .um-modal-overlay[hidden] { display: none; }
+  .um-modal-overlay.is-open { animation: umOverlayIn .22s ease forwards; }
+  .um-modal-overlay.is-closing { animation: umOverlayOut .2s ease forwards; }
+  @keyframes umOverlayIn  { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes umOverlayOut { from { opacity: 1 } to { opacity: 0 } }
   .um-modal {
     background: var(--surface); border-radius: var(--radius-xl);
-    width: 100%; max-width: 560px; max-height: 92vh;
+    width: 100%; max-width: 580px; max-height: 92vh;
     display: flex; flex-direction: column;
     box-shadow: 0 24px 60px -12px rgba(15,17,35,.35), 0 0 0 1px var(--border);
-    transform: translateY(16px) scale(.97); opacity: 0;
-    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s ease;
     overflow: hidden;
   }
-  .um-modal-overlay.is-open .um-modal { transform: translateY(0) scale(1); opacity: 1; }
+  .um-modal-overlay.is-open .um-modal {
+    animation: umModalIn .26s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes umModalIn {
+    from { opacity: 0; transform: translateY(16px) scale(.97) }
+    to   { opacity: 1; transform: translateY(0) scale(1) }
+  }
   .um-modal__hero {
-    padding: 22px 26px 16px;
+    padding: 22px 26px 18px;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, var(--orange-bg) 0%, #fff 80%);
   }
   .um-modal__title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
-  .um-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; }
+  .um-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; line-height: 1.45; }
   .um-modal__body {
-    padding: 20px 26px;
+    padding: 22px 26px;
     overflow-y: auto; flex: 1;
-    display: flex; flex-direction: column; gap: 14px;
+  }
+  .um-modal__body #umForm,
+  .um-modal__body #umFormBody {
+    display: flex; flex-direction: column; gap: 20px;
   }
   .um-modal__grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
   }
   @media (max-width: 600px) { .um-modal__grid { grid-template-columns: 1fr; } }
   .um-modal__flags {
-    display: flex; gap: 16px; flex-wrap: wrap;
-    padding: 12px 14px; background: #fafbfd;
+    display: flex; gap: 22px; flex-wrap: wrap;
+    padding: 14px 16px; background: #fafbfd;
     border: 1px solid var(--border); border-radius: var(--radius-md);
+    margin-top: 8px;
   }
-  .um-modal__flag-item {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 12.5px; font-weight: 600; color: var(--text-primary);
-    cursor: pointer;
-  }
-  .um-modal__flag-item input { cursor: pointer; }
   .um-modal__footer {
     padding: 16px 26px; border-top: 1px solid var(--border);
     display: flex; justify-content: space-between; gap: 10px;
@@ -157,16 +160,10 @@
   .um-flag-pill--pdet { background: #f3edff; color: #7c3aed; }
   .um-flag-pill--ebi  { background: #eef5ff; color: #1f78d1; }
 
-  .um-tipo-badge {
-    display: inline-flex; padding: 3px 8px; border-radius: 999px;
-    font-size: 10.5px; font-weight: 700;
-    background: #f5f6fa; color: var(--text-secondary);
+  /* Tipo: texto label gris (sin badge) */
+  .um-tipo-label {
+    font-size: 12.5px; font-weight: 500; color: var(--text-secondary);
   }
-  .um-tipo-badge--alcaldia { background: var(--green-bg); color: var(--green); }
-  .um-tipo-badge--resguardo { background: #f3edff; color: #7c3aed; }
-  .um-tipo-badge--consejo   { background: #fff3e6; color: var(--accent); }
-  .um-tipo-badge--gob       { background: #eef5ff; color: #1f78d1; }
-  .um-tipo-badge--distrito  { background: #fffaee; color: #8b6f00; }
 </style>
 </head>
 <body>
@@ -189,56 +186,7 @@
     <div class="um-modal__body">
       <form id="umForm" novalidate>
         <input type="hidden" name="id" id="umId">
-        <div class="um-modal__grid">
-          <div>
-            <label class="naowee-dropdown__label naowee-textfield__label--required">Tipo de entidad</label>
-            <select name="tipoEntidad" id="umTipo" required style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px;background:#fff">
-              <option value="Alcaldía Municipal">Alcaldía Municipal</option>
-              <option value="Distrito Especial">Distrito Especial</option>
-              <option value="Gobernación Departamental">Gobernación Departamental</option>
-              <option value="Resguardo Indígena">Resguardo Indígena</option>
-              <option value="Consejo Comunitario">Consejo Comunitario</option>
-            </select>
-          </div>
-          <div>
-            <label class="naowee-textfield__label naowee-textfield__label--required">NIT</label>
-            <input type="text" name="nit" id="umNit" placeholder="891.680.014" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
-            <span style="display:block;font-size:11px;color:var(--text-secondary);margin-top:4px" id="umNitHelper">Opcional para Resguardo / Consejo Comunitario</span>
-          </div>
-        </div>
-        <div class="um-modal__grid">
-          <div>
-            <label class="naowee-textfield__label naowee-textfield__label--required">Departamento</label>
-            <input type="text" name="departamento" required placeholder="Chocó" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
-          </div>
-          <div>
-            <label class="naowee-textfield__label">Municipio</label>
-            <input type="text" name="municipio" placeholder="Quibdó" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
-            <span style="display:block;font-size:11px;color:var(--text-secondary);margin-top:4px">Vacío si la entidad es departamental</span>
-          </div>
-        </div>
-        <div class="um-modal__grid">
-          <div>
-            <label class="naowee-textfield__label naowee-textfield__label--required">Persona contacto</label>
-            <input type="text" name="nombre" required placeholder="Carlos Mosquera" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
-          </div>
-          <div>
-            <label class="naowee-textfield__label naowee-textfield__label--required">Cargo</label>
-            <input type="text" name="cargo" required placeholder="Secretario de Planeación" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
-          </div>
-        </div>
-        <div>
-          <label class="naowee-textfield__label naowee-textfield__label--required">Correo institucional</label>
-          <input type="email" name="email" required placeholder="planeacion@municipio.gov.co" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
-        </div>
-        <div>
-          <label class="naowee-textfield__label" style="display:block;margin-bottom:8px">Marcadores territoriales</label>
-          <div class="um-modal__flags">
-            <label class="um-modal__flag-item"><input type="checkbox" name="zomac"> ZOMAC</label>
-            <label class="um-modal__flag-item"><input type="checkbox" name="pdet"> PDET</label>
-            <label class="um-modal__flag-item"><input type="checkbox" name="ebiPnd"> EBI/PND</label>
-          </div>
-        </div>
+        <div id="umFormBody"></div>
       </form>
     </div>
     <div class="um-modal__footer">
@@ -269,6 +217,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260513j';
   import { toast } from '../shared/toast.js';
+  import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'usuarios' });
 
@@ -287,15 +236,14 @@
     { id: 'general',        label: 'Documentación general del proyecto', ref: 'Res. 933 Art. 1 y 2', especialidad: 'general' }
   ];
 
-  function badgeTipoClass(t) {
-    if (!t) return '';
-    if (t.startsWith('Alcaldía')) return 'um-tipo-badge--alcaldia';
-    if (t.startsWith('Resguardo')) return 'um-tipo-badge--resguardo';
-    if (t.startsWith('Consejo')) return 'um-tipo-badge--consejo';
-    if (t.startsWith('Gobernación')) return 'um-tipo-badge--gob';
-    if (t.startsWith('Distrito')) return 'um-tipo-badge--distrito';
-    return '';
-  }
+  const TIPOS_ENTIDAD = [
+    'Alcaldía Municipal',
+    'Distrito Especial',
+    'Gobernación Departamental',
+    'Resguardo Indígena',
+    'Consejo Comunitario'
+  ];
+  const SIN_NIT = new Set(['Resguardo Indígena', 'Consejo Comunitario']);
 
   function render() {
     const usuarios = ProjectData.getUsuariosMunicipales();
@@ -353,7 +301,7 @@
                 <tbody id="umTbody">
                   ${usuarios.map(u => `
                     <tr class="row-clickable" data-id="${u.id}" data-search="${(u.municipio + ' ' + u.departamento + ' ' + u.nombre + ' ' + u.email).toLowerCase()}">
-                      <td><span class="um-tipo-badge ${badgeTipoClass(u.tipoEntidad)}">${u.tipoEntidad}</span></td>
+                      <td><span class="um-tipo-label">${u.tipoEntidad}</span></td>
                       <td>
                         <div style="font-weight:600;font-size:13px">${u.municipio || u.departamento}</div>
                         ${u.municipio ? `<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${u.departamento}</div>` : '<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">Departamental</div>'}
@@ -362,8 +310,8 @@
                         <div style="font-weight:600;font-size:13px">${u.nombre}</div>
                         <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${u.cargo}</div>
                       </td>
-                      <td><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px">${u.email}</span></td>
-                      <td><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px">${u.nit || '—'}</span></td>
+                      <td style="font-size:12.5px;color:var(--text-primary)">${u.email}</td>
+                      <td style="font-size:12.5px;color:var(--text-primary)">${u.nit || '—'}</td>
                       <td>
                         ${u.marcadores?.zomac ? '<span class="um-flag-pill">ZOMAC</span>' : ''}
                         ${u.marcadores?.pdet ? '<span class="um-flag-pill um-flag-pill--pdet">PDET</span>' : ''}
@@ -454,52 +402,93 @@
     });
   }
 
-  /* ─── Modal usuario ─── */
+  /* ─── Modal usuario (DS canónico) ─── */
   const userOverlay = document.getElementById('umOverlay');
+  const userForm = document.getElementById('umForm');
+  const userFormBody = document.getElementById('umFormBody');
+
+  function renderUserFormBody(u) {
+    const v = u || {};
+    const tipo = v.tipoEntidad || 'Alcaldía Municipal';
+    const nitRequired = !SIN_NIT.has(tipo);
+    userFormBody.innerHTML = `
+      <div class="um-modal__grid">
+        ${dropdown({ label: 'Tipo de entidad', name: 'tipoEntidad', required: true, options: TIPOS_ENTIDAD, value: tipo })}
+        ${textfield({ label: 'NIT', name: 'nit', required: nitRequired, placeholder: '891.680.014', helper: nitRequired ? 'NIT sin dígito de verificación' : 'No requerido para esta entidad', value: v.nit || '' })}
+      </div>
+      <div class="um-modal__grid">
+        ${textfield({ label: 'Departamento', name: 'departamento', required: true, placeholder: 'Chocó', value: v.departamento || '' })}
+        ${textfield({ label: 'Municipio', name: 'municipio', placeholder: 'Quibdó', helper: 'Vacío si la entidad es departamental', value: v.municipio || '' })}
+      </div>
+      <div class="um-modal__grid">
+        ${textfield({ label: 'Persona contacto', name: 'nombre', required: true, placeholder: 'Carlos Mosquera', value: v.nombre || '' })}
+        ${textfield({ label: 'Cargo', name: 'cargo', required: true, placeholder: 'Secretario de Planeación', value: v.cargo || '' })}
+      </div>
+      ${textfield({ label: 'Correo institucional', name: 'email', type: 'email', required: true, placeholder: 'planeacion@municipio.gov.co', value: v.email || '' })}
+      <div>
+        <label class="naowee-textfield__label" style="display:block;margin-bottom:8px">Marcadores territoriales</label>
+        <div class="um-modal__flags">
+          ${checkbox({ name: 'zomac',  value: 'on', label: 'ZOMAC',   checked: !!v.marcadores?.zomac })}
+          ${checkbox({ name: 'pdet',   value: 'on', label: 'PDET',    checked: !!v.marcadores?.pdet })}
+          ${checkbox({ name: 'ebiPnd', value: 'on', label: 'EBI/PND', checked: !!v.marcadores?.ebiPnd })}
+        </div>
+      </div>
+    `;
+    bindDropdowns(userForm);
+    mountCheckboxes(userForm);
+    syncNitFromTipo();
+  }
+
+  function syncNitFromTipo() {
+    const tipoHidden = userForm.querySelector('.naowee-dropdown[data-name="tipoEntidad"] input[type="hidden"]');
+    const nitField = userForm.querySelector('.naowee-textfield[data-name="nit"]');
+    if (!tipoHidden || !nitField) return;
+    const tipo = tipoHidden.value;
+    const sinNit = SIN_NIT.has(tipo);
+    const nitInput = nitField.querySelector('input[name="nit"]');
+    const helper = nitField.querySelector('.naowee-helper');
+    const labelEl = nitField.querySelector('.naowee-textfield__label');
+    if (sinNit) {
+      nitInput.removeAttribute('required');
+      labelEl?.classList.remove('naowee-textfield__label--required');
+      if (helper) { helper.textContent = 'No requerido para esta entidad'; helper.style.color = 'var(--green)'; }
+    } else {
+      nitInput.setAttribute('required', '');
+      labelEl?.classList.add('naowee-textfield__label--required');
+      if (helper) { helper.textContent = 'NIT sin dígito de verificación'; helper.style.color = ''; }
+    }
+  }
+
+  /* Re-syncea NIT helper cuando cambia el dropdown de tipoEntidad.
+     bindDropdowns dispara `change` en el hidden input al seleccionar opción. */
+  userForm.addEventListener('change', e => {
+    if (e.target.name === 'tipoEntidad') syncNitFromTipo();
+  });
+
   function openUserModal(id) {
     const u = id ? ProjectData.getUsuarioMunicipal(id) : null;
     document.getElementById('umTitle').textContent = u ? 'Editar usuario' : 'Crear usuario';
     document.getElementById('umDelete').hidden = !u;
-    const form = document.getElementById('umForm');
-    form.reset();
     document.getElementById('umId').value = u?.id || '';
-    if (u) {
-      form.elements.tipoEntidad.value = u.tipoEntidad;
-      form.elements.nit.value = u.nit || '';
-      form.elements.departamento.value = u.departamento;
-      form.elements.municipio.value = u.municipio || '';
-      form.elements.nombre.value = u.nombre;
-      form.elements.cargo.value = u.cargo;
-      form.elements.email.value = u.email;
-      form.elements.zomac.checked = !!u.marcadores?.zomac;
-      form.elements.pdet.checked = !!u.marcadores?.pdet;
-      form.elements.ebiPnd.checked = !!u.marcadores?.ebiPnd;
-    }
-    syncNitHelper();
+    renderUserFormBody(u);
     userOverlay.hidden = false;
-    requestAnimationFrame(() => userOverlay.classList.add('is-open'));
+    userOverlay.classList.add('is-open');
   }
   function closeUserModal() {
-    userOverlay.classList.remove('is-open');
-    setTimeout(() => { userOverlay.hidden = true; }, 240);
+    userOverlay.classList.add('is-closing');
+    setTimeout(() => {
+      userOverlay.classList.remove('is-open', 'is-closing');
+      userOverlay.hidden = true;
+    }, 200);
   }
-  function syncNitHelper() {
-    const tipo = document.getElementById('umTipo').value;
-    const helper = document.getElementById('umNitHelper');
-    const sinNit = tipo === 'Resguardo Indígena' || tipo === 'Consejo Comunitario';
-    document.getElementById('umNit').required = !sinNit;
-    helper.textContent = sinNit ? 'No requerido para esta entidad' : 'NIT sin dígito de verificación';
-    helper.style.color = sinNit ? 'var(--green)' : 'var(--text-secondary)';
-  }
-  document.getElementById('umTipo').addEventListener('change', syncNitHelper);
   document.getElementById('umCancel').addEventListener('click', closeUserModal);
   userOverlay.addEventListener('click', e => { if (e.target === userOverlay) closeUserModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !userOverlay.hidden) closeUserModal(); });
+
   document.getElementById('umSave').addEventListener('click', () => {
-    const form = document.getElementById('umForm');
-    const fd = new FormData(form);
+    const fd = new FormData(userForm);
     const tipoEntidad = fd.get('tipoEntidad');
-    const sinNit = tipoEntidad === 'Resguardo Indígena' || tipoEntidad === 'Consejo Comunitario';
+    const sinNit = SIN_NIT.has(tipoEntidad);
     const data = {
       tipoEntidad,
       nit: sinNit ? null : (fd.get('nit') || '').trim() || null,
@@ -514,7 +503,6 @@
         ebiPnd: fd.get('ebiPnd') === 'on'
       }
     };
-    /* Validación básica */
     if (!data.departamento || !data.nombre || !data.cargo || !data.email) {
       toast({ variant: 'caution', title: 'Campos requeridos', message: 'Completa Departamento, Contacto, Cargo y Correo.' });
       return;
@@ -584,11 +572,14 @@
       });
     });
     areaOverlay.hidden = false;
-    requestAnimationFrame(() => areaOverlay.classList.add('is-open'));
+    areaOverlay.classList.add('is-open');
   }
   function closeAreaModal() {
-    areaOverlay.classList.remove('is-open');
-    setTimeout(() => { areaOverlay.hidden = true; }, 240);
+    areaOverlay.classList.add('is-closing');
+    setTimeout(() => {
+      areaOverlay.classList.remove('is-open', 'is-closing');
+      areaOverlay.hidden = true;
+    }, 200);
   }
   document.getElementById('areaCancel').addEventListener('click', closeAreaModal);
   areaOverlay.addEventListener('click', e => { if (e.target === areaOverlay) closeAreaModal(); });

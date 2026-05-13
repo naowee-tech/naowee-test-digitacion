@@ -170,6 +170,19 @@
     display: inline-flex; align-items: center; gap: 4px;
   }
   .dt-area-card__cta svg { width: 12px; height: 12px; }
+  /* Botón Delegar (solo visible en áreas mías) — small ghost CTA */
+  .dt-area-card__delegate {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 8px; border-radius: var(--radius-md);
+    background: transparent; border: 1px solid var(--border);
+    font-size: 10.5px; font-weight: 700; color: var(--text-secondary);
+    cursor: pointer; transition: all .15s;
+    margin-right: 6px;
+  }
+  .dt-area-card__delegate:hover {
+    background: var(--orange-bg); border-color: var(--accent); color: var(--accent);
+  }
+  .dt-area-card__delegate svg { width: 11px; height: 11px; }
 
   /* ── Columna derecha: sidebar con contexto del proyecto ── */
   .dt-sidebar {
@@ -284,6 +297,9 @@
   const id = new URLSearchParams(location.search).get('id');
   const p = id ? ProjectData.getProyecto(id) : null;
   const pageContent = document.getElementById('pageContent');
+  /* Revisor activo del pool — usado para detectar "mis áreas" y mostrar
+     el botón Delegar (autodelegar si estoy saturado). */
+  const revisorActivo = ProjectData.getRevisorActivo?.();
 
   const ICONS = {
     back:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
@@ -568,6 +584,8 @@
                   : a.estado === 'en_revision' ? 'var(--accent)'
                   : 'var(--border-dark)';
                 const initial = (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase() || '?';
+                /* Es mi área si soy el revisor asignado Y no está cerrada */
+                const esMia = revisorActivo && a.revisorId === revisorActivo.id && a.estado !== 'aprobado';
                 return `
                   <article class="dt-area-card" data-estado="${a.estado}" onclick="fadeAndGo('revisar-area.html?id=${p.idUnico}&area=${a.id}')">
                     <div class="dt-area-card__head">
@@ -588,7 +606,15 @@
                            <span class="dt-area-card__revisor">${a.revisor}</span>`
                         : `<span class="dt-area-card__avatar dt-area-card__avatar--empty" style="background:#f5f6fa;color:var(--text-secondary)">?</span>
                            <span class="dt-area-card__revisor dt-area-card__revisor--empty">Sin revisor asignado</span>`}
-                      <span class="dt-area-card__cta">Revisar ${ICONS.arrow}</span>
+                      ${esMia ? `
+                        <button type="button" class="dt-area-card__delegate" data-area="${a.id}"
+                                title="Delegar esta área a otro miembro del equipo (si estás saturado)"
+                                aria-label="Delegar área">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                          Delegar
+                        </button>
+                      ` : ''}
+                      <span class="dt-area-card__cta">${a.estado === 'aprobado' ? 'Ver' : 'Revisar'} ${ICONS.arrow}</span>
                     </div>
                   </article>
                 `;
@@ -645,6 +671,99 @@
     document.getElementById('btnExportar')?.addEventListener('click', () => {
       toast({ variant: 'informative', title: 'Resumen exportado', message: 'El reporte de áreas técnicas se descargará en breve.' });
     });
+
+    /* Delegar área a otro miembro del equipo (autodelegación si estoy saturado).
+       Solo aparece en áreas asignadas al revisor activo. Reutiliza el patrón
+       de popover ya usado por admin en proyecto-detalle. */
+    document.querySelectorAll('.dt-area-card__delegate').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const areaId = btn.dataset.area;
+        const area = areas.find(x => x.id === areaId);
+        if (!area) return;
+        openDelegateMenu(btn, area);
+      });
+    });
+
+    function openDelegateMenu(anchor, area) {
+      document.querySelector('.reassign-menu')?.remove();
+      /* Excluir al revisor activo (no puede delegarse a sí mismo) y al general */
+      const candidatos = ProjectData.getRevisores().filter(r =>
+        !r.especialidades?.includes('general') && r.id !== revisorActivo?.id
+      );
+      const menu = document.createElement('div');
+      menu.className = 'reassign-menu';
+      menu.innerHTML = `
+        <div class="reassign-menu__title">Delegar “${area.nombre}”</div>
+        <div class="reassign-menu__list">
+          ${candidatos.map(r => {
+            const cubre = r.especialidades?.some(s => s === (ProjectData.AREA_TO_SPECIALTY?.[area.id]));
+            return `
+              <button type="button" class="reassign-menu__item" data-rev="${r.id}">
+                <div class="ava-ring" style="width:26px;height:26px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
+                <div style="flex:1;text-align:left">
+                  <div style="font-weight:600;font-size:13px">${r.nombre}</div>
+                  <div style="font-size:11px;color:var(--text-secondary)">${r.especialidad} · ${r.cargaActiva} activos${cubre ? ' · <strong style="color:var(--green)">especialista</strong>' : ''}</div>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+      document.body.appendChild(menu);
+      const rect = anchor.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 6) + 'px';
+      menu.style.right = Math.max(8, (window.innerWidth - rect.right)) + 'px';
+      menu.querySelectorAll('.reassign-menu__item').forEach(item => {
+        item.addEventListener('click', () => {
+          const revId = item.dataset.rev;
+          const rev = ProjectData.getRevisor(revId);
+          ProjectData.setProyecto(p.idUnico, x => {
+            const idx = x.docsTecnica.areas.findIndex(a => a.id === area.id);
+            if (idx >= 0) {
+              x.docsTecnica.areas[idx] = {
+                ...x.docsTecnica.areas[idx],
+                revisorId: revId, revisor: rev.nombre,
+                asignadoEn: new Date().toISOString(),
+                fechaLimite: (() => { const d = new Date(); d.setDate(d.getDate() + 15); return d.toISOString(); })()
+              };
+            }
+            x.historial = x.historial || [];
+            x.historial.push({
+              ts: new Date().toISOString(),
+              actor: 'revisor',
+              evento: `Área “${area.nombre}” delegada por ${revisorActivo.nombre} a ${rev.nombre}`,
+              estado: x.estado
+            });
+            return x;
+          });
+          /* Notificar al nuevo revisor */
+          ProjectData.pushNotificacion({
+            perfil: 'revisor',
+            tipo: 'asignacion',
+            titulo: 'Nueva área delegada',
+            detalle: `${rev.nombre} recibió “${area.nombre}” de ${revisorActivo.nombre}`
+          });
+          toast({
+            variant: 'positive',
+            title: 'Área delegada',
+            message: `${area.nombre} pasó a ${rev.nombre}. SLA reiniciado a 15 días.`
+          });
+          menu.remove();
+          setTimeout(() => location.reload(), 700);
+        });
+      });
+      setTimeout(() => {
+        document.addEventListener('click', function close(ev) {
+          if (!menu.contains(ev.target)) {
+            menu.remove();
+            document.removeEventListener('click', close);
+          }
+        });
+      }, 50);
+    }
   }
 </script>
 </body>

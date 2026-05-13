@@ -397,9 +397,13 @@
 
     /* Gate "solo apruebas lo tuyo" (modelo Andrea + Danna 29/04/2026):
        cada área tiene un revisor del equipo asignado por especialidad.
-       Si NO eres el asignado, la vista es de consulta. */
+       Si NO eres el asignado, la vista es de consulta.
+       Fallback robusto: si `revisorId` falta (state legacy o seed sin enrich),
+       resuelve por especialidad para no mostrar banner equivocado. */
     const revisorActivo = ProjectData.getRevisorActivo();
-    const areaRev = areaState.revisorId ? ProjectData.getRevisor(areaState.revisorId) : null;
+    const areaRev = areaState.revisorId
+      ? ProjectData.getRevisor(areaState.revisorId)
+      : ProjectData.getRevisorPorArea(areaId);
     const esMia = !!(revisorActivo && areaRev && revisorActivo.id === areaRev.id);
     const bloqueado = !aprobado && !devuelto && !esMia;
     /* readOnly cubre: ya cerrada (aprobada/devuelta) O no es tu especialidad */

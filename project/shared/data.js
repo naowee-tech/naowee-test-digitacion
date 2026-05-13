@@ -1317,12 +1317,38 @@ const SEED = {
 };
 
 const ProjectData = (() => {
+  /* Versión del schema. Bumpear cuando el SEED cambie en forma incompatible
+     (ej. nueva clave en revisores, nuevo perfil, restructure de áreas).
+     Si el state guardado tiene versión distinta → auto-reset. */
+  const SCHEMA_VERSION = 2;
+
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const s = JSON.parse(raw);
+        /* Auto-reset si el state es legacy:
+           - sin __schema flag (pre-v2)
+           - revisores sin `especialidades` (modelo antiguo donde Andrea/Danna
+             usaban especialidad string única)
+           - perfil revisor sin `revisorId` (link al pool faltante) */
+        const isLegacy =
+          (s.__schema || 0) < SCHEMA_VERSION ||
+          (s.revisores && s.revisores[0] && !s.revisores[0].especialidades) ||
+          (s.perfiles?.revisor && !s.perfiles.revisor.revisorId);
+        if (isLegacy) {
+          console.info('[data] state legacy detectado → reset al SEED v' + SCHEMA_VERSION);
+          const fresh = JSON.parse(JSON.stringify(SEED));
+          fresh.__schema = SCHEMA_VERSION;
+          localStorage.setItem(KEY, JSON.stringify(fresh));
+          return fresh;
+        }
+        return s;
+      }
     } catch (e) { console.warn('[data] parse fallback', e); }
-    return JSON.parse(JSON.stringify(SEED));
+    const fresh = JSON.parse(JSON.stringify(SEED));
+    fresh.__schema = SCHEMA_VERSION;
+    return fresh;
   }
 
   function save(state) {
@@ -1381,10 +1407,12 @@ const ProjectData = (() => {
   const SLA_DIAS_REVISION = 15;
 
   /* Enriquece un área con revisorId + asignadoEn + fechaLimite si faltan.
-     Idempotente: si ya tiene revisorId, retorna sin cambios. */
+     ADEMÁS sobrescribe `revisor` (nombre string) para que apunte al pool
+     canónico de 5 revisores — así toda la app muestra los mismos nombres
+     que el role switcher. Si el seed tenía un nombre ficticio legacy
+     (ej. "Ing. M. Becerra"), se reemplaza por el del pool por especialidad. */
   function enrichArea(area, fechaAsignacionBase) {
     if (!area) return area;
-    if (area.revisorId && area.asignadoEn && area.fechaLimite) return area;
     const r = area.revisorId ? getRevisor(area.revisorId) : getRevisorPorArea(area.id);
     if (!r) return area;
     const asignadoEn = area.asignadoEn || fechaAsignacionBase || new Date().toISOString();
@@ -1394,7 +1422,13 @@ const ProjectData = (() => {
       lim.setDate(lim.getDate() + SLA_DIAS_REVISION);
       fechaLimite = lim.toISOString();
     }
-    return { ...area, revisorId: r.id, asignadoEn, fechaLimite };
+    return {
+      ...area,
+      revisorId: r.id,
+      revisor: r.nombre,  /* canónico — alinea con role switcher */
+      asignadoEn,
+      fechaLimite
+    };
   }
 
   /* Enriquece un proyecto: auto-asigna revisorId/SLA en cada área técnica
@@ -1411,12 +1445,18 @@ const ProjectData = (() => {
     if (p.docsTecnica?.areas) {
       next = { ...next, docsTecnica: { ...p.docsTecnica, areas: p.docsTecnica.areas.map(a => enrichArea(a, fechaBase)) } };
     }
-    if (p.docsGeneral && !p.docsGeneral.revisorId) {
-      const rg = getRevisorPorArea('general');
+    if (p.docsGeneral) {
+      const rg = p.docsGeneral.revisorId ? getRevisor(p.docsGeneral.revisorId) : getRevisorPorArea('general');
       if (rg) {
         const asignadoEn = p.docsGeneral.asignadoEn || fechaBase || new Date().toISOString();
         const lim = new Date(asignadoEn); lim.setDate(lim.getDate() + SLA_DIAS_REVISION);
-        next = { ...next, docsGeneral: { ...p.docsGeneral, revisorId: rg.id, asignadoEn, fechaLimite: p.docsGeneral.fechaLimite || lim.toISOString() } };
+        next = { ...next, docsGeneral: {
+          ...p.docsGeneral,
+          revisorId: rg.id,
+          revisor: rg.nombre,  /* canónico — alinea con role switcher */
+          asignadoEn,
+          fechaLimite: p.docsGeneral.fechaLimite || lim.toISOString()
+        } };
       }
     }
     return next;

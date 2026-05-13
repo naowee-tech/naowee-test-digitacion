@@ -3229,6 +3229,82 @@ body > .naowee-dropdown__menu.is-open {
 .rev-mycarga__kpi--urgent .rev-mycarga__kpi-val { color: #b42318; }
 .rev-mycarga__kpi--urgent .rev-mycarga__kpi-lbl { color: #b42318; }
 
+/* ═══ Certificado de favorabilidad (municipio/proyecto-perfil) ═══
+   Card destacada — el certificado es el primer documento oficial del flujo
+   y debe ser inmediatamente visible para el municipio. */
+.cert-favorabilidad {
+  background: linear-gradient(135deg, #f0faf3 0%, #ffffff 70%);
+  border: 1px solid #b7dfb9;
+  border-left: 4px solid #15803d;
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 0 1px rgba(21,128,61,.04), 0 6px 16px -4px rgba(21,128,61,.08);
+}
+.cert-favorabilidad__top {
+  display: flex; gap: 16px; align-items: flex-start;
+  margin-bottom: 16px;
+}
+.cert-favorabilidad__ribbon {
+  width: 52px; height: 52px;
+  background: #15803d; color: #fff;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(21,128,61,.25);
+}
+.cert-favorabilidad__main { flex: 1; min-width: 0; }
+.cert-favorabilidad__eyebrow {
+  font-size: 10.5px; font-weight: 700;
+  color: #15803d; letter-spacing: .4px;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.cert-favorabilidad__title {
+  font-size: 18px; font-weight: 800;
+  color: var(--text-primary); line-height: 1.2;
+  margin: 0 0 6px 0;
+}
+.cert-favorabilidad__sub {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.5; margin: 0;
+}
+.cert-favorabilidad__grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  padding: 14px 0;
+  border-top: 1px dashed #b7dfb9;
+  border-bottom: 1px dashed #b7dfb9;
+}
+.cert-favorabilidad__field {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.cert-favorabilidad__field-lbl {
+  font-size: 10.5px; font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.cert-favorabilidad__field-val {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+}
+.cert-favorabilidad__field-val--mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+}
+.cert-favorabilidad__obs {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 12.5px; color: var(--text-primary);
+  line-height: 1.5; font-style: italic;
+}
+.cert-favorabilidad__actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 14px;
+}
+
 /* Section title antes del kpi-grid global */
 .kpi-grid-section-title {
   font-size: 11.5px; font-weight: 700;

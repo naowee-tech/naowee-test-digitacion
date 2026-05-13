@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512o">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512p">
 <style>
   /* ─── Hero strip del proyecto + área ─── */
   .ra-hero {
@@ -657,7 +657,7 @@
           x.historial = x.historial || [];
           x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Área aprobada · ${areaInfo.nombre} · por ${revisorActivo?.nombre || 'revisor'}` });
 
-          /* Cierre automático del concepto */
+          /* Cierre automático del concepto cuando todas áreas + general OK */
           const todasAprobadas = x.docsTecnica.areas.every(a => a.estado === 'aprobado');
           const generalAprobada = x.docsGeneral && x.docsGeneral.estadoRevision === 'aprobado';
           if (todasAprobadas && generalAprobada) {
@@ -669,8 +669,15 @@
               observaciones: 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'
             };
             x.historial.push({ ts: new Date().toISOString(), actor: 'sistema', evento: 'Concepto de favorabilidad emitido', estado: 'concepto_favorable' });
+            window.__conceptoCerrado = true;
           }
         });
+        /* Notificar a admin + municipio si cerró el concepto */
+        if (window.__conceptoCerrado) {
+          ProjectData.pushNotificacion({ perfil: 'admin', tipo: 'favorabilidad', titulo: 'Proyecto listo para inversión', detalle: `${p.idUnico} · Concepto favorable emitido · ${p.nombre}` });
+          ProjectData.pushNotificacion({ perfil: 'municipio', tipo: 'favorabilidad', titulo: 'Certificado de favorabilidad emitido', detalle: `${p.idUnico} · ${p.nombre} · descarga el certificado en el perfil del proyecto` });
+          window.__conceptoCerrado = false;
+        }
         });
       });
 

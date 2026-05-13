@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512o">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512p">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -198,6 +198,12 @@
   const id = new URLSearchParams(location.search).get('id');
   const p = id ? ProjectData.getProyecto(id) : null;
   const pageContent = document.getElementById('pageContent');
+
+  /* Gate "solo apruebas lo tuyo" — doc general la aprueba el revisor general (rev-005).
+     Modelo Andrea + Danna 29/04/2026: "todos ven, cada quien aprueba lo suyo". */
+  const revisorActivo = ProjectData.getRevisorActivo();
+  const esRevisorGeneral = !!(revisorActivo?.especialidades?.includes('general'));
+  const revisorGeneralPool = ProjectData.getRevisorPorArea('general');
 
   const ICONS = {
     back: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
@@ -427,6 +433,17 @@
             </div>
             <div class="naowee-message__text">Aprobada el ${fechaCorta(dg.aprobadoEn)}. El proyecto está listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</div>
           </div>
+        ` : !esRevisorGeneral ? `
+          <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="4" y="7" width="8" height="6" rx="1" stroke="#fff" stroke-width="1.4"/><path d="M6 7V5a2 2 0 0 1 4 0v2" stroke="#fff" stroke-width="1.4"/></svg></span>
+              <span class="naowee-message__title">Documentación general asignada a ${revisorGeneralPool?.nombre || 'el Revisor General'}</span>
+            </div>
+            <div class="naowee-message__text">
+              Solo el revisor de Documentación General puede aprobar o devolver este checklist.
+              ${revisorActivo ? `Estás logueado como <strong>${revisorActivo.nombre}</strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}
+            </div>
+          </div>
         ` : ''}
 
         ${CHECKLIST.map((bloque, i) => {
@@ -491,7 +508,7 @@
               <span class="dg-summary__stat" style="color:#c01818"><strong id="summaryNocumple">0</strong> no cumple</span>
               <span class="dg-summary__stat" style="color:var(--blue-info)"><strong id="summaryNa">0</strong> N/A</span>
             </div>
-            ${aprobado ? '' : `
+            ${(aprobado || !esRevisorGeneral) ? '' : `
               <div class="dg-summary__actions">
                 <button type="button" class="naowee-btn btn-devolver-doc" id="btnDevolver">Devolver con observaciones</button>
                 <button type="button" class="naowee-btn btn-aprobar-doc" id="btnAprobar">${ICONS.check} Aprobar documentación general</button>
@@ -583,16 +600,41 @@
         return;
       }
       if (!confirm('¿Aprobar la documentación general?')) return;
+      let cerroConcepto = false;
       ProjectData.setProyecto(p.idUnico, x => {
         x.docsGeneral = x.docsGeneral || {};
         x.docsGeneral.checklist = { ...state };
         x.docsGeneral.estadoRevision = 'aprobado';
         x.docsGeneral.aprobadoEn = new Date().toISOString();
+        x.docsGeneral.revisorId = revisorActivo?.id || x.docsGeneral.revisorId;
+        x.docsGeneral.revisor = revisorActivo?.nombre || x.docsGeneral.revisor || 'Revisor general';
         x.historial = x.historial || [];
-        x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: 'Documentación general aprobada' });
+        x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Documentación general aprobada · por ${revisorActivo?.nombre || 'revisor general'}` });
+        /* Cierre automático del concepto si todas las áreas técnicas también están aprobadas */
+        const todasAreasOk = (x.docsTecnica?.areas || []).every(a => a.estado === 'aprobado');
+        if (todasAreasOk && (x.docsTecnica?.areas || []).length > 0) {
+          x.estado = 'concepto_favorable';
+          x.conceptoFavorabilidad = {
+            ts: new Date().toISOString(),
+            certificado: `CERT-FAV-${p.idUnico}.pdf`,
+            emitidoPor: 'Equipo Revisor del Ministerio',
+            observaciones: 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'
+          };
+          x.historial.push({ ts: new Date().toISOString(), actor: 'sistema', evento: 'Concepto de favorabilidad emitido', estado: 'concepto_favorable' });
+          cerroConcepto = true;
+        }
       });
-      toast({ variant: 'positive', title: 'Documentación general aprobada', message: 'El proyecto avanza en el ciclo de etapa documental.' });
-      setTimeout(() => { window.location.href = 'doc-general.html'; }, 800);
+      if (cerroConcepto) {
+        /* Notificar cierre del concepto a admin y municipio */
+        ProjectData.pushNotificacion({ perfil: 'admin', tipo: 'favorabilidad', titulo: 'Proyecto listo para inversión', detalle: `${p.idUnico} · Concepto favorable emitido · ${p.nombre}` });
+        ProjectData.pushNotificacion({ perfil: 'municipio', tipo: 'favorabilidad', titulo: 'Certificado de favorabilidad emitido', detalle: `${p.idUnico} · ${p.nombre} · descarga el certificado en el perfil del proyecto` });
+      }
+      toast({
+        variant: 'positive',
+        title: cerroConcepto ? 'Concepto favorable emitido' : 'Documentación general aprobada',
+        message: cerroConcepto ? 'Todas las áreas + general aprobadas. Certificado disponible para municipio y admin.' : 'El proyecto avanza en el ciclo de etapa documental.'
+      });
+      setTimeout(() => { window.location.href = 'doc-general.html'; }, 1100);
     });
 
     document.getElementById('btnDevolver')?.addEventListener('click', () => {
@@ -605,8 +647,16 @@
         x.docsGeneral = x.docsGeneral || {};
         x.docsGeneral.checklist = { ...state };
         x.docsGeneral.estadoRevision = 'devuelto';
+        x.docsGeneral.revisorId = revisorActivo?.id || x.docsGeneral.revisorId;
+        x.docsGeneral.revisor = revisorActivo?.nombre || x.docsGeneral.revisor || 'Revisor general';
         x.historial = x.historial || [];
-        x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Documentación general devuelta · ${noCumpleCount} ítem(s) no cumplen` });
+        x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Documentación general devuelta · ${noCumpleCount} ítem(s) no cumplen · por ${revisorActivo?.nombre || 'revisor general'}` });
+      });
+      ProjectData.pushNotificacion({
+        perfil: 'municipio',
+        tipo: 'subsanacion',
+        titulo: 'Documentación general devuelta',
+        detalle: `${p.idUnico} · ${noCumpleCount} ítem(s) requieren subsanación`
       });
       toast({ variant: 'caution', title: 'Documentación devuelta', message: `${noCumpleCount} ítem(s) marcados como "No cumple" — el municipio debe subsanar.` });
       setTimeout(() => { window.location.href = 'doc-general.html'; }, 800);

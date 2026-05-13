@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512o">
+<link rel="stylesheet" href="../shared/pages.css?v=20260512p">
 </head>
 <body>
 <div class="shell">
@@ -24,6 +24,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260512n';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -134,6 +135,50 @@
             </div>
           </div>
         </div>
+
+        ${(p.estado === 'concepto_favorable' || p.estado === 'en_inversion') && p.conceptoFavorabilidad ? `
+          <!-- ═══ Certificado de favorabilidad emitido (Res. 933 + acuerdo 29/04/2026) ═══
+               Modelo: el equipo revisor emite un certificado dirigido al ente
+               deportivo (municipio). Es el primer documento oficial del flujo. -->
+          <div class="naowee-card cert-favorabilidad" role="status">
+            <div class="cert-favorabilidad__top">
+              <div class="cert-favorabilidad__ribbon" aria-hidden="true">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="9" r="6"/>
+                  <path d="M8.21 13.89L7 22l5-3 5 3-1.21-8.12"/>
+                </svg>
+              </div>
+              <div class="cert-favorabilidad__main">
+                <div class="cert-favorabilidad__eyebrow">Certificado emitido por el Ministerio del Deporte</div>
+                <h3 class="cert-favorabilidad__title">Concepto de favorabilidad</h3>
+                <p class="cert-favorabilidad__sub">Tu proyecto cumple con todos los requisitos de la Resolución 933 de 2024. Este certificado es el documento oficial que avala el cumplimiento normativo. ${p.estado === 'concepto_favorable' ? 'Quedas habilitado para gestionar la inversión con el Ministerio o con fuentes externas.' : 'El Ministerio ya activó la inversión correspondiente.'}</p>
+              </div>
+            </div>
+            <div class="cert-favorabilidad__grid">
+              <div class="cert-favorabilidad__field">
+                <span class="cert-favorabilidad__field-lbl">Emitido por</span>
+                <span class="cert-favorabilidad__field-val">${p.conceptoFavorabilidad.emitidoPor || 'Equipo Revisor del Ministerio'}</span>
+              </div>
+              <div class="cert-favorabilidad__field">
+                <span class="cert-favorabilidad__field-lbl">Fecha de emisión</span>
+                <span class="cert-favorabilidad__field-val">${formatoFecha(p.conceptoFavorabilidad.ts, true)}</span>
+              </div>
+              <div class="cert-favorabilidad__field">
+                <span class="cert-favorabilidad__field-lbl">Código</span>
+                <span class="cert-favorabilidad__field-val cert-favorabilidad__field-val--mono">${p.conceptoFavorabilidad.certificado || `CERT-FAV-${p.idUnico}.pdf`}</span>
+              </div>
+            </div>
+            ${p.conceptoFavorabilidad.observaciones ? `
+              <div class="cert-favorabilidad__obs">${p.conceptoFavorabilidad.observaciones}</div>
+            ` : ''}
+            <div class="cert-favorabilidad__actions">
+              <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnDescargarCert">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar certificado (PDF)
+              </button>
+            </div>
+          </div>
+        ` : ''}
 
         ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? `
           <!-- Observaciones del revisor (solo si hay devolución) -->
@@ -260,6 +305,15 @@
         tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
         document.querySelectorAll('.proj-tab-panel').forEach(panel => panel.hidden = panel.dataset.panel !== key);
         positionIndicator(tab);
+      });
+    });
+
+    /* Descarga del certificado de favorabilidad (mock — sin backend genera toast). */
+    document.getElementById('btnDescargarCert')?.addEventListener('click', () => {
+      toast({
+        variant: 'positive',
+        title: 'Descarga iniciada',
+        message: `${p.conceptoFavorabilidad?.certificado || 'Certificado'} se está generando. En producción este botón descarga el PDF firmado.`
       });
     });
   }

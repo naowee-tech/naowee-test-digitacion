@@ -166,6 +166,24 @@
   .convo-stats { grid-template-columns: 1fr; }
 }
 
+/* ═══ Indicador de fila clickeable (chevron al hover) ═══
+   Vista lista de convocatorias y otras tablas con filas-link. */
+.row-clickable {
+  position: relative;
+}
+.row-clickable__chev-th { width: 28px; padding: 0 !important; }
+.row-clickable__chev {
+  width: 28px; padding: 0 !important;
+  color: var(--text-secondary);
+  opacity: 0; transition: opacity .15s, transform .2s;
+  text-align: center;
+}
+.row-clickable:hover .row-clickable__chev {
+  opacity: 1;
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
 /* ═══ Strip de configuración debajo de los KPIs (antes era tab Configuración) ═══
    Tira horizontal con mini-stats de presupuesto, tope, fuentes, emisión y 2da convoc.
    Juanma 13/05/2026: pedir mover la info del tab Config arriba al lado de los KPIs. */

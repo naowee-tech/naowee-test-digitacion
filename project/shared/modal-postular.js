@@ -12,7 +12,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, formatoMoneda } from './states.js';
-import { textfield, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js';
+import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js';
 import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -148,6 +148,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
           <div class="ai-step-panel" data-panel="2" hidden>
             <div class="ai-section-title">Identificación del proyecto</div>
             ${textfield({ label: 'Nombre del proyecto', name: 'nombre', required: true, placeholder: 'Ej: Construcción Coliseo Cubierto Quibdó', maxlength: 200 })}
+            ${textarea({ label: 'Descripción breve del proyecto', name: 'descripcion', required: true, rows: 3, maxlength: 200, placeholder: 'Ej: Remodelación de cancha sintética con cambio de gramado, iluminación LED y graderías nuevas para 500 personas.', helper: 'Máximo 200 caracteres. Ayuda al revisor a viabilizar tu proyecto rápidamente.' })}
             <div class="ai-grid-2">
               ${dropdown({ label: 'Tipo de proyecto', name: 'tipo', required: true, options: ['Infraestructura'], value: 'Infraestructura' })}
               ${dropdown({ label: 'Fase', name: 'fase', required: true, options: faseOptions })}
@@ -252,6 +253,37 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   /* Máscara numérica (miles/millones) en campos con data-mask="money" */
   bindMasksIn(form);
 
+  /* NIT condicional según tipo de entidad: Resguardo Indígena y Consejo
+     Comunitario no tienen NIT obligatorio (Juanma 13/05/2026). */
+  const SIN_NIT = new Set(['Resguardo Indígena', 'Consejo Comunitario']);
+  const nitHidden = form.querySelector('input[name="entidadNit"]');
+  const tipoHidden = form.querySelector('.naowee-dropdown[data-name="entidadTipo"] input[type="hidden"]');
+  function syncNitRequired() {
+    if (!nitHidden || !tipoHidden) return;
+    const tipo = tipoHidden.value || '';
+    const tieneNit = !SIN_NIT.has(tipo);
+    const fieldWrap = nitHidden.closest('.naowee-textfield');
+    const labelEl = fieldWrap?.querySelector('.naowee-textfield__label');
+    if (tieneNit) {
+      nitHidden.setAttribute('required', '');
+      if (labelEl) {
+        labelEl.classList.add('naowee-textfield__label--required');
+        labelEl.textContent = 'NIT (sin dígito de verificación)';
+      }
+    } else {
+      nitHidden.removeAttribute('required');
+      if (labelEl) {
+        labelEl.classList.remove('naowee-textfield__label--required');
+        labelEl.textContent = 'NIT (opcional · no aplica para esta entidad)';
+      }
+      /* Si había un error de validación pendiente, limpiarlo */
+      fieldWrap?.classList.remove('has-error');
+      fieldWrap?.querySelector('.naowee-helper--negative')?.remove();
+    }
+  }
+  tipoHidden?.addEventListener('change', syncNitRequired);
+  syncNitRequired();
+
   /* ───── Navegación de pasos (igual a modal-activar-inversion) ───── */
   let currentStep = 1;
   const btnPrev = overlay.querySelector('#pmBtnPrev');
@@ -333,6 +365,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
         title: 'Datos del proyecto',
         rows: [
           ['Nombre', fd.get('nombre') || '—'],
+          ['Descripción', fd.get('descripcion') || '<span style="color:var(--text-secondary);font-style:italic">—</span>'],
           ['Tipo · Fase', `${fd.get('tipo') || '—'} · ${fd.get('fase') || '—'}`],
           ['Tipo de solicitud', fd.get('tipoSolicitud') || '—'],
           ['Tipología principal', fd.get('tipologia') || '—'],
@@ -400,6 +433,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
       convocatoriaId: conv.id,
       tipo: fd.get('tipo') || 'Infraestructura',
       nombre: fd.get('nombre') || 'Proyecto sin nombre',
+      descripcion: (fd.get('descripcion') || '').toString().trim(),
       municipio: fd.get('municipio') || 'Quibdó',
       departamento: fd.get('departamento') || 'Chocó',
       direccionPredio: fd.get('direccion') || '',

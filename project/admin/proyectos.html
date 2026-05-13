@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260513e">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513i">
 <style>
   /* Paginador wrapper — alineado al lenguaje del DS pero local a esta tabla */
   .proyectos-pagination {
@@ -41,6 +41,11 @@
   mountShell({ activeId: 'proyectos' });
 
   const proyectos = ProjectData.getProyectos();
+  const convocatorias = ProjectData.getConvocatorias();
+  /* Mapa convocatoriaId → datos para mostrar código corto en la tabla */
+  const convoById = convocatorias.reduce((m, c) => { m[c.id] = c; return m; }, {});
+  /* Para el filtro: count de proyectos por convocatoria */
+  const convoCounts = proyectos.reduce((m, p) => { m[p.convocatoriaId] = (m[p.convocatoriaId] || 0) + 1; return m; }, {});
   const counts = {};
   Object.keys(ESTADOS_POSTULACION).forEach(k => counts[k] = proyectos.filter(p => p.estado === k).length);
 
@@ -92,6 +97,29 @@
                 }).join('')}
               </div>
             </div>
+            <div class="naowee-filter-dropdown" data-filter="convocatoria">
+              <button class="naowee-filter-dropdown__trigger" type="button">
+                <span data-dd-label>Convocatoria</span>
+                <span class="naowee-filter-dropdown__chev">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </span>
+              </button>
+              <div class="naowee-filter-dropdown__menu">
+                <button type="button" class="naowee-filter-dropdown__option" data-value="todos" aria-selected="true">
+                  <span class="ff-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="ff-dot" data-color="neutral"></span>
+                  <span class="ff-label">Todas</span>
+                  <span class="ff-count">${proyectos.length}</span>
+                </button>
+                ${convocatorias.filter(c => convoCounts[c.id]).map(c => `
+                  <button type="button" class="naowee-filter-dropdown__option" data-value="${c.id}" aria-selected="false">
+                    <span class="ff-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <span class="ff-dot" data-color="informative"></span>
+                    <span class="ff-label" title="${c.nombre}">${c.id}</span>
+                    <span class="ff-count">${convoCounts[c.id]}</span>
+                  </button>`).join('')}
+              </div>
+            </div>
             <div class="naowee-filter-dropdown" data-filter="prioridad">
               <button class="naowee-filter-dropdown__trigger" type="button">
                 <span data-dd-label>Prioridad</span>
@@ -122,6 +150,7 @@
               <tr>
                 <th>Radicado</th>
                 <th>Proyecto</th>
+                <th>Convocatoria</th>
                 <th>Municipio</th>
                 <th class="numeric">Presupuesto</th>
                 <th>Postulación</th>
@@ -131,8 +160,9 @@
             <tbody id="tbody">
               ${proyectos.map(p => {
                 const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'gris' };
+                const conv = convoById[p.convocatoriaId];
                 return `
-                  <tr data-estado="${p.estado}" data-prioridad="${p.priorizado ? 'priorizado' : ''}" data-search="${(p.radicado+' '+p.nombre+' '+p.municipio).toLowerCase()}" onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')">
+                  <tr data-estado="${p.estado}" data-prioridad="${p.priorizado ? 'priorizado' : ''}" data-convocatoria="${p.convocatoriaId || ''}" data-search="${(p.radicado+' '+p.nombre+' '+p.municipio+' '+(p.convocatoriaId || '')).toLowerCase()}" onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')">
                     <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
                       <span class="rad-cell" title="${p.radicado || ''}">
                         ${p.priorizado
@@ -145,6 +175,7 @@
                       <div class="proj-name-cell__title" title="${p.nombre}">${p.nombre}</div>
                       <div class="naowee-table__cell-muted" style="font-weight:400;font-size:11.5px;margin-top:2px">${p.tipoSolicitud||''}</div>
                     </td>
+                    <td class="naowee-table__cell-muted" style="white-space:nowrap;font-size:12px;font-weight:600;color:var(--text-secondary)" title="${conv?.nombre || p.convocatoriaId || ''}">${p.convocatoriaId || '—'}</td>
                     <td>${p.municipio}<div class="naowee-table__cell-muted" style="font-size:11.5px;margin-top:2px">${p.departamento||''}</div></td>
                     <td class="numeric" style="font-weight:600;white-space:nowrap">${formatoMoneda(p.presupuesto)}</td>
                     <td class="naowee-table__cell-muted" style="white-space:nowrap">${fechaCorta(p.fechaPostulacion)}</td>
@@ -199,7 +230,7 @@
     expirada: 'Expirada',
     priorizado: 'Priorizado'
   };
-  const FILTER_LABELS = { estado: 'Estado', prioridad: 'Prioridad' };
+  const FILTER_LABELS = { estado: 'Estado', prioridad: 'Prioridad', convocatoria: 'Convocatoria' };
   const activeFilters = {};
   let searchTerm = '';
 
@@ -209,8 +240,9 @@
     document.querySelectorAll('#tbody tr').forEach(tr => {
       const matchEstado = !activeFilters.estado || activeFilters.estado === 'todos' || tr.dataset.estado === activeFilters.estado;
       const matchPrio = !activeFilters.prioridad || activeFilters.prioridad === 'todos' || tr.dataset.prioridad === activeFilters.prioridad;
+      const matchConv = !activeFilters.convocatoria || activeFilters.convocatoria === 'todos' || tr.dataset.convocatoria === activeFilters.convocatoria;
       const matchSearch = !searchTerm || tr.dataset.search.includes(searchTerm);
-      const pass = matchEstado && matchPrio && matchSearch;
+      const pass = matchEstado && matchPrio && matchConv && matchSearch;
       tr.dataset.filtered = pass ? '1' : '0';
       if (pass) filtered++;
     });

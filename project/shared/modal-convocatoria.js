@@ -18,7 +18,20 @@ const FUENTES = [
   'SGP','OCAD-Paz','Recursos Propios Mindeporte','Recursos Propios Municipio',
   'Cofinanciación territorial','Cooperación internacional','Crédito interno','Crédito externo'
 ];
-const BIENIOS = ['2025-2026', '2024-2025', '2026-2027'];
+/* Bienio dinámico (Juanma 13/05/2026): año actual ± 3 años.
+   Genera 5 bienios: año-1, año actual, año+1, año+2, año+3.
+   Cada bienio = "{año}-{año+1}". Si hoy es 2026 → 2025-2026, 2026-2027, ... 2029-2030.
+   El default es el bienio que contiene el año actual. */
+const _ANO_HOY = new Date().getFullYear();
+const BIENIOS = (() => {
+  const arr = [];
+  for (let offset = -1; offset <= 3; offset++) {
+    const a = _ANO_HOY + offset;
+    arr.push(`${a}-${a + 1}`);
+  }
+  return arr;
+})();
+const BIENIO_DEFAULT = `${_ANO_HOY}-${_ANO_HOY + 1}`;
 const SI_NO  = [{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }];
 const COBERTURAS = [
   { value: 'Nacional', label: 'Nacional' },
@@ -1015,7 +1028,7 @@ function stepIdentificacion() {
     ${textfield({ label: 'Nombre de la convocatoria', name: 'nombre', required: true, minlength: 10, maxlength: 200, placeholder: 'Ej: Convocatoria Nacional de Infraestructura Deportiva 2026 II', helper: 'Mín. 10, máx. 200 caracteres' })}
     ${textarea({ label: 'Descripción', name: 'descripcion', required: true, maxlength: 5000, rows: 3, placeholder: 'Alcance, objetivos, entidades elegibles, criterios generales…', helper: 'Máx. 5.000 caracteres' })}
     <div class="convo-grid-2">
-      ${dropdown({ label: 'Bienio', name: 'bienio', required: true, options: BIENIOS, value: '2025-2026' })}
+      ${dropdown({ label: 'Bienio', name: 'bienio', required: true, options: BIENIOS, value: BIENIO_DEFAULT })}
       ${dropdown({ label: 'Permite segunda convocatoria', name: 'permiteSegunda', options: SI_NO, value: 'true' })}
     </div>
     <h3 class="convo-section">Periodo de postulación</h3>

@@ -39,11 +39,8 @@ export function bindFileUploads(scope) {
    ═══════════════════════════════════════════════════════════════════ */
 const errorAttempts = new WeakMap(); // panel -> count
 
-/* Construye el markup canónico del DS Naowee para helper--negative:
-   <span class="naowee-helper naowee-helper--negative">
-     <span class="naowee-helper__badge"><svg badge negative .../></span>
-     {label}
-   </span>                                                                */
+/* Construye el markup canónico del DS Naowee para helper--negative.
+   Badge: círculo rojo con guión horizontal blanco (no "i"). */
 function makeErrorHelper(text) {
   const span = document.createElement('span');
   span.className = 'naowee-helper naowee-helper--negative';
@@ -51,13 +48,21 @@ function makeErrorHelper(text) {
     <span class="naowee-helper__badge">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
         <circle cx="6" cy="6" r="6" fill="currentColor" style="color:var(--naowee-color-feedback-fill-negative-loud,#b42318)"/>
-        <path d="M5.25 5.25h1.5v3h-1.5z" fill="#fff"/>
-        <circle cx="6" cy="3.75" r=".75" fill="#fff"/>
+        <rect x="3" y="5.4" width="6" height="1.2" rx="0.6" fill="#fff"/>
       </svg>
     </span>
     ${text}
   `;
   return span;
+}
+
+/* Regla global: solo UN helper por campo. Si hay error → oculta el helper
+   informativo previo (texto auxiliar, hint, etc) para que solo se vea el
+   negativo. bindValidationReset restaura al corregir. */
+function hideExistingHelpers(field) {
+  field.querySelectorAll('.naowee-helper:not(.naowee-helper--negative), .naowee-file-uploader__hint').forEach(h => {
+    h.style.display = 'none';
+  });
 }
 
 export function validateRequired(panel) {
@@ -83,8 +88,7 @@ export function validateRequired(panel) {
     if (!val) {
       field.classList.add('has-error');
       const lblText = field.querySelector('.naowee-textfield__label')?.textContent?.trim().replace('*', '').trim() || 'Este campo';
-      const helperExisting = field.querySelector('.naowee-helper');
-      if (helperExisting) helperExisting.style.display = 'none';
+      hideExistingHelpers(field);
       const err = makeErrorHelper(`${lblText} es obligatorio`);
       field.appendChild(err);
       errors.push(field);
@@ -101,6 +105,7 @@ export function validateRequired(panel) {
     if (!val) {
       field.classList.add('has-error');
       const lblText = field.querySelector('.naowee-dropdown__label')?.textContent?.trim().replace('*', '').trim() || 'Selección';
+      hideExistingHelpers(field);
       const err = makeErrorHelper(`${lblText} es obligatorio`);
       field.appendChild(err);
       errors.push(field);
@@ -119,6 +124,7 @@ export function validateRequired(panel) {
     if (checked === 0) {
       field.classList.add('has-error');
       const lblText = field.querySelector('.naowee-dropdown__label, .naowee-textfield__label')?.textContent?.trim().replace('*', '').trim() || 'Selección';
+      hideExistingHelpers(field);
       const err = makeErrorHelper(`Selecciona al menos una opción de ${lblText}`);
       field.appendChild(err);
       errors.push(field);
@@ -133,8 +139,7 @@ export function validateRequired(panel) {
     if (!input.files || input.files.length === 0) {
       field.classList.add('has-error');
       const lblText = field.querySelector('.naowee-file-uploader__label')?.textContent?.trim() || 'Archivo';
-      const hint = field.querySelector('.naowee-file-uploader__hint');
-      if (hint) hint.style.display = 'none';
+      hideExistingHelpers(field);
       const err = makeErrorHelper(`${lblText} es obligatorio`);
       field.appendChild(err);
       errors.push(field);
@@ -149,6 +154,7 @@ export function validateRequired(panel) {
     if (!val) {
       field.classList.add('has-error');
       const lblText = field.querySelector('.naowee-textfield__label')?.textContent?.trim().replace('*', '').trim() || 'Fecha';
+      hideExistingHelpers(field);
       const err = makeErrorHelper(`${lblText} es obligatorio`);
       field.appendChild(err);
       errors.push(field);

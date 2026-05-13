@@ -330,23 +330,25 @@
                 <form class="rp-obs-form" id="obsForm">
                   <div class="rp-obs-grid">
                     ${dropdown({
-                      label: 'Categoría', name: 'obsArea', value: 'Postulación',
+                      label: 'Categoría', name: 'obsArea', value: '', required: true,
+                      placeholder: 'Selecciona categoría',
                       options: ['Postulación', 'Datos básicos', 'Carta de intención', 'Representante legal', 'Localización', 'Financiación']
                     })}
                     ${dropdown({
-                      label: 'Tipo', name: 'obsTipo', value: 'Falta documento',
+                      label: 'Tipo', name: 'obsTipo', value: '', required: true,
+                      placeholder: 'Selecciona tipo',
                       options: ['Falta documento', 'Inconsistencia', 'Información incompleta', 'Documento ilegible']
                     })}
                   </div>
                   ${textarea({
-                    label: 'Detalle de la observación', name: 'obsTexto',
+                    label: 'Detalle de la observación', name: 'obsTexto', required: true,
                     placeholder: 'Describe las observaciones que el municipio debe subsanar… (mínimo 20 caracteres)',
                     rows: 4, maxlength: 500
                   })}
                 </form>
                 <div class="rp-obs-actions">
                   <button type="button" class="naowee-btn naowee-btn--mute" id="cancelObs">Cancelar</button>
-                  <button type="button" class="naowee-btn naowee-btn--loud" id="confirmAction">Confirmar acción</button>
+                  <button type="button" class="naowee-btn naowee-btn--loud" id="confirmAction" disabled aria-disabled="true">Confirmar acción</button>
                 </div>
               </div>
             </section>
@@ -504,6 +506,25 @@
       /* Bind de los naowee-dropdown (Categoría / Tipo) */
       const obsForm = document.getElementById('obsForm');
       if (obsForm) bindDropdowns(obsForm);
+
+      /* Validación reactiva del botón "Confirmar acción":
+         3 requeridos — Categoría, Tipo, Detalle (≥20 chars).
+         Mientras falte cualquiera, el botón queda deshabilitado en gris. */
+      const confirmBtn = document.getElementById('confirmAction');
+      function validateObsForm() {
+        if (!obsForm || !confirmBtn) return;
+        const cat = obsForm.querySelector('input[name="obsArea"]')?.value || '';
+        const tipo = obsForm.querySelector('input[name="obsTipo"]')?.value || '';
+        const txt = (obsForm.querySelector('textarea[name="obsTexto"]')?.value || '').trim();
+        const ok = cat.length > 0 && tipo.length > 0 && txt.length >= 20;
+        confirmBtn.disabled = !ok;
+        confirmBtn.setAttribute('aria-disabled', String(!ok));
+      }
+      if (obsForm) {
+        obsForm.addEventListener('input', validateObsForm);
+        obsForm.addEventListener('change', validateObsForm);
+        validateObsForm();
+      }
 
       /* Decisión: favorable | devolver | rechazar */
       let pendingAction = null;

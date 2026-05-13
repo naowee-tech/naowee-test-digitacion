@@ -106,15 +106,16 @@ flowchart TD
 |---|---|---|---|
 | 1 | `dashboard.html` | Ver KPIs globales del bienio + banner verde "X listos para activar" si hay favorables | Banner clickeable lleva a `inversion.html` |
 | 2 | `convocatorias.html` | Lista convocatorias del bienio | Filtros por estado |
-| 3 | `convocatoria-crear.html` | Wizard 3 pasos para crear convocatoria | Toast "Convocatoria creada" |
-| 4 | `convocatoria-notificar.html` | Notificación masiva a municipios | Lista de destinatarios + tasa de entrega |
-| 5 | `proyectos.html` | Lista todos los proyectos cross-municipio | Filtros + búsqueda |
-| 6 | `proyecto-detalle.html` | Detalle individual con: hero, equipo revisor (5 cards informativas, no seleccionables), datos, historial, áreas técnicas con SLA + reasignar | Card "Equipo revisor del Ministerio" muestra agregado por revisor + botón "Reasignar área" en cada área |
-| 7 | (banner en dashboard / `inversion.html`) | "X proyectos listos para activar inversión" | CTA "Ver tabla de inversión" |
-| 8 | Modal `activar-inversion` desde detalle | Wizard: confirmar concepto → asignar BPIN + monto + centro costo + ejecutor + SUID | Success screen con CTA "Ir a Registro SUID" |
-| 9 | `registro-suid.html` | Formulario 3 fases del escenario deportivo (pre-validación → datos deportivos → documentación) | Datos pre-llenados desde inversion |
-| 10 | `inversion.html` | Tabla con todos los proyectos en inversión, KPIs, filtro por departamento, sumatoria dinámica + CSV export | SUID column clickeable lleva a `registro-suid.html` |
-| 11 | `inversion-crear.html` | Form admin para registrar proyecto de inversión (hoja 11 xlsx) | — |
+| 3 | `convocatoria-crear.html` | Wizard **4 pasos** para crear convocatoria (bienios dinámicos año-1→año+3) | Paso 4 "Revisión técnica": elige áreas requeridas + responsable autocompletado por especialidad |
+| 4 | `convocatoria-notificar.html` | Notificación masiva a municipios | Modal DS de confirmación: KPIs + canales + throttle 24h en reenvíos + filtro "solo no postulantes" + opción forzar |
+| 5 | `proyectos.html` | Lista todos los proyectos cross-municipio | Filtros por convocatoria + búsqueda + paginador 15/page |
+| 6 | `proyecto-detalle.html` | Detalle individual con: hero, equipo revisor (5 cards informativas), datos, historial, áreas técnicas con SLA + reasignar | Tab Configuración promovido a strip horizontal arriba (P0 Juanma) |
+| 7 | `usuarios.html` | Panel "Usuarios y áreas": CRUD usuarios municipales (NIT condicional para Resguardo/Consejo) + reasignación de responsables de área técnica | 2 tabs: usuarios municipales + áreas técnicas con especialidades |
+| 8 | (banner en dashboard / `inversion.html`) | "X proyectos listos para activar inversión" | CTA "Ver tabla de inversión" |
+| 9 | Modal `activar-inversion` desde detalle | Wizard: confirmar concepto → asignar BPIN + monto + centro costo + ejecutor + SUID | Success screen con CTA "Ir a Registro SUID" |
+| 10 | `registro-suid.html` | Formulario 3 fases del escenario deportivo (pre-validación → datos deportivos → documentación) | Datos pre-llenados desde inversion |
+| 11 | `inversion.html` | Tabla con todos los proyectos en inversión, KPIs, filtro por departamento, sumatoria dinámica + CSV export | SUID column clickeable lleva a `registro-suid.html` |
+| 12 | `inversion-crear.html` | Form admin para registrar proyecto de inversión (hoja 11 xlsx) | — |
 
 **Asignación de revisores** (clarificación importante):
 - **NO hay paso manual** "asignar revisor". Cuando el proyecto entra a `etapa_documental`, cada área se auto-asigna a su revisor por especialidad.
@@ -131,7 +132,7 @@ flowchart TD
 | 1 | `dashboard.html` | Resumen de mis proyectos + alertas de subsanación pendiente | Chip rojo si tiene devolución pendiente |
 | 2 | `convocatorias.html` | Convocatorias activas + cerradas | Estado + días restantes |
 | 3 | `convocatoria-detalle.html` | Términos de referencia + botón "Postular" | — |
-| 4 | Modal `postular` (5 pasos) | Wizard: entidad → proyecto → predio → financiero → carta de intención | Validación canónica DS + máscara monetaria + radicado auto-generado al enviar |
+| 4 | Modal `postular` (5 pasos) | Wizard: entidad (NIT condicional para Resguardo/Consejo) → proyecto (descripción 200 chars) → predio → financiero → carta de intención | Validación canónica DS + máscara monetaria + radicado auto-generado al enviar |
 | 5 | `proyectos.html` | Mis proyectos con SLA visible | Pill SLA por proyecto |
 | 6 | `proyecto-perfil.html` | Detalle de mi proyecto: hero, datos, historial, observaciones (si devuelto), **certificado de favorabilidad** (si concepto emitido) | Card verde destacada con certificado descargable |
 | 7 | `subsanar.html` (si devuelto) | Subsanación multi-área en paralelo (modelo Res. 933 Art. 9) | Toast inmediato + success screen + notif al revisor |
@@ -239,6 +240,31 @@ Solo el **admin** puede reasignar un área puntual desde `proyecto-detalle.html`
 3. Marca al especialista correcto.
 4. Click → setea nuevo `revisorId` + reinicia SLA + push historial.
 
+### 5.5 · Notificación masiva — throttle + filtro de reenvío
+
+Implementado en `admin/convocatoria-notificar.html` (Sprint 2):
+
+- **Primer envío** → modal DS de confirmación simple con KPI "Total destinatarios".
+- **Reenvío** → mismo modal pero con:
+  - KPIs adicionales: "Ya postularon" / "No postulantes"
+  - Toggle **"Reenviar solo a municipios que aún no han postulado"** (default `on`, deshabilitado si todos postularon)
+  - Banner rojo **"Throttle activo · Faltan Xh"** si han pasado <24h desde el último envío
+  - Checkbox **"Forzar reenvío"** para bypasear el throttle (caso urgente)
+- **Lógica** (en `shared/data.js`):
+  - `inspectReenvio(convId)` → `{ canSend, hoursRemaining, totalDestinatarios, noPostulantesCount, muniPostulantes }`
+  - `enviarNotificacion(convId, opts)` → respeta `NOTIF_THROTTLE_HOURS = 24` salvo `opts.force === true`
+  - Filtra destinatarios si `opts.soloNoPostulantes === true`
+- **Estados de salida**: éxito normal · `throttled` (toast warning) · `empty` (toast "todos postularon")
+
+### 5.6 · Autocomplete de municipios (alcance territorial)
+
+En el paso 2 del wizard de convocatoria (`shared/modal-convocatoria.js`):
+
+- Combobox que sugiere municipios desde `getUsuariosMunicipales()` mientras el admin escribe.
+- Selección agrega un **chip** removible con `municipio`, `dane`, `email` y `entidadTipo`.
+- Reemplaza el textarea libre previo (que permitía typos y duplicados).
+- Los chips se hidratan en `convocatoria.notificacion.destinatarios.municipios`.
+
 ---
 
 ## 6 · Diagrama de notificaciones
@@ -306,11 +332,12 @@ sequenceDiagram
 admin/
 ├── dashboard.html              · KPIs + banner "listos para activar"
 ├── convocatorias.html          · Lista convocatorias
-├── convocatoria-crear.html     · Wizard crear
-├── convocatoria-detalle.html   · Detalle + asignar revisor (legacy, ya no necesario)
-├── convocatoria-notificar.html · Notificación masiva
-├── proyectos.html              · Lista cross-municipio
+├── convocatoria-crear.html     · Wizard 4 pasos (incluye Revisión técnica)
+├── convocatoria-detalle.html   · Detalle con strip de configuración arriba
+├── convocatoria-notificar.html · Notificación masiva con throttle + filtro
+├── proyectos.html              · Lista cross-municipio con paginador + filtro convocatoria
 ├── proyecto-detalle.html       · Hero + Equipo revisor + Áreas técnicas con reasignar
+├── usuarios.html               · Panel "Usuarios y áreas" (CRUD + reasignación)
 ├── inversion.html              · Tabla con KPIs + filtro + sumatoria + CSV
 ├── inversion-crear.html        · Form admin (hoja 11 xlsx)
 └── registro-suid.html          · Formulario 3 fases del escenario
@@ -362,18 +389,53 @@ shared/
 
 ---
 
-## 10 · Próximas iteraciones (post-15-may)
+## 10 · Próximas iteraciones (backlog priorizado)
+
+### P0 — Blockers V1
 
 | # | Tema | Origen |
 |---|------|--------|
-| 1 | Validación lat/lng inline con helper `--negative` al `blur` (registro-suid) | HANDOFF §10 |
-| 2 | Auto-fill cascada Departamento → Municipio (catálogo DANE) | GAP-ANALYSIS |
-| 3 | Validación `apertura < cierre` en modal-convocatoria paso 1 | HANDOFF §10 |
-| 4 | Persistencia real (hoy todo es localStorage) | HANDOFF §10 |
-| 5 | E2E tests Playwright para los 3 wizards | HANDOFF §10 |
-| 6 | A11y audit (focus, aria-live, keyboard) | HANDOFF §10 |
+| 1 | Tipos de proyecto (Construcción / Mejora) cambian documentos requeridos en wizard | Acta dev 13/05/2026 — Juanma |
+| 2 | Fase "viabilidad" previa a revisión técnica (gate `presentado → viable → en_revision`) | Acta dev 13/05/2026 — Doug |
+| 3 | Plantillas de notificación editables (refactor backend) | Acta dev 13/05/2026 — Juanma |
+
+### P1 — V1.x
+
+| # | Tema | Origen |
+|---|------|--------|
+| 4 | "Notificar a municipios" checked por default al crear convocatoria (5 min) | Acta dev 13/05/2026 |
+| 5 | Validación de presupuesto mín/máx configurable por convocatoria | Acta dev 13/05/2026 |
+| 6 | Fases de proyecto (Perfil / Fase 1-2-3) como parámetro de convocatoria | Acta dev 13/05/2026 |
+| 7 | Reasignación manual de revisor por enfermedad/ausencia (extensión del panel de delegación) | Acta dev 13/05/2026 |
+| 8 | Audit trail visible en `proyecto-detalle.html` (fecha, usuario, campo, valor antes/después) | Acta dev 13/05/2026 |
+| 9 | Validación lat/lng inline al `blur` (registro-suid) | HANDOFF §10 |
+| 10 | Auto-fill cascada Departamento → Municipio (catálogo DANE) | GAP-ANALYSIS |
+| 11 | Validación `apertura < cierre` en modal-convocatoria paso 1 | HANDOFF §10 |
+
+### P2 — Parqueado / discusión
+
+| # | Tema | Origen |
+|---|------|--------|
+| 12 | Responsive móvil/tablet (tabs son el reto principal) | Acta dev 13/05/2026 — Juanma |
+| 13 | Perfil "Ministra" read-only con dashboard pulido para entrega ejecutiva | Acta 29/04/2026 |
+| 14 | Calendario público de eventos (cross digitación) en landing | Acta dev — fuera de scope V1 según Juanma |
+| 15 | Semántica de "segunda convocatoria" (auto/manual al cerrar) | Acta dev — pendiente confirmación normativa |
+| 16 | Persistencia real (hoy todo es localStorage) | HANDOFF §10 |
+| 17 | E2E tests Playwright para los wizards | HANDOFF §10 |
+| 18 | A11y audit (focus, aria-live, keyboard) | HANDOFF §10 |
+
+---
+
+## 11 · Changelog reciente (Sprints 1+2+3)
+
+**Sprint 1** — 8 polish quick wins del acta 13/05/2026 (a4d6d64):
+- Bienios dinámicos, NIT condicional, descripción en postular, strip configuración arriba, modal DS de confirmación, fix barra documental, delegación de áreas, paginador 15/page.
+
+**Sprint 2** — Paso 4 áreas (4531d75) + autocomplete municipios + throttle reenvío (4e58e59).
+
+**Sprint 3** — Panel "Usuarios y áreas" (7c899d2): CRUD usuarios municipales + reasignación de responsables de área técnica.
 
 ---
 
 **Documento generado**: 13 de mayo de 2026
-**Última actualización del módulo**: commit `860ef73` (PR `naowee-tech/naowee-test-digitacion#8`)
+**Última actualización**: commit `4e58e59` (Sprint 2 cierre — throttle + autocomplete)

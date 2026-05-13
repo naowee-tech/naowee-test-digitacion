@@ -285,12 +285,19 @@
                 <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
                 ${dias !== null ? (() => {
                   const cls = dias <= 0 ? 'hero-deadline--vencido' : dias <= 3 ? 'hero-deadline--urgent' : dias <= 7 ? 'hero-deadline--warning' : 'hero-deadline--ok';
-                  return `
-                    <div class="hero-deadline ${cls}" title="Plazo Res. 933">
+                  const tooltip = 'Tienes 15 días hábiles para tomar una decisión sobre esta postulación (favorable, devolver o rechazar). Plazo establecido por la Resolución 933 de 2024 · Art. 8. Cuenta desde la radicación.';
+                  return dias <= 0 ? `
+                    <div class="hero-deadline ${cls}" title="${tooltip}">
                       <span class="hero-deadline__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span>
-                      <span class="hero-deadline__time">${dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`}</span>
+                      <span class="hero-deadline__time">Plazo vencido</span>
                       <span class="hero-deadline__sep"></span>
-                      <span class="hero-deadline__label">para responder</span>
+                      <span class="hero-deadline__label">debes resolver</span>
+                    </div>` : `
+                    <div class="hero-deadline ${cls}" title="${tooltip}">
+                      <span class="hero-deadline__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span>
+                      <span class="hero-deadline__time">${dias} día${dias===1?'':'s'}</span>
+                      <span class="hero-deadline__sep"></span>
+                      <span class="hero-deadline__label">para decidir</span>
                     </div>`;
                 })() : ''}
               </div>

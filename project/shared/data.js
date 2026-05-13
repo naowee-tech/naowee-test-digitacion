@@ -427,7 +427,18 @@ const SEED = {
         { ts: '2026-04-25T10:00:00', actor: 'revisor', evento: 'Postulación tomada para revisión', estado: 'en_revision' }
       ],
       fechaPostulacion: '2026-04-22T08:00:00',
-      fechaInicioRevision: '2026-04-25T10:00:00'
+      fechaInicioRevision: '2026-04-25T10:00:00',
+      /* v1.1 — Mock: prórroga RBI pendiente. El revisor pidió 15 días extra
+         y el admin todavía no decide. Renderiza el caso "pendiente" en
+         admin/prorrogas.html. */
+      prorrogaRBI: {
+        estado: 'pendiente',
+        solicitadaEn: '2026-05-08T14:22:00.000Z',
+        motivo: 'El expediente del predio tiene una controversia sobre uso del suelo que requiere consulta con Planeación Municipal antes de validar RBI. Solicito 15 días hábiles extra para completar la verificación.',
+        resueltaEn: null,
+        comentario: null,
+        resueltaPor: null
+      }
     },
 
     /* P-2C: en revisión, con tiempo medio */
@@ -455,7 +466,17 @@ const SEED = {
         { ts: '2026-04-30T09:00:00', actor: 'revisor', evento: 'En revisión', estado: 'en_revision' }
       ],
       fechaPostulacion: '2026-04-28T11:30:00',
-      fechaInicioRevision: '2026-04-30T09:00:00'
+      fechaInicioRevision: '2026-04-30T09:00:00',
+      /* v1.1 — Mock: prórroga RBI aprobada. Caso típico: el admin
+         concedió tiempo extra al revisor por carga alta de la convocatoria. */
+      prorrogaRBI: {
+        estado: 'aprobada',
+        solicitadaEn: '2026-05-04T09:15:00.000Z',
+        motivo: 'Carga alta de la convocatoria CONV-2026-001 (12 proyectos asignados). Necesito 15 días extra para revisar la doc de financiamiento.',
+        resueltaEn: '2026-05-04T15:42:00.000Z',
+        comentario: 'Aprobada. Se priorizan proyectos de zona Chocó por convergencia con PDET.',
+        resueltaPor: 'admin'
+      }
     },
 
     /* P-2D: devuelta a subsanación, esperando municipio */
@@ -490,7 +511,17 @@ const SEED = {
       ],
       fechaPostulacion: '2026-04-18T10:00:00',
       fechaDevolucion: '2026-04-29T14:00:00',
-      prorroga: null
+      prorroga: null,
+      /* v1.1 — Mock: prórroga RBI rechazada. Caso: revisor pidió tiempo
+         extra pero el admin priorizó cerrar la convocatoria a tiempo. */
+      prorrogaRBI: {
+        estado: 'rechazada',
+        solicitadaEn: '2026-04-26T11:08:00.000Z',
+        motivo: 'Necesito validar plano catastral y certificación presupuestal con la entidad emisora. 15 días extra ayudarían a aprobar limpio.',
+        resueltaEn: '2026-04-27T08:30:00.000Z',
+        comentario: 'La convocatoria CONV-2026-001 cierra el 30 de junio, no es viable extender. Devuelve con observaciones específicas para que el municipio subsane.',
+        resueltaPor: 'admin'
+      }
     },
 
     /* P-003: favorable, en etapa documental — varias áreas en revisión */
@@ -1411,7 +1442,7 @@ const ProjectData = (() => {
      (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
      ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 5;
+  const SCHEMA_VERSION = 6;
 
   /* v1.1 — Días extra que concede el admin cuando aprueba prórroga RBI.
      Solo se puede solicitar UNA VEZ por proyecto. */

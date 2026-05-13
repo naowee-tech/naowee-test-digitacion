@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260513c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513e">
 </head>
 <body>
 <div class="shell">
@@ -112,7 +112,7 @@
 </style>
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260513a';
+  import { mountShell } from '../shared/shell.js?v=20260513e';
   import { formatoMoneda, formatoFecha } from '../shared/states.js';
   import { dropdown, bindDropdowns } from '../shared/wizard-page.js?v=20260513d';
   ProjectData.setPerfil('admin');
@@ -266,16 +266,16 @@
                   const fuentesExtra = fuentes.slice(1);
                   return `
                   <tr data-id="${p.idUnico}">
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" style="cursor:pointer"><span class="code-cell">${p.inversion?.bpin || '—'}</span></td>
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="name-cell" style="cursor:pointer">
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" style="cursor:pointer"><span class="code-cell">${p.inversion?.bpin || '—'}</span></td>
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" class="name-cell" style="cursor:pointer">
                       <div class="name-cell__inner"><span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div>
                       <div class="meta-line">${p.inversion?.centroCosto || '—'}</div>
                     </td>
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" style="cursor:pointer">${p.municipio}<div class="meta-line" style="margin-top:2px">${p.departamento || ''}</div></td>
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="inversion-table__ejecutor" style="cursor:pointer" title="${p.inversion?.ejecutor || p.formuladora?.nombre || '—'}">${p.inversion?.ejecutor || p.formuladora?.nombre || '—'}</td>
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="numeric" style="font-weight:600;cursor:pointer">${formatoMoneda(p.presupuesto)}</td>
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="numeric" style="font-weight:600;color:var(--green);cursor:pointer">${formatoMoneda(p.inversion?.montoAprobado)}</td>
-                    <td onclick="location.href='proyecto-detalle.html?id=${p.idUnico}'" class="inversion-table__fuentes" style="cursor:pointer">
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" style="cursor:pointer">${p.municipio}<div class="meta-line" style="margin-top:2px">${p.departamento || ''}</div></td>
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" class="inversion-table__ejecutor" style="cursor:pointer" title="${p.inversion?.ejecutor || p.formuladora?.nombre || '—'}">${p.inversion?.ejecutor || p.formuladora?.nombre || '—'}</td>
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" class="numeric" style="font-weight:600;cursor:pointer">${formatoMoneda(p.presupuesto)}</td>
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" class="numeric" style="font-weight:600;color:var(--green);cursor:pointer">${formatoMoneda(p.inversion?.montoAprobado)}</td>
+                    <td onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')" class="inversion-table__fuentes" style="cursor:pointer">
                       ${fuentePrincipal ? `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet inversion-fuente__chip">${fuentePrincipal}</span>` : '<span style="color:var(--text-secondary);font-size:11.5px">—</span>'}
                       ${fuentesExtra.length > 0 ? `
                         <span class="inversion-fuente__more"

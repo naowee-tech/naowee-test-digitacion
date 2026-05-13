@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260513c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513e">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260513a';
+  import { mountShell } from '../shared/shell.js?v=20260513e';
   import { ESTADOS_DOC, ESTADOS_AREA, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'documentos' });
@@ -87,7 +87,7 @@
                     const areasAprobadas = areas.filter(a => a.estado === 'aprobado').length;
                     const pctTec = Math.round((areasAprobadas / totalAreas) * 100);
                     return `
-                      <tr onclick="location.href='etapa-documental.html?id=${p.idUnico}'" style="cursor:pointer">
+                      <tr onclick="fadeAndGo('etapa-documental.html?id=${p.idUnico}')" style="cursor:pointer">
                         <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;white-space:nowrap">${(p.radicado || '').split('-CONV-')[0]}</td>
                         <td class="naowee-table__cell-name proj-name-cell">
                           <div class="proj-name-cell__title" title="${p.nombre}">${p.nombre}</div>

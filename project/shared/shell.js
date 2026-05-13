@@ -428,19 +428,43 @@ function bindShell() {
   });
 }
 
-/* ───── fadeAndGo — navegación con fade SOLO de .page (sidebar/header fijos)
-   Pattern oficial de incentivos (HANDOFF-SESSION-LEARNINGS).
+/* ───── fadeAndGo — navegación con slide SOLO de .page (sidebar/header fijos)
+   Pareado con .page-fade-in (entrada desde la derecha en pages.css).
    El sidebar y top-header NO deben moverse durante la transición. */
 export function fadeAndGo(href) {
   const page = document.querySelector('.page');
   if (!page) { window.location.href = href; return; }
-  page.style.transition = 'opacity .22s ease, transform .22s ease';
+  page.style.transition = 'opacity .2s ease, transform .2s cubic-bezier(.32,.72,0,1)';
   page.style.opacity = '0';
-  page.style.transform = 'translateY(-4px)';
-  setTimeout(() => { window.location.href = href; }, 220);
+  page.style.transform = 'translateX(-12px)';
+  setTimeout(() => { window.location.href = href; }, 200);
 }
 /* Exponer global para uso desde onclick inline */
 if (typeof window !== 'undefined') window.fadeAndGo = fadeAndGo;
+
+/* ───── Intercepta clicks en <a> con href interno → fadeAndGo automático.
+   Aplica TRANSVERSALMENTE a toda la app sin tocar cada HTML.
+   Excluye: external (http/https), anchors (#), target=_blank, mailto/tel,
+   y links con data-no-fade="1" (escape hatch). */
+function bindGlobalFadeNav() {
+  if (window.__naoweeFadeNavBound) return;
+  window.__naoweeFadeNavBound = true;
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest?.('a[href]');
+    if (!a) return;
+    if (a.dataset.noFade === '1') return;
+    if (a.target === '_blank') return;
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http://') ||
+        href.startsWith('https://') || href.startsWith('mailto:') ||
+        href.startsWith('tel:') || href.startsWith('javascript:')) return;
+    /* Modificadores del usuario: ctrl/cmd/shift/middle click → respetar */
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
+    e.preventDefault();
+    fadeAndGo(a.href);
+  }, true);
+}
+if (typeof window !== 'undefined') bindGlobalFadeNav();
 
 /* ───── Naowee floating footer ───── */
 function mountNaoweeFooter() {

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260513c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513e">
 <style>
   /* ─── LIST page (sin id) — searchbox + tabla ─── */
   .dt-hero { /* legacy del list page, no aplica en detail */ }
@@ -273,7 +273,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260513a';
+  import { mountShell } from '../shared/shell.js?v=20260513e';
   import { ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -393,7 +393,7 @@
                   const badgeColor = allDone ? 'positive' : devueltas > 0 ? 'negative' : enRevision > 0 ? 'caution' : 'neutral';
                   const badgeLabel = allDone ? 'Todas aprobadas' : devueltas > 0 ? `${devueltas} devuelta${devueltas===1?'':'s'}` : enRevision > 0 ? `${enRevision} en revisión` : 'Pendiente';
                   return `
-                    <tr data-search="${(pr.radicado+' '+pr.nombre+' '+pr.municipio).toLowerCase()}" onclick="location.href='doc-tecnica.html?id=${pr.idUnico}'">
+                    <tr data-search="${(pr.radicado+' '+pr.nombre+' '+pr.municipio).toLowerCase()}" onclick="fadeAndGo('doc-tecnica.html?id=${pr.idUnico}')">
                       <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
                         <span class="rad-cell">
                           ${pr.priorizado
@@ -569,7 +569,7 @@
                   : 'var(--border-dark)';
                 const initial = (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase() || '?';
                 return `
-                  <article class="dt-area-card" data-estado="${a.estado}" onclick="location.href='revisar-area.html?id=${p.idUnico}&area=${a.id}'">
+                  <article class="dt-area-card" data-estado="${a.estado}" onclick="fadeAndGo('revisar-area.html?id=${p.idUnico}&area=${a.id}')">
                     <div class="dt-area-card__head">
                       <div class="dt-area-card__icon">${iconForArea(a.nombre)}</div>
                       <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>

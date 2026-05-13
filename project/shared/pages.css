@@ -33,10 +33,12 @@
   animation-duration:340ms;
   animation-timing-function:cubic-bezier(.32,.72,0,1);
 }
-.page-fade-in { animation: pageFadeIn .4s cubic-bezier(.32,.72,0,1) both; }
+/* Entrada del nuevo contenido: slide desde la derecha (12px) + fade.
+   Pareado con fadeAndGo() en shell.js que sale hacia la izquierda. */
+.page-fade-in { animation: pageFadeIn .28s cubic-bezier(.32,.72,0,1) both; }
 @keyframes pageFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 /* ═══ Page header — usa clases del DS pero margin específico del módulo ═══ */

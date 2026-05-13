@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Usuarios y áreas · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513i">
+<style>
+  /* ─── Tabs locales: A · Usuarios municipales · B · Áreas técnicas ─── */
+  .usuarios-tabs {
+    display: flex; gap: 4px;
+    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 22px;
+  }
+  .usuarios-tab {
+    appearance: none; background: transparent; border: 0;
+    padding: 12px 18px;
+    font: inherit; font-size: 13.5px; font-weight: 600;
+    color: var(--text-secondary); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-bottom: -1.5px;
+  }
+  .usuarios-tab:hover { color: var(--text-primary); }
+  .usuarios-tab.is-active {
+    color: var(--accent); border-bottom-color: var(--accent);
+  }
+  .usuarios-tab__count {
+    background: var(--orange-bg); color: var(--accent);
+    font-size: 10.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .usuarios-panel { display: none; animation: tabFadeIn .25s ease both; }
+  .usuarios-panel.is-active { display: block; }
+  @keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Áreas técnicas: cards horizontales ─── */
+  .areas-list {
+    display: grid; gap: 10px;
+    grid-template-columns: 1fr 1fr;
+  }
+  @media (max-width: 900px) { .areas-list { grid-template-columns: 1fr; } }
+  .area-mgmt-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 14px 16px;
+    display: grid; grid-template-columns: 40px 1fr auto;
+    gap: 12px; align-items: center;
+  }
+  .area-mgmt-card__icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .area-mgmt-card__icon svg { width: 20px; height: 20px; }
+  .area-mgmt-card__main { min-width: 0; }
+  .area-mgmt-card__title {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+  }
+  .area-mgmt-card__ref {
+    font-size: 11px; color: var(--text-secondary); margin-top: 3px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .area-mgmt-card__rev {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 6px;
+    padding: 4px 8px; border-radius: 999px;
+    background: var(--green-bg); color: var(--green);
+    font-size: 11.5px; font-weight: 600;
+  }
+  .area-mgmt-card__rev--missing {
+    background: #fff0ee; color: #b42318;
+  }
+  .area-mgmt-card__change {
+    background: transparent; border: 1px solid var(--border-dark);
+    border-radius: var(--radius-md);
+    padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary); cursor: pointer;
+    transition: all .15s;
+  }
+  .area-mgmt-card__change:hover {
+    background: var(--orange-bg); border-color: var(--accent); color: var(--accent);
+  }
+
+  /* ─── Modal de edición de usuario ─── */
+  .um-modal-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .um-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .um-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 560px; max-height: 92vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15,17,35,.35), 0 0 0 1px var(--border);
+    transform: translateY(16px) scale(.97); opacity: 0;
+    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+    overflow: hidden;
+  }
+  .um-modal-overlay.is-open .um-modal { transform: translateY(0) scale(1); opacity: 1; }
+  .um-modal__hero {
+    padding: 22px 26px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--orange-bg) 0%, #fff 80%);
+  }
+  .um-modal__title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+  .um-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; }
+  .um-modal__body {
+    padding: 20px 26px;
+    overflow-y: auto; flex: 1;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .um-modal__grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  @media (max-width: 600px) { .um-modal__grid { grid-template-columns: 1fr; } }
+  .um-modal__flags {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 12px 14px; background: #fafbfd;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+  }
+  .um-modal__flag-item {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+    cursor: pointer;
+  }
+  .um-modal__flag-item input { cursor: pointer; }
+  .um-modal__footer {
+    padding: 16px 26px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; gap: 10px;
+  }
+  .um-modal__delete {
+    background: transparent; border: 0; color: #c01818;
+    font: inherit; font-size: 12.5px; font-weight: 600;
+    cursor: pointer;
+  }
+  .um-modal__delete:hover { text-decoration: underline; }
+
+  /* Pill genérico para marcadores en la tabla */
+  .um-flag-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 7px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700;
+    background: var(--orange-bg); color: var(--accent);
+    margin-right: 3px;
+  }
+  .um-flag-pill--pdet { background: #f3edff; color: #7c3aed; }
+  .um-flag-pill--ebi  { background: #eef5ff; color: #1f78d1; }
+
+  .um-tipo-badge {
+    display: inline-flex; padding: 3px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700;
+    background: #f5f6fa; color: var(--text-secondary);
+  }
+  .um-tipo-badge--alcaldia { background: var(--green-bg); color: var(--green); }
+  .um-tipo-badge--resguardo { background: #f3edff; color: #7c3aed; }
+  .um-tipo-badge--consejo   { background: #fff3e6; color: var(--accent); }
+  .um-tipo-badge--gob       { background: #eef5ff; color: #1f78d1; }
+  .um-tipo-badge--distrito  { background: #fffaee; color: #8b6f00; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<!-- Modal crear/editar usuario municipal -->
+<div class="um-modal-overlay" id="umOverlay" role="dialog" aria-modal="true" hidden>
+  <div class="um-modal">
+    <div class="um-modal__hero">
+      <div class="um-modal__title" id="umTitle">Crear usuario</div>
+      <div class="um-modal__sub">Usuario que recibe notificaciones de las convocatorias del Ministerio.</div>
+    </div>
+    <div class="um-modal__body">
+      <form id="umForm" novalidate>
+        <input type="hidden" name="id" id="umId">
+        <div class="um-modal__grid">
+          <div>
+            <label class="naowee-dropdown__label naowee-textfield__label--required">Tipo de entidad</label>
+            <select name="tipoEntidad" id="umTipo" required style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px;background:#fff">
+              <option value="Alcaldía Municipal">Alcaldía Municipal</option>
+              <option value="Distrito Especial">Distrito Especial</option>
+              <option value="Gobernación Departamental">Gobernación Departamental</option>
+              <option value="Resguardo Indígena">Resguardo Indígena</option>
+              <option value="Consejo Comunitario">Consejo Comunitario</option>
+            </select>
+          </div>
+          <div>
+            <label class="naowee-textfield__label naowee-textfield__label--required">NIT</label>
+            <input type="text" name="nit" id="umNit" placeholder="891.680.014" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
+            <span style="display:block;font-size:11px;color:var(--text-secondary);margin-top:4px" id="umNitHelper">Opcional para Resguardo / Consejo Comunitario</span>
+          </div>
+        </div>
+        <div class="um-modal__grid">
+          <div>
+            <label class="naowee-textfield__label naowee-textfield__label--required">Departamento</label>
+            <input type="text" name="departamento" required placeholder="Chocó" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
+          </div>
+          <div>
+            <label class="naowee-textfield__label">Municipio</label>
+            <input type="text" name="municipio" placeholder="Quibdó" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
+            <span style="display:block;font-size:11px;color:var(--text-secondary);margin-top:4px">Vacío si la entidad es departamental</span>
+          </div>
+        </div>
+        <div class="um-modal__grid">
+          <div>
+            <label class="naowee-textfield__label naowee-textfield__label--required">Persona contacto</label>
+            <input type="text" name="nombre" required placeholder="Carlos Mosquera" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
+          </div>
+          <div>
+            <label class="naowee-textfield__label naowee-textfield__label--required">Cargo</label>
+            <input type="text" name="cargo" required placeholder="Secretario de Planeación" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
+          </div>
+        </div>
+        <div>
+          <label class="naowee-textfield__label naowee-textfield__label--required">Correo institucional</label>
+          <input type="email" name="email" required placeholder="planeacion@municipio.gov.co" style="width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border-dark);border-radius:8px;font:inherit;font-size:13px">
+        </div>
+        <div>
+          <label class="naowee-textfield__label" style="display:block;margin-bottom:8px">Marcadores territoriales</label>
+          <div class="um-modal__flags">
+            <label class="um-modal__flag-item"><input type="checkbox" name="zomac"> ZOMAC</label>
+            <label class="um-modal__flag-item"><input type="checkbox" name="pdet"> PDET</label>
+            <label class="um-modal__flag-item"><input type="checkbox" name="ebiPnd"> EBI/PND</label>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="um-modal__footer">
+      <button type="button" class="um-modal__delete" id="umDelete" hidden>Eliminar usuario</button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="umCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="umSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cambiar responsable de área -->
+<div class="um-modal-overlay" id="areaOverlay" role="dialog" aria-modal="true" hidden>
+  <div class="um-modal">
+    <div class="um-modal__hero">
+      <div class="um-modal__title" id="areaTitle">Cambiar responsable</div>
+      <div class="um-modal__sub" id="areaSub">Selecciona el revisor del equipo que cubrirá esta especialidad.</div>
+    </div>
+    <div class="um-modal__body" id="areaBody"></div>
+    <div class="um-modal__footer" style="justify-content:flex-end">
+      <button type="button" class="naowee-btn naowee-btn--mute" id="areaCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260513j';
+  import { toast } from '../shared/toast.js';
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'usuarios' });
+
+  const pageContent = document.getElementById('pageContent');
+
+  /* Catálogo de áreas Res. 933 + general (espejo del paso 4 de convocatoria-crear) */
+  const AREAS_CATALOGO = [
+    { id: 'topografico',    label: 'Levantamiento topográfico',          ref: 'Res. 933 Art. 3.1', especialidad: 'topografico' },
+    { id: 'suelos',         label: 'Estudio de suelos',                  ref: 'Res. 933 Art. 3.2', especialidad: 'suelos' },
+    { id: 'arquitectonico', label: 'Diseño arquitectónico',              ref: 'Res. 933 Art. 3.3', especialidad: 'arquitectonico' },
+    { id: 'estructural',    label: 'Diseño estructural',                 ref: 'Res. 933 Art. 3.4', especialidad: 'estructural' },
+    { id: 'hidrosanitario', label: 'Hidrosanitario y red contra incendios', ref: 'Res. 933 Art. 3.5', especialidad: 'hidrosanitario' },
+    { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',   ref: 'Res. 933 Art. 3.6', especialidad: 'electrico' },
+    { id: 'ambiental',      label: 'Manejo, riesgos y ambiental',        ref: 'Res. 933 Art. 3.7', especialidad: 'ambiental' },
+    { id: 'presupuesto',    label: 'Presupuesto integral',               ref: 'Res. 933 Art. 3.8', especialidad: 'presupuesto' },
+    { id: 'general',        label: 'Documentación general del proyecto', ref: 'Res. 933 Art. 1 y 2', especialidad: 'general' }
+  ];
+
+  function badgeTipoClass(t) {
+    if (!t) return '';
+    if (t.startsWith('Alcaldía')) return 'um-tipo-badge--alcaldia';
+    if (t.startsWith('Resguardo')) return 'um-tipo-badge--resguardo';
+    if (t.startsWith('Consejo')) return 'um-tipo-badge--consejo';
+    if (t.startsWith('Gobernación')) return 'um-tipo-badge--gob';
+    if (t.startsWith('Distrito')) return 'um-tipo-badge--distrito';
+    return '';
+  }
+
+  function render() {
+    const usuarios = ProjectData.getUsuariosMunicipales();
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+        <div class="naowee-page-header">
+          <div class="naowee-page-header__main">
+            <h1>Usuarios y áreas</h1>
+            <p>Gestiona los usuarios municipales que reciben notificaciones de las convocatorias y los responsables de cada área técnica del Ministerio.</p>
+          </div>
+        </div>
+
+        <div class="usuarios-tabs">
+          <button type="button" class="usuarios-tab is-active" data-panel="usuarios">
+            Usuarios municipales
+            <span class="usuarios-tab__count">${usuarios.length}</span>
+          </button>
+          <button type="button" class="usuarios-tab" data-panel="areas">
+            Áreas técnicas
+            <span class="usuarios-tab__count">${AREAS_CATALOGO.length}</span>
+          </button>
+        </div>
+
+        <div class="usuarios-panel is-active" data-panel="usuarios">
+          <div class="naowee-table-card">
+            <div class="naowee-table-card__toolbar">
+              <div class="naowee-table-card__toolbar-left">
+                <div class="naowee-searchbox naowee-searchbox--medium" style="width:340px">
+                  <div class="naowee-searchbox__input-wrap">
+                    <span class="naowee-searchbox__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+                    <input type="text" class="naowee-searchbox__input" id="umSearch" placeholder="Buscar por municipio, nombre o correo">
+                  </div>
+                </div>
+              </div>
+              <div class="naowee-table-card__toolbar-right">
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" id="umNew">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                  Crear usuario
+                </button>
+              </div>
+            </div>
+            <div class="naowee-table-card__table-wrap">
+              <table class="naowee-table--in-card">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Ámbito</th>
+                    <th>Contacto</th>
+                    <th>Correo institucional</th>
+                    <th>NIT</th>
+                    <th>Marcadores</th>
+                    <th class="row-clickable__chev-th" aria-hidden="true"></th>
+                  </tr>
+                </thead>
+                <tbody id="umTbody">
+                  ${usuarios.map(u => `
+                    <tr class="row-clickable" data-id="${u.id}" data-search="${(u.municipio + ' ' + u.departamento + ' ' + u.nombre + ' ' + u.email).toLowerCase()}">
+                      <td><span class="um-tipo-badge ${badgeTipoClass(u.tipoEntidad)}">${u.tipoEntidad}</span></td>
+                      <td>
+                        <div style="font-weight:600;font-size:13px">${u.municipio || u.departamento}</div>
+                        ${u.municipio ? `<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${u.departamento}</div>` : '<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">Departamental</div>'}
+                      </td>
+                      <td>
+                        <div style="font-weight:600;font-size:13px">${u.nombre}</div>
+                        <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${u.cargo}</div>
+                      </td>
+                      <td><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px">${u.email}</span></td>
+                      <td><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px">${u.nit || '—'}</span></td>
+                      <td>
+                        ${u.marcadores?.zomac ? '<span class="um-flag-pill">ZOMAC</span>' : ''}
+                        ${u.marcadores?.pdet ? '<span class="um-flag-pill um-flag-pill--pdet">PDET</span>' : ''}
+                        ${u.marcadores?.ebiPnd ? '<span class="um-flag-pill um-flag-pill--ebi">EBI/PND</span>' : ''}
+                        ${(!u.marcadores?.zomac && !u.marcadores?.pdet && !u.marcadores?.ebiPnd) ? '<span style="color:var(--text-secondary);font-size:11px">—</span>' : ''}
+                      </td>
+                      <td class="row-clickable__chev" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="usuarios-panel" data-panel="areas">
+          <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+              <span class="naowee-message__body">Cada área técnica tiene un responsable del pool de revisores. Cuando un proyecto entra a etapa documental, la asignación es automática por especialidad.</span>
+            </div>
+          </div>
+          <div class="areas-list">
+            ${AREAS_CATALOGO.map(a => {
+              const r = ProjectData.getRevisorPorArea(a.especialidad);
+              return `
+                <div class="area-mgmt-card">
+                  <div class="area-mgmt-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+                  </div>
+                  <div class="area-mgmt-card__main">
+                    <div class="area-mgmt-card__title">${a.label}</div>
+                    <div class="area-mgmt-card__ref">${a.ref}</div>
+                    ${r ? `
+                      <span class="area-mgmt-card__rev">
+                        <span class="ava-ring" style="width:18px;height:18px;background:${r.color}22;color:${r.color};font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</span>
+                        ${r.nombre}
+                      </span>
+                    ` : `
+                      <span class="area-mgmt-card__rev area-mgmt-card__rev--missing">⚠ Sin responsable</span>
+                    `}
+                  </div>
+                  <button type="button" class="area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-label="${a.label}">Cambiar</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    bindTabs();
+    bindUsuarios();
+    bindAreas();
+  }
+
+  function bindTabs() {
+    const tabs = document.querySelectorAll('.usuarios-tab');
+    const panels = document.querySelectorAll('.usuarios-panel');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        const key = t.dataset.panel;
+        tabs.forEach(x => x.classList.toggle('is-active', x === t));
+        panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
+      });
+    });
+  }
+
+  function bindUsuarios() {
+    document.getElementById('umNew').addEventListener('click', () => openUserModal(null));
+    document.querySelectorAll('#umTbody tr').forEach(tr => {
+      tr.addEventListener('click', () => openUserModal(tr.dataset.id));
+    });
+    const search = document.getElementById('umSearch');
+    search?.addEventListener('input', () => {
+      const term = search.value.trim().toLowerCase();
+      document.querySelectorAll('#umTbody tr').forEach(tr => {
+        tr.style.display = !term || tr.dataset.search.includes(term) ? '' : 'none';
+      });
+    });
+  }
+
+  function bindAreas() {
+    document.querySelectorAll('.area-mgmt-card__change').forEach(btn => {
+      btn.addEventListener('click', () => openAreaModal(btn.dataset.areaEspecialidad, btn.dataset.areaLabel));
+    });
+  }
+
+  /* ─── Modal usuario ─── */
+  const userOverlay = document.getElementById('umOverlay');
+  function openUserModal(id) {
+    const u = id ? ProjectData.getUsuarioMunicipal(id) : null;
+    document.getElementById('umTitle').textContent = u ? 'Editar usuario' : 'Crear usuario';
+    document.getElementById('umDelete').hidden = !u;
+    const form = document.getElementById('umForm');
+    form.reset();
+    document.getElementById('umId').value = u?.id || '';
+    if (u) {
+      form.elements.tipoEntidad.value = u.tipoEntidad;
+      form.elements.nit.value = u.nit || '';
+      form.elements.departamento.value = u.departamento;
+      form.elements.municipio.value = u.municipio || '';
+      form.elements.nombre.value = u.nombre;
+      form.elements.cargo.value = u.cargo;
+      form.elements.email.value = u.email;
+      form.elements.zomac.checked = !!u.marcadores?.zomac;
+      form.elements.pdet.checked = !!u.marcadores?.pdet;
+      form.elements.ebiPnd.checked = !!u.marcadores?.ebiPnd;
+    }
+    syncNitHelper();
+    userOverlay.hidden = false;
+    requestAnimationFrame(() => userOverlay.classList.add('is-open'));
+  }
+  function closeUserModal() {
+    userOverlay.classList.remove('is-open');
+    setTimeout(() => { userOverlay.hidden = true; }, 240);
+  }
+  function syncNitHelper() {
+    const tipo = document.getElementById('umTipo').value;
+    const helper = document.getElementById('umNitHelper');
+    const sinNit = tipo === 'Resguardo Indígena' || tipo === 'Consejo Comunitario';
+    document.getElementById('umNit').required = !sinNit;
+    helper.textContent = sinNit ? 'No requerido para esta entidad' : 'NIT sin dígito de verificación';
+    helper.style.color = sinNit ? 'var(--green)' : 'var(--text-secondary)';
+  }
+  document.getElementById('umTipo').addEventListener('change', syncNitHelper);
+  document.getElementById('umCancel').addEventListener('click', closeUserModal);
+  userOverlay.addEventListener('click', e => { if (e.target === userOverlay) closeUserModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !userOverlay.hidden) closeUserModal(); });
+  document.getElementById('umSave').addEventListener('click', () => {
+    const form = document.getElementById('umForm');
+    const fd = new FormData(form);
+    const tipoEntidad = fd.get('tipoEntidad');
+    const sinNit = tipoEntidad === 'Resguardo Indígena' || tipoEntidad === 'Consejo Comunitario';
+    const data = {
+      tipoEntidad,
+      nit: sinNit ? null : (fd.get('nit') || '').trim() || null,
+      departamento: (fd.get('departamento') || '').trim(),
+      municipio: (fd.get('municipio') || '').trim() || null,
+      nombre: (fd.get('nombre') || '').trim(),
+      cargo: (fd.get('cargo') || '').trim(),
+      email: (fd.get('email') || '').trim(),
+      marcadores: {
+        zomac: fd.get('zomac') === 'on',
+        pdet: fd.get('pdet') === 'on',
+        ebiPnd: fd.get('ebiPnd') === 'on'
+      }
+    };
+    /* Validación básica */
+    if (!data.departamento || !data.nombre || !data.cargo || !data.email) {
+      toast({ variant: 'caution', title: 'Campos requeridos', message: 'Completa Departamento, Contacto, Cargo y Correo.' });
+      return;
+    }
+    const id = document.getElementById('umId').value;
+    if (id) {
+      ProjectData.setUsuarioMunicipal(id, u => Object.assign(u, data));
+      toast({ variant: 'positive', title: 'Usuario actualizado', message: `${data.nombre} fue editado correctamente.` });
+    } else {
+      ProjectData.addUsuarioMunicipal(data);
+      toast({ variant: 'positive', title: 'Usuario creado', message: `${data.nombre} fue agregado a la lista de notificaciones.` });
+    }
+    closeUserModal();
+    render();
+  });
+  document.getElementById('umDelete').addEventListener('click', () => {
+    const id = document.getElementById('umId').value;
+    if (!id) return;
+    if (!confirm('¿Eliminar este usuario? Dejará de recibir notificaciones de convocatorias.')) return;
+    ProjectData.removeUsuarioMunicipal(id);
+    toast({ variant: 'informative', title: 'Usuario eliminado', message: 'El usuario fue removido de la lista.' });
+    closeUserModal();
+    render();
+  });
+
+  /* ─── Modal cambiar responsable de área ─── */
+  const areaOverlay = document.getElementById('areaOverlay');
+  function openAreaModal(especialidad, label) {
+    document.getElementById('areaTitle').textContent = `Cambiar responsable · ${label}`;
+    document.getElementById('areaSub').textContent = `Selecciona el revisor del equipo que cubrirá esta especialidad. La asignación afecta proyectos futuros, no los ya asignados.`;
+    const body = document.getElementById('areaBody');
+    const revs = ProjectData.getRevisores();
+    const actualRev = ProjectData.getRevisorPorArea(especialidad);
+    body.innerHTML = revs.map(r => {
+      const esActual = actualRev?.id === r.id;
+      const yaTiene = (r.especialidades || []).includes(especialidad);
+      return `
+        <button type="button" class="reassign-menu__item ${esActual ? 'is-current' : ''}" data-rev="${r.id}" style="background:transparent;border:1px solid var(--border);width:100%;text-align:left;border-radius:8px;padding:10px 12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="ava-ring" style="width:28px;height:28px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${r.avatar}</span>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:13px;color:var(--text-primary)">${r.nombre}</div>
+              <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${r.especialidad} · ${r.cargaActiva} activos${yaTiene ? ' · <strong style="color:var(--green)">cubre esta área</strong>' : ''}</div>
+            </div>
+            ${esActual ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+          </div>
+        </button>
+      `;
+    }).join('');
+    body.querySelectorAll('[data-rev]').forEach(b => {
+      b.addEventListener('click', () => {
+        const newRevId = b.dataset.rev;
+        /* Quitar la especialidad del revisor anterior y agregarla al nuevo */
+        revs.forEach(r => {
+          if (r.id === newRevId) {
+            if (!(r.especialidades || []).includes(especialidad)) {
+              ProjectData.setRevisor(r.id, x => ({ ...x, especialidades: [...(x.especialidades || []), especialidad] }));
+            }
+          } else if ((r.especialidades || []).includes(especialidad)) {
+            ProjectData.setRevisor(r.id, x => ({ ...x, especialidades: (x.especialidades || []).filter(e => e !== especialidad) }));
+          }
+        });
+        const newRev = ProjectData.getRevisor(newRevId);
+        toast({ variant: 'positive', title: 'Responsable actualizado', message: `${newRev.nombre} ahora cubre "${label}".` });
+        closeAreaModal();
+        render();
+      });
+    });
+    areaOverlay.hidden = false;
+    requestAnimationFrame(() => areaOverlay.classList.add('is-open'));
+  }
+  function closeAreaModal() {
+    areaOverlay.classList.remove('is-open');
+    setTimeout(() => { areaOverlay.hidden = true; }, 240);
+  }
+  document.getElementById('areaCancel').addEventListener('click', closeAreaModal);
+  areaOverlay.addEventListener('click', e => { if (e.target === areaOverlay) closeAreaModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !areaOverlay.hidden) closeAreaModal(); });
+
+  render();
+</script>
+</body>
+</html>

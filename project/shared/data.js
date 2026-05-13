@@ -69,6 +69,96 @@ const SEED = {
     { id: 'rev-005', nombre: 'Luis Felipe Rondón', especialidad: 'Documentación General',        especialidades: ['general'],                        avatar: 'LR', color: '#1f78d1', cargaActiva: 7 }
   ],
 
+  /* ═══ Usuarios municipales / entidades territoriales (Sprint 3 dev) ═══
+     Lista de cuentas que reciben notificaciones de convocatorias. Cada entrada
+     define a quién le llega un email cuando una convocatoria abre/cambia.
+     Juanma 13/05/2026 min 22:00: "necesitamos crear esos usuarios manualmente
+     para poder probar las notificaciones".
+     Campos:
+     - id: identificador único
+     - tipoEntidad: 'Alcaldía Municipal' | 'Gobernación Departamental' |
+                    'Resguardo Indígena' | 'Consejo Comunitario' | 'Distrito Especial'
+     - departamento + municipio: ámbito territorial (municipio puede ser null si
+                                  el ente es departamental)
+     - nombre: persona contacto
+     - cargo: cargo del contacto
+     - email: correo institucional para notificaciones
+     - nit: NIT (puede ser null en resguardos / consejos)
+     - marcadores: { zomac, pdet, ebiPnd } booleanos
+  */
+  usuariosMunicipales: [
+    {
+      id: 'um-001', tipoEntidad: 'Alcaldía Municipal',
+      departamento: 'Chocó', municipio: 'Quibdó',
+      nombre: 'Carlos Mosquera Rentería', cargo: 'Secretario de Planeación',
+      email: 'planeacion@quibdo.gov.co', nit: '891.680.014',
+      marcadores: { zomac: false, pdet: true, ebiPnd: true }
+    },
+    {
+      id: 'um-002', tipoEntidad: 'Alcaldía Municipal',
+      departamento: 'Chocó', municipio: 'Riosucio',
+      nombre: 'Esperanza Mosquera', cargo: 'Alcaldesa',
+      email: 'alcaldia@riosucio-choco.gov.co', nit: '891.680.092',
+      marcadores: { zomac: true, pdet: true, ebiPnd: false }
+    },
+    {
+      id: 'um-003', tipoEntidad: 'Alcaldía Municipal',
+      departamento: 'Chocó', municipio: 'Bahía Solano',
+      nombre: 'Juan Carlos Perea', cargo: 'Secretario de Planeación',
+      email: 'planeacion@bahiasolano.gov.co', nit: '891.681.111',
+      marcadores: { zomac: false, pdet: true, ebiPnd: false }
+    },
+    {
+      id: 'um-004', tipoEntidad: 'Alcaldía Municipal',
+      departamento: 'Valle del Cauca', municipio: 'Buenaventura',
+      nombre: 'Diana Yepes Caicedo', cargo: 'Directora de Proyectos',
+      email: 'proyectos@buenaventura.gov.co', nit: '890.399.011',
+      marcadores: { zomac: false, pdet: true, ebiPnd: true }
+    },
+    {
+      id: 'um-005', tipoEntidad: 'Alcaldía Municipal',
+      departamento: 'Tolima', municipio: 'Ibagué',
+      nombre: 'Hernán Beltrán', cargo: 'Secretario de Infraestructura',
+      email: 'infraestructura@ibague.gov.co', nit: '800.113.389',
+      marcadores: { zomac: false, pdet: false, ebiPnd: true }
+    },
+    {
+      id: 'um-006', tipoEntidad: 'Gobernación Departamental',
+      departamento: 'Nariño', municipio: null,
+      nombre: 'María Lucía Rivera', cargo: 'Secretaria de Cultura y Deporte',
+      email: 'deporte@gobernacionnarino.gov.co', nit: '800.103.923',
+      marcadores: { zomac: false, pdet: false, ebiPnd: true }
+    },
+    {
+      id: 'um-007', tipoEntidad: 'Resguardo Indígena',
+      departamento: 'Cauca', municipio: 'Inza',
+      nombre: 'Jaime Tróchez', cargo: 'Gobernador del cabildo',
+      email: 'cabildonasa@gmail.com', nit: null,
+      marcadores: { zomac: true, pdet: true, ebiPnd: false }
+    },
+    {
+      id: 'um-008', tipoEntidad: 'Consejo Comunitario',
+      departamento: 'Chocó', municipio: 'Bajo Baudó',
+      nombre: 'Marcos Asprilla', cargo: 'Representante legal',
+      email: 'consejo.bajobaudo@gmail.com', nit: null,
+      marcadores: { zomac: true, pdet: true, ebiPnd: false }
+    },
+    {
+      id: 'um-009', tipoEntidad: 'Alcaldía Municipal',
+      departamento: 'Antioquia', municipio: 'Apartadó',
+      nombre: 'Luis Alberto Gómez', cargo: 'Director de Planeación',
+      email: 'planeacion@apartado.gov.co', nit: '890.984.181',
+      marcadores: { zomac: false, pdet: true, ebiPnd: true }
+    },
+    {
+      id: 'um-010', tipoEntidad: 'Distrito Especial',
+      departamento: 'Magdalena', municipio: 'Santa Marta',
+      nombre: 'Ángela Lizardo', cargo: 'Directora de Inversiones',
+      email: 'inversiones@santamarta.gov.co', nit: '891.780.009',
+      marcadores: { zomac: false, pdet: false, ebiPnd: true }
+    }
+  ],
+
   convocatorias: [
     {
       id: 'CONV-2026-001',
@@ -1321,7 +1411,7 @@ const ProjectData = (() => {
      (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
      ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 3;
+  const SCHEMA_VERSION = 4;
 
   function load() {
     try {
@@ -1503,6 +1593,53 @@ const ProjectData = (() => {
     return getRevisores().find(r => r.id === id) || null;
   }
 
+  /* Permitir cambiar especialidades de un revisor (panel admin · Sprint 3 dev) */
+  function setRevisor(id, mutator) {
+    update(s => {
+      const idx = (s.revisores || []).findIndex(r => r.id === id);
+      if (idx < 0) return;
+      const next = mutator(s.revisores[idx]);
+      if (next) s.revisores[idx] = next;
+    });
+  }
+
+  /* ═══ Usuarios municipales (entidades territoriales) ═══
+     Lista a la que se notifica cuando una convocatoria se abre. */
+  function getUsuariosMunicipales(filter) {
+    const arr = load().usuariosMunicipales || [];
+    return filter ? arr.filter(filter) : arr;
+  }
+  function getUsuarioMunicipal(id) {
+    return getUsuariosMunicipales().find(u => u.id === id) || null;
+  }
+  function addUsuarioMunicipal(u) {
+    update(s => {
+      s.usuariosMunicipales = s.usuariosMunicipales || [];
+      /* Auto-generar id si no viene */
+      if (!u.id) {
+        const max = s.usuariosMunicipales.reduce((m, x) => {
+          const n = parseInt((x.id || '').replace('um-', ''), 10);
+          return isNaN(n) ? m : Math.max(m, n);
+        }, 0);
+        u.id = 'um-' + String(max + 1).padStart(3, '0');
+      }
+      s.usuariosMunicipales.push(u);
+    });
+  }
+  function setUsuarioMunicipal(id, mutator) {
+    update(s => {
+      const idx = (s.usuariosMunicipales || []).findIndex(u => u.id === id);
+      if (idx < 0) return;
+      const next = mutator(s.usuariosMunicipales[idx]);
+      if (next) s.usuariosMunicipales[idx] = next;
+    });
+  }
+  function removeUsuarioMunicipal(id) {
+    update(s => {
+      s.usuariosMunicipales = (s.usuariosMunicipales || []).filter(u => u.id !== id);
+    });
+  }
+
   function getConvocatorias() {
     /* Auto-calcular postulaciones a partir de proyectos reales para evitar
        conteos hardcoded inconsistentes con el detalle. */
@@ -1592,8 +1729,10 @@ const ProjectData = (() => {
     load, save, reset, update,
     setPerfil, getPerfil, getPerfilData,
     getProyectos, getProyecto, setProyecto, addProyecto,
-    getRevisores, getRevisor, getRevisorActivo, getRevisorPorArea,
+    getRevisores, getRevisor, setRevisor, getRevisorActivo, getRevisorPorArea,
     AREA_TO_SPECIALTY, SLA_DIAS_REVISION,
+    getUsuariosMunicipales, getUsuarioMunicipal,
+    addUsuarioMunicipal, setUsuarioMunicipal, removeUsuarioMunicipal,
     getConvocatorias, addConvocatoria, setConvocatoria,
     defaultNotificacion, enviarNotificacion,
     pushHistorial, pushNotificacion,

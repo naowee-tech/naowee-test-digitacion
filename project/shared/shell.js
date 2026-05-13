@@ -213,6 +213,7 @@ function renderHeader(perfil) {
 function renderDemoSwitcher(perfil) {
   const data = ProjectData.getPerfilData(perfil);
   const PERFILES = ['admin', 'municipio', 'revisor'];
+  const revisorActivo = ProjectData.getRevisorActivo?.();
   const items = PERFILES.map(p => {
     const d = ProjectData.getPerfilData(p);
     const isActive = p === perfil;
@@ -229,6 +230,32 @@ function renderDemoSwitcher(perfil) {
     `;
   }).join('');
 
+  /* Cuando estás logueado como revisor, expandir con el equipo revisor (5 personas).
+     Cada item cambia el `revisorId` del perfil para validar el gate "solo apruebas
+     lo tuyo" en doc-general (rev-005) y áreas técnicas por especialidad. */
+  let equipoItems = '';
+  if (perfil === 'revisor' && ProjectData.getRevisores) {
+    const equipo = ProjectData.getRevisores();
+    equipoItems = `
+      <div class="demo-role-switcher__panel-label" style="margin-top:6px">Equipo revisor — cambiar persona logueada</div>
+      <div class="demo-role-switcher__list">
+        ${equipo.map(r => {
+          const isActive = revisorActivo?.id === r.id;
+          return `
+            <a class="demo-role-switcher__item ${isActive ? 'is-active' : ''}"
+               href="#" data-revisor="${r.id}">
+              <div class="demo-role-switcher__avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
+              <div class="demo-role-switcher__meta">
+                <strong>${r.nombre}</strong>
+                <small>${r.especialidad}</small>
+              </div>
+              ${isActive ? `<div class="demo-role-switcher__check">${ICONS.check}</div>` : ''}
+            </a>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
   return `
     <div class="demo-role-switcher" id="demoSwitcher">
       <button class="demo-role-switcher__toggle" id="demoSwitcherToggle">
@@ -240,6 +267,7 @@ function renderDemoSwitcher(perfil) {
       <div class="demo-role-switcher__panel" id="demoSwitcherPanel">
         <div class="demo-role-switcher__panel-label">Cambiar de perfil (simulado)</div>
         <div class="demo-role-switcher__list">${items}</div>
+        ${equipoItems}
         <div class="demo-role-switcher__panel-footer">
           <button type="button" class="demo-reset-btn" id="demoResetBtn" title="Restablece el mock data al estado original (útil después de probar acciones como activar inversión)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
@@ -355,6 +383,30 @@ function bindShell() {
         };
         ds.classList.remove('open');
         fadeAndGo(pathPrefix() + map[next]);
+      });
+    });
+
+    /* Cambiar el revisor activo dentro del perfil revisor (equipo de 5).
+       Útil para verificar el gate "solo apruebas lo tuyo" en áreas + doc general. */
+    ds.querySelectorAll('[data-revisor]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const revId = a.dataset.revisor;
+        const rev = ProjectData.getRevisor(revId);
+        if (!rev) return;
+        ProjectData.update(s => {
+          s.perfilActivo = 'revisor';
+          s.perfiles.revisor = {
+            ...s.perfiles.revisor,
+            revisorId: revId,
+            nombre: rev.nombre,
+            avatar: rev.avatar,
+            color: rev.color,
+            cargo: `Revisor · ${rev.especialidad}`
+          };
+        });
+        ds.classList.remove('open');
+        fadeAndGo(pathPrefix() + 'revisor/dashboard.html');
       });
     });
 

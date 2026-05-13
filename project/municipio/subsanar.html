@@ -145,7 +145,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260512n';
+  import { mountShell } from '../shared/shell.js?v=20260513a';
   import { formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
   import {
@@ -469,6 +469,16 @@
           tipo: 'subsanacion',
           titulo: todasCompletas ? 'Postulación re-enviada a revisión' : 'Subsanación parcial recibida',
           detalle: `${p.idUnico} · ${areasEnviadas.length} área${areasEnviadas.length === 1 ? '' : 's'} subsanada${areasEnviadas.length === 1 ? '' : 's'}`
+        });
+
+        /* Toast inmediato: feedback antes del success screen (refuerzo redundante
+           para que se vea sin scroll en viewports cortos). */
+        toast({
+          variant: 'positive',
+          title: todasCompletas ? 'Subsanación completa enviada' : 'Progreso guardado',
+          message: todasCompletas
+            ? `Postulación volvió a estado "En revisión". El revisor fue notificado.`
+            : `${areasEnviadas.length} de ${areas.length} áreas completas. Puedes volver a finalizar las pendientes.`
         });
 
         renderSuccess(form, {

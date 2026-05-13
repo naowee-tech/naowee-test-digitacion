@@ -3385,6 +3385,8 @@ body > .naowee-dropdown__menu.is-open {
 .countdown--urgent { color: #c54500; font-weight: 700; }
 .plazo-inline--ok,
 .countdown--ok { color: var(--green); }
+.plazo-inline--warn { color: #b45309; font-weight: 700; }
+.plazo-inline--vencido { color: #b42318; font-weight: 700; }
 
 /* ═══ Naowee badge --prio (custom variant — gradient gold) ═══ */
 .naowee-badge--prio {

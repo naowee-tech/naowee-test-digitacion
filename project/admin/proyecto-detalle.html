@@ -120,11 +120,14 @@
           ` : ''}
         </div>
 
-        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental'].includes(p.estado)) ? (() => {
+        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental','concepto_favorable','en_inversion'].includes(p.estado)) ? (() => {
           /* Equipo revisor: informativo, no seleccionable. Todos ven el proyecto,
-             pero cada quien aprueba SOLO sus áreas (modelo Andrea + Danna 29/04/2026). */
+             pero cada quien aprueba SOLO sus áreas (modelo Andrea + Danna 29/04/2026).
+             La asignación es AUTOMÁTICA por especialidad cuando el proyecto pasa
+             a etapa documental. */
           const equipo = ProjectData.getRevisores();
           const areasDeEsteProyecto = p.docsTecnica?.areas || [];
+          const equipoActivo = ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado);
           /* Para cada revisor: qué áreas de este proyecto le tocan + estado agregado */
           const equipoEnriquecido = equipo.map(r => {
             const misAreas = r.especialidades?.includes('general')
@@ -138,20 +141,74 @@
           });
           const totalAreas = areasDeEsteProyecto.length + (p.docsGeneral ? 1 : 0);
           const totalAprobadas = equipoEnriquecido.reduce((s, e) => s + e.aprobadas, 0);
+          /* Timeline de fases — visualiza CUÁNDO sucede la asignación automática */
+          const fases = [
+            { key: 'postulacion', label: 'Postulación recibida', done: true },
+            { key: 'revision',    label: 'Revisión inicial',     done: ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado), active: ['presentado','en_revision','devuelta_subsanacion'].includes(p.estado) },
+            { key: 'asignacion',  label: 'Equipo asignado',      done: ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado), active: p.estado === 'etapa_documental' },
+            { key: 'concepto',    label: 'Concepto emitido',     done: ['concepto_favorable','en_inversion'].includes(p.estado), active: p.estado === 'etapa_documental' }
+          ];
+          /* Mensaje contextual claro según el estado del flujo */
+          let mensajeFlujo = '';
+          if (p.estado === 'presentado') {
+            mensajeFlujo = `<strong>Equipo en standby.</strong> El equipo revisor del Ministerio se asignará automáticamente por especialidad cuando apruebes la revisión inicial de la postulación.`;
+          } else if (p.estado === 'en_revision') {
+            mensajeFlujo = `<strong>Revisión inicial en curso.</strong> Si apruebas la postulación, las <strong>8 áreas técnicas + doc general</strong> se asignarán automáticamente a los 5 revisores por especialidad. Sin intervención manual.`;
+          } else if (p.estado === 'devuelta_subsanacion') {
+            mensajeFlujo = `<strong>Postulación devuelta al municipio.</strong> El equipo se asignará cuando vuelva a revisión y la postulación sea aprobada.`;
+          } else if (p.estado === 'etapa_documental') {
+            mensajeFlujo = `<strong>Equipo asignado automáticamente.</strong> Cada miembro recibió las áreas de su especialidad. SLA 15 días por área. Puedes <strong>reasignar un área puntual</strong> desde la card de Áreas técnicas más abajo si un revisor está saturado.`;
+          } else if (['concepto_favorable','en_inversion'].includes(p.estado)) {
+            mensajeFlujo = `<strong>Revisión completada.</strong> Todas las áreas + doc general aprobadas. Concepto favorable emitido${p.conceptoFavorabilidad?.ts ? ` el ${formatoFecha(p.conceptoFavorabilidad.ts)}` : ''}.`;
+          }
           return `
           <!-- ═══ Equipo revisor del Ministerio (Res. 933 Art. 3 + transcripción 29/04/2026) ═══
                Modelo: todos ven el proyecto, cada quien aprueba lo suyo por especialidad.
                Asignación automática por área (no por proyecto). -->
           <div class="naowee-card equipo-revisor-card">
+            <!-- Timeline visual del proceso de revisión (4 fases) -->
+            <div class="rev-flow-timeline" role="list" aria-label="Fases del proceso de revisión">
+              ${fases.map((f, i) => `
+                <div class="rev-flow-timeline__step ${f.done ? 'is-done' : ''} ${f.active ? 'is-active' : ''}" role="listitem">
+                  <div class="rev-flow-timeline__dot">
+                    ${f.done
+                      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                      : f.active
+                      ? '<span class="rev-flow-timeline__pulse"></span>'
+                      : `<span>${i + 1}</span>`}
+                  </div>
+                  <div class="rev-flow-timeline__lbl">${f.label}</div>
+                </div>
+                ${i < fases.length - 1 ? `<div class="rev-flow-timeline__line ${fases[i+1].done ? 'is-done' : ''}"></div>` : ''}
+              `).join('')}
+            </div>
+
+            <!-- Mensaje contextual según el estado del proyecto -->
+            <div class="rev-flow-message ${equipoActivo ? 'rev-flow-message--active' : 'rev-flow-message--standby'}">
+              <span class="rev-flow-message__icon">
+                ${equipoActivo
+                  ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                  : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'}
+              </span>
+              <span class="rev-flow-message__text">${mensajeFlujo}</span>
+            </div>
+
             <div class="equipo-revisor__head">
               <div>
                 <div class="equipo-revisor__title">Equipo revisor del Ministerio</div>
-                <div class="equipo-revisor__hint">Cada revisor recibe automáticamente las áreas de su especialidad. El admin puede reasignar un área puntual si un revisor está saturado.</div>
+                <div class="equipo-revisor__hint">5 especialistas cubren las 8 áreas técnicas + doc general. La asignación es por especialidad — no se selecciona manualmente.</div>
               </div>
-              <div class="equipo-revisor__progress" title="${totalAprobadas} de ${totalAreas} áreas aprobadas">
-                <div class="equipo-revisor__progress-val">${totalAprobadas}<span>/${totalAreas}</span></div>
-                <div class="equipo-revisor__progress-lbl">áreas aprobadas</div>
-              </div>
+              ${equipoActivo ? `
+                <div class="equipo-revisor__progress" title="${totalAprobadas} de ${totalAreas} áreas aprobadas">
+                  <div class="equipo-revisor__progress-val">${totalAprobadas}<span>/${totalAreas}</span></div>
+                  <div class="equipo-revisor__progress-lbl">áreas aprobadas</div>
+                </div>
+              ` : `
+                <div class="equipo-revisor__progress equipo-revisor__progress--standby">
+                  <div class="equipo-revisor__progress-val equipo-revisor__progress-val--standby">—</div>
+                  <div class="equipo-revisor__progress-lbl">aún sin asignar</div>
+                </div>
+              `}
             </div>
             <div class="equipo-revisor__grid">
               ${equipoEnriquecido.map(({ r, misAreas, aprobadas, enRevision, pendientes, devueltas }) => {
@@ -163,6 +220,11 @@
                 if (pendientes > 0) stateBits.push(`<span class="rev-stat rev-stat--mute">${pendientes} pendiente${pendientes===1?'':'s'}</span>`);
                 const pct = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
                 const isGeneral = r.especialidades?.includes('general');
+                /* Cuando el equipo NO está activo, mostrar las áreas que LE TOCARÁN
+                   en lugar de "Sin áreas". Más informativo + revela el modelo. */
+                const areasPreview = isGeneral
+                  ? ['Documentación general']
+                  : (r.especialidades || []);
                 return `
                   <div class="equipo-revisor-card-item ${total === 0 ? 'is-idle' : ''}">
                     <div class="equipo-revisor-card-item__top">
@@ -173,7 +235,9 @@
                       </div>
                     </div>
                     <div class="equipo-revisor-card-item__meta">
-                      ${total === 0 ? '<span class="rev-stat rev-stat--mute">Sin áreas en este proyecto</span>' : stateBits.join('')}
+                      ${total === 0
+                        ? `<span class="rev-stat rev-stat--mute">${equipoActivo ? 'Sin áreas en este proyecto' : `Cubrirá: ${areasPreview.length} área${areasPreview.length===1?'':'s'}`}</span>`
+                        : stateBits.join('')}
                     </div>
                     ${total > 0 ? `<div class="equipo-revisor-card-item__bar"><span style="width:${pct}%"></span></div>` : ''}
                   </div>`;

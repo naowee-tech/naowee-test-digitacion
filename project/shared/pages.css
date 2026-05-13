@@ -3191,6 +3191,107 @@ body > .naowee-dropdown__menu.is-open {
 .rev-stat--warn { background: #fff3e6; color: #b45309; }
 .rev-stat--mute { background: rgba(0,0,0,.05); color: var(--text-secondary); }
 
+/* ═══ Revisor flow timeline + mensaje contextual (admin/proyecto-detalle) ═══
+   Visualiza las 4 fases del proceso de revisión y muestra DÓNDE está el
+   proyecto. Resuelve la confusión "¿cuándo se asignan los revisores?". */
+.rev-flow-timeline {
+  display: flex; align-items: center; gap: 0;
+  padding: 14px 22px 18px;
+  border-bottom: 1px solid var(--border);
+  margin: -20px -22px 16px;
+  background: linear-gradient(180deg, #fafbfd 0%, #fff 100%);
+}
+.rev-flow-timeline__step {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.rev-flow-timeline__dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #fff; border: 1.5px solid var(--border-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: var(--text-secondary);
+  transition: all .2s;
+}
+.rev-flow-timeline__step.is-done .rev-flow-timeline__dot {
+  background: var(--green); border-color: var(--green); color: #fff;
+}
+.rev-flow-timeline__step.is-active .rev-flow-timeline__dot {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+  box-shadow: 0 0 0 4px rgba(215,64,9,.15);
+}
+.rev-flow-timeline__pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #fff;
+  animation: revFlowPulse 1.4s ease-in-out infinite;
+}
+@keyframes revFlowPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(.6); opacity: .6; }
+}
+.rev-flow-timeline__lbl {
+  font-size: 10.5px; font-weight: 600; color: var(--text-secondary);
+  letter-spacing: .2px; white-space: nowrap; text-align: center;
+}
+.rev-flow-timeline__step.is-done .rev-flow-timeline__lbl,
+.rev-flow-timeline__step.is-active .rev-flow-timeline__lbl {
+  color: var(--text-primary); font-weight: 700;
+}
+.rev-flow-timeline__line {
+  flex: 1; height: 2px;
+  background: var(--border-dark);
+  margin: 0 8px; margin-bottom: 22px;
+  border-radius: 1px;
+  transition: background .3s;
+}
+.rev-flow-timeline__line.is-done {
+  background: var(--green);
+}
+
+/* Mensaje contextual: explica QUÉ pasa en este momento del flujo */
+.rev-flow-message {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+  font-size: 12.5px; line-height: 1.5;
+}
+.rev-flow-message--standby {
+  background: #fff8ee;
+  border: 1px solid #ffe0b3;
+  color: #7a4a00;
+}
+.rev-flow-message--active {
+  background: #ecf7ee;
+  border: 1px solid #b7dfb9;
+  color: #0e5a2a;
+}
+.rev-flow-message__icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.rev-flow-message--standby .rev-flow-message__icon {
+  background: var(--accent); color: #fff;
+}
+.rev-flow-message--active .rev-flow-message__icon {
+  background: var(--green); color: #fff;
+}
+.rev-flow-message__text strong { font-weight: 700; }
+
+/* Equipo revisor: separación visual + variante standby para el progress */
+.equipo-revisor-card {
+  margin-bottom: 18px;
+}
+.equipo-revisor__progress--standby {
+  opacity: .55;
+}
+.equipo-revisor__progress-val--standby {
+  color: var(--text-secondary) !important;
+  font-size: 22px;
+}
+
 /* ═══ "Mi carga" block (revisor/dashboard) ═══
    Tarjeta de carga personal del revisor activo — destacada con borde
    accent y bg cálido para distinguirla de los KPIs globales abajo. */

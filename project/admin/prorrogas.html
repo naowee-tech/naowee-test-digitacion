@@ -9,58 +9,98 @@
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/pages.css?v=20260513o">
 <style>
-  .prorroga-list {
-    display: flex; flex-direction: column; gap: 12px;
+  /* ─── Tabs locales (mismo patrón que admin/usuarios.html) ─── */
+  .prorroga-tabs {
+    display: flex; gap: 4px;
+    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 22px;
   }
-  .prorroga-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 18px 20px;
-    display: grid; grid-template-columns: 1fr auto; gap: 16px;
-    align-items: start;
+  .prorroga-tab {
+    appearance: none; background: transparent; border: 0;
+    padding: 12px 18px;
+    font: inherit; font-size: 13.5px; font-weight: 600;
+    color: var(--text-secondary); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-bottom: -1.5px;
   }
-  .prorroga-card--pendiente { border-left: 3px solid var(--accent); }
-  .prorroga-card--aprobada  { border-left: 3px solid var(--green); }
-  .prorroga-card--rechazada { border-left: 3px solid #b42318; }
-  .prorroga-card__main { min-width: 0; }
-  .prorroga-card__header {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    margin-bottom: 6px;
+  .prorroga-tab:hover { color: var(--text-primary); }
+  .prorroga-tab.is-active {
+    color: var(--accent); border-bottom-color: var(--accent);
   }
-  .prorroga-card__title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-  .prorroga-card__id {
-    font-size: 11.5px; color: var(--text-secondary);
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  .prorroga-tab__count {
+    background: var(--orange-bg); color: var(--accent);
+    font-size: 10.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
   }
-  .prorroga-card__motivo {
-    font-size: 13px; color: var(--text-primary);
-    margin: 8px 0 6px; line-height: 1.5;
-    padding: 10px 12px; background: #fafbfd;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-  }
-  .prorroga-card__meta {
-    font-size: 11.5px; color: var(--text-secondary);
-    display: flex; gap: 14px; flex-wrap: wrap;
-  }
-  .prorroga-card__actions {
-    display: flex; flex-direction: column; gap: 8px; min-width: 140px;
-  }
-  .prorroga-card__action {
-    border: 0; padding: 8px 14px; border-radius: var(--radius-md);
-    font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
-    transition: all .15s;
-  }
-  .prorroga-card__action--approve { background: var(--green); color: #fff; }
-  .prorroga-card__action--approve:hover { background: #166f30; }
-  .prorroga-card__action--reject {
-    background: transparent; color: #b42318; border: 1px solid #ffc4bb;
-  }
-  .prorroga-card__action--reject:hover { background: #fff0ee; }
-  .prorroga-card__resolved {
-    font-size: 12px; color: var(--text-secondary); margin-top: 6px;
+  .prorroga-panel { display: none; animation: tabFadeIn .25s ease both; }
+  .prorroga-panel.is-active { display: block; }
+  @keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Modal de confirmación con campo de comentario opcional */
+  /* Celdas de tabla específicas */
+  .pr-cell-proyecto { min-width: 220px; }
+  .pr-cell-proyecto__title {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+  }
+  .pr-cell-proyecto__id {
+    font-size: 11px; color: var(--text-secondary);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    margin-top: 2px;
+  }
+  .pr-cell-motivo {
+    max-width: 360px;
+    font-size: 12.5px; color: var(--text-primary);
+    line-height: 1.45;
+  }
+  .pr-cell-motivo__truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pr-cell-comentario {
+    max-width: 280px;
+    font-size: 12px; color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.45;
+  }
+  .pr-cell-fecha {
+    font-size: 12px; color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .pr-cell-acciones {
+    display: flex; gap: 6px; justify-content: flex-end;
+  }
+  .pr-action-btn {
+    border: 0; padding: 6px 12px; border-radius: var(--radius-md);
+    font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .pr-action-btn--approve { background: var(--green); color: #fff; }
+  .pr-action-btn--approve:hover { background: #166f30; }
+  .pr-action-btn--reject {
+    background: transparent; color: #b42318; border: 1px solid #ffc4bb;
+  }
+  .pr-action-btn--reject:hover { background: #fff0ee; }
+
+  .pr-empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-secondary);
+  }
+  .pr-empty__title {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .pr-empty__msg { font-size: 13px; }
+
+  /* Modal de confirmación con campo de comentario */
   .pr-resolve-overlay {
     position: fixed; inset: 0; z-index: 1100;
     background: rgba(15, 17, 35, .55);
@@ -116,14 +156,21 @@
     return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  function badgeEstado(estado) {
+    const map = {
+      pendiente: { v: 'caution',  l: 'Pendiente' },
+      aprobada:  { v: 'positive', l: 'Aprobada' },
+      rechazada: { v: 'negative', l: 'Rechazada' }
+    };
+    const s = map[estado] || map.pendiente;
+    return `<span class="naowee-badge naowee-badge--${s.v} naowee-badge--quiet">${s.l}</span>`;
+  }
+
   function render() {
     const todas = ProjectData.getProyectos()
       .filter(p => !!p.prorrogaRBI)
-      .sort((a, b) => {
-        const order = { pendiente: 0, aprobada: 1, rechazada: 2 };
-        return order[a.prorrogaRBI.estado] - order[b.prorrogaRBI.estado]
-            || new Date(b.prorrogaRBI.solicitadaEn) - new Date(a.prorrogaRBI.solicitadaEn);
-      });
+      .sort((a, b) => new Date(b.prorrogaRBI.solicitadaEn) - new Date(a.prorrogaRBI.solicitadaEn));
+
     const pendientes = todas.filter(p => p.prorrogaRBI.estado === 'pendiente');
     const resueltas  = todas.filter(p => p.prorrogaRBI.estado !== 'pendiente');
 
@@ -136,66 +183,141 @@
           </div>
         </div>
 
-        ${todas.length === 0 ? `
-          <div class="naowee-empty-state">
-            <div class="naowee-empty-state__title">Sin solicitudes</div>
-            <div class="naowee-empty-state__msg">Cuando un revisor solicite tiempo extra, aparecerá aquí.</div>
+        <div class="naowee-card" style="padding:18px">
+          <div class="prorroga-tabs">
+            <button type="button" class="prorroga-tab is-active" data-panel="pendientes">
+              Pendientes
+              <span class="prorroga-tab__count">${pendientes.length}</span>
+            </button>
+            <button type="button" class="prorroga-tab" data-panel="historial">
+              Historial
+              <span class="prorroga-tab__count">${resueltas.length}</span>
+            </button>
           </div>
-        ` : `
-          ${pendientes.length > 0 ? `
-            <h2 style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin:24px 0 10px">Pendientes (${pendientes.length})</h2>
-            <div class="prorroga-list">
-              ${pendientes.map(p => renderCard(p)).join('')}
-            </div>
-          ` : ''}
-          ${resueltas.length > 0 ? `
-            <h2 style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 10px">Historial (${resueltas.length})</h2>
-            <div class="prorroga-list">
-              ${resueltas.map(p => renderCard(p)).join('')}
-            </div>
-          ` : ''}
-        `}
-      </div>
-    `;
 
-    bindCardActions();
-  }
+          <div class="prorroga-panel is-active" data-panel="pendientes">
+            ${pendientes.length === 0 ? `
+              <div class="pr-empty">
+                <div class="pr-empty__title">Sin solicitudes pendientes</div>
+                <div class="pr-empty__msg">Cuando un revisor solicite tiempo extra, aparecerá aquí.</div>
+              </div>
+            ` : `
+              <div class="naowee-table-card__table-wrap">
+                <table class="naowee-table--in-card">
+                  <thead>
+                    <tr>
+                      <th>Proyecto</th>
+                      <th>Municipio</th>
+                      <th>Solicitada</th>
+                      <th>Motivo</th>
+                      <th style="text-align:right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${pendientes.map(p => renderRowPendiente(p)).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
 
-  function renderCard(p) {
-    const pr = p.prorrogaRBI;
-    const pendiente = pr.estado === 'pendiente';
-    return `
-      <div class="prorroga-card prorroga-card--${pr.estado}">
-        <div class="prorroga-card__main">
-          <div class="prorroga-card__header">
-            <span class="prorroga-card__title">${p.nombre}</span>
-            <span class="prorroga-card__id">${p.idUnico}</span>
-            <span class="naowee-badge naowee-badge--${pendiente ? 'caution' : pr.estado === 'aprobada' ? 'positive' : 'negative'} naowee-badge--quiet">${pendiente ? 'Pendiente' : pr.estado === 'aprobada' ? 'Aprobada' : 'Rechazada'}</span>
+          <div class="prorroga-panel" data-panel="historial">
+            ${resueltas.length === 0 ? `
+              <div class="pr-empty">
+                <div class="pr-empty__title">Sin historial</div>
+                <div class="pr-empty__msg">Las solicitudes resueltas se archivarán aquí.</div>
+              </div>
+            ` : `
+              <div class="naowee-table-card__table-wrap">
+                <table class="naowee-table--in-card">
+                  <thead>
+                    <tr>
+                      <th>Proyecto</th>
+                      <th>Municipio</th>
+                      <th>Estado</th>
+                      <th>Resuelta</th>
+                      <th>Comentario admin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${resueltas.map(p => renderRowHistorial(p)).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
           </div>
-          <div class="prorroga-card__motivo">${pr.motivo || '<em style="color:var(--text-secondary)">Sin motivo registrado</em>'}</div>
-          <div class="prorroga-card__meta">
-            <span>📅 Solicitada ${fechaCorta(pr.solicitadaEn)}</span>
-            <span>🏛️ ${p.municipio}, ${p.departamento}</span>
-            <span>📁 ${p.radicado}</span>
-          </div>
-          ${!pendiente ? `
-            <div class="prorroga-card__resolved">
-              ${pr.estado === 'aprobada' ? '✓ Concedidos 15 días hábiles extra' : '✗ Rechazada'} · ${fechaCorta(pr.resueltaEn)}
-              ${pr.comentario ? ` · "${pr.comentario}"` : ''}
-            </div>
-          ` : ''}
         </div>
-        ${pendiente ? `
-          <div class="prorroga-card__actions">
-            <button type="button" class="prorroga-card__action prorroga-card__action--approve" data-resolve="${p.idUnico}" data-decision="aprobada">Aprobar</button>
-            <button type="button" class="prorroga-card__action prorroga-card__action--reject" data-resolve="${p.idUnico}" data-decision="rechazada">Rechazar</button>
-          </div>
-        ` : ''}
       </div>
+    `;
+
+    bindTabs();
+    bindRowActions();
+  }
+
+  function renderRowPendiente(p) {
+    const pr = p.prorrogaRBI;
+    return `
+      <tr>
+        <td>
+          <div class="pr-cell-proyecto">
+            <div class="pr-cell-proyecto__title">${p.nombre}</div>
+            <div class="pr-cell-proyecto__id">${p.idUnico}</div>
+          </div>
+        </td>
+        <td>
+          <div style="font-size:13px;color:var(--text-primary)">${p.municipio}</div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${p.departamento}</div>
+        </td>
+        <td><span class="pr-cell-fecha">${fechaCorta(pr.solicitadaEn)}</span></td>
+        <td>
+          <div class="pr-cell-motivo pr-cell-motivo__truncated" title="${(pr.motivo || '').replace(/"/g, '&quot;')}">${pr.motivo || '<em style="color:var(--text-secondary)">Sin motivo</em>'}</div>
+        </td>
+        <td>
+          <div class="pr-cell-acciones">
+            <button type="button" class="pr-action-btn pr-action-btn--approve" data-resolve="${p.idUnico}" data-decision="aprobada">Aprobar</button>
+            <button type="button" class="pr-action-btn pr-action-btn--reject" data-resolve="${p.idUnico}" data-decision="rechazada">Rechazar</button>
+          </div>
+        </td>
+      </tr>
     `;
   }
 
-  function bindCardActions() {
+  function renderRowHistorial(p) {
+    const pr = p.prorrogaRBI;
+    return `
+      <tr>
+        <td>
+          <div class="pr-cell-proyecto">
+            <div class="pr-cell-proyecto__title">${p.nombre}</div>
+            <div class="pr-cell-proyecto__id">${p.idUnico}</div>
+          </div>
+        </td>
+        <td>
+          <div style="font-size:13px;color:var(--text-primary)">${p.municipio}</div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${p.departamento}</div>
+        </td>
+        <td>${badgeEstado(pr.estado)}</td>
+        <td><span class="pr-cell-fecha">${fechaCorta(pr.resueltaEn)}</span></td>
+        <td>
+          <div class="pr-cell-comentario" title="${(pr.comentario || '').replace(/"/g, '&quot;')}">${pr.comentario || '<span style="color:var(--text-secondary);font-style:normal">—</span>'}</div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function bindTabs() {
+    const tabs = document.querySelectorAll('.prorroga-tab');
+    const panels = document.querySelectorAll('.prorroga-panel');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        const key = t.dataset.panel;
+        tabs.forEach(x => x.classList.toggle('is-active', x === t));
+        panels.forEach(pp => pp.classList.toggle('is-active', pp.dataset.panel === key));
+      });
+    });
+  }
+
+  function bindRowActions() {
     document.querySelectorAll('[data-resolve]').forEach(btn => {
       btn.addEventListener('click', () => openResolveDialog(btn.dataset.resolve, btn.dataset.decision));
     });

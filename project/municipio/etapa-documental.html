@@ -23,6 +23,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260513e';
   import { ESTADOS_DOC, ESTADOS_AREA, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'documentos' });
 
@@ -166,17 +167,24 @@
         return existente || { ...plt, estado: 'pendiente', archivo: null };
       });
       const totalGeneral = docsGeneralVista.length;
+      /* Carga (lo que el municipio controla) vs Aprobación (lo que el revisor controla).
+         La barra de progreso usa CARGA — refleja avance del municipio en tiempo real.
+         "Cargado" = tiene archivo O estado distinto de 'pendiente' (cubre datos legacy
+         del seed que tienen estado aprobado/en_revision sin archivo explícito). */
+      const cargadosGen = docsGeneralVista.filter(d => !!d.archivo || d.estado !== 'pendiente').length;
       const aprobadosGen = docsGeneralVista.filter(d => d.estado === 'aprobado').length;
-      const pendientesGen = docsGeneralVista.filter(d => d.estado === 'pendiente' || !d.archivo).length;
-      const pctGen = Math.round((aprobadosGen / totalGeneral) * 100);
+      const pendientesGen = totalGeneral - cargadosGen;
+      const pctGen = Math.round((cargadosGen / totalGeneral) * 100);
 
       const areas = p.docsTecnica.areas;
       const totalAreas = areas.length;
+      /* Cargadas = no están en 'pendiente' (ya tienen archivo/checklist iniciado) */
+      const cargadasAr = areas.filter(a => a.estado !== 'pendiente').length;
       const aprobadasAr = areas.filter(a => a.estado === 'aprobado').length;
       const enRevisionAr = areas.filter(a => a.estado === 'en_revision').length;
       const devueltasAr = areas.filter(a => a.estado === 'devuelto').length;
-      const pendientesAr = areas.filter(a => a.estado === 'pendiente').length;
-      const pctTec = Math.round((aprobadasAr / totalAreas) * 100);
+      const pendientesAr = totalAreas - cargadasAr;
+      const pctTec = Math.round((cargadasAr / totalAreas) * 100);
 
       pageContent.innerHTML = `
         <div class="page-fade-in">
@@ -213,20 +221,21 @@
                 <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
               </div>
             </div>
-            <!-- Cenefa de progreso global edge-to-edge -->
+            <!-- Cenefa de progreso global edge-to-edge — carga del municipio -->
             <div class="hero-cenefa hero-cenefa--documental">
               <div style="display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap">
-                <div style="display:flex;align-items:baseline;gap:6px">
-                  <span style="font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${Math.round((aprobadosGen + aprobadasAr) / (totalGeneral + totalAreas) * 100)}%</span>
-                  <span style="font-size:12px;color:var(--text-secondary)">progreso documental</span>
+                <div style="display:flex;align-items:baseline;gap:6px" title="Avance de carga del municipio. La aprobación la hace el equipo revisor del Ministerio.">
+                  <span style="font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${Math.round((cargadosGen + cargadasAr) / (totalGeneral + totalAreas) * 100)}%</span>
+                  <span style="font-size:12px;color:var(--text-secondary)">cargado</span>
                 </div>
                 <div style="flex:1;min-width:200px;height:6px;background:var(--grey-bg,#f5f6fa);border-radius:999px;overflow:hidden">
-                  <span style="display:block;height:100%;width:${Math.round((aprobadosGen + aprobadasAr) / (totalGeneral + totalAreas) * 100)}%;background:linear-gradient(90deg,var(--accent),#ff8a3d);border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1)"></span>
+                  <span style="display:block;height:100%;width:${Math.round((cargadosGen + cargadasAr) / (totalGeneral + totalAreas) * 100)}%;background:linear-gradient(90deg,var(--accent),#ff8a3d);border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1)"></span>
                 </div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:700">
-                <span class="naowee-badge naowee-badge--informative naowee-badge--quiet"><span class="naowee-badge__dot"></span>${aprobadosGen}/${totalGeneral} generales</span>
-                <span class="naowee-badge naowee-badge--brand naowee-badge--quiet"><span class="naowee-badge__dot"></span>${aprobadasAr}/${totalAreas} áreas técnicas</span>
+                <span class="naowee-badge naowee-badge--informative naowee-badge--quiet" title="${cargadosGen} de ${totalGeneral} documentos generales subidos · ${aprobadosGen} aprobados"><span class="naowee-badge__dot"></span>${cargadosGen}/${totalGeneral} generales</span>
+                <span class="naowee-badge naowee-badge--brand naowee-badge--quiet" title="${cargadasAr} de ${totalAreas} áreas técnicas iniciadas · ${aprobadasAr} aprobadas"><span class="naowee-badge__dot"></span>${cargadasAr}/${totalAreas} áreas técnicas</span>
+                ${aprobadosGen > 0 || aprobadasAr > 0 ? `<span class="naowee-badge naowee-badge--positive naowee-badge--quiet" title="Aprobados por el equipo revisor del Ministerio"><span class="naowee-badge__dot"></span>${aprobadosGen + aprobadasAr} aprobados</span>` : ''}
               </div>
             </div>
           </div>
@@ -234,8 +243,8 @@
           <!-- ═══ Card unificada con tabs DS ═══ -->
           <div class="naowee-card proj-tabs-card">
             <div class="naowee-tabs naowee-tabs--animated" role="tablist">
-              <button class="naowee-tab naowee-tab--selected" data-tab="general" role="tab" type="button">Documentación general <span class="tab-count">${aprobadosGen}/${totalGeneral}</span></button>
-              <button class="naowee-tab" data-tab="tecnica" role="tab" type="button">Documentación técnica <span class="tab-count">${aprobadasAr}/${totalAreas}</span></button>
+              <button class="naowee-tab naowee-tab--selected" data-tab="general" role="tab" type="button">Documentación general <span class="tab-count">${cargadosGen}/${totalGeneral}</span></button>
+              <button class="naowee-tab" data-tab="tecnica" role="tab" type="button">Documentación técnica <span class="tab-count">${cargadasAr}/${totalAreas}</span></button>
               <span class="naowee-tabs__indicator"></span>
             </div>
 
@@ -247,8 +256,9 @@
                   <div style="font-size:12.5px;color:var(--text-secondary);margin-top:2px">Documentos básicos del proyecto (Res. 933 Art. 1 y 2) · un único revisor del Ministerio aprueba o rechaza cada uno</div>
                 </div>
                 <div style="display:flex;gap:6px">
-                  <span class="naowee-badge naowee-badge--positive naowee-badge--quiet"><span class="naowee-badge__dot"></span>${aprobadosGen} aprobados</span>
-                  <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet"><span class="naowee-badge__dot"></span>${pendientesGen} pendientes</span>
+                  <span class="naowee-badge naowee-badge--informative naowee-badge--quiet"><span class="naowee-badge__dot"></span>${cargadosGen} cargados</span>
+                  ${aprobadosGen > 0 ? `<span class="naowee-badge naowee-badge--positive naowee-badge--quiet"><span class="naowee-badge__dot"></span>${aprobadosGen} aprobados</span>` : ''}
+                  ${pendientesGen > 0 ? `<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet"><span class="naowee-badge__dot"></span>${pendientesGen} por subir</span>` : ''}
                 </div>
               </div>
               <div class="ed-doc-list">
@@ -348,6 +358,8 @@
           inp.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            /* Buscar nombre del doc para el toast */
+            const plt = docsGeneralPlantilla.find(d => d.id === docId);
             ProjectData.setProyecto(p.idUnico, x => {
               const items = x.docsGeneral?.items || [];
               const idx = items.findIndex(i => i.id === docId);
@@ -356,7 +368,12 @@
               x.docsGeneral = { ...(x.docsGeneral || {}), items };
               return x;
             });
-            location.reload();
+            toast({
+              variant: 'positive',
+              title: 'Documento cargado',
+              message: `${plt?.nombre || 'Documento'} fue subido. El equipo revisor del Ministerio lo revisará.`
+            });
+            setTimeout(() => location.reload(), 600);
           };
           inp.click();
         });

@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260513l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513o">
 </head>
 <body>
 <div class="shell">
@@ -22,7 +22,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260513e';
+  import { mountShell } from '../shared/shell.js?v=20260513o';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
   ProjectData.setPerfil('municipio');
@@ -125,12 +125,8 @@
               })() : ''}
               ${p.estado === 'devuelta_subsanacion' ? `
                 <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-                  <a class="naowee-btn naowee-btn--mute naowee-btn--small" href="prorroga.html?id=${p.idUnico}">Solicitar prórroga</a>
                   <a class="naowee-btn naowee-btn--loud naowee-btn--small" href="subsanar.html?id=${p.idUnico}">Subsanar →</a>
                 </div>
-              ` : ''}
-              ${p.estado === 'etapa_documental' ? `
-                <a class="naowee-btn naowee-btn--loud naowee-btn--small" href="etapa-documental.html?id=${p.idUnico}" style="margin-top:14px">Ir al repositorio →</a>
               ` : ''}
             </div>
           </div>
@@ -279,7 +275,6 @@
                 `).join('')}
               </div>
               <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
-                <a class="naowee-btn naowee-btn--mute naowee-btn--small" href="prorroga.html?id=${p.idUnico}">Solicitar prórroga</a>
                 <a class="naowee-btn naowee-btn--loud naowee-btn--small" href="subsanar.html?id=${p.idUnico}">Subsanar →</a>
               </div>
             </div>

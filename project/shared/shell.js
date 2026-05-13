@@ -46,7 +46,8 @@ const MENUS = {
         section: 'Gestión',
         items: [
           { id: 'convocatorias',  label: 'Convocatorias',      icon: 'convocatoria', href: 'admin/convocatorias.html' },
-          { id: 'proyectos',      label: 'Proyectos recibidos',icon: 'proyecto',     href: 'admin/proyectos.html' }
+          { id: 'proyectos',      label: 'Proyectos recibidos',icon: 'proyecto',     href: 'admin/proyectos.html' },
+          { id: 'prorrogas',      label: 'Solicitudes de prórroga', icon: 'concepto', href: 'admin/prorrogas.html' }
         ]
       },
       {
@@ -78,12 +79,6 @@ const MENUS = {
           { id: 'convocatorias',  label: 'Convocatorias activas', icon: 'convocatoria', href: 'municipio/convocatorias.html' },
           { id: 'mis-proyectos',  label: 'Mis proyectos',         icon: 'proyecto',     href: 'municipio/proyectos.html' },
           { id: 'postular',       label: 'Postular proyecto',     icon: 'postular',     href: 'municipio/postular.html' }
-        ]
-      },
-      {
-        section: 'Documental',
-        items: [
-          { id: 'documentos',     label: 'Etapa documental',   icon: 'documentos',   href: 'municipio/etapa-documental.html' }
         ]
       }
     ]

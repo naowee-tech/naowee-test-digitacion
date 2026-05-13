@@ -7,8 +7,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260513l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513o">
 <style>
+  /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
+  .prorroga-widget { margin: 0 0 18px; }
+  .prorroga-empty {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px;
+    background: #fafbfd; border: 1px dashed var(--border-dark);
+    border-radius: var(--radius-md);
+  }
+  .prorroga-empty__main { flex: 1; }
+  .prorroga-empty__title { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+  .prorroga-empty__sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.45; }
+  .prorroga-empty__cta {
+    background: transparent; border: 1px solid var(--border-dark);
+    border-radius: var(--radius-md);
+    padding: 7px 14px; font: inherit; font-size: 12px; font-weight: 700;
+    color: var(--accent); cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .prorroga-empty__cta:hover { background: var(--orange-bg); border-color: var(--accent); }
+
   /* Plazo pill (mismo lenguaje que .plazo-inline pero como chip) */
   .plazo-pill {
     display: inline-flex; align-items: center; gap: 6px;
@@ -293,7 +314,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260513e';
+  import { mountShell } from '../shared/shell.js?v=20260513o';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
   import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260513k';
@@ -394,10 +415,12 @@
             <section class="rp-decision rp-decision--narrow">
               <div class="rp-decision__head">
                 <div>
-                  <div class="rp-decision__title">Decisión de revisión</div>
-                  <div class="rp-decision__sub">Toma una decisión sobre la postulación. Las acciones de devolución y rechazo requieren observaciones.</div>
+                  <div class="rp-decision__title">Decisión de revisión <span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-left:6px;vertical-align:middle">RBI</span></div>
+                  <div class="rp-decision__sub">Valida los <strong>Requisitos Básicos Indispensables</strong> de la postulación (Res. 933 Cap. I). Al aprobar, los anexos técnicos quedan habilitados para revisión por área.</div>
                 </div>
               </div>
+
+              <div id="prorrogaWidget" class="prorroga-widget"></div>
 
               <div class="rp-prio-wrap">
                 ${checkbox({ name: 'prioCheck', value: 'priorizado', label: 'Marcar como priorizado · zonas como Chocó tienen tiempos de revisión especiales', checked: !!p.priorizado })}
@@ -596,6 +619,118 @@
       /* Bind de los naowee-dropdown (Categoría / Tipo) */
       const obsForm = document.getElementById('obsForm');
       if (obsForm) bindDropdowns(obsForm);
+
+      /* v1.1 — Widget de prórroga RBI (solicitar al admin, esperar resolución) */
+      function renderProrrogaWidget() {
+        const widget = document.getElementById('prorrogaWidget');
+        if (!widget) return;
+        const pr = (ProjectData.getProyecto(p.idUnico) || p).prorrogaRBI;
+        if (!pr) {
+          widget.innerHTML = `
+            <div class="prorroga-empty">
+              <div class="prorroga-empty__main">
+                <div class="prorroga-empty__title">¿Necesitas más tiempo para revisar?</div>
+                <div class="prorroga-empty__sub">Puedes solicitar al admin 15 días hábiles extra <strong>una sola vez</strong>. Se aplica solo si la convocatoria sigue abierta.</div>
+              </div>
+              <button type="button" class="prorroga-empty__cta" id="btnSolicitarProrroga">Solicitar prórroga</button>
+            </div>
+          `;
+          document.getElementById('btnSolicitarProrroga').addEventListener('click', openProrrogaDialog);
+          return;
+        }
+        const variant = pr.estado === 'aprobada' ? 'positive'
+                      : pr.estado === 'rechazada' ? 'negative'
+                      : 'caution';
+        const titleMap = {
+          pendiente: 'Prórroga solicitada · esperando admin',
+          aprobada:  `Prórroga aprobada · 15 días hábiles extra`,
+          rechazada: 'Prórroga rechazada por admin'
+        };
+        const detail = pr.estado === 'pendiente'
+          ? `Motivo: ${pr.motivo || 'sin motivo'}`
+          : pr.comentario
+            ? `Comentario admin: ${pr.comentario}`
+            : `Resuelta el ${new Date(pr.resueltaEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+        widget.innerHTML = `
+          <div class="naowee-message naowee-message--${variant}" role="status">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+              <span class="naowee-message__title">${titleMap[pr.estado]}</span>
+            </div>
+            <div class="naowee-message__text">${detail}</div>
+          </div>
+        `;
+      }
+
+      function openProrrogaDialog() {
+        const overlay = document.createElement('div');
+        overlay.className = 'naowee-modal-overlay';
+        overlay.innerHTML = `
+          <div class="naowee-modal" style="max-width:480px">
+            <div class="naowee-modal__header">
+              <div class="naowee-modal__title">Solicitar prórroga RBI</div>
+              <div class="naowee-modal__subtitle">El admin debe aprobar tu solicitud.</div>
+            </div>
+            <div class="naowee-modal__body" style="display:flex;flex-direction:column;gap:14px">
+              <div class="naowee-message naowee-message--informative" role="status">
+                <div class="naowee-message__header">
+                  <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                  <span class="naowee-message__title">Tienes derecho a 15 días hábiles extra (una sola vez)</span>
+                </div>
+                <div class="naowee-message__text">Indica por qué necesitas más tiempo. El admin verá tu motivo y aprobará o rechazará la solicitud.</div>
+              </div>
+              <label class="naowee-textfield naowee-textfield--multiline">
+                <span class="naowee-textfield__label naowee-textfield__label--required">Motivo de la solicitud</span>
+                <div class="naowee-textfield__input-wrap" style="height:auto;padding:12px;align-items:flex-start">
+                  <textarea id="prMotivo" class="naowee-textfield__input" rows="4" maxlength="400" placeholder="Ej: La postulación requiere validar coordinación con la Secretaría de Planeación municipal..." style="resize:vertical;min-height:90px"></textarea>
+                </div>
+                <span class="naowee-helper"><span data-count>0</span> / 400 caracteres</span>
+              </label>
+            </div>
+            <div class="naowee-modal__footer">
+              <button type="button" class="naowee-btn naowee-btn--mute" data-pr-cancel>Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud" id="prSubmit" disabled>Enviar solicitud</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('is-open'), 10);
+        const motivoEl = overlay.querySelector('#prMotivo');
+        const submitBtn = overlay.querySelector('#prSubmit');
+        const countEl = overlay.querySelector('[data-count]');
+        motivoEl.addEventListener('input', () => {
+          countEl.textContent = motivoEl.value.length;
+          submitBtn.disabled = motivoEl.value.trim().length < 10;
+        });
+        const close = () => {
+          overlay.classList.remove('is-open');
+          setTimeout(() => overlay.remove(), 200);
+        };
+        overlay.querySelector('[data-pr-cancel]').addEventListener('click', close);
+        overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        submitBtn.addEventListener('click', () => {
+          const res = ProjectData.solicitarProrrogaRBI(p.idUnico, motivoEl.value.trim());
+          if (!res.ok) {
+            toast({ variant: 'caution', title: 'No se pudo solicitar', message: res.error === 'ya-solicitada' ? 'Ya hay una prórroga en curso para este proyecto.' : 'Intenta de nuevo.' });
+            return;
+          }
+          ProjectData.pushNotificacion({
+            perfil: 'admin',
+            tipo: 'prorroga',
+            titulo: 'Solicitud de prórroga RBI',
+            detalle: `${p.idUnico} · Revisor pide 15 días hábiles extra`
+          });
+          close();
+          renderProrrogaWidget();
+          toast({
+            variant: 'positive',
+            title: 'Solicitud enviada al admin',
+            message: 'Recibirás notificación cuando el admin apruebe o rechace.'
+          });
+        });
+      }
+
+      renderProrrogaWidget();
 
       /* Validación reactiva del botón "Confirmar acción":
          3 requeridos — Categoría, Tipo, Detalle (≥20 chars).

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Solicitudes de prórroga · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513o">
+<style>
+  .prorroga-list {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .prorroga-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    display: grid; grid-template-columns: 1fr auto; gap: 16px;
+    align-items: start;
+  }
+  .prorroga-card--pendiente { border-left: 3px solid var(--accent); }
+  .prorroga-card--aprobada  { border-left: 3px solid var(--green); }
+  .prorroga-card--rechazada { border-left: 3px solid #b42318; }
+  .prorroga-card__main { min-width: 0; }
+  .prorroga-card__header {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .prorroga-card__title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .prorroga-card__id {
+    font-size: 11.5px; color: var(--text-secondary);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .prorroga-card__motivo {
+    font-size: 13px; color: var(--text-primary);
+    margin: 8px 0 6px; line-height: 1.5;
+    padding: 10px 12px; background: #fafbfd;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+  }
+  .prorroga-card__meta {
+    font-size: 11.5px; color: var(--text-secondary);
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .prorroga-card__actions {
+    display: flex; flex-direction: column; gap: 8px; min-width: 140px;
+  }
+  .prorroga-card__action {
+    border: 0; padding: 8px 14px; border-radius: var(--radius-md);
+    font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: all .15s;
+  }
+  .prorroga-card__action--approve { background: var(--green); color: #fff; }
+  .prorroga-card__action--approve:hover { background: #166f30; }
+  .prorroga-card__action--reject {
+    background: transparent; color: #b42318; border: 1px solid #ffc4bb;
+  }
+  .prorroga-card__action--reject:hover { background: #fff0ee; }
+  .prorroga-card__resolved {
+    font-size: 12px; color: var(--text-secondary); margin-top: 6px;
+  }
+
+  /* Modal de confirmación con campo de comentario opcional */
+  .pr-resolve-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    animation: prFadeIn .22s ease forwards;
+  }
+  .pr-resolve-overlay.is-closing { animation: prFadeOut .2s ease forwards; }
+  @keyframes prFadeIn  { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes prFadeOut { from { opacity: 1 } to { opacity: 0 } }
+  .pr-resolve-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 460px; overflow: hidden;
+    box-shadow: 0 24px 60px -12px rgba(15,17,35,.35);
+    animation: prSlideIn .26s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes prSlideIn {
+    from { opacity: 0; transform: translateY(16px) scale(.97) }
+    to   { opacity: 1; transform: translateY(0) scale(1) }
+  }
+  .pr-resolve-modal__hero { padding: 20px 24px 12px; border-bottom: 1px solid var(--border); }
+  .pr-resolve-modal__title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  .pr-resolve-modal__sub   { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; line-height: 1.45; }
+  .pr-resolve-modal__body  { padding: 16px 24px; }
+  .pr-resolve-modal__footer {
+    padding: 14px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260513o';
+  import { toast } from '../shared/toast.js';
+
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'prorrogas' });
+
+  const pageContent = document.getElementById('pageContent');
+
+  function fechaCorta(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function render() {
+    const todas = ProjectData.getProyectos()
+      .filter(p => !!p.prorrogaRBI)
+      .sort((a, b) => {
+        const order = { pendiente: 0, aprobada: 1, rechazada: 2 };
+        return order[a.prorrogaRBI.estado] - order[b.prorrogaRBI.estado]
+            || new Date(b.prorrogaRBI.solicitadaEn) - new Date(a.prorrogaRBI.solicitadaEn);
+      });
+    const pendientes = todas.filter(p => p.prorrogaRBI.estado === 'pendiente');
+    const resueltas  = todas.filter(p => p.prorrogaRBI.estado !== 'pendiente');
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+        <div class="naowee-page-header">
+          <div class="naowee-page-header__main">
+            <h1>Solicitudes de prórroga</h1>
+            <p>El revisor RBI puede pedir 15 días hábiles extra al admin <strong>una sola vez</strong> por proyecto. Aprueba o rechaza cada solicitud para que el cronograma de revisión avance.</p>
+          </div>
+        </div>
+
+        ${todas.length === 0 ? `
+          <div class="naowee-empty-state">
+            <div class="naowee-empty-state__title">Sin solicitudes</div>
+            <div class="naowee-empty-state__msg">Cuando un revisor solicite tiempo extra, aparecerá aquí.</div>
+          </div>
+        ` : `
+          ${pendientes.length > 0 ? `
+            <h2 style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin:24px 0 10px">Pendientes (${pendientes.length})</h2>
+            <div class="prorroga-list">
+              ${pendientes.map(p => renderCard(p)).join('')}
+            </div>
+          ` : ''}
+          ${resueltas.length > 0 ? `
+            <h2 style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin:32px 0 10px">Historial (${resueltas.length})</h2>
+            <div class="prorroga-list">
+              ${resueltas.map(p => renderCard(p)).join('')}
+            </div>
+          ` : ''}
+        `}
+      </div>
+    `;
+
+    bindCardActions();
+  }
+
+  function renderCard(p) {
+    const pr = p.prorrogaRBI;
+    const pendiente = pr.estado === 'pendiente';
+    return `
+      <div class="prorroga-card prorroga-card--${pr.estado}">
+        <div class="prorroga-card__main">
+          <div class="prorroga-card__header">
+            <span class="prorroga-card__title">${p.nombre}</span>
+            <span class="prorroga-card__id">${p.idUnico}</span>
+            <span class="naowee-badge naowee-badge--${pendiente ? 'caution' : pr.estado === 'aprobada' ? 'positive' : 'negative'} naowee-badge--quiet">${pendiente ? 'Pendiente' : pr.estado === 'aprobada' ? 'Aprobada' : 'Rechazada'}</span>
+          </div>
+          <div class="prorroga-card__motivo">${pr.motivo || '<em style="color:var(--text-secondary)">Sin motivo registrado</em>'}</div>
+          <div class="prorroga-card__meta">
+            <span>📅 Solicitada ${fechaCorta(pr.solicitadaEn)}</span>
+            <span>🏛️ ${p.municipio}, ${p.departamento}</span>
+            <span>📁 ${p.radicado}</span>
+          </div>
+          ${!pendiente ? `
+            <div class="prorroga-card__resolved">
+              ${pr.estado === 'aprobada' ? '✓ Concedidos 15 días hábiles extra' : '✗ Rechazada'} · ${fechaCorta(pr.resueltaEn)}
+              ${pr.comentario ? ` · "${pr.comentario}"` : ''}
+            </div>
+          ` : ''}
+        </div>
+        ${pendiente ? `
+          <div class="prorroga-card__actions">
+            <button type="button" class="prorroga-card__action prorroga-card__action--approve" data-resolve="${p.idUnico}" data-decision="aprobada">Aprobar</button>
+            <button type="button" class="prorroga-card__action prorroga-card__action--reject" data-resolve="${p.idUnico}" data-decision="rechazada">Rechazar</button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  function bindCardActions() {
+    document.querySelectorAll('[data-resolve]').forEach(btn => {
+      btn.addEventListener('click', () => openResolveDialog(btn.dataset.resolve, btn.dataset.decision));
+    });
+  }
+
+  function openResolveDialog(proyectoId, decision) {
+    const p = ProjectData.getProyecto(proyectoId);
+    if (!p) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'pr-resolve-overlay';
+    overlay.innerHTML = `
+      <div class="pr-resolve-modal">
+        <div class="pr-resolve-modal__hero">
+          <div class="pr-resolve-modal__title">${decision === 'aprobada' ? '¿Aprobar prórroga?' : '¿Rechazar prórroga?'}</div>
+          <div class="pr-resolve-modal__sub">${p.nombre} · ${p.idUnico}<br>${decision === 'aprobada' ? 'Concederás 15 días hábiles extra al revisor RBI.' : 'El revisor seguirá con su plazo original de 15 días hábiles.'}</div>
+        </div>
+        <div class="pr-resolve-modal__body">
+          <label class="naowee-textfield naowee-textfield--multiline">
+            <span class="naowee-textfield__label">Comentario al revisor ${decision === 'rechazada' ? '<span style="color:#b42318">(recomendado)</span>' : '(opcional)'}</span>
+            <div class="naowee-textfield__input-wrap" style="height:auto;padding:12px;align-items:flex-start">
+              <textarea id="resolveComment" class="naowee-textfield__input" rows="3" maxlength="300" placeholder="${decision === 'aprobada' ? 'Ej: Aprobada por carga alta del periodo' : 'Ej: La convocatoria está por cerrar, prioriza la revisión'}" style="resize:vertical;min-height:70px"></textarea>
+            </div>
+          </label>
+        </div>
+        <div class="pr-resolve-modal__footer">
+          <button type="button" class="naowee-btn naowee-btn--mute" data-pr-cancel>Cancelar</button>
+          <button type="button" class="naowee-btn ${decision === 'aprobada' ? 'naowee-btn--loud' : 'naowee-btn--quiet'}" id="resolveConfirm" style="${decision === 'rechazada' ? 'background:#b42318 !important;border-color:#b42318 !important;color:#fff !important' : ''}">${decision === 'aprobada' ? 'Aprobar' : 'Rechazar'}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const close = () => {
+      overlay.classList.add('is-closing');
+      setTimeout(() => overlay.remove(), 200);
+    };
+    overlay.querySelector('[data-pr-cancel]').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.querySelector('#resolveConfirm').addEventListener('click', () => {
+      const comentario = overlay.querySelector('#resolveComment').value.trim();
+      const res = ProjectData.resolverProrrogaRBI(proyectoId, decision, comentario);
+      if (!res.ok) {
+        toast({ variant: 'caution', title: 'No se pudo resolver', message: 'La solicitud ya no está pendiente.' });
+        close();
+        return;
+      }
+      ProjectData.pushNotificacion({
+        perfil: 'revisor',
+        tipo: 'prorroga',
+        titulo: decision === 'aprobada' ? 'Prórroga RBI aprobada' : 'Prórroga RBI rechazada',
+        detalle: `${proyectoId} · ${decision === 'aprobada' ? `${res.diasExtra} días extra concedidos` : 'Solicitud rechazada'}`
+      });
+      close();
+      render();
+      toast({
+        variant: decision === 'aprobada' ? 'positive' : 'informative',
+        title: decision === 'aprobada' ? 'Prórroga aprobada' : 'Prórroga rechazada',
+        message: `Se notificó al revisor de ${proyectoId}.`
+      });
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>

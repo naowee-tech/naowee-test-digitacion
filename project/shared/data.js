@@ -1411,7 +1411,11 @@ const ProjectData = (() => {
      (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
      ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 4;
+  const SCHEMA_VERSION = 5;
+
+  /* v1.1 — Días extra que concede el admin cuando aprueba prórroga RBI.
+     Solo se puede solicitar UNA VEZ por proyecto. */
+  const PRORROGA_DIAS_EXTRA = 15;
 
   function load() {
     try {
@@ -1583,6 +1587,79 @@ const ProjectData = (() => {
 
   function addProyecto(p) {
     update(s => { s.proyectos.unshift(p); });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     v1.1 — Prórroga RBI (flujo nuevo, acta 13/05/2026 Danna)
+     ─────────────────────────────────────────────────────────────────
+     El revisor RBI puede solicitar al admin 15 días extra UNA SOLA VEZ
+     cuando se le va a vencer su plazo de revisión. El admin aprueba o
+     rechaza. Modelo:
+
+     proyecto.prorrogaRBI = {
+       estado: 'pendiente' | 'aprobada' | 'rechazada',
+       solicitadaEn: ISO,
+       motivo: string,
+       resueltaEn: ISO | null,
+       comentario: string | null,
+       resueltaPor: 'admin' | null
+     }
+     ═══════════════════════════════════════════════════════════════════ */
+
+  function solicitarProrrogaRBI(proyectoId, motivo) {
+    const p = getProyecto(proyectoId);
+    if (!p) return { ok: false, error: 'proyecto-no-encontrado' };
+    if (p.prorrogaRBI) return { ok: false, error: 'ya-solicitada' };
+    setProyecto(proyectoId, prev => ({
+      ...prev,
+      prorrogaRBI: {
+        estado: 'pendiente',
+        solicitadaEn: new Date().toISOString(),
+        motivo: (motivo || '').trim(),
+        resueltaEn: null,
+        comentario: null,
+        resueltaPor: null
+      }
+    }));
+    pushHistorial(proyectoId, {
+      actor: 'revisor',
+      evento: 'Prórroga RBI solicitada al admin · ' + (motivo || 'sin motivo'),
+      estado: getProyecto(proyectoId).estado
+    });
+    return { ok: true };
+  }
+
+  function resolverProrrogaRBI(proyectoId, decision, comentario) {
+    /* decision: 'aprobada' | 'rechazada' */
+    const p = getProyecto(proyectoId);
+    if (!p?.prorrogaRBI || p.prorrogaRBI.estado !== 'pendiente') {
+      return { ok: false, error: 'no-pendiente' };
+    }
+    if (decision !== 'aprobada' && decision !== 'rechazada') {
+      return { ok: false, error: 'decision-invalida' };
+    }
+    setProyecto(proyectoId, prev => ({
+      ...prev,
+      prorrogaRBI: {
+        ...prev.prorrogaRBI,
+        estado: decision,
+        resueltaEn: new Date().toISOString(),
+        comentario: (comentario || '').trim() || null,
+        resueltaPor: 'admin'
+      }
+    }));
+    pushHistorial(proyectoId, {
+      actor: 'admin',
+      evento: decision === 'aprobada'
+        ? `Prórroga RBI aprobada · ${PRORROGA_DIAS_EXTRA} días extra concedidos al revisor`
+        : 'Prórroga RBI rechazada por admin',
+      estado: getProyecto(proyectoId).estado
+    });
+    return { ok: true, diasExtra: decision === 'aprobada' ? PRORROGA_DIAS_EXTRA : 0 };
+  }
+
+  function getProyectosConProrrogaPendiente() {
+    return getProyectos().filter(p => p.prorrogaRBI?.estado === 'pendiente');
   }
 
   /* Pool de revisores técnicos del Ministerio (Res. 933 Art. 3) */
@@ -1783,6 +1860,8 @@ const ProjectData = (() => {
     load, save, reset, update,
     setPerfil, getPerfil, getPerfilData,
     getProyectos, getProyecto, setProyecto, addProyecto,
+    solicitarProrrogaRBI, resolverProrrogaRBI, getProyectosConProrrogaPendiente,
+    PRORROGA_DIAS_EXTRA,
     getRevisores, getRevisor, setRevisor, getRevisorActivo, getRevisorPorArea,
     AREA_TO_SPECIALTY, SLA_DIAS_REVISION,
     getUsuariosMunicipales, getUsuarioMunicipal,

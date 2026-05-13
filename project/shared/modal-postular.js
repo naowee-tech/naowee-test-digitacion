@@ -12,7 +12,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, formatoMoneda } from './states.js';
-import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260513n';
+import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260513o';
 import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -29,7 +29,53 @@ const STEPS = [
   { label: 'Datos del proyecto' },
   { label: 'Predio y financiación' },
   { label: 'Representante y carta' },
+  { label: 'Anexos técnicos' },
   { label: 'Revisar' }
+];
+
+/* v1.1 — Áreas técnicas Res. 933 Art. 3 + documentación general.
+   Cada área agrupa los anexos PDF que el municipio debe cargar al postular.
+   Antes vivían en municipio/etapa-documental.html; ahora vienen con la postulación. */
+const AREAS_ANEXOS = [
+  { id: 'general', ref: 'Res. 933 Art. 1 y 2', label: 'Documentación general del proyecto', docs: [
+    { id: 'mga',      label: 'Ficha MGA con BPIN',                  required: true },
+    { id: 'comite',   label: 'Concepto del Comité Municipal del Deporte', required: true },
+    { id: 'plano',    label: 'Plano de localización del predio',    required: true },
+    { id: 'cert',     label: 'Certificado de uso del suelo',         required: true }
+  ]},
+  { id: 'topografico', ref: 'Res. 933 Art. 3.1', label: 'Levantamiento topográfico', docs: [
+    { id: 'topo-plano',  label: 'Plano topográfico georreferenciado', required: true },
+    { id: 'topo-memoria', label: 'Memoria descriptiva del levantamiento', required: true }
+  ]},
+  { id: 'suelos', ref: 'Res. 933 Art. 3.2', label: 'Estudio de suelos', docs: [
+    { id: 'suelos-estudio', label: 'Estudio geotécnico firmado', required: true }
+  ]},
+  { id: 'arquitectonico', ref: 'Res. 933 Art. 3.3', label: 'Diseño arquitectónico', docs: [
+    { id: 'arq-planos',  label: 'Planos arquitectónicos (plantas, cortes, fachadas)', required: true },
+    { id: 'arq-memoria', label: 'Memoria descriptiva arquitectónica', required: true }
+  ]},
+  { id: 'estructural', ref: 'Res. 933 Art. 3.4', label: 'Diseño estructural', docs: [
+    { id: 'est-planos',   label: 'Planos estructurales', required: true },
+    { id: 'est-memoria',  label: 'Memoria de cálculo estructural', required: true },
+    { id: 'est-matricula', label: 'Matrícula profesional COPNIA del responsable', required: true }
+  ]},
+  { id: 'hidrosanitario', ref: 'Res. 933 Art. 3.5', label: 'Hidráulico, sanitario y RCI', docs: [
+    { id: 'hidro-planos',  label: 'Planos hidrosanitarios + red contra incendio', required: true },
+    { id: 'hidro-memoria', label: 'Memoria descriptiva hidráulica', required: true }
+  ]},
+  { id: 'electrico', ref: 'Res. 933 Art. 3.6', label: 'Diseño eléctrico (RETIE/RETILAP)', docs: [
+    { id: 'elec-planos',  label: 'Planos eléctricos (fuerza, iluminación, comunicaciones)', required: true },
+    { id: 'elec-memoria', label: 'Memoria de cálculo eléctrico', required: true }
+  ]},
+  { id: 'ambiental', ref: 'Res. 933 Art. 3.7', label: 'Manejo, riesgos y licencia ambiental', docs: [
+    { id: 'amb-plan', label: 'Plan de manejo ambiental', required: true },
+    { id: 'amb-riesgos', label: 'Evaluación de riesgos y vulnerabilidad', required: true }
+  ]},
+  { id: 'presupuesto', ref: 'Res. 933 Art. 3.8', label: 'Presupuesto integral', docs: [
+    { id: 'pres-detallado', label: 'Presupuesto detallado por capítulos', required: true },
+    { id: 'pres-apus',      label: 'Análisis de precios unitarios (APU)', required: true },
+    { id: 'pres-cronograma', label: 'Cronograma de obra', required: true }
+  ]}
 ];
 
 function renderStepperOficial() {
@@ -220,8 +266,47 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
             })}
           </div>
 
-          <!-- PASO 5 — Revisar -->
+          <!-- PASO 5 — Anexos técnicos (Res. 933 Art. 1, 2, 3) -->
           <div class="ai-step-panel" data-panel="5" hidden>
+            <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__title">Carga toda la documentación técnica ahora</span>
+              </div>
+              <div class="naowee-message__text">Desde el flujo nuevo (v1.1), los anexos por área se entregan al postular. El revisor de Requisitos Básicos Indispensables (RBI) los valida primero; al aprobar, el equipo técnico revisa cada área en paralelo.</div>
+            </div>
+            <div class="pm-anexos-list" data-anexos-list>
+              ${AREAS_ANEXOS.map((a, idx) => `
+                <details class="pm-anexo" data-anexo="${a.id}" ${idx === 0 ? 'open' : ''}>
+                  <summary class="pm-anexo__head">
+                    <span class="pm-anexo__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </span>
+                    <span class="pm-anexo__body">
+                      <span class="pm-anexo__title">${a.label}</span>
+                      <span class="pm-anexo__ref">${a.ref}</span>
+                    </span>
+                    <span class="pm-anexo__progress" data-progress="${a.id}">0/${a.docs.length}</span>
+                    <span class="pm-anexo__chevron" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                  </summary>
+                  <div class="pm-anexo__panel">
+                    ${a.docs.map(d => fileUpload({
+                      name: `anexo-${a.id}-${d.id}`,
+                      label: d.label,
+                      required: d.required,
+                      accept: '.pdf',
+                      maxSize: 20
+                    })).join('')}
+                  </div>
+                </details>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- PASO 6 — Revisar -->
+          <div class="ai-step-panel" data-panel="6" hidden>
             <div class="ai-section-title">Revisar antes de enviar</div>
             <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 18px">Verifica los datos antes de confirmar. Recibirás un radicado al enviar.</p>
             <div id="pmReviewBox"></div>
@@ -252,6 +337,30 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   bindFileUploads(form);
   /* Máscara numérica (miles/millones) en campos con data-mask="money" */
   bindMasksIn(form);
+
+  /* v1.1 — Actualizar contador "X/N cargados" en cada área de anexos.
+     Se llama cuando un file uploader del área cambia de estado. */
+  const updateAnexoProgress = () => {
+    AREAS_ANEXOS.forEach(a => {
+      const total = a.docs.length;
+      const cargados = a.docs.filter(d => {
+        const fu = form.querySelector(`.naowee-file-uploader[data-name="anexo-${a.id}-${d.id}"]`);
+        const state = fu?.dataset?.state;
+        return state === 'uploaded' || state === 'confirmed';
+      }).length;
+      const tag = form.querySelector(`[data-progress="${a.id}"]`);
+      if (tag) {
+        tag.textContent = `${cargados}/${total}`;
+        tag.classList.toggle('pm-anexo__progress--complete', cargados === total);
+      }
+    });
+  };
+  /* Escuchamos cambios en data-state del file uploader (lo cambia bindFileUploads). */
+  const obs = new MutationObserver(updateAnexoProgress);
+  form.querySelectorAll('.naowee-file-uploader[data-name^="anexo-"]').forEach(fu => {
+    obs.observe(fu, { attributes: true, attributeFilter: ['data-state'] });
+  });
+  updateAnexoProgress();
 
   /* NIT condicional según tipo de entidad: Resguardo Indígena y Consejo
      Comunitario no tienen NIT obligatorio (Juanma 13/05/2026). */
@@ -411,6 +520,18 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
             ? `<span style="display:inline-flex;align-items:center;gap:6px"><span style="color:var(--accent)">${pdfIcon}</span> ${carta.name} · ${(carta.size/1024).toFixed(0)} KB</span>`
             : '<span style="color:var(--text-secondary);font-style:italic">No adjunta</span>']
         ]
+      },
+      {
+        title: 'Anexos técnicos (Res. 933)',
+        rows: AREAS_ANEXOS.map(a => {
+          const cargados = a.docs.filter(d => fd.get(`anexo-${a.id}-${d.id}`)?.name).length;
+          const total = a.docs.length;
+          const completo = cargados === total;
+          return [
+            a.label,
+            `<span class="naowee-badge naowee-badge--${completo ? 'positive' : 'caution'} naowee-badge--quiet">${cargados}/${total} archivos</span>`
+          ];
+        })
       }
     ];
     overlay.querySelector('#pmReviewBox').innerHTML = renderReview(groups);
@@ -474,9 +595,23 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
       estado: 'presentado',
       priorizado: !!fd.get('esZomac') || !!fd.get('esPdet'),
       cartaIntencion: cartaFile?.name ? { name: cartaFile.name, size: cartaFile.size } : null,
+      /* v1.1 — Documentos técnicos por área (carga en paso 5 del wizard) */
+      documentos: AREAS_ANEXOS.flatMap(a =>
+        a.docs.map(d => {
+          const file = fd.get(`anexo-${a.id}-${d.id}`);
+          return file?.name ? {
+            id: `${a.id}-${d.id}`,
+            area: a.id,
+            nombre: d.label,
+            archivo: file.name,
+            size: file.size,
+            subidoEn: ahora
+          } : null;
+        }).filter(Boolean)
+      ),
       observaciones: [],
       historial: [
-        { ts: ahora, actor: 'municipio', evento: 'Postulación enviada', estado: 'presentado' },
+        { ts: ahora, actor: 'municipio', evento: 'Postulación enviada con anexos completos', estado: 'presentado' },
         { ts: ahora, actor: 'sistema', evento: `Radicado emitido: ${radicado}`, estado: 'presentado' }
       ],
       fechaPostulacion: ahora
@@ -505,12 +640,14 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
     if (title) title.textContent = 'Postulación enviada';
     if (subtitle) subtitle.textContent = `${conv.nombre} · Resolución 933 de 2024`;
 
+    const totalAnexos = nuevo.documentos?.length || 0;
     const notifications = [
       { label: `Radicado <strong>${radicado}</strong> emitido por el sistema`, actor: 'Sistema' },
-      { label: 'Equipo revisor del Ministerio notificado', actor: 'Notificaciones' },
-      { label: 'Postulación inscrita en la convocatoria',                actor: conv.id },
+      { label: 'Revisor RBI del Ministerio notificado', actor: 'Notificaciones' },
+      { label: 'Postulación inscrita en la convocatoria', actor: conv.id },
       ...(cartaFile?.name ? [{ label: `Carta de intención <strong>${cartaFile.name}</strong> adjuntada`, actor: 'Documentos' }] : []),
-      { label: 'Ciclo de revisión inicial de 30 días hábiles iniciado',  actor: 'Resolución 933' }
+      ...(totalAnexos ? [{ label: `<strong>${totalAnexos}</strong> anexos técnicos cargados con la postulación`, actor: 'Resolución 933' }] : []),
+      { label: 'Ciclo de revisión RBI de 15 días hábiles iniciado', actor: 'Resolución 933' }
     ];
 
     body.innerHTML = `
@@ -559,7 +696,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
             <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
             <span class="naowee-message__title">Siguiente paso</span>
           </div>
-          <div class="naowee-message__text">Tu postulación entró al ciclo de revisión inicial. Recibirás novedades en tu panel y por correo cuando el revisor emita concepto preliminar (favorable, devuelta a subsanación o rechazada).</div>
+          <div class="naowee-message__text">Tu postulación entró al ciclo de revisión de <strong>Requisitos Básicos Indispensables (RBI)</strong>. El revisor del Ministerio tiene 15 días hábiles para validarla. Si la aprueba, el equipo técnico revisará cada área en paralelo. Si la devuelve, podrás subsanar en 15 días hábiles.</div>
         </div>
       </div>
     `;

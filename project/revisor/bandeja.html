@@ -7,19 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260512p">
+<link rel="stylesheet" href="../shared/pages.css?v=20260513b">
 <style>
   /* Quitar elevation/sombra del table-card en esta página (DS aplica box-shadow por default) */
   .naowee-table-card { box-shadow: none !important; }
-  /* Plazo inline: icono reloj + texto, con color semántico (sin badge wrapper) */
-  .plazo-inline {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12.5px; font-weight: 600;
-    color: var(--text-secondary);
-  }
-  .plazo-inline svg { flex-shrink: 0; opacity: .8; }
-  .plazo-inline--urgent { color: #c54500; }
-  .plazo-inline--ok { color: var(--green); }
+  /* .plazo-inline canónico vive en shared/pages.css */
 
   /* ═══ Banner identidad del revisor activo ═══
        Muestra avatar + especialidades + carga personal agregada. */

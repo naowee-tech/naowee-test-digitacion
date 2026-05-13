@@ -602,6 +602,83 @@ function modalStyles() {
     .convo-step-panel .naowee-textfield,
     .convo-step-panel .naowee-dropdown,
     .convo-step-panel .naowee-datepicker-field { margin-bottom: 18px; }
+
+    /* ═══ Paso 4 · Áreas técnicas requeridas ═══ */
+    .convo-helper-block {
+      font-size: 12.5px; color: var(--text-secondary, #646587);
+      line-height: 1.5; margin: 0 0 16px 0;
+    }
+    .convo-helper-block strong { color: var(--text-primary, #282834); font-weight: 700; }
+    .convo-areas-grid {
+      display: grid; gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 720px) { .convo-areas-grid { grid-template-columns: 1fr; } }
+    .convo-area-card {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 12px; align-items: flex-start;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1.5px solid var(--border, #e7e9f3);
+      border-radius: var(--radius-md, 8px);
+      cursor: pointer;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      position: relative;
+    }
+    .convo-area-card:hover { border-color: var(--border-dark, #d0d4e6); }
+    .convo-area-card.is-checked {
+      border-color: var(--accent, #d74009);
+      background: var(--orange-bg, #fff3e6);
+    }
+    .convo-area-card--required {
+      border-color: var(--green, #15803d);
+      background: var(--green-bg, #e6f4e7);
+    }
+    .convo-area-card--required.is-checked {
+      border-color: var(--green, #15803d);
+      background: var(--green-bg, #e6f4e7);
+    }
+    .convo-area-card input[type="checkbox"] {
+      position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+    }
+    .convo-area-card__check {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: #fff; border: 1.5px solid var(--border-dark, #d0d4e6);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    .convo-area-card__check svg { width: 14px; height: 14px; opacity: 0; transition: opacity .15s; }
+    .convo-area-card.is-checked .convo-area-card__check {
+      background: var(--accent, #d74009);
+      border-color: var(--accent, #d74009);
+    }
+    .convo-area-card.is-checked .convo-area-card__check svg { opacity: 1; }
+    .convo-area-card--required .convo-area-card__check {
+      background: var(--green, #15803d);
+      border-color: var(--green, #15803d);
+    }
+    .convo-area-card--required .convo-area-card__check svg { opacity: 1; }
+    .convo-area-card__main { min-width: 0; }
+    .convo-area-card__title {
+      font-size: 13px; font-weight: 700; color: var(--text-primary, #282834);
+      line-height: 1.3;
+    }
+    .convo-area-card__ref {
+      font-size: 11px; color: var(--text-secondary, #646587);
+      margin-top: 3px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    .convo-area-card__rev {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border, #e7e9f3);
+    }
+    .convo-area-card--required .convo-area-card__rev,
+    .convo-area-card.is-checked .convo-area-card__rev {
+      border-top-color: rgba(0,0,0,.06);
+    }
     /* Inputs dentro de un grid no agregan margen extra */
     .convo-grid-2 > .naowee-textfield,
     .convo-grid-2 > .naowee-dropdown,
@@ -1130,6 +1207,84 @@ function stepCondiciones() {
   `;
 }
 
+/* ═══ Paso 4 · Revisión técnica (Juanma 13/05/2026 min 50:00) ═══
+   El admin define qué áreas técnicas requieren concepto en esta convocatoria.
+   Por default todas marcadas — el admin puede excluir si la convocatoria es
+   acotada (ej. solo iluminación → no requiere estudio de suelos).
+   Cada área muestra al responsable del pool de revisores. */
+const AREAS_REVISION_TECNICA = [
+  { id: 'topografico',    label: 'Levantamiento topográfico',          ref: 'Res. 933 Art. 3.1', revisorEspecialidad: 'topografico' },
+  { id: 'suelos',         label: 'Estudio de suelos',                  ref: 'Res. 933 Art. 3.2', revisorEspecialidad: 'suelos' },
+  { id: 'arquitectonico', label: 'Diseño arquitectónico',              ref: 'Res. 933 Art. 3.3', revisorEspecialidad: 'arquitectonico' },
+  { id: 'estructural',    label: 'Diseño estructural',                 ref: 'Res. 933 Art. 3.4', revisorEspecialidad: 'estructural' },
+  { id: 'hidrosanitario', label: 'Hidrosanitario y red contra incendios', ref: 'Res. 933 Art. 3.5', revisorEspecialidad: 'hidrosanitario' },
+  { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',   ref: 'Res. 933 Art. 3.6', revisorEspecialidad: 'electrico' },
+  { id: 'ambiental',      label: 'Manejo, riesgos y ambiental',        ref: 'Res. 933 Art. 3.7', revisorEspecialidad: 'ambiental' },
+  { id: 'presupuesto',    label: 'Presupuesto integral',               ref: 'Res. 933 Art. 3.8', revisorEspecialidad: 'presupuesto' }
+];
+
+function stepRevisionTecnica() {
+  /* Lazy: pool de revisores se resuelve en bind, no en render (para que el
+     SSR del innerHTML no falle si data.js todavía no cargó). */
+  return `
+    <h3 class="convo-section">Áreas técnicas requeridas</h3>
+    <p class="convo-helper-block">
+      Marca las áreas que requieren concepto técnico para esta convocatoria. Cuando un proyecto pase a etapa documental,
+      las áreas se asignan <strong>automáticamente</strong> al revisor responsable por especialidad. Puedes excluir áreas
+      si la convocatoria es acotada (ej. solo iluminación no requiere estudio de suelos).
+    </p>
+
+    <div class="convo-areas-grid" id="convoAreasGrid">
+      ${AREAS_REVISION_TECNICA.map((a, i) => `
+        <label class="convo-area-card" data-area="${a.id}">
+          <input type="checkbox" name="areasRequeridas" value="${a.id}" checked>
+          <div class="convo-area-card__check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="convo-area-card__main">
+            <div class="convo-area-card__title">${a.label}</div>
+            <div class="convo-area-card__ref">${a.ref}</div>
+            <div class="convo-area-card__rev" data-rev-slot="${a.revisorEspecialidad}">
+              <span style="color:var(--text-secondary);font-size:11px">Cargando responsable…</span>
+            </div>
+          </div>
+        </label>
+      `).join('')}
+    </div>
+
+    <h3 class="convo-section" style="margin-top:24px">Documentación general</h3>
+    <p class="convo-helper-block">
+      Aparte de las áreas técnicas, hay una <strong>documentación general</strong> del proyecto que también requiere
+      aprobación independiente (cartas, certificados, planos catastrales, etc.). La revisa el responsable de Doc. General.
+    </p>
+    <div class="convo-areas-grid">
+      <label class="convo-area-card convo-area-card--required" data-area="general">
+        <input type="checkbox" name="docGeneralRequerida" value="true" checked disabled>
+        <div class="convo-area-card__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="convo-area-card__main">
+          <div class="convo-area-card__title">Documentación general del proyecto</div>
+          <div class="convo-area-card__ref">Res. 933 Art. 1 y 2 · obligatoria · no se puede desactivar</div>
+          <div class="convo-area-card__rev" data-rev-slot="general">
+            <span style="color:var(--text-secondary);font-size:11px">Cargando responsable…</span>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">
+      <div class="naowee-message__header">
+        <span class="naowee-message__icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+        <span class="naowee-message__body">
+          <strong>Cobertura por especialidad.</strong> Cada revisor del pool tiene asignadas 1–2 especialidades fijas. Si una
+          especialidad no tiene revisor asignado, podrás definirlo desde el panel "Gestión de usuarios y áreas".
+        </span>
+      </div>
+    </div>
+  `;
+}
+
 /* ═══ Modal markup ═══ */
 function modalMarkup() {
   const codigoSugerido = nextCodigoConvocatoria();
@@ -1164,6 +1319,11 @@ function modalMarkup() {
             <span class="naowee-stepper__number">3</span>
             <span class="naowee-stepper__label">Condiciones y documentos</span>
           </div>
+          <div class="naowee-stepper__connector" data-after="3"></div>
+          <div class="naowee-stepper__step" data-step="4">
+            <span class="naowee-stepper__number">4</span>
+            <span class="naowee-stepper__label">Revisión técnica</span>
+          </div>
         </div>
 
         <div class="naowee-modal__body" id="convoModalBody">
@@ -1171,6 +1331,7 @@ function modalMarkup() {
             <div class="convo-step-panel is-active" data-panel="1">${stepIdentificacion()}</div>
             <div class="convo-step-panel" data-panel="2">${stepAlcance()}</div>
             <div class="convo-step-panel" data-panel="3">${stepCondiciones()}</div>
+            <div class="convo-step-panel" data-panel="4">${stepRevisionTecnica()}</div>
           </form>
         </div>
 
@@ -1978,7 +2139,7 @@ function validateStep(panel) {
 const checkSVGStepper = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>`;
 
 function goToStep(n, scope) {
-  const total = 3;
+  const total = 4; /* 4 pasos desde Sprint 2: Identificación, Alcance, Condiciones, Revisión técnica */
   if (n < 1 || n > total) return;
   /* Update stepper — clases oficiales DS naowee-stepper */
   const steps = scope.querySelectorAll('.naowee-stepper__step');
@@ -2147,6 +2308,31 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   /* ═══ File uploads — naowee-file-uploader DS oficial ═══ */
   overlay.querySelectorAll('.naowee-file-uploader').forEach(field => bindFileUpload(field));
 
+  /* ═══ Paso 4: resolver responsable de cada área desde el pool ═══
+     Inyecta el nombre + avatar del revisor que cubre cada especialidad. */
+  overlay.querySelectorAll('[data-rev-slot]').forEach(slot => {
+    const espec = slot.dataset.revSlot;
+    const r = ProjectData.getRevisorPorArea?.(espec);
+    if (r) {
+      slot.innerHTML = `
+        <span class="ava-ring" style="width:20px;height:20px;background:${r.color}22;color:${r.color};font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-right:6px;vertical-align:middle">${r.avatar}</span>
+        <span style="font-size:11.5px;color:var(--text-secondary)">Responsable: <strong style="color:var(--text-primary)">${r.nombre}</strong></span>
+      `;
+    } else {
+      slot.innerHTML = `<span style="font-size:11.5px;color:#b42318">⚠ Sin responsable asignado</span>`;
+    }
+  });
+
+  /* Bind del cambio de checkbox de áreas para animar el card */
+  overlay.querySelectorAll('input[name="areasRequeridas"]').forEach(inp => {
+    const card = inp.closest('.convo-area-card');
+    const sync = () => card.classList.toggle('is-checked', inp.checked);
+    inp.addEventListener('change', sync);
+    sync();
+  });
+  /* Forzar checked en el card "general" (visual) */
+  overlay.querySelectorAll('.convo-area-card--required').forEach(c => c.classList.add('is-checked'));
+
   /* Step navigation */
   let currentStep = 1;
   const next = () => {
@@ -2178,8 +2364,17 @@ export function openConvocatoriaModal({ onCreated } = {}) {
 
   /* Publish */
   overlay.querySelector('#convoStepPublish').addEventListener('click', () => {
-    const panel3 = overlay.querySelector('.convo-step-panel[data-panel="3"]');
-    if (!validateStep(panel3)) return;
+    /* Validar el paso 4 (último). Al publicar ya pasamos por 1, 2 y 3 en el flujo
+       step-by-step de "Continuar", así que solo revalidar el panel actual. */
+    const panel4 = overlay.querySelector('.convo-step-panel[data-panel="4"]');
+    if (!validateStep(panel4)) return;
+    /* Al menos UNA área técnica debe estar marcada (la doc general es obligatoria
+       y ya está fija). Si no hay ninguna seleccionada, mostrar error inline. */
+    const areasMarcadas = [...overlay.querySelectorAll('input[name="areasRequeridas"]:checked')];
+    if (areasMarcadas.length === 0) {
+      alert('Marca al menos un área técnica que requiera concepto en esta convocatoria.');
+      return;
+    }
 
     const form = document.getElementById('convocatoriaForm');
     const fd = new FormData(form);
@@ -2190,6 +2385,7 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     const cobertura = fd.get('cobertura') || 'Nacional';
     const departamentos = fd.getAll('departamentos');
     const municipiosTxt = (fd.get('municipios') || '').split(',').map(s => s.trim()).filter(Boolean);
+    const areasRequeridas = fd.getAll('areasRequeridas');
 
     const id = nextCodigoConvocatoria();
     const nueva = {
@@ -2208,6 +2404,8 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       tiposSolicitud,
       fasesProyecto,
       fuentes,
+      areasRequeridas, /* ids de áreas técnicas que requieren concepto · Sprint 2 */
+      docGeneralRequerida: true, /* siempre true por Res. 933 · disabled en UI */
       presupuestoTotal: parseInt(fd.get('presupuestoTotal')) || 0,
       montoMaximoProyecto: parseInt(fd.get('montoMaximoProyecto')) || 0,
       permiteSegunda: fd.get('permiteSegunda') === 'true',

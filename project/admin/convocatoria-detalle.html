@@ -144,6 +144,38 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Strip de configuración (antes era tab separado · Juanma min 43:00) -->
+        <div class="convo-config-strip">
+          <div class="convo-config-strip__item">
+            <span class="convo-config-strip__lbl">Presupuesto total</span>
+            <span class="convo-config-strip__val" style="color:var(--green)">${formatoMoneda(c.presupuestoTotal)}</span>
+          </div>
+          <div class="convo-config-strip__sep"></div>
+          <div class="convo-config-strip__item">
+            <span class="convo-config-strip__lbl">Tope por proyecto</span>
+            <span class="convo-config-strip__val">${formatoMoneda(c.montoMaximoProyecto)}</span>
+          </div>
+          <div class="convo-config-strip__sep"></div>
+          <div class="convo-config-strip__item">
+            <span class="convo-config-strip__lbl">Fuentes de cofinanciación</span>
+            <span class="convo-config-strip__val convo-config-strip__val--chips">
+              ${(c.fuentes || []).slice(0,2).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${f}</span>`).join('')}
+              ${(c.fuentes || []).length > 2 ? `<span class="convo-config-strip__more" title="${(c.fuentes || []).slice(2).join(' · ')}">+${(c.fuentes || []).length - 2}</span>` : ''}
+              ${(c.fuentes || []).length === 0 ? '<span style="color:var(--text-secondary)">—</span>' : ''}
+            </span>
+          </div>
+          <div class="convo-config-strip__sep"></div>
+          <div class="convo-config-strip__item">
+            <span class="convo-config-strip__lbl">Emisión de conceptos</span>
+            <span class="convo-config-strip__val">${formatoFecha(c.emisionConcepto)}</span>
+          </div>
+          <div class="convo-config-strip__sep"></div>
+          <div class="convo-config-strip__item">
+            <span class="convo-config-strip__lbl">2da convocatoria</span>
+            <span class="convo-config-strip__val">${c.permiteSegunda ? '<span style="color:var(--green);font-weight:700">Sí</span>' : 'No'}</span>
+          </div>
         </div>`;
         })()}
 
@@ -189,14 +221,11 @@
         })()}
 
         <div class="naowee-card proj-tabs-card">
-          <div class="naowee-tabs naowee-tabs--animated" role="tablist">
-            <button class="naowee-tab naowee-tab--selected" data-tab="postulaciones" role="tab" type="button">Postulaciones recibidas <span class="tab-count">${proyectos.length}</span></button>
-            <button class="naowee-tab" data-tab="configuracion" role="tab" type="button">Configuración</button>
-            <span class="naowee-tabs__indicator"></span>
+          <div class="convo-section-head">
+            <h3 class="convo-section-head__title">Postulaciones recibidas <span class="convo-section-head__count">${proyectos.length}</span></h3>
           </div>
 
-          <!-- Tab: Postulaciones -->
-          <div class="proj-tab-panel proj-tab-panel--flush" data-panel="postulaciones">
+          <div class="convo-postulaciones-body">
             ${proyectos.length === 0 ? `
               <div class="empty-state-clean">
                 <div class="empty-state-clean__icon">
@@ -231,51 +260,39 @@
               </table>
             `}
           </div>
-
-          <!-- Tab: Configuración -->
-          <div class="proj-tab-panel" data-panel="configuracion" hidden>
-            <dl class="proj-data">
-              <div><dt>Presupuesto total</dt><dd style="color:var(--green);font-weight:700;font-size:16px">${formatoMoneda(c.presupuestoTotal)}</dd></div>
-              <div><dt>Tope por proyecto</dt><dd style="font-weight:700;font-size:16px">${formatoMoneda(c.montoMaximoProyecto)}</dd></div>
-              <div><dt>Fuentes de cofinanciación</dt><dd>${(c.fuentes || []).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
-              <div><dt>Permite segunda convocatoria</dt><dd>${c.permiteSegunda ? 'Sí' : 'No'}</dd></div>
-              <div><dt>Emisión de conceptos</dt><dd>${formatoFecha(c.emisionConcepto)}</dd></div>
-              <div><dt>Bienio</dt><dd>${c.bienio}</dd></div>
-            </dl>
-
-            <!-- Cenefa de estado edge-to-edge (acciones del admin según estado) -->
-            ${c.estado === 'abierta' ? `
-              <div class="convo-status-cenefa convo-status-cenefa--abierta">
-                <span class="convo-status-cenefa__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-                </span>
-                <div class="convo-status-cenefa__body">
-                  <div class="convo-status-cenefa__title">Convocatoria activa · recibiendo postulaciones</div>
-                  <p class="convo-status-cenefa__msg">Cierra el <strong>${formatoFecha(c.cierre)}</strong> a las 5:00 p.m. Después de esa fecha no se aceptan nuevas postulaciones y comienza el período de revisión técnica.</p>
-                </div>
-                <div class="convo-status-cenefa__action">
-                  <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatoria-notificar.html?id=${c.id}">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
-                    Reenviar notificaciones
-                  </a>
-                </div>
-              </div>
-            ` : `
-              <div class="convo-status-cenefa convo-status-cenefa--cerrada">
-                <span class="convo-status-cenefa__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
-                </span>
-                <div class="convo-status-cenefa__body">
-                  <div class="convo-status-cenefa__title">Convocatoria cerrada</div>
-                  <p class="convo-status-cenefa__msg">El período de postulación finalizó el <strong>${formatoFecha(c.cierre)}</strong>. Las postulaciones recibidas se gestionan desde la pestaña anterior y los conceptos se emitirán antes del ${formatoFecha(c.emisionConcepto)}.</p>
-                </div>
-                <div class="convo-status-cenefa__action">
-                  <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatorias.html">Ver otras convocatorias</a>
-                </div>
-              </div>
-            `}
-          </div>
         </div>
+
+        <!-- Cenefa de estado al final del flujo (antes estaba dentro del tab Configuración) -->
+        ${c.estado === 'abierta' ? `
+          <div class="convo-status-cenefa convo-status-cenefa--abierta">
+            <span class="convo-status-cenefa__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+            </span>
+            <div class="convo-status-cenefa__body">
+              <div class="convo-status-cenefa__title">Convocatoria activa · recibiendo postulaciones</div>
+              <p class="convo-status-cenefa__msg">Cierra el <strong>${formatoFecha(c.cierre)}</strong> a las 5:00 p.m. Después de esa fecha no se aceptan nuevas postulaciones y comienza el período de revisión técnica.</p>
+            </div>
+            <div class="convo-status-cenefa__action">
+              <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatoria-notificar.html?id=${c.id}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                Reenviar notificaciones
+              </a>
+            </div>
+          </div>
+        ` : `
+          <div class="convo-status-cenefa convo-status-cenefa--cerrada">
+            <span class="convo-status-cenefa__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+            </span>
+            <div class="convo-status-cenefa__body">
+              <div class="convo-status-cenefa__title">Convocatoria cerrada</div>
+              <p class="convo-status-cenefa__msg">El período de postulación finalizó el <strong>${formatoFecha(c.cierre)}</strong>. Los conceptos se emitirán antes del ${formatoFecha(c.emisionConcepto)}.</p>
+            </div>
+            <div class="convo-status-cenefa__action">
+              <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatorias.html">Ver otras convocatorias</a>
+            </div>
+          </div>
+        `}
       </div>
     `;
 
@@ -296,25 +313,9 @@
       }
     });
 
-    /* Tabs interaction */
-    const tabsEl = document.querySelector('.naowee-tabs');
-    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
-    const positionIndicator = (tab) => {
-      const r = tab.getBoundingClientRect();
-      const parent = tabsEl.getBoundingClientRect();
-      indicator.style.width = r.width + 'px';
-      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
-    };
-    const initial = tabsEl.querySelector('.naowee-tab--selected');
-    if (initial) requestAnimationFrame(() => positionIndicator(initial));
-    tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const key = tab.dataset.tab;
-        tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
-        document.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
-        positionIndicator(tab);
-      });
-    });
+    /* Tabs removidos en este redesign (Juanma 13/05/2026): la información
+       del antiguo tab "Configuración" se promovió al strip superior y la
+       cenefa de estado quedó al pie de la página. */
   }
 </script>
 </body>

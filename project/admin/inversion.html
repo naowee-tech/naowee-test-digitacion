@@ -41,15 +41,73 @@
   .inversion-table tbody tr:hover {
     background-color: #fafbfd;
   }
-  /* Sumatoria del tfoot: bg sutil + borde superior para destacar */
-  .inversion-table tfoot tr {
-    background-color: #fafbfd;
+
+  /* ═══ Fila de totales del tfoot ═══
+     Patrón Excel-like: cada columna numérica muestra su suma alineada.
+     Label "Total" + sub (X proyectos / departamento filtrado).
+     Aprobado en verde (prominencia). Delta a la derecha como insight. */
+  .inversion-totals {
+    background: linear-gradient(180deg, #fafbfd 0%, #f4f6fa 100%);
   }
-  .inversion-table tfoot td {
-    border-top: 2px solid var(--border) !important;
-    padding-top: 14px !important;
-    padding-bottom: 14px !important;
-    font-weight: 700;
+  .inversion-totals td {
+    border-top: 2px solid var(--text-primary) !important;
+    padding: 16px 12px !important;
+    vertical-align: middle;
+  }
+  .inversion-totals__label {
+    text-align: left;
+  }
+  .inversion-totals__main {
+    font-size: 14px; font-weight: 800; color: var(--text-primary);
+    letter-spacing: .2px;
+  }
+  .inversion-totals__sub {
+    font-size: 11.5px; font-weight: 500; color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .inversion-totals__num {
+    text-align: right;
+  }
+  .inversion-totals__num-lbl {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .35px;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .inversion-totals__num-val {
+    font-size: 16px; font-weight: 800; color: var(--text-primary);
+    font-variant-numeric: tabular-nums; line-height: 1.1;
+  }
+  .inversion-totals__num--green .inversion-totals__num-val {
+    color: var(--green);
+  }
+  .inversion-totals__delta {
+    text-align: right;
+    border-left: 1px dashed var(--border-dark);
+    padding-left: 14px !important;
+    white-space: nowrap;
+  }
+  .inversion-totals__delta-lbl {
+    display: inline; margin-right: 6px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .35px;
+    color: #15803d; text-transform: uppercase;
+  }
+  .inversion-totals__delta-val {
+    display: inline;
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .inversion-totals__delta-pct {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px; border-radius: 999px;
+    background: #e6f4e7; color: #15803d;
+    font-size: 11.5px; font-weight: 700;
+  }
+
+  /* Scroll-x fallback en cards con tablas anchas (sin afectar global) */
+  .panel-card:has(.inversion-table) .panel-card__body {
+    overflow-x: auto;
   }
 </style>
 <script type="module">
@@ -180,7 +238,7 @@
             <a href="proyectos.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todos</a>
           </div>
         </div>
-        <div class="panel-card__body" style="padding-bottom:14px">
+        <div class="panel-card__body" style="padding-bottom:14px;overflow-x:auto">
           ${enInversion.length === 0 ? `
             <div class="naowee-empty-state" style="padding:40px 20px">
               <div class="naowee-empty-state__msg">Aún no hay proyectos activados como inversión.</div>
@@ -247,10 +305,28 @@
                 `;}).join('')}
               </tbody>
               <tfoot>
-                <tr>
-                  <td colspan="5" style="text-align:right"><span id="invSubtotalLbl">Sumatoria total de inversión:</span></td>
-                  <td class="numeric" style="color:var(--green);font-size:14px"><span id="invSubtotal">${formatoMoneda(totalInvertido)}</span></td>
-                  <td colspan="2"></td>
+                <tr class="inversion-totals">
+                  <td colspan="4" class="inversion-totals__label">
+                    <div class="inversion-totals__main">Total</div>
+                    <div class="inversion-totals__sub" id="invTotalsSub">${enInversion.length} proyecto${enInversion.length===1?'':'s'} · Bienio 2025-2026</div>
+                  </td>
+                  <td class="numeric inversion-totals__num">
+                    <div class="inversion-totals__num-lbl">Presupuesto</div>
+                    <div class="inversion-totals__num-val" id="invTotalPresup">${formatoMoneda(totalSolicitado)}</div>
+                  </td>
+                  <td class="numeric inversion-totals__num inversion-totals__num--green">
+                    <div class="inversion-totals__num-lbl">Aprobado</div>
+                    <div class="inversion-totals__num-val" id="invSubtotal">${formatoMoneda(totalInvertido)}</div>
+                  </td>
+                  <td colspan="2" class="inversion-totals__delta" id="invDelta">
+                    ${(() => {
+                      const delta = totalSolicitado - totalInvertido;
+                      const pct = totalSolicitado > 0 ? Math.round((delta / totalSolicitado) * 100) : 0;
+                      if (delta <= 0) return '';
+                      return `<div class="inversion-totals__delta-lbl">Ahorro</div>
+                              <div class="inversion-totals__delta-val">${formatoMoneda(delta)} <span class="inversion-totals__delta-pct">−${pct}%</span></div>`;
+                    })()}
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -263,15 +339,18 @@
   /* ═══ Activar dropdowns DS canónicos en el page (portal + bind) ═══ */
   bindDropdowns(document.getElementById('pageContent'));
 
-  /* ═══ Filtro por departamento (filtra rows visibles + recalcula subtotal) ═══ */
+  /* ═══ Filtro por departamento (filtra rows visibles + recalcula totales) ═══ */
   const filterDpto = document.querySelector('.naowee-dropdown[data-name="filterDpto"] input[type="hidden"]');
   const invCount = document.getElementById('invCount');
   const invSubtotal = document.getElementById('invSubtotal');
-  const invSubtotalLbl = document.getElementById('invSubtotalLbl');
+  const invTotalPresup = document.getElementById('invTotalPresup');
+  const invTotalsSub = document.getElementById('invTotalsSub');
+  const invDelta = document.getElementById('invDelta');
   filterDpto?.addEventListener('change', () => {
     const v = filterDpto.value;
     let visibles = 0;
-    let subtotal = 0;
+    let subAprobado = 0;
+    let subPresup = 0;
     document.querySelectorAll('table.dash-table tbody tr').forEach(tr => {
       const id = tr.dataset.id;
       const proj = enInversion.find(p => p.idUnico === id);
@@ -279,14 +358,23 @@
       tr.style.display = match ? '' : 'none';
       if (match) {
         visibles++;
-        subtotal += proj?.inversion?.montoAprobado || 0;
+        subAprobado += proj?.inversion?.montoAprobado || 0;
+        subPresup += proj?.montoSolicitado || 0;
       }
     });
     if (invCount) invCount.textContent = visibles;
-    if (invSubtotal) invSubtotal.textContent = formatoMoneda(subtotal);
-    if (invSubtotalLbl) invSubtotalLbl.textContent = v
-      ? `Sumatoria de inversión · ${v}:`
-      : 'Sumatoria total de inversión:';
+    if (invSubtotal) invSubtotal.textContent = formatoMoneda(subAprobado);
+    if (invTotalPresup) invTotalPresup.textContent = formatoMoneda(subPresup);
+    if (invTotalsSub) invTotalsSub.textContent = v
+      ? `${visibles} proyecto${visibles===1?'':'s'} · ${v}`
+      : `${visibles} proyecto${visibles===1?'':'s'} · Bienio 2025-2026`;
+    if (invDelta) {
+      const delta = subPresup - subAprobado;
+      const pct = subPresup > 0 ? Math.round((delta / subPresup) * 100) : 0;
+      invDelta.innerHTML = delta <= 0 ? '' : `
+        <div class="inversion-totals__delta-lbl">Ahorro</div>
+        <div class="inversion-totals__delta-val">${formatoMoneda(delta)} <span class="inversion-totals__delta-pct">−${pct}%</span></div>`;
+    }
   });
 
   /* ═══ Exportar CSV — descarga la tabla completa (sin filtro) ═══ */

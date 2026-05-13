@@ -939,11 +939,11 @@ const SEED = {
       formuladora: { nombre: 'Alcaldía Distrital de Buenaventura', nit: '890.399.029-5' },
       estado: 'en_inversion', priorizado: true,
       fechaPostulacion: '2025-04-12T10:00:00',
-      inversion: { activadaEn: '2025-08-01T15:30:00', montoAprobado: 3000000000, bpin: '2025760010234', centroCosto: 'CC-MIN-VAC-2025-040', ejecutor: 'Alcaldía Distrital de Buenaventura' },
+      inversion: { activadaEn: '2025-08-01T15:30:00', montoAprobado: 2600000000, bpin: '2025760010234', centroCosto: 'CC-MIN-VAC-2025-040', ejecutor: 'Alcaldía Distrital de Buenaventura' },
       historial: [
         { ts: '2025-04-12T10:00:00', actor: 'municipio',  evento: 'Postulación enviada',         estado: 'presentado' },
         { ts: '2025-06-20T14:00:00', actor: 'revisor',    evento: 'Concepto favorable emitido',  estado: 'concepto_favorable' },
-        { ts: '2025-08-01T15:30:00', actor: 'admin',      evento: 'Inversión activada · $3.000.000.000', estado: 'en_inversion' }
+        { ts: '2025-08-01T15:30:00', actor: 'admin',      evento: 'Inversión activada · $2.600.000.000 (ajuste -$400M)', estado: 'en_inversion' }
       ]
     },
     {
@@ -999,7 +999,7 @@ const SEED = {
       formuladora: { nombre: 'Alcaldía de Pasto', nit: '891.280.000-3' },
       estado: 'en_inversion', priorizado: true,
       fechaPostulacion: '2025-05-15T08:45:00',
-      inversion: { activadaEn: '2025-08-20T14:00:00', montoAprobado: 3800000000, bpin: '2025520010078', centroCosto: 'CC-MIN-NAR-2025-043', ejecutor: 'Alcaldía de Pasto' },
+      inversion: { activadaEn: '2025-08-20T14:00:00', montoAprobado: 3400000000, bpin: '2025520010078', centroCosto: 'CC-MIN-NAR-2025-043', ejecutor: 'Alcaldía de Pasto' },
       historial: [
         { ts: '2025-05-15T08:45:00', actor: 'municipio',  evento: 'Postulación enviada',         estado: 'presentado' },
         { ts: '2025-08-20T14:00:00', actor: 'admin',      evento: 'Inversión activada · $3.800.000.000', estado: 'en_inversion' }
@@ -1163,7 +1163,7 @@ const SEED = {
       formuladora: { nombre: 'Alcaldía de Ibagué', nit: '890.706.823-1' },
       estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2023-10-12T08:30:00',
-      inversion: { activadaEn: '2024-03-15T15:00:00', montoAprobado: 4200000000, bpin: '2023730020071', centroCosto: 'CC-MIN-TOL-2023-071', ejecutor: 'Alcaldía de Ibagué' },
+      inversion: { activadaEn: '2024-03-15T15:00:00', montoAprobado: 3700000000, bpin: '2023730020071', centroCosto: 'CC-MIN-TOL-2023-071', ejecutor: 'Alcaldía de Ibagué' },
       historial: [
         { ts: '2023-10-12T08:30:00', actor: 'municipio',  evento: 'Postulación enviada',         estado: 'presentado' },
         { ts: '2024-03-15T15:00:00', actor: 'admin',      evento: 'Inversión activada · $4.200.000.000', estado: 'en_inversion' }
@@ -1318,9 +1318,10 @@ const SEED = {
 
 const ProjectData = (() => {
   /* Versión del schema. Bumpear cuando el SEED cambie en forma incompatible
-     (ej. nueva clave en revisores, nuevo perfil, restructure de áreas).
+     (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
+     ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 2;
+  const SCHEMA_VERSION = 3;
 
   function load() {
     try {

@@ -228,7 +228,7 @@ const multiselectCheckSVG = `<svg viewBox="0 0 16 16" fill="currentColor"><path 
 
 export function multiselect({ name, label, options = [], placeholder = 'Seleccionar...', required = false, helper = '' }) {
   return `
-    <div class="naowee-multiselect" data-name="${name}">
+    <div class="naowee-multiselect" data-name="${name}" data-placeholder-text="${placeholder}">
       <label class="naowee-dropdown__label ${required ? 'naowee-dropdown__label--required' : ''}">${label}</label>
       <div class="naowee-multiselect__trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
         <div class="naowee-multiselect__chips" data-chips>
@@ -237,15 +237,21 @@ export function multiselect({ name, label, options = [], placeholder = 'Seleccio
       </div>
       <div class="naowee-multiselect__menu" role="listbox">
         ${helper ? `<div class="naowee-multiselect__hint">${helper}</div>` : ''}
-        ${options.map(opt => `
-          <label class="naowee-multiselect__option" data-value="${opt}">
-            <span class="naowee-checkbox">
-              <input type="checkbox" data-multivalue="${opt}"/>
-              <span class="naowee-checkbox__box">${multiselectCheckSVG}</span>
-            </span>
-            <span>${opt}</span>
-          </label>
-        `).join('')}
+        <div class="naowee-multiselect__menu-list">
+          ${options.map(opt => `
+            <label class="naowee-multiselect__option" data-value="${opt}">
+              <span class="naowee-checkbox">
+                <input type="checkbox" data-multivalue="${opt}"/>
+                <span class="naowee-checkbox__box">${multiselectCheckSVG}</span>
+              </span>
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+        </div>
+        <div class="naowee-multiselect__menu-footer">
+          <span class="naowee-multiselect__menu-count" data-multi-count>0 seleccionados</span>
+          <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-multi-apply>Agregar</button>
+        </div>
       </div>
       <div data-hidden-inputs></div>
     </div>
@@ -287,10 +293,16 @@ export function bindMultiselects(scope) {
       });
     };
 
-    function rebuildChips() {
-      const checked = Array.from(ms.querySelectorAll('input[data-multivalue]:checked')).map(i => i.dataset.multivalue);
+    const countEl = menu.querySelector('[data-multi-count]');
+    const applyBtn = menu.querySelector('[data-multi-apply]');
+    const placeholderText = ms.dataset.placeholderText || 'Seleccionar...';
+
+    /* Menu se porta al body, así que los inputs ya no son descendientes de `ms`.
+       Para leerlos hay que consultar dentro del menu portado. */
+    function renderChipsFromInputs() {
+      const checked = Array.from(menu.querySelectorAll('input[data-multivalue]:checked')).map(i => i.dataset.multivalue);
       if (checked.length === 0) {
-        chipsEl.innerHTML = '<span class="naowee-multiselect__placeholder">Seleccionar...</span>';
+        chipsEl.innerHTML = `<span class="naowee-multiselect__placeholder">${placeholderText}</span>`;
       } else if (checked.length <= 4) {
         chipsEl.innerHTML = checked.map(v => `
           <span class="naowee-multiselect__chip">
@@ -306,17 +318,28 @@ export function bindMultiselects(scope) {
           </span>
         `).join('') + `<span class="naowee-multiselect__count">+${checked.length - 3}</span>`;
       }
-      /* Hidden inputs para que FormData.getAll(name) retorne todo */
       hiddenWrap.innerHTML = checked.map(v => `<input type="hidden" name="${name}" value="${v}"/>`).join('');
       chipsEl.querySelectorAll('[data-remove]').forEach(btn => {
         btn.addEventListener('click', e => {
           e.stopPropagation();
           const val = btn.dataset.remove;
-          const inp = ms.querySelector(`input[data-multivalue="${CSS.escape(val)}"]`);
+          const inp = menu.querySelector(`input[data-multivalue="${CSS.escape(val)}"]`);
           if (inp) { inp.checked = false; inp.closest('.naowee-checkbox')?.classList.remove('naowee-checkbox--checked'); }
-          rebuildChips();
+          renderChipsFromInputs();
+          updateCount();
         });
       });
+    }
+
+    function updateCount() {
+      const n = menu.querySelectorAll('input[data-multivalue]:checked').length;
+      if (countEl) countEl.textContent = `${n} seleccionad${n === 1 ? 'o' : 'os'}`;
+    }
+
+    function closeMenu() {
+      ms.classList.remove('is-open');
+      menu.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
     }
 
     trigger.addEventListener('click', e => {
@@ -329,34 +352,38 @@ export function bindMultiselects(scope) {
       ms.classList.toggle('is-open', !wasOpen);
       menu.classList.toggle('is-open', !wasOpen);
       trigger.setAttribute('aria-expanded', String(!wasOpen));
-      if (!wasOpen) positionMenu();
+      if (!wasOpen) { positionMenu(); updateCount(); }
     });
-    /* Re-posicionar al scrollear/resize */
     window.addEventListener('scroll', () => { if (ms.classList.contains('is-open')) positionMenu(); }, true);
     window.addEventListener('resize', () => { if (ms.classList.contains('is-open')) positionMenu(); });
     trigger.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger.click(); }
-      if (e.key === 'Escape') { ms.classList.remove('is-open'); trigger.setAttribute('aria-expanded', 'false'); }
-    });
-    menu.querySelectorAll('.naowee-multiselect__option').forEach(opt => {
-      const inp = opt.querySelector('input[data-multivalue]');
-      opt.addEventListener('click', e => {
-        e.stopPropagation();
-        inp.checked = !inp.checked;
-        opt.querySelector('.naowee-checkbox')?.classList.toggle('naowee-checkbox--checked', inp.checked);
-        rebuildChips();
-      });
-    });
-    /* Click fuera cierra el menu (verifica ms Y menu porque está portado al body) */
-    document.addEventListener('click', e => {
-      if (!ms.contains(e.target) && !menu.contains(e.target)) {
-        ms.classList.remove('is-open');
-        menu.classList.remove('is-open');
-        trigger.setAttribute('aria-expanded', 'false');
-      }
+      if (e.key === 'Escape') { closeMenu(); }
     });
 
-    rebuildChips();
+    /* Click en opción: la <label> nativa togglea el input.
+       Escuchamos `change` del input para mantener sincronía sin doble-toggle. */
+    menu.querySelectorAll('input[data-multivalue]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        inp.closest('.naowee-checkbox')?.classList.toggle('naowee-checkbox--checked', inp.checked);
+        renderChipsFromInputs();
+        updateCount();
+      });
+    });
+
+    /* "Agregar" cierra el menu — selección ya quedó en chips/hidden inputs */
+    applyBtn?.addEventListener('click', e => {
+      e.stopPropagation();
+      closeMenu();
+    });
+
+    /* Click fuera también cierra (verifica ms Y menu porque está portado al body) */
+    document.addEventListener('click', e => {
+      if (!ms.contains(e.target) && !menu.contains(e.target)) closeMenu();
+    });
+
+    renderChipsFromInputs();
+    updateCount();
   });
 }
 

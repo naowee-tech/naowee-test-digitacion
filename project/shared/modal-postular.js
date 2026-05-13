@@ -12,7 +12,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, formatoMoneda } from './states.js';
-import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js';
+import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260513n';
 import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -554,11 +554,12 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
           `).join('')}
         </ul>
 
-        <div class="ai-success__next">
-          <div class="ai-success__next-title">Siguiente paso</div>
-          <p class="ai-success__next-text">
-            Tu postulación entró al ciclo de revisión inicial. Recibirás novedades en tu panel y por correo cuando el revisor emita concepto preliminar (favorable, devuelta a subsanación o rechazada).
-          </p>
+        <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+            <span class="naowee-message__title">Siguiente paso</span>
+          </div>
+          <div class="naowee-message__text">Tu postulación entró al ciclo de revisión inicial. Recibirás novedades en tu panel y por correo cuando el revisor emita concepto preliminar (favorable, devuelta a subsanación o rechazada).</div>
         </div>
       </div>
     `;

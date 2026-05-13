@@ -8,6 +8,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/pages.css?v=20260513c">
+<style>
+  /* Paginador wrapper — alineado al lenguaje del DS pero local a esta tabla */
+  .proyectos-pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: #fafbfd;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+  .proyectos-pagination__range {
+    font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+  }
+</style>
 </head>
 <body>
 <div class="shell">
@@ -147,10 +161,31 @@
             <div class="table-empty-state__msg">No encontramos proyectos que coincidan con los filtros aplicados. Intenta ajustar los criterios de búsqueda.</div>
             <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small table-empty-state__btn" id="emptyClearBtn">Limpiar filtros</button>
           </div>
+          <!-- Paginador (DS Naowee · 15 por página) -->
+          <div class="proyectos-pagination" id="paginationBar">
+            <span class="proyectos-pagination__range" id="pageRange">—</span>
+            <div class="naowee-pagination">
+              <span class="naowee-pagination__label">Página</span>
+              <input type="number" min="1" class="naowee-pagination__input" id="pageInput" value="1" aria-label="Número de página"/>
+              <span class="naowee-pagination__total">de <strong id="pageTotal">1</strong></span>
+              <div class="naowee-pagination__controls">
+                <button type="button" class="naowee-pagination__btn" id="pagePrev" aria-label="Página anterior">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button type="button" class="naowee-pagination__btn" id="pageNext" aria-label="Página siguiente">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `;
+
+  /* ═══ Paginación: 15 por página ═══ */
+  const PAGE_SIZE = 15;
+  let currentPage = 1;
 
   /* Filtros con naowee-dropdown oficial DS */
   const STATE_LABELS = {
@@ -169,28 +204,67 @@
   let searchTerm = '';
 
   function applyFilters() {
-    let visible = 0;
+    /* Paso 1: marcar filas que pasan filtros con data-filtered="1". */
+    let filtered = 0;
     document.querySelectorAll('#tbody tr').forEach(tr => {
       const matchEstado = !activeFilters.estado || activeFilters.estado === 'todos' || tr.dataset.estado === activeFilters.estado;
       const matchPrio = !activeFilters.prioridad || activeFilters.prioridad === 'todos' || tr.dataset.prioridad === activeFilters.prioridad;
       const matchSearch = !searchTerm || tr.dataset.search.includes(searchTerm);
-      const show = matchEstado && matchPrio && matchSearch;
-      tr.style.display = show ? '' : 'none';
-      if (show) visible++;
+      const pass = matchEstado && matchPrio && matchSearch;
+      tr.dataset.filtered = pass ? '1' : '0';
+      if (pass) filtered++;
     });
     /* Empty state cuando no hay resultados Y hay filtros aplicados */
     const hasFilters = Object.keys(activeFilters).length > 0 || !!searchTerm;
     const emptyEl = document.getElementById('emptyState');
-    const tableEl = document.getElementById('proyectosTable');
-    if (visible === 0 && hasFilters) {
+    if (filtered === 0 && hasFilters) {
       emptyEl.hidden = false;
-      /* Esconder solo el tbody, mantener el thead visible */
       document.getElementById('tbody').style.visibility = 'hidden';
     } else {
       emptyEl.hidden = true;
       document.getElementById('tbody').style.visibility = '';
     }
+    /* Paso 2: resetear página al cambiar filtros + aplicar paginación */
+    currentPage = 1;
+    applyPagination(filtered);
     renderTags();
+  }
+
+  /* Aplica paginación sobre las filas con data-filtered="1".
+     totalFiltered: optional pre-counted (evita re-iterar). */
+  function applyPagination(totalFiltered) {
+    const rows = [...document.querySelectorAll('#tbody tr[data-filtered="1"]')];
+    const total = totalFiltered != null ? totalFiltered : rows.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    /* Ocultar todas, mostrar las del rango */
+    document.querySelectorAll('#tbody tr').forEach(tr => { tr.style.display = 'none'; });
+    rows.slice(start, end).forEach(tr => { tr.style.display = ''; });
+    /* Actualizar UI del paginador */
+    const pageInput = document.getElementById('pageInput');
+    const pageTotal = document.getElementById('pageTotal');
+    const pageRange = document.getElementById('pageRange');
+    const pagePrev = document.getElementById('pagePrev');
+    const pageNext = document.getElementById('pageNext');
+    const paginationBar = document.getElementById('paginationBar');
+    if (pageInput) {
+      pageInput.value = currentPage;
+      pageInput.max = totalPages;
+    }
+    if (pageTotal) pageTotal.textContent = totalPages;
+    if (pagePrev) pagePrev.disabled = currentPage <= 1;
+    if (pageNext) pageNext.disabled = currentPage >= totalPages;
+    if (pageRange) {
+      const lastShown = Math.min(end, total);
+      pageRange.textContent = total === 0
+        ? '0 proyectos'
+        : `${start + 1}–${lastShown} de ${total} proyecto${total === 1 ? '' : 's'}`;
+    }
+    /* Ocultar el paginador si no hay datos */
+    if (paginationBar) paginationBar.style.display = total === 0 ? 'none' : '';
   }
 
   function renderTags() {
@@ -284,6 +358,23 @@
   }
   document.getElementById('filterClear').addEventListener('click', clearAllFilters);
   document.getElementById('emptyClearBtn')?.addEventListener('click', clearAllFilters);
+
+  /* Bind del paginador */
+  document.getElementById('pagePrev')?.addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; applyPagination(); }
+  });
+  document.getElementById('pageNext')?.addEventListener('click', () => {
+    currentPage++; applyPagination();
+  });
+  document.getElementById('pageInput')?.addEventListener('change', (e) => {
+    const v = parseInt(e.target.value, 10);
+    if (isNaN(v) || v < 1) { currentPage = 1; }
+    else { currentPage = v; }
+    applyPagination();
+  });
+
+  /* Inicial: aplicar filtros (que ya invoca paginación) */
+  applyFilters();
 </script>
 </body>
 </html>

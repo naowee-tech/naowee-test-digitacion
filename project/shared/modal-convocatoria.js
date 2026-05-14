@@ -253,12 +253,14 @@ function checkbox({ name, value, label, checked = false }) {
    --error (rojo), --loading (con __progress-ring + __progress-text). */
 function fileUpload({ name, label, required = false, accept = '', maxSize = 20, helper = '', multiple = false }) {
   const acceptStr = accept.split(',').map(s => s.trim().replace(/^\./,'').toUpperCase()).join(', ');
+  /* En multi-file los chips viven DENTRO del mismo input-wrap, en row con el botón
+     "Subir documento". Cuando los chips no caben, el último se reemplaza por un
+     pill "+N más" que abre un popover con la lista completa. Doug 14/05/2026. */
   return `
     <div class="naowee-file-uploader ${multiple ? 'naowee-file-uploader--multiple' : ''}" data-name="${name}" data-state="empty"
          data-accept="${accept}" data-max-size="${maxSize}" data-multiple="${multiple ? '1' : '0'}">
       <label class="naowee-file-uploader__label ${required ? 'naowee-file-uploader__label--required' : ''}">${label}</label>
       <input type="file" name="${name}" accept="${accept}" hidden ${required ? 'required' : ''} ${multiple ? 'multiple' : ''}/>
-      ${multiple ? '<div class="naowee-file-uploader__stack" data-stack></div>' : ''}
       <div class="naowee-file-uploader__input-wrap" data-wrap>
         <span class="naowee-file-uploader__placeholder" data-slot>Sin archivo adjunto</span>
         <button type="button" class="naowee-file-uploader__action" data-action>Subir documento</button>
@@ -1130,19 +1132,53 @@ function modalStyles() {
     }
     .naowee-file-uploader__file-tag--error svg { color: #b42318; }
 
-    /* Multi-file: stack vertical de archivos subidos arriba del input-wrap.
-       Cada item conserva la apariencia de un file-tag uploaded (DS) y se
-       acomoda en columna con gap pequeño. */
-    .naowee-file-uploader__stack {
-      display: flex; flex-direction: column;
-      gap: 8px; margin-bottom: 10px;
+    /* Multi-file v2 (Doug 14/05): chips inline en row dentro del input-wrap.
+       Cuando hay overflow, último chip → "+N más" en lugar de wrap a otra línea. */
+    .naowee-file-uploader--multiple .naowee-file-uploader__input-wrap {
+      flex-wrap: nowrap; overflow: hidden;
     }
-    .naowee-file-uploader__stack:empty { display: none; }
-    .naowee-file-uploader__stack .naowee-file-uploader__file-tag {
-      width: 100%; justify-content: flex-start;
+    .naowee-file-uploader__chips {
+      display: flex; align-items: center; gap: 6px;
+      flex: 1 1 auto; min-width: 0;
+      overflow: hidden;
     }
-    .naowee-file-uploader__stack .naowee-file-uploader__file-tag [data-name] {
-      flex: 1;
+    .naowee-file-uploader__chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 4px 4px 8px;
+      background: var(--green-bg, #e6f4e7);
+      border: 1px solid var(--green-border, #b7dfb9);
+      color: var(--green, #1f8923);
+      border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      max-width: 180px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .naowee-file-uploader__chip > svg {
+      width: 14px; height: 14px; flex-shrink: 0;
+    }
+    .naowee-file-uploader__chip-name {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 130px;
+    }
+    .naowee-file-uploader__chip-x {
+      background: transparent; border: 0;
+      width: 18px; height: 18px; border-radius: 50%;
+      color: var(--green, #1f8923); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: background .12s;
+      flex-shrink: 0;
+    }
+    .naowee-file-uploader__chip-x:hover {
+      background: rgba(31, 137, 35, .15);
+    }
+    .naowee-file-uploader__chip-x > svg { width: 11px; height: 11px; }
+    .naowee-file-uploader__chip--overflow {
+      background: var(--orange-bg, #fff3e6);
+      border-color: var(--orange-border, #ffbf75);
+      color: var(--accent, #d74009);
+      cursor: help;
+      padding: 4px 10px;
     }
 
     /* ═══ Naowee message — overrides mínimos sobre DS oficial v1.8.0 ═══
@@ -1935,41 +1971,59 @@ function bindFileUpload(field) {
   const accept = (field.dataset.accept || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
   const maxBytes = parseInt(field.dataset.maxSize || '20', 10) * 1024 * 1024;
   const isMultiple = field.dataset.multiple === '1';
-  const stack = field.querySelector('[data-stack]');
 
   /* SVGs reutilizados */
   const fileSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
   const xSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
 
-  /* En multi-file: lista de archivos acumulados + render del stack arriba del input.
-     El input nativo se usa solo para abrir el file picker; los archivos se guardan
-     en un array interno y se inyectan al FormData manualmente al publicar. */
+  /* En multi-file: lista interna de archivos acumulados. Los chips se renderizan
+     INLINE dentro del input-wrap (no apilados arriba). Cuando hay overflow, el
+     pill "+N" colapsa los chips ocultos en un popover. */
   const acceptedFiles = isMultiple ? [] : null;
   field._acceptedFiles = acceptedFiles;
 
-  const renderStack = () => {
-    if (!stack) return;
-    stack.innerHTML = acceptedFiles.map((f, idx) => `
-      <span class="naowee-file-uploader__file-tag naowee-file-uploader__file-tag--uploaded" data-stack-item data-idx="${idx}">
+  const renderMultiRow = () => {
+    /* En modo multi: chips inline en el wrap + botón "Subir otro" al final.
+       Limitamos a 3 chips visibles; si hay más, el último se reemplaza por un
+       "+N más" que despliega un popover con la lista completa al hacer hover. */
+    const MAX_VISIBLE = 3;
+    const total = acceptedFiles.length;
+    const visible = total <= MAX_VISIBLE ? acceptedFiles : acceptedFiles.slice(0, MAX_VISIBLE - 1);
+    const hiddenCount = total - visible.length;
+    const chipsHtml = visible.map((f, idx) => `
+      <span class="naowee-file-uploader__chip" data-chip-idx="${idx}" title="${f.name}">
         ${fileSvg}
-        <span data-name>${f.name}</span>
-        <button type="button" class="naowee-file-uploader__file-dismiss" aria-label="Quitar archivo" data-remove-idx="${idx}">${xSvg}</button>
+        <span class="naowee-file-uploader__chip-name">${f.name}</span>
+        <button type="button" class="naowee-file-uploader__chip-x" aria-label="Quitar ${f.name}" data-remove-idx="${idx}">${xSvg}</button>
       </span>
     `).join('');
-    stack.querySelectorAll('[data-remove-idx]').forEach(btn => {
+    const overflowHtml = hiddenCount > 0 ? `
+      <span class="naowee-file-uploader__chip naowee-file-uploader__chip--overflow" tabindex="0" title="${acceptedFiles.slice(MAX_VISIBLE - 1).map(f => f.name).join(', ')}">
+        +${hiddenCount} más
+      </span>
+    ` : '';
+    wrap.innerHTML = `
+      <div class="naowee-file-uploader__chips" data-chips>${chipsHtml}${overflowHtml}</div>
+      <button type="button" class="naowee-file-uploader__action" data-action>${total === 0 ? 'Subir documento' : 'Subir otro'}</button>
+    `;
+    field.dataset.state = total > 0 ? 'multi' : 'empty';
+    wrap.querySelectorAll('[data-remove-idx]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const i = parseInt(btn.dataset.removeIdx, 10);
         acceptedFiles.splice(i, 1);
-        renderStack();
+        renderMultiRow();
       });
     });
+    bindAction();
   };
 
   const renderEmpty = () => {
+    if (isMultiple) { renderMultiRow(); return; }
     wrap.innerHTML = `
-      <span class="naowee-file-uploader__placeholder" data-slot>${isMultiple && acceptedFiles?.length ? 'Agregar otro archivo' : 'Sin archivo adjunto'}</span>
-      <button type="button" class="naowee-file-uploader__action" data-action>${isMultiple && acceptedFiles?.length ? 'Subir otro' : 'Subir documento'}</button>`;
+      <span class="naowee-file-uploader__placeholder" data-slot>Sin archivo adjunto</span>
+      <button type="button" class="naowee-file-uploader__action" data-action>Subir documento</button>`;
     field.dataset.state = 'empty';
     bindAction();
   };
@@ -2046,11 +2100,10 @@ function bindFileUpload(field) {
       updateProgress(100);
       setTimeout(() => {
         if (isMultiple) {
-          /* Apilar y reset del input-wrap para permitir otra subida */
+          /* Apilar al array interno y re-render inline (chips en row) */
           acceptedFiles.push({ name: file.name, size: file.size });
-          renderStack();
           input.value = '';
-          renderEmpty();
+          renderMultiRow();
         } else {
           renderUploaded(file.name);
         }

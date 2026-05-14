@@ -29,7 +29,10 @@ const TOUR_DEBOUNCE_MS = 150;
    - target       → selector CSS donde apunta el spotlight (puede ser null = sin spotlight)
    - position     → 'bottom' | 'top' | 'left' | 'right' | 'center' (sin target)
    - applicable   → (state) => boolean : true si el step corresponde al estado actual
-   - pageHint     → URL relativa donde el step es relevante (mostrar "Ir a esa página" si no)
+   - pages        → [URLs relativas] donde el step DEBE renderizarse. Si la página
+                    actual no está en la lista, el tour se OCULTA (no se muestra
+                    en /usuarios.html, /inversion.html, etc. — Doug 14/05/2026).
+   - pageHint     → URL relativa donde el step es relevante (mostrar link si no)
    - totalSteps   → cuántos pasos hay (para "Paso X de Y")
    - stepIndex    → posición en la secuencia
 */
@@ -40,8 +43,9 @@ function getSteps() {
       stepIndex: 1,
       title: 'Crea tu primera convocatoria',
       body: 'Empieza el flujo abriendo una convocatoria. Define el año, los documentos a pedir y los entes territoriales que pueden postular.',
-      target: '[data-tour="nueva-convocatoria"], button.naowee-btn--loud',
-      position: 'bottom',
+      target: '[data-tour="nueva-convocatoria"], #btnCrearConvocatoriaHero',
+      position: 'top', /* Forzar arriba para no tapar el CTA secundario "Saltar a modo libre" */
+      pages: ['admin/dashboard.html', 'admin/convocatorias.html'],
       pageHint: 'admin/convocatorias.html',
       pageHintLabel: 'Ir a Convocatorias',
       applicable: s => s.perfilActivo === 'admin' && s.convocatorias.length === 0
@@ -53,6 +57,7 @@ function getSteps() {
       body: 'La convocatoria está abierta. Ahora simulemos al municipio que postula un proyecto. Usa el chip "DEMO" abajo para cambiar de perfil.',
       target: '#demoSwitcherToggle',
       position: 'top',
+      pages: ['admin/dashboard.html', 'admin/convocatorias.html'],
       pageHint: 'admin/convocatorias.html',
       applicable: s => s.convocatorias.length >= 1 && s.proyectos.length === 0 && s.perfilActivo === 'admin'
     },
@@ -61,8 +66,9 @@ function getSteps() {
       stepIndex: 3,
       title: 'Postula tu primer proyecto',
       body: 'Desde el perfil Municipio, entra a la convocatoria activa y postula un proyecto cargando los 3 bloques de documentos: RBI, General y Técnica.',
-      target: '[data-tour="postular-proyecto"], a[href*="postular"], button:not([data-close])',
+      target: '[data-tour="postular-proyecto"], a[href*="postular"]',
       position: 'bottom',
+      pages: ['municipio/dashboard.html', 'municipio/convocatorias.html'],
       pageHint: 'municipio/convocatorias.html',
       pageHintLabel: 'Ir a Convocatorias activas',
       applicable: s => s.proyectos.length === 0 && s.perfilActivo === 'municipio'
@@ -74,6 +80,7 @@ function getSteps() {
       body: 'Tu proyecto está en revisión. Ahora simulemos al revisor RBI (Diana Patricia) que valida los Requisitos Básicos Indispensables.',
       target: '#demoSwitcherToggle',
       position: 'top',
+      pages: ['municipio/dashboard.html', 'municipio/proyectos.html', 'municipio/proyecto-perfil.html'],
       applicable: s => s.proyectos.length >= 1
         && (s.proyectos[0].estado === 'en_revision_rbi' || s.proyectos[0].estado === 'presentado' || s.proyectos[0].estado === 'en_revision')
         && s.perfilActivo === 'municipio'
@@ -82,9 +89,10 @@ function getSteps() {
       id: 'aprobar-rbi',
       stepIndex: 5,
       title: 'Aprueba el RBI',
-      body: 'Como revisora RBI, abre la postulación pendiente y marca el RBI como favorable. Al aprobar, se libera la revisión de Doc General + las 8 áreas técnicas.',
+      body: 'Como revisora RBI, abre la postulación pendiente y marca el RBI como favorable. Al aprobar, se libera la revisión de Doc General + las áreas técnicas.',
       target: 'tbody tr:first-child, [data-tour="postulacion-row"]',
       position: 'bottom',
+      pages: ['revisor/dashboard.html', 'revisor/bandeja.html'],
       pageHint: 'revisor/bandeja.html',
       pageHintLabel: 'Ir a la bandeja',
       applicable: s => s.perfilActivo === 'revisor'
@@ -99,6 +107,7 @@ function getSteps() {
       body: 'RBI aprobado. Ahora le toca a Luis Felipe (revisor de Documentación General) validar el bloque 2. Cambia de revisor en el chip "DEMO".',
       target: '#demoSwitcherToggle',
       position: 'top',
+      pages: ['revisor/dashboard.html', 'revisor/bandeja.html'],
       applicable: s => s.proyectos.length >= 1
         && ['rbi_aprobada', 'en_revision_docs', 'etapa_documental', 'favorable'].includes(s.proyectos[0].estado)
         && (s.revisorTipo === 'rbi' || s.perfilActivo !== 'revisor')
@@ -107,9 +116,10 @@ function getSteps() {
       id: 'revisar-general',
       stepIndex: 7,
       title: 'Revisa la Documentación General',
-      body: 'Abre el proyecto y aprueba la documentación general. Mientras tanto, los 4 revisores técnicos están revisando sus áreas en paralelo.',
+      body: 'Abre el proyecto y aprueba la documentación general. Mientras tanto, los revisores técnicos están revisando sus áreas en paralelo.',
       target: '[data-tour="postulacion-row"], tbody tr:first-child',
       position: 'bottom',
+      pages: ['revisor/dashboard.html', 'revisor/bandeja.html', 'revisor/doc-general.html'],
       pageHint: 'revisor/doc-general.html',
       pageHintLabel: 'Ir a Doc. General',
       applicable: s => s.perfilActivo === 'revisor'
@@ -124,10 +134,26 @@ function getSteps() {
       body: 'Has recorrido el flujo principal: postular → RBI → Doc General → áreas técnicas. Puedes seguir explorando libremente o reiniciar el tour desde el chip "DEMO".',
       target: null,
       position: 'center',
+      /* Sin "pages": este step se muestra en cualquier pantalla porque celebra
+         el cierre del flujo. */
+      pages: null,
       applicable: s => s.proyectos.length >= 1
         && ['concepto_favorable', 'en_inversion'].includes(s.proyectos[0].estado)
     }
   ];
+}
+
+/* Devuelve la página actual relativa al módulo (admin/X.html, municipio/X.html, etc.) */
+function currentRelativePage() {
+  const parts = location.pathname.split('/').filter(Boolean);
+  if (parts.length >= 2) return parts.slice(-2).join('/');
+  return parts.pop() || '';
+}
+
+function stepMatchesCurrentPage(step) {
+  if (!step.pages) return true; /* null = aplica en cualquier página */
+  const here = currentRelativePage();
+  return step.pages.includes(here);
 }
 
 function getTotalSteps() {
@@ -153,7 +179,13 @@ function buildState() {
 function pickActiveStep() {
   const state = buildState();
   const steps = getSteps();
-  return steps.find(s => s.applicable(state)) || null;
+  /* Primero: step que es aplicable al estado actual */
+  const stateStep = steps.find(s => s.applicable(state));
+  if (!stateStep) return null;
+  /* Segundo: solo renderizar si la página actual está en la lista del step.
+     En otras páginas (usuarios, inversion, etc.) NO se muestra el tour. */
+  if (!stepMatchesCurrentPage(stateStep)) return null;
+  return stateStep;
 }
 
 /* ───── Render del overlay + spotlight + tooltip ───── */
@@ -193,7 +225,7 @@ function unmountTourElements() {
   if (_overlay) { _overlay.remove(); _overlay = null; }
 }
 
-function positionTooltip(target) {
+function positionTooltip(target, position) {
   if (!_overlay) return;
   const tooltip = _overlay.querySelector('[data-tooltip]');
   const spotlight = _overlay.querySelector('[data-spotlight]');
@@ -214,10 +246,21 @@ function positionTooltip(target) {
   spotlight.style.width  = (rect.width  + PAD * 2) + 'px';
   spotlight.style.height = (rect.height + PAD * 2) + 'px';
 
-  /* Tooltip posicionado debajo (o arriba si no hay espacio) */
+  /* Tooltip posicionado según preferencia explícita del step. Si el step pide
+     'top' lo respetamos siempre (evita tapar CTAs secundarios debajo del target,
+     como "Saltar al modo libre" en el empty state del dashboard — Doug 14/05). */
   const tipH = tooltip.offsetHeight || 200;
   const spaceBelow = window.innerHeight - rect.bottom;
-  const showAbove = spaceBelow < (tipH + 24) && rect.top > (tipH + 24);
+  const spaceAbove = rect.top;
+  let showAbove;
+  if (position === 'top') {
+    showAbove = spaceAbove > tipH + 24;
+  } else if (position === 'bottom') {
+    showAbove = spaceBelow < (tipH + 24) && spaceAbove > spaceBelow;
+  } else {
+    /* auto */
+    showAbove = spaceBelow < (tipH + 24) && spaceAbove > (tipH + 24);
+  }
   tooltip.style.position = 'fixed';
   tooltip.style.transform = 'none';
   if (showAbove) {
@@ -261,7 +304,7 @@ function renderStep(step) {
       if (target) break;
     }
   }
-  positionTooltip(target);
+  positionTooltip(target, step.position);
 
   /* CTA primario = cerrar (el avance es automático cuando cambia el estado) */
   const btn = _overlay.querySelector('[data-action-primary]');
@@ -314,7 +357,7 @@ function mount(_opts = {}) {
   window.addEventListener('resize', () => {
     const step = pickActiveStep();
     const target = step?.target ? document.querySelector(step.target.split(',')[0].trim()) : null;
-    positionTooltip(target);
+    positionTooltip(target, step?.position);
   });
   /* Render inicial — esperamos un tick para que el DOM de la página esté listo */
   setTimeout(refresh, 200);

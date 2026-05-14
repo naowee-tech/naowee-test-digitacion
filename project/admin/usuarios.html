@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515e">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515l">
 <style>
   /* ─── Tabs DS dentro del .naowee-table-card ─── */
   .usuarios-card .naowee-tabs {
@@ -21,7 +21,17 @@
     to   { opacity: 1; transform: translateY(0); }
   }
   /* La toolbar del table-card va sin top-border (el divider lo da el tab) */
-  .usuarios-card .naowee-table-card__toolbar { border-top: 0; }
+  .usuarios-card .naowee-table-card__toolbar {
+    border-top: 0;
+    padding: 18px 18px 14px;
+  }
+  /* Doug 14/05: el header gris (thead) estaba pegado al searchbox y al CTA.
+     Agregamos respiro entre toolbar → thead, y entre thead → primera fila. */
+  .usuarios-card .naowee-table-card__table-wrap { padding-top: 6px; }
+  .usuarios-card thead th {
+    padding-top: 14px !important; padding-bottom: 14px !important;
+    background: #fafbfd;
+  }
 
   /* ─── Áreas técnicas: cards horizontales ─── */
   .areas-list {
@@ -37,10 +47,24 @@
   }
   .area-mgmt-card__icon {
     width: 40px; height: 40px; border-radius: 10px;
-    background: var(--orange-bg); color: var(--accent);
     display: flex; align-items: center; justify-content: center;
   }
-  .area-mgmt-card__icon svg { width: 20px; height: 20px; }
+  .area-mgmt-card__icon svg { width: 22px; height: 22px; }
+  /* Color por área: cada especialidad un tono distinto para diferenciación
+     visual rápida. Doug 14/05/2026. */
+  .area-mgmt-card__icon--rbi            { background: #e8f0ff; color: #2c5fd9; }
+  .area-mgmt-card__icon--general        { background: #fff3e6; color: #d74009; }
+  .area-mgmt-card__icon--topografico    { background: #fef3c7; color: #b45309; }
+  .area-mgmt-card__icon--suelos         { background: #f3e8d0; color: #8a6d3b; }
+  .area-mgmt-card__icon--arquitectonico { background: #e6f4e7; color: #166f30; }
+  .area-mgmt-card__icon--estructural    { background: #e7e9f3; color: #4b4f7a; }
+  .area-mgmt-card__icon--hidrosanitario { background: #e0f2fe; color: #0369a1; }
+  .area-mgmt-card__icon--electrico      { background: #fef3c7; color: #ca8a04; }
+  /* Multi-revisor: lista de chips con wrap */
+  .area-mgmt-card__revs {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 6px;
+  }
   .area-mgmt-card__main { min-width: 0; }
   .area-mgmt-card__title {
     font-size: 13px; font-weight: 700; color: var(--text-primary);
@@ -51,7 +75,6 @@
   }
   .area-mgmt-card__rev {
     display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 6px;
     padding: 4px 8px; border-radius: 999px;
     background: var(--green-bg); color: var(--green);
     font-size: 11.5px; font-weight: 600;
@@ -189,15 +212,16 @@
       <div class="um-modal__sub" id="areaSub">Selecciona el revisor del equipo que cubrirá esta especialidad.</div>
     </div>
     <div class="um-modal__body" id="areaBody"></div>
-    <div class="um-modal__footer" style="justify-content:flex-end">
+    <div class="um-modal__footer" id="areaFooter" style="justify-content:flex-end;gap:10px">
       <button type="button" class="naowee-btn naowee-btn--mute" id="areaCancel">Cancelar</button>
+      <button type="button" class="naowee-btn naowee-btn--loud" id="areaSave">Guardar asignación</button>
     </div>
   </div>
 </div>
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515e';
+  import { mountShell } from '../shared/shell.js?v=20260515l';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
@@ -208,18 +232,27 @@
   /* v2.0 — Catálogo ampliado con los 3 roles de revisor (Danna 14/05/2026):
      - RBI dedicado (revisa bloque 1)
      - Doc General dedicado (revisa bloque 2)
-     - 8 áreas técnicas (cubren bloque 3) */
+     - 6 áreas técnicas (cubren bloque 3) — alineadas con Res. 933 Art. 3
+     Cada área tiene un icono propio para diferenciación visual (Doug 14/05). */
+  const AREA_ICONS = {
+    rbi:            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+    general:        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
+    topografico:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-12 4 8 5-10 3 14z"/><circle cx="9" cy="8" r="1.4" fill="currentColor"/></svg>',
+    suelos:         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16h18"/><path d="M3 20h18"/><path d="M5 16V8a4 4 0 014-4h6a4 4 0 014 4v8"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>',
+    arquitectonico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M10 21v-6h4v6"/></svg>',
+    estructural:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>',
+    hidrosanitario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5C12 2.5 6 9 6 14a6 6 0 1012 0c0-5-6-11.5-6-11.5z"/></svg>',
+    electrico:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+  };
   const AREAS_CATALOGO = [
-    { id: 'rbi',            label: 'Requisitos Básicos Indispensables',  ref: 'Res. 933 Sec. 1 (RBI)', especialidad: 'rbi', tipo: 'rbi' },
-    { id: 'general',        label: 'Documentación general del proyecto', ref: 'Res. 933 Sec. 2',       especialidad: 'general', tipo: 'general' },
-    { id: 'topografico',    label: 'Levantamiento topográfico',          ref: 'Res. 933 Art. 3.1',     especialidad: 'topografico', tipo: 'tecnico' },
-    { id: 'suelos',         label: 'Estudio de suelos',                  ref: 'Res. 933 Art. 3.2',     especialidad: 'suelos', tipo: 'tecnico' },
-    { id: 'arquitectonico', label: 'Diseño arquitectónico',              ref: 'Res. 933 Art. 3.3',     especialidad: 'arquitectonico', tipo: 'tecnico' },
-    { id: 'estructural',    label: 'Diseño estructural',                 ref: 'Res. 933 Art. 3.4',     especialidad: 'estructural', tipo: 'tecnico' },
-    { id: 'hidrosanitario', label: 'Hidrosanitario y red contra incendios', ref: 'Res. 933 Art. 3.5', especialidad: 'hidrosanitario', tipo: 'tecnico' },
-    { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',   ref: 'Res. 933 Art. 3.6',     especialidad: 'electrico', tipo: 'tecnico' },
-    { id: 'ambiental',      label: 'Manejo, riesgos y ambiental',        ref: 'Res. 933 Art. 3.7',     especialidad: 'ambiental', tipo: 'tecnico' },
-    { id: 'presupuesto',    label: 'Presupuesto integral',               ref: 'Res. 933 Art. 3.8',     especialidad: 'presupuesto', tipo: 'tecnico' }
+    { id: 'rbi',            label: 'Requisitos Básicos Indispensables',     ref: 'Res. 933 Sec. 1 (RBI)', especialidad: 'rbi', tipo: 'rbi' },
+    { id: 'general',        label: 'Documentación general del proyecto',    ref: 'Res. 933 Sec. 2',       especialidad: 'general', tipo: 'general' },
+    { id: 'topografico',    label: 'Levantamiento topográfico',             ref: 'Res. 933 Art. 3.1',     especialidad: 'topografico', tipo: 'tecnico' },
+    { id: 'suelos',         label: 'Estudio de suelos',                     ref: 'Res. 933 Art. 3.2',     especialidad: 'suelos', tipo: 'tecnico' },
+    { id: 'arquitectonico', label: 'Diseño arquitectónico',                 ref: 'Res. 933 Art. 3.3',     especialidad: 'arquitectonico', tipo: 'tecnico' },
+    { id: 'estructural',    label: 'Diseño estructural',                    ref: 'Res. 933 Art. 3.4',     especialidad: 'estructural', tipo: 'tecnico' },
+    { id: 'hidrosanitario', label: 'Diseño hidráulico, sanitario y pluvial', ref: 'Res. 933 Art. 3.5',    especialidad: 'hidrosanitario', tipo: 'tecnico' },
+    { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',      ref: 'Res. 933 Art. 3.6',     especialidad: 'electrico', tipo: 'tecnico' }
   ];
 
   const TIPOS_ENTIDAD = [
@@ -230,6 +263,52 @@
     'Consejo Comunitario'
   ];
   const SIN_NIT = new Set(['Resguardo Indígena', 'Consejo Comunitario']);
+
+  /* 33 departamentos de Colombia (incluye Bogotá D.C.). Doug 14/05/2026. */
+  const DEPARTAMENTOS_COL = [
+    'Amazonas','Antioquia','Arauca','Atlántico','Bogotá D.C.','Bolívar','Boyacá','Caldas','Caquetá','Casanare','Cauca',
+    'Cesar','Chocó','Córdoba','Cundinamarca','Guainía','Guaviare','Huila','La Guajira','Magdalena','Meta',
+    'Nariño','Norte de Santander','Putumayo','Quindío','Risaralda','San Andrés y Providencia','Santander','Sucre','Tolima',
+    'Valle del Cauca','Vaupés','Vichada'
+  ];
+
+  /* Mapa departamento → municipios (sample curado para la demo, foco en zonas
+     priorizadas: Chocó, Cauca, Antioquia, Valle del Cauca, Bolívar, etc.). */
+  const MUNICIPIOS_BY_DEPTO = {
+    'Amazonas': ['Leticia', 'Puerto Nariño'],
+    'Antioquia': ['Medellín', 'Apartadó', 'Turbo', 'Necoclí', 'Carepa', 'Chigorodó', 'Bello', 'Rionegro', 'Caucasia'],
+    'Arauca': ['Arauca', 'Saravena', 'Tame'],
+    'Atlántico': ['Barranquilla', 'Soledad', 'Malambo', 'Sabanagrande'],
+    'Bogotá D.C.': ['Bogotá D.C.'],
+    'Bolívar': ['Cartagena', 'Magangué', 'El Carmen de Bolívar', 'Turbaco', 'San Pablo'],
+    'Boyacá': ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá'],
+    'Caldas': ['Manizales', 'La Dorada', 'Riosucio', 'Chinchiná'],
+    'Caquetá': ['Florencia', 'San Vicente del Caguán', 'Cartagena del Chairá'],
+    'Casanare': ['Yopal', 'Aguazul', 'Tauramena'],
+    'Cauca': ['Popayán', 'Santander de Quilichao', 'Patía', 'Inzá', 'Toribío', 'Caloto', 'Jambaló'],
+    'Cesar': ['Valledupar', 'Aguachica', 'La Paz'],
+    'Chocó': ['Quibdó', 'Riosucio', 'Bahía Solano', 'Istmina', 'Acandí', 'Carmen del Darién', 'Bajo Baudó'],
+    'Córdoba': ['Montería', 'Lorica', 'Tierralta', 'Montelíbano'],
+    'Cundinamarca': ['Soacha', 'Girardot', 'Zipaquirá', 'Facatativá'],
+    'Guainía': ['Inírida'],
+    'Guaviare': ['San José del Guaviare', 'Calamar'],
+    'Huila': ['Neiva', 'Pitalito', 'Garzón'],
+    'La Guajira': ['Riohacha', 'Maicao', 'Uribia', 'Manaure'],
+    'Magdalena': ['Santa Marta', 'Ciénaga', 'Fundación'],
+    'Meta': ['Villavicencio', 'Acacías', 'Granada'],
+    'Nariño': ['Pasto', 'Tumaco', 'Ipiales', 'Túquerres'],
+    'Norte de Santander': ['Cúcuta', 'Ocaña', 'Tibú', 'Pamplona'],
+    'Putumayo': ['Mocoa', 'Puerto Asís', 'Orito'],
+    'Quindío': ['Armenia', 'Calarcá', 'Montenegro'],
+    'Risaralda': ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal'],
+    'San Andrés y Providencia': ['San Andrés', 'Providencia'],
+    'Santander': ['Bucaramanga', 'Floridablanca', 'Girón', 'Barrancabermeja'],
+    'Sucre': ['Sincelejo', 'Corozal', 'San Marcos'],
+    'Tolima': ['Ibagué', 'Espinal', 'Honda', 'Líbano'],
+    'Valle del Cauca': ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Cartago', 'Buga'],
+    'Vaupés': ['Mitú'],
+    'Vichada': ['Puerto Carreño', 'La Primavera']
+  };
 
   function render() {
     const usuarios = ProjectData.getUsuariosMunicipales();
@@ -245,7 +324,7 @@
         <div class="naowee-table-card usuarios-card">
           <div class="naowee-tabs naowee-tabs--animated" role="tablist">
             <button class="naowee-tab naowee-tab--selected" data-panel="usuarios" role="tab" type="button">
-              Usuarios municipales <span class="tab-count">${usuarios.length}</span>
+              Entidades territoriales <span class="tab-count">${usuarios.length}</span>
             </button>
             <button class="naowee-tab" data-panel="areas" role="tab" type="button">
               Áreas técnicas <span class="tab-count">${AREAS_CATALOGO.length}</span>
@@ -322,25 +401,33 @@
             </div>
             <div class="areas-list">
               ${AREAS_CATALOGO.map(a => {
-                const r = ProjectData.getRevisorPorArea(a.especialidad);
+                /* Multi-revisor: lista TODOS los revisores con la especialidad/tipo. */
+                const allRevs = ProjectData.getRevisores();
+                const revisores = a.tipo === 'rbi'      ? allRevs.filter(r => r.tipo === 'rbi')
+                                : a.tipo === 'general'  ? allRevs.filter(r => r.tipo === 'general' || (r.especialidades||[]).includes('general'))
+                                : allRevs.filter(r => (r.especialidades || []).includes(a.especialidad));
                 return `
                   <div class="area-mgmt-card">
-                    <div class="area-mgmt-card__icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+                    <div class="area-mgmt-card__icon area-mgmt-card__icon--${a.id}">
+                      ${AREA_ICONS[a.id] || AREA_ICONS.general}
                     </div>
                     <div class="area-mgmt-card__main">
                       <div class="area-mgmt-card__title">${a.label}</div>
                       <div class="area-mgmt-card__ref">${a.ref}</div>
-                      ${r ? `
-                        <span class="area-mgmt-card__rev">
-                          <span class="ava-ring" style="width:18px;height:18px;background:${r.color}22;color:${r.color};font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</span>
-                          ${r.nombre}
-                        </span>
+                      ${revisores.length ? `
+                        <div class="area-mgmt-card__revs">
+                          ${revisores.map(r => `
+                            <span class="area-mgmt-card__rev">
+                              <span class="ava-ring" style="width:18px;height:18px;background:${r.color}22;color:${r.color};font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</span>
+                              ${r.nombre}
+                            </span>
+                          `).join('')}
+                        </div>
                       ` : `
                         <span class="area-mgmt-card__rev area-mgmt-card__rev--missing">⚠ Sin responsable</span>
                       `}
                     </div>
-                    <button type="button" class="area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-label="${a.label}">Cambiar</button>
+                    <button type="button" class="area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-tipo="${a.tipo}" data-area-label="${a.label}">Asignar revisores</button>
                   </div>
                 `;
               }).join('')}
@@ -397,7 +484,7 @@
 
   function bindAreas() {
     document.querySelectorAll('.area-mgmt-card__change').forEach(btn => {
-      btn.addEventListener('click', () => openAreaModal(btn.dataset.areaEspecialidad, btn.dataset.areaLabel));
+      btn.addEventListener('click', () => openAreaModal(btn.dataset.areaEspecialidad, btn.dataset.areaLabel, btn.dataset.areaTipo));
     });
   }
 
@@ -416,8 +503,8 @@
         ${textfield({ label: 'NIT', name: 'nit', required: nitRequired, placeholder: '891.680.014', helper: nitRequired ? 'NIT sin dígito de verificación' : 'No requerido para esta entidad', value: v.nit || '' })}
       </div>
       <div class="um-modal__grid">
-        ${textfield({ label: 'Departamento', name: 'departamento', required: true, placeholder: 'Chocó', value: v.departamento || '' })}
-        ${textfield({ label: 'Municipio', name: 'municipio', placeholder: 'Quibdó', helper: 'Vacío si la entidad es departamental', value: v.municipio || '' })}
+        ${dropdown({ label: 'Departamento', name: 'departamento', required: true, options: DEPARTAMENTOS_COL, placeholder: 'Seleccionar departamento…', value: v.departamento || '' })}
+        ${dropdown({ label: 'Municipio', name: 'municipio', options: v.departamento ? (MUNICIPIOS_BY_DEPTO[v.departamento] || []) : [], placeholder: v.departamento ? 'Seleccionar municipio…' : 'Selecciona un departamento primero', value: v.municipio || '' })}
       </div>
       <div class="um-modal__grid">
         ${textfield({ label: 'Persona contacto', name: 'nombre', required: true, placeholder: 'Carlos Mosquera', value: v.nombre || '' })}
@@ -436,6 +523,68 @@
     bindDropdowns(userForm);
     mountCheckboxes(userForm);
     syncNitFromTipo();
+    syncMuniFromDepto();
+  }
+
+  /* Repobla el dropdown de municipios según el departamento seleccionado.
+     bindDropdowns mueve los menus al body (portal), así que NO podemos solo
+     editar el innerHTML del menu inside-DD. Reemplazamos el wrapper entero
+     con un dropdown nuevo desde la helper y re-bindeamos. */
+  function syncMuniFromDepto() {
+    const deptoHidden = userForm.querySelector('.naowee-dropdown[data-name="departamento"] input[type="hidden"]');
+    const muniWrap = userForm.querySelector('.naowee-dropdown[data-name="municipio"]');
+    if (!deptoHidden || !muniWrap) return;
+    const depto = deptoHidden.value;
+    const munis = depto ? (MUNICIPIOS_BY_DEPTO[depto] || []) : [];
+    const currentMuni = muniWrap.querySelector('input[type="hidden"]').value;
+    const keepMuni = depto && munis.includes(currentMuni) ? currentMuni : '';
+
+    /* Renderizar el dropdown nuevo */
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = dropdown({
+      label: 'Municipio',
+      name: 'municipio',
+      options: munis,
+      placeholder: depto ? 'Seleccionar municipio…' : 'Selecciona un departamento primero',
+      value: keepMuni
+    }).trim();
+    const fresh = wrapper.firstChild;
+    /* Si no hay depto, deshabilitar el trigger del nuevo dropdown */
+    if (!depto) {
+      fresh.classList.add('naowee-dropdown--disabled');
+      fresh.querySelector('.naowee-dropdown__trigger').disabled = true;
+    }
+    /* Si el muniWrap viejo había sido bindeado, su menu vive en body — lo removemos */
+    if (muniWrap._menu) {
+      muniWrap._menu.remove();
+    } else {
+      /* Limpieza por opciones: si hay menu en body cuyo primer option no está
+         en DEPARTAMENTOS_COL ni TIPOS_ENTIDAD, asumimos que es el viejo de muni */
+      document.querySelectorAll('body > .naowee-dropdown__menu').forEach(m => {
+        const firstOpt = m.querySelector('.naowee-dropdown__option')?.textContent.trim();
+        const isDepto = DEPARTAMENTOS_COL.includes(firstOpt);
+        const isTipo = TIPOS_ENTIDAD.includes(firstOpt);
+        if (!isDepto && !isTipo && firstOpt) m.remove();
+      });
+    }
+    /* Wrappear `fresh` en un contenedor temporal para que bindDropdowns lo
+       encuentre vía querySelectorAll en scope. Solo el nuevo dd se bindea —
+       los otros (tipo, depto) ya tienen su menu en body y serían rebindeados
+       erróneamente (menu=null → appendChild crash). */
+    muniWrap.replaceWith(fresh);
+    const tempScope = document.createElement('div');
+    tempScope.appendChild(fresh);
+    bindDropdowns(tempScope);
+    /* fresh ahora tiene _showMenu y su menu vivió en body. Reinsertar fresh
+       en el form en la posición donde estaba (después del depto wrap). */
+    const deptoWrap = userForm.querySelector('.naowee-dropdown[data-name="departamento"]');
+    deptoWrap.parentNode.appendChild(fresh);
+    /* Anotar la referencia del menu para próxima limpieza */
+    const portMenu = Array.from(document.querySelectorAll('body > .naowee-dropdown__menu')).find(m => {
+      const opt = m.querySelector('.naowee-dropdown__option')?.textContent.trim();
+      return munis.includes(opt);
+    });
+    if (portMenu) fresh._menu = portMenu;
   }
 
   function syncNitFromTipo() {
@@ -458,10 +607,11 @@
     }
   }
 
-  /* Re-syncea NIT helper cuando cambia el dropdown de tipoEntidad.
-     bindDropdowns dispara `change` en el hidden input al seleccionar opción. */
+  /* Re-syncea NIT helper cuando cambia el dropdown de tipoEntidad y muni cuando
+     cambia el depto. bindDropdowns dispara `change` en el hidden input. */
   userForm.addEventListener('change', e => {
     if (e.target.name === 'tipoEntidad') syncNitFromTipo();
+    if (e.target.name === 'departamento') syncMuniFromDepto();
   });
 
   function openUserModal(id) {
@@ -527,48 +677,94 @@
     render();
   });
 
-  /* ─── Modal cambiar responsable de área ─── */
+  /* ─── Modal asignar revisores a un área (multi-select Doug 14/05/2026) ─── */
   const areaOverlay = document.getElementById('areaOverlay');
-  function openAreaModal(especialidad, label) {
-    document.getElementById('areaTitle').textContent = `Cambiar responsable · ${label}`;
-    document.getElementById('areaSub').textContent = `Selecciona el revisor del equipo que cubrirá esta especialidad. La asignación afecta proyectos futuros, no los ya asignados.`;
+  let _currentArea = null;
+  function openAreaModal(especialidad, label, tipo) {
+    _currentArea = { especialidad, label, tipo };
+    document.getElementById('areaTitle').textContent = `Asignar revisores · ${label}`;
+    document.getElementById('areaSub').textContent = `Marca todos los revisores del equipo que pueden cubrir esta especialidad. El sistema asigna automáticamente al que tenga menor carga al momento de iniciar la revisión.`;
     const body = document.getElementById('areaBody');
     const revs = ProjectData.getRevisores();
-    const actualRev = ProjectData.getRevisorPorArea(especialidad);
-    body.innerHTML = revs.map(r => {
-      const esActual = actualRev?.id === r.id;
-      const yaTiene = (r.especialidades || []).includes(especialidad);
-      return `
-        <button type="button" class="reassign-menu__item ${esActual ? 'is-current' : ''}" data-rev="${r.id}" style="background:transparent;border:1px solid var(--border);width:100%;text-align:left;border-radius:8px;padding:10px 12px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="ava-ring" style="width:28px;height:28px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${r.avatar}</span>
-            <div style="flex:1">
-              <div style="font-weight:700;font-size:13px;color:var(--text-primary)">${r.nombre}</div>
-              <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${r.especialidad} · ${r.cargaActiva} activos${yaTiene ? ' · <strong style="color:var(--green)">cubre esta área</strong>' : ''}</div>
-            </div>
-            ${esActual ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
-          </div>
-        </button>
-      `;
-    }).join('');
-    body.querySelectorAll('[data-rev]').forEach(b => {
-      b.addEventListener('click', () => {
-        const newRevId = b.dataset.rev;
-        /* Quitar la especialidad del revisor anterior y agregarla al nuevo */
-        revs.forEach(r => {
-          if (r.id === newRevId) {
-            if (!(r.especialidades || []).includes(especialidad)) {
-              ProjectData.setRevisor(r.id, x => ({ ...x, especialidades: [...(x.especialidades || []), especialidad] }));
-            }
-          } else if ((r.especialidades || []).includes(especialidad)) {
-            ProjectData.setRevisor(r.id, x => ({ ...x, especialidades: (x.especialidades || []).filter(e => e !== especialidad) }));
-          }
-        });
-        const newRev = ProjectData.getRevisor(newRevId);
-        toast({ variant: 'positive', title: 'Responsable actualizado', message: `${newRev.nombre} ahora cubre "${label}".` });
-        closeAreaModal();
-        render();
+    const isRBI = tipo === 'rbi';
+    const isGeneral = tipo === 'general';
+    body.innerHTML = `
+      <div class="area-multi-list" style="display:flex;flex-direction:column;gap:8px">
+        ${revs.map(r => {
+          const yaTiene = isRBI ? r.tipo === 'rbi'
+                       : isGeneral ? (r.tipo === 'general' || (r.especialidades||[]).includes('general'))
+                       : (r.especialidades || []).includes(especialidad);
+          return `
+            <label class="area-multi-row" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid ${yaTiene ? 'var(--accent)' : 'var(--border)'};border-radius:8px;cursor:pointer;background:${yaTiene ? '#fff7f3' : '#fff'}">
+              <input type="checkbox" data-rev="${r.id}" ${yaTiene ? 'checked' : ''} style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+              <span class="ava-ring" style="width:28px;height:28px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${r.avatar}</span>
+              <div style="flex:1">
+                <div style="font-weight:700;font-size:13px;color:var(--text-primary)">${r.nombre}</div>
+                <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${(r.especialidades||[]).join(', ') || r.tipo} · ${r.cargaActiva ?? 0} activos</div>
+              </div>
+            </label>
+          `;
+        }).join('')}
+      </div>
+    `;
+    /* Highlight visual on toggle */
+    body.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const row = cb.closest('.area-multi-row');
+        if (cb.checked) {
+          row.style.borderColor = 'var(--accent)';
+          row.style.background = '#fff7f3';
+        } else {
+          row.style.borderColor = 'var(--border)';
+          row.style.background = '#fff';
+        }
       });
+    });
+    /* Re-bind áreaSave para esta sesión (cleanup del listener anterior si existía) */
+    const saveBtn = document.getElementById('areaSave');
+    saveBtn.replaceWith(saveBtn.cloneNode(true));
+    document.getElementById('areaSave').addEventListener('click', () => {
+      const selectedIds = new Set(
+        Array.from(body.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.dataset.rev)
+      );
+      /* Aplicar cambios a cada revisor: si está en el set, agregar la especialidad;
+         si no, removerla. Para RBI/general también ajustar `tipo` si aplica. */
+      revs.forEach(r => {
+        if (selectedIds.has(r.id)) {
+          if (isRBI) {
+            ProjectData.setRevisor(r.id, x => ({ ...x, tipo: 'rbi' }));
+          } else if (isGeneral) {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: [...new Set([...(x.especialidades || []), 'general'])]
+            }));
+          } else if (!(r.especialidades || []).includes(especialidad)) {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: [...new Set([...(x.especialidades || []), especialidad])]
+            }));
+          }
+        } else {
+          /* Remover si tenía y ahora no */
+          if (isRBI && r.tipo === 'rbi') {
+            /* No degradamos el tipo automáticamente — el admin lo hace explícito desde la edición del revisor */
+          } else if (!isRBI && !isGeneral && (r.especialidades || []).includes(especialidad)) {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: (x.especialidades || []).filter(e => e !== especialidad)
+            }));
+          } else if (isGeneral && (r.especialidades || []).includes('general') && r.tipo !== 'general') {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: (x.especialidades || []).filter(e => e !== 'general')
+            }));
+          }
+        }
+      });
+      const count = selectedIds.size;
+      toast({ variant: 'positive', title: 'Revisores asignados', message: `${count} ${count === 1 ? 'revisor cubre' : 'revisores cubren'} ahora "${label}".` });
+      closeAreaModal();
+      render();
     });
     areaOverlay.hidden = false;
     areaOverlay.classList.add('is-open');

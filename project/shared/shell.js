@@ -571,7 +571,7 @@ export function mountShell({ activeId = 'inicio' } = {}) {
      demoMode === 'guided'. Doug 14/05/2026. */
   const mode = ProjectData.getDemoMode?.() || 'guided';
   if (mode === 'guided') {
-    import('./demo-tour.js?v=20260515m').then(m => m.Tour.mount()).catch(() => {});
+    import('./demo-tour.js?v=20260515o').then(m => m.Tour.mount()).catch(() => {});
   }
 
   return { perfil, perfilData: ProjectData.getPerfilData(perfil) };

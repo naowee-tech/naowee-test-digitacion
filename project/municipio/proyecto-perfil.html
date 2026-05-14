@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515m">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515o">
 </head>
 <body>
 <div class="shell">
@@ -22,10 +22,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515m';
+  import { mountShell } from '../shared/shell.js?v=20260515o';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260515m';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260515o';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -263,9 +263,23 @@
             })()}
           </div>
 
-          <!-- Tab: Observaciones (solo si hay devolución) -->
+          <!-- Tab: Observaciones (histórico — siempre visible si hubo alguna).
+               Doug 14/05/2026: el botón Subsanar solo aparece cuando el proyecto
+               está realmente en estado devuelta_subsanacion. Si ya se subsanó
+               (vuelve a en_revision o avanza), las observaciones quedan como
+               histórico de solo-lectura. -->
           ${(p.observaciones || []).length > 0 ? `
             <div class="proj-tab-panel" data-panel="observaciones" hidden>
+              ${p.estado !== 'devuelta_subsanacion' ? `
+                <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:14px">
+                  <div class="naowee-message__header">
+                    <span class="naowee-message__icon">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <span class="naowee-message__body">Ya subsanaste las observaciones. Quedan aquí como histórico.</span>
+                  </div>
+                </div>
+              ` : ''}
               <div style="display:flex;flex-direction:column;gap:12px">
                 ${p.observaciones.map(o => `
                   <div style="border-left:3px solid var(--accent);padding:12px 14px;background:var(--orange-bg);border-radius:var(--radius-md)">
@@ -275,9 +289,11 @@
                   </div>
                 `).join('')}
               </div>
-              <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
-                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
-              </div>
+              ${p.estado === 'devuelta_subsanacion' ? `
+                <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
+                </div>
+              ` : ''}
             </div>
           ` : ''}
         </div>

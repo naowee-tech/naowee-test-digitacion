@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515p">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515q">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -173,6 +173,64 @@
   .dg-hero__title { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
   .dg-hero__meta { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
   .dg-hero__amount { font-size: 18px; font-weight: 700; color: var(--green); white-space: nowrap; }
+
+  /* ─── Confirm modal DS (reemplaza confirm() nativo de Chrome) ─── */
+  .dg-confirm-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .dg-confirm-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .dg-confirm-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 480px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15,17,35,.35), 0 0 0 1px var(--border);
+    transform: translateY(16px) scale(.97); opacity: 0;
+    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+    overflow: hidden;
+  }
+  .dg-confirm-overlay.is-open .dg-confirm-modal { transform: translateY(0) scale(1); opacity: 1; }
+  .dg-confirm-modal__hero {
+    padding: 28px 28px 18px; text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--green-bg) 0%, #fff 80%);
+  }
+  .dg-confirm-modal__icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+    background: var(--green); color: #fff;
+    box-shadow: 0 8px 24px rgba(21,128,61,.3);
+    animation: dgConfirmPop .4s cubic-bezier(.18,.89,.32,1.28);
+  }
+  .dg-confirm-modal__icon svg { width: 28px; height: 28px; stroke: #fff; }
+  @keyframes dgConfirmPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .dg-confirm-modal__title { font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .dg-confirm-modal__sub { font-size: 13px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
+  .dg-confirm-modal__body {
+    padding: 18px 28px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .dg-confirm-modal__row {
+    display: grid; grid-template-columns: 120px 1fr; gap: 12px;
+    font-size: 12.5px; align-items: center;
+  }
+  .dg-confirm-modal__row dt {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .35px;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .dg-confirm-modal__row dd { color: var(--text-primary); font-weight: 600; margin: 0; }
+  .dg-confirm-modal__footer {
+    padding: 16px 28px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
 </style>
 </head>
 <body>
@@ -182,12 +240,37 @@
     <header class="top-header" id="topHeader"></header>
     <div class="page" id="pageContent"></div>
   </div>
+
+<!-- Confirm modal DS (reemplaza confirm() nativo) -->
+<div class="dg-confirm-overlay" id="dgConfirmOverlay" role="dialog" aria-modal="true" aria-labelledby="dgConfirmTitle" hidden>
+  <div class="dg-confirm-modal">
+    <div class="dg-confirm-modal__hero">
+      <div class="dg-confirm-modal__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="dg-confirm-modal__title" id="dgConfirmTitle">¿Aprobar documentación general?</div>
+      <div class="dg-confirm-modal__sub" id="dgConfirmSub">Marcarás la documentación general como conforme. Si todas las áreas técnicas también están aprobadas, se emitirá automáticamente el concepto de favorabilidad.</div>
+    </div>
+    <div class="dg-confirm-modal__body">
+      <dl class="dg-confirm-modal__row"><dt>Proyecto</dt><dd id="dgConfirmProj">—</dd></dl>
+      <dl class="dg-confirm-modal__row"><dt>Radicado</dt><dd id="dgConfirmRad">—</dd></dl>
+      <dl class="dg-confirm-modal__row"><dt>Ítems verificados</dt><dd id="dgConfirmItems">—</dd></dl>
+    </div>
+    <div class="dg-confirm-modal__footer">
+      <button type="button" class="naowee-btn naowee-btn--mute" id="dgConfirmCancel">Cancelar</button>
+      <button type="button" class="naowee-btn naowee-btn--loud btn-aprobar-doc" id="dgConfirmAccept">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Sí, aprobar
+      </button>
+    </div>
+  </div>
+</div>
 </div>
 <div id="demoRoleSwitcherRoot"></div>
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515p';
+  import { mountShell } from '../shared/shell.js?v=20260515q';
   import { formatoMoneda, fechaCorta } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -592,16 +675,51 @@
       });
     });
 
+    /* Modal de confirmación canónico (reemplaza confirm() nativo de Chrome). */
+    const dgConfirmOverlay = document.getElementById('dgConfirmOverlay');
+    function confirmAprobarDocGeneral(verifMsg) {
+      return new Promise(resolve => {
+        document.getElementById('dgConfirmProj').textContent = p.nombre || '—';
+        document.getElementById('dgConfirmRad').textContent = (p.radicado || '—').split('-CONV-')[0];
+        document.getElementById('dgConfirmItems').textContent = verifMsg;
+        dgConfirmOverlay.hidden = false;
+        requestAnimationFrame(() => dgConfirmOverlay.classList.add('is-open'));
+        const cancelBtn = document.getElementById('dgConfirmCancel');
+        const acceptBtn = document.getElementById('dgConfirmAccept');
+        const close = (val) => {
+          dgConfirmOverlay.classList.remove('is-open');
+          setTimeout(() => { dgConfirmOverlay.hidden = true; }, 240);
+          cancelBtn.removeEventListener('click', onCancel);
+          acceptBtn.removeEventListener('click', onAccept);
+          dgConfirmOverlay.removeEventListener('click', onBackdrop);
+          document.removeEventListener('keydown', onEsc);
+          resolve(val);
+        };
+        const onCancel = () => close(false);
+        const onAccept = () => close(true);
+        const onBackdrop = (e) => { if (e.target === dgConfirmOverlay) close(false); };
+        const onEsc = (e) => { if (e.key === 'Escape') close(false); };
+        cancelBtn.addEventListener('click', onCancel);
+        acceptBtn.addEventListener('click', onAccept);
+        dgConfirmOverlay.addEventListener('click', onBackdrop);
+        document.addEventListener('keydown', onEsc);
+        acceptBtn.focus();
+      });
+    }
+
     /* Aprobar — solo si todos verificados Y 0 "no cumple" (la lógica también está en el disabled) */
-    document.getElementById('btnAprobar')?.addEventListener('click', () => {
+    document.getElementById('btnAprobar')?.addEventListener('click', async () => {
       const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
       const allDone = all.length === totalItems;
       const noCumpleCount = all.filter(v => v === 'nocumple').length;
+      const cumpleCount = all.filter(v => v === 'cumple').length;
+      const naCount = all.filter(v => v === 'na').length;
       if (!allDone || noCumpleCount > 0) {
         toast({ variant: 'caution', title: 'No se puede aprobar', message: !allDone ? 'Marca todos los ítems antes de aprobar.' : `Hay ${noCumpleCount} ítem(s) en "No cumple". La documentación debe devolverse.` });
         return;
       }
-      if (!confirm('¿Aprobar la documentación general?')) return;
+      const ok = await confirmAprobarDocGeneral(`${cumpleCount} cumple · ${naCount} N/A · 0 no cumple`);
+      if (!ok) return;
       let cerroConcepto = false;
       ProjectData.setProyecto(p.idUnico, x => {
         x.docsGeneral = x.docsGeneral || {};

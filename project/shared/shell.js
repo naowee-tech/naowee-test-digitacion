@@ -134,12 +134,6 @@ function renderSidebar(perfil, activeId) {
       <nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Menú principal">
         ${sections}
       </nav>
-      <div class="sidebar-bottom">
-        <div class="nav-row" data-action="logout">
-          <div class="icon">${ICONS.logout}</div>
-          <span class="lbl">Cerrar sesión</span>
-        </div>
-      </div>
     </aside>
   `;
 }
@@ -198,14 +192,6 @@ function renderHeader(perfil) {
             </span>
           </div>
         </div>
-        <div class="profile-dd__sep"></div>
-        <a class="profile-dd__item" href="#"><span class="profile-dd__icon">${ICONS.user}</span> Mi perfil</a>
-        <a class="profile-dd__item" href="#"><span class="profile-dd__icon">${ICONS.cog}</span> Configuración</a>
-        <a class="profile-dd__item" href="#"><span class="profile-dd__icon">${ICONS.notificaciones}</span> Notificaciones</a>
-        <div class="profile-dd__sep"></div>
-        <a class="profile-dd__item profile-dd__item--danger" href="#" data-action="logout">
-          <span class="profile-dd__icon">${ICONS.logout}</span> Cerrar sesión
-        </a>
       </div>
     </div>
   `;

@@ -1659,14 +1659,32 @@ function bindDatepickers(scope) {
     const positionPopover = () => {
       const rect = inputContainer.getBoundingClientRect();
       const popoverWidth = popover.offsetWidth || 320;
+      const popoverHeight = popover.offsetHeight || 320;
+      const margin = 16;
+
       let left = rect.left;
-      if (left + popoverWidth > window.innerWidth - 16) {
-        left = Math.max(16, rect.right - popoverWidth);
+      if (left + popoverWidth > window.innerWidth - margin) {
+        left = Math.max(margin, rect.right - popoverWidth);
       }
-      /* SIEMPRE pegado abajo del input. Si se sale del viewport el
-         usuario puede scrollear el modal — esto es preferible al salto
-         visual del flip-up que aleja mucho el popover. */
-      const top = rect.bottom + 6;
+
+      /* Flip-up cuando no cabe debajo del input. Antes era pinned-abajo
+         siempre, pero cuando el field queda cerca del bottom del viewport
+         (ej. "Cierre" o "Emisión de conceptos" en step 1) el popover se
+         cortaba con el borde del navegador. Doug 14/05/2026. */
+      const spaceBelow = window.innerHeight - rect.bottom - margin;
+      const spaceAbove = rect.top - margin;
+      let top;
+      if (spaceBelow >= popoverHeight + 6 || spaceBelow >= spaceAbove) {
+        top = rect.bottom + 6;
+        /* Si aún así no cabe, clamparlo al límite del viewport */
+        if (top + popoverHeight > window.innerHeight - margin) {
+          top = Math.max(margin, window.innerHeight - margin - popoverHeight);
+        }
+      } else {
+        top = rect.top - popoverHeight - 6;
+        if (top < margin) top = margin;
+      }
+
       popover.style.top = top + 'px';
       popover.style.left = left + 'px';
     };

@@ -41,32 +41,34 @@ const SEED = {
       marcadores: { zomac: false, pdet: true, ebiPnd: true }
     },
     revisor: {
-      nombre: 'Juan Manuel Ávila',
-      cargo: 'Revisor — Equipo Técnico Ministerio',
+      nombre: 'Diana Patricia Salgado',
+      cargo: 'Revisora RBI — Ministerio del Deporte',
       entidad: 'Ministerio del Deporte',
-      email: 'jm.avila@mindeporte.gov.co',
-      avatar: 'JA',
-      color: '#7c3aed',
-      /* Enlace al pool: con qué revisor del equipo estoy logueado.
-         Modelo: el equipo revisor ve todos los proyectos en revisión,
-         pero cada quien aprueba SOLO sus áreas (Res. 933 Art. 3 + transcripción 2026-04-29). */
-      revisorId: 'rev-001'
+      email: 'diana.salgado@mindeporte.gov.co',
+      avatar: 'DS',
+      color: '#d74009',
+      /* v2.0 — Demo arranca con el revisor RBI (primer eslabón del flujo).
+         Switcher del demo permite alternar a doc general (rev-general-001)
+         o a cualquier técnico (rev-001 a rev-004). */
+      revisorId: 'rev-rbi-001'
     }
   },
 
-  /* ═══ Equipo revisor del Ministerio (Res. 933 Art. 3 + transcripción 29/04/2026) ═══
-     5 personas cubren 8 áreas técnicas + 1 documentación general.
-     • `especialidades` (array de keys) → mapeo automático área↔revisor.
-     • `especialidad` (string display) → label legacy para UI compacta.
-     Modelo definido por Andrea + Danna: "todos ven todo, cada quien
-     aprueba lo suyo" — no hay coordinador humano que asigna 1-1, la
-     asignación por área es automática por especialidad. */
+  /* ═══ Equipo revisor del Ministerio v2.0 (acta 14/05/2026 Danna + Juanma) ═══
+     6 personas: 1 RBI + 1 doc general + 4 técnicos (cubren 8 áreas).
+     • `tipo`: 'rbi' | 'general' | 'tecnico' → determina pantalla y scope
+     • `especialidades`: keys de áreas que revisa (vacío si tipo rbi/general)
+     • Modelo Danna: "el revisor de indispensable, el revisor de generar,
+       y los revisores técnicos" — son tres tipos de revisor diferenciados.
+     Hay un orden secuencial: RBI primero, luego (Doc General + 8 áreas en paralelo).
+  */
   revisores: [
-    { id: 'rev-001', nombre: 'Juan Manuel Ávila',  especialidad: 'Arquitectónica + Estructural', especialidades: ['arquitectonico','estructural'], avatar: 'JA', color: '#7c3aed', cargaActiva: 8 },
-    { id: 'rev-002', nombre: 'María Elena Cortés', especialidad: 'Hidrosanitario + Eléctrico',   especialidades: ['hidrosanitario','electrico'],    avatar: 'MC', color: '#0d7a83', cargaActiva: 5 },
-    { id: 'rev-003', nombre: 'Carlos Beltrán',     especialidad: 'Suelos + Topográfico',         especialidades: ['suelos','topografico'],          avatar: 'CB', color: '#b45309', cargaActiva: 6 },
-    { id: 'rev-004', nombre: 'Andrea Quintero',    especialidad: 'Ambiental + Presupuesto',      especialidades: ['ambiental','presupuesto'],       avatar: 'AQ', color: '#15803d', cargaActiva: 4 },
-    { id: 'rev-005', nombre: 'Luis Felipe Rondón', especialidad: 'Documentación General',        especialidades: ['general'],                        avatar: 'LR', color: '#1f78d1', cargaActiva: 7 }
+    { id: 'rev-rbi-001',     nombre: 'Diana Patricia Salgado', tipo: 'rbi',     especialidad: 'Requisitos Básicos Indispensables', especialidades: [],                                avatar: 'DS', color: '#d74009', cargaActiva: 9 },
+    { id: 'rev-general-001', nombre: 'Luis Felipe Rondón',     tipo: 'general', especialidad: 'Documentación General',             especialidades: ['general'],                       avatar: 'LR', color: '#1f78d1', cargaActiva: 7 },
+    { id: 'rev-001',         nombre: 'Juan Manuel Ávila',      tipo: 'tecnico', especialidad: 'Arquitectónica + Estructural',     especialidades: ['arquitectonico','estructural'], avatar: 'JA', color: '#7c3aed', cargaActiva: 8 },
+    { id: 'rev-002',         nombre: 'María Elena Cortés',     tipo: 'tecnico', especialidad: 'Hidrosanitario + Eléctrico',       especialidades: ['hidrosanitario','electrico'],   avatar: 'MC', color: '#0d7a83', cargaActiva: 5 },
+    { id: 'rev-003',         nombre: 'Carlos Beltrán',         tipo: 'tecnico', especialidad: 'Suelos + Topográfico',             especialidades: ['suelos','topografico'],         avatar: 'CB', color: '#b45309', cargaActiva: 6 },
+    { id: 'rev-004',         nombre: 'Andrea Quintero',        tipo: 'tecnico', especialidad: 'Ambiental + Presupuesto',          especialidades: ['ambiental','presupuesto'],      avatar: 'AQ', color: '#15803d', cargaActiva: 4 }
   ],
 
   /* ═══ Usuarios municipales / entidades territoriales (Sprint 3 dev) ═══
@@ -1442,7 +1444,7 @@ const ProjectData = (() => {
      (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
      ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 6;
+  const SCHEMA_VERSION = 7;
 
   /* v1.1 — Días extra que concede el admin cuando aprueba prórroga RBI.
      Solo se puede solicitar UNA VEZ por proyecto. */
@@ -1694,6 +1696,11 @@ const ProjectData = (() => {
   }
 
   /* Pool de revisores técnicos del Ministerio (Res. 933 Art. 3) */
+  /* v2.0 — Filtra el pool por tipo: 'rbi' | 'general' | 'tecnico' */
+  function getRevisoresPorTipo(tipo) {
+    return getRevisores().filter(r => r.tipo === tipo);
+  }
+
   function getRevisores() {
     return load().revisores || [];
   }
@@ -1894,6 +1901,7 @@ const ProjectData = (() => {
     solicitarProrrogaRBI, resolverProrrogaRBI, getProyectosConProrrogaPendiente,
     PRORROGA_DIAS_EXTRA,
     getRevisores, getRevisor, setRevisor, getRevisorActivo, getRevisorPorArea,
+    getRevisoresPorTipo,
     AREA_TO_SPECIALTY, SLA_DIAS_REVISION,
     getUsuariosMunicipales, getUsuarioMunicipal,
     addUsuarioMunicipal, setUsuarioMunicipal, removeUsuarioMunicipal,

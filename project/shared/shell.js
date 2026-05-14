@@ -95,7 +95,7 @@ const MENUS = {
       {
         section: 'Bandejas',
         items: [
-          { id: 'bandeja',        label: 'Postulaciones',      icon: 'bandeja',      href: 'revisor/bandeja.html' },
+          { id: 'bandeja',        label: 'Bandeja de revisión', icon: 'bandeja',      href: 'revisor/bandeja.html' },
           { id: 'doc-general',    label: 'Documentación general', icon: 'documentos', href: 'revisor/doc-general.html' },
           { id: 'doc-tecnica',    label: 'Áreas técnicas',     icon: 'area',         href: 'revisor/doc-tecnica.html' }
         ]
@@ -232,30 +232,39 @@ function renderDemoSwitcher(perfil) {
     `;
   }).join('');
 
-  /* Cuando estás logueado como revisor, expandir con el equipo revisor (5 personas).
-     Cada item cambia el `revisorId` del perfil para validar el gate "solo apruebas
-     lo tuyo" en doc-general (rev-005) y áreas técnicas por especialidad. */
+  /* v2.0 — Cuando estás logueado como revisor, mostrar el equipo agrupado
+     por tipo (RBI / General / Técnico) para reflejar el orden secuencial
+     de revisión. Cada item cambia el `revisorId` del perfil. */
   let equipoItems = '';
   if (perfil === 'revisor' && ProjectData.getRevisores) {
     const equipo = ProjectData.getRevisores();
-    equipoItems = `
-      <div class="demo-role-switcher__panel-label" style="margin-top:6px">Equipo revisor — cambiar persona logueada</div>
-      <div class="demo-role-switcher__list">
-        ${equipo.map(r => {
-          const isActive = revisorActivo?.id === r.id;
-          return `
-            <a class="demo-role-switcher__item ${isActive ? 'is-active' : ''}"
-               href="#" data-revisor="${r.id}">
-              <div class="demo-role-switcher__avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
-              <div class="demo-role-switcher__meta">
-                <strong>${r.nombre}</strong>
-                <small>${r.especialidad}</small>
-              </div>
-              ${isActive ? `<div class="demo-role-switcher__check">${ICONS.check}</div>` : ''}
-            </a>`;
-        }).join('')}
-      </div>
-    `;
+    const grupos = [
+      { tipo: 'rbi',     label: 'Revisor RBI · paso 1 de revisión' },
+      { tipo: 'general', label: 'Revisor Doc. General · paso 2' },
+      { tipo: 'tecnico', label: 'Revisores técnicos · paso 3 (por especialidad)' }
+    ];
+    equipoItems = grupos.map(g => {
+      const miembros = equipo.filter(r => r.tipo === g.tipo);
+      if (!miembros.length) return '';
+      return `
+        <div class="demo-role-switcher__panel-label" style="margin-top:6px">${g.label}</div>
+        <div class="demo-role-switcher__list">
+          ${miembros.map(r => {
+            const isActive = revisorActivo?.id === r.id;
+            return `
+              <a class="demo-role-switcher__item ${isActive ? 'is-active' : ''}"
+                 href="#" data-revisor="${r.id}">
+                <div class="demo-role-switcher__avatar" style="background:${r.color}22;color:${r.color}">${r.avatar}</div>
+                <div class="demo-role-switcher__meta">
+                  <strong>${r.nombre}</strong>
+                  <small>${r.especialidad}</small>
+                </div>
+                ${isActive ? `<div class="demo-role-switcher__check">${ICONS.check}</div>` : ''}
+              </a>`;
+          }).join('')}
+        </div>
+      `;
+    }).join('');
   }
 
   return `

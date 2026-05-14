@@ -18,26 +18,22 @@ const FUENTES = [
   'SGP','OCAD-Paz','Recursos Propios Mindeporte','Recursos Propios Municipio',
   'Cofinanciación territorial','Cooperación internacional','Crédito interno','Crédito externo'
 ];
-/* Bienio dinámico (Juanma 13/05/2026): año actual ± 3 años.
-   Genera 5 bienios: año-1, año actual, año+1, año+2, año+3.
-   Cada bienio = "{año}-{año+1}". Si hoy es 2026 → 2025-2026, 2026-2027, ... 2029-2030.
-   El default es el bienio que contiene el año actual. */
+/* v2.0 — Año en lugar de bienio (acta Danna/Juanma 14/05/2026).
+   Cada convocatoria pertenece a un año específico. Si hay 2 al año, son
+   convocatorias independientes con nombres distintos (no hay "padre/hija").
+   Default = año actual. */
 const _ANO_HOY = new Date().getFullYear();
-const BIENIOS = (() => {
+const ANIOS = (() => {
   const arr = [];
-  for (let offset = -1; offset <= 3; offset++) {
-    const a = _ANO_HOY + offset;
-    arr.push(`${a}-${a + 1}`);
-  }
+  for (let offset = -1; offset <= 3; offset++) arr.push(String(_ANO_HOY + offset));
   return arr;
 })();
-const BIENIO_DEFAULT = `${_ANO_HOY}-${_ANO_HOY + 1}`;
-const SI_NO  = [{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }];
+const ANIO_DEFAULT = String(_ANO_HOY);
+/* v2.0 — Regional eliminado (Juanma 14/05/2026): solo Nacional / Departamental / Específica */
 const COBERTURAS = [
-  { value: 'Nacional', label: 'Nacional' },
-  { value: 'Departamental', label: 'Departamental' },
-  { value: 'Regional', label: 'Regional' },
-  { value: 'Específica', label: 'Específica' }
+  { value: 'Nacional', label: 'Nacional · invita departamentos + municipios' },
+  { value: 'Departamental', label: 'Departamental · invita solo gobernaciones' },
+  { value: 'Específica', label: 'Específica · elige municipios o departamentos' }
 ];
 const DEPARTAMENTOS = [
   'Amazonas','Antioquia','Arauca','Atlántico','Bolívar','Boyacá','Caldas','Caquetá','Casanare','Cauca',
@@ -1195,8 +1191,8 @@ function stepIdentificacion() {
     ${textfield({ label: 'Nombre de la convocatoria', name: 'nombre', required: true, minlength: 10, maxlength: 200, placeholder: 'Ej: Convocatoria Nacional de Infraestructura Deportiva 2026 II', helper: 'Mín. 10, máx. 200 caracteres' })}
     ${textarea({ label: 'Descripción', name: 'descripcion', required: true, maxlength: 5000, rows: 3, placeholder: 'Alcance, objetivos, entidades elegibles, criterios generales…', helper: 'Máx. 5.000 caracteres' })}
     <div class="convo-grid-2">
-      ${dropdown({ label: 'Bienio', name: 'bienio', required: true, options: BIENIOS, value: BIENIO_DEFAULT })}
-      ${dropdown({ label: 'Permite segunda convocatoria', name: 'permiteSegunda', options: SI_NO, value: 'true' })}
+      ${dropdown({ label: 'Año', name: 'anio', required: true, options: ANIOS, value: ANIO_DEFAULT })}
+      ${dropdown({ label: 'Tipo de proyecto', name: 'tipoProyecto', required: true, options: ['Infraestructura'], value: 'Infraestructura' })}
     </div>
     <h3 class="convo-section">Periodo de postulación</h3>
     <div class="convo-grid-2">
@@ -2427,7 +2423,7 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     const v = coberturaHidden?.value || 'Nacional';
     const deptosWrap = overlay.querySelector('#deptosWrap');
     const muniWrap = overlay.querySelector('#muniWrap');
-    if (deptosWrap) deptosWrap.style.display = (v === 'Departamental' || v === 'Regional') ? 'block' : 'none';
+    if (deptosWrap) deptosWrap.style.display = (v === 'Departamental') ? 'block' : 'none';
     if (muniWrap) muniWrap.style.display = (v === 'Específica') ? 'block' : 'none';
   };
   updateCobertura();
@@ -2638,12 +2634,13 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       id,
       nombre: fd.get('nombre'),
       descripcion: fd.get('descripcion'),
-      bienio: fd.get('bienio'),
+      anio: fd.get('anio'),
+      bienio: fd.get('anio'), /* backward-compat: alias para código que aún lee `bienio` */
       apertura: fd.get('apertura'),
       cierre: fd.get('cierre'),
       emisionConcepto: fd.get('emisionConcepto') || null,
       cobertura,
-      departamentos: (cobertura === 'Departamental' || cobertura === 'Regional') ? departamentos : [],
+      departamentos: (cobertura === 'Departamental') ? departamentos : [],
       municipios: cobertura === 'Específica' ? municipiosTxt : [],
       soloZOMAC: fd.get('soloZOMAC') === 'true',
       soloPDET: fd.get('soloPDET') === 'true',

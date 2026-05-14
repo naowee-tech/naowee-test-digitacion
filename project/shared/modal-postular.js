@@ -12,7 +12,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, formatoMoneda } from './states.js';
-import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260515v';
+import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260515w';
 import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -48,7 +48,13 @@ const STEPS = [
      BLOQUE 3 (técnica) — 8 áreas técnicas (revisores especialistas por área)
 
    Cada icono es un SVG semántico (24x24 stroke=currentColor stroke-width=1.7). */
-const ICON_RBI     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9-1.85 0-3.57-.56-5-1.51L3 21l1.5-4A8.96 8.96 0 013 12c0-4.97 4.03-9 9-9s9 4.03 9 9z"/></svg>';
+/* Iconos por sub-sección del bloque RBI (Doug 15/05): cada sub-sección
+   tiene su propio icono semántico para diferenciar visualmente. */
+const ICON_RBI_CARTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>';
+const ICON_RBI_PREDIO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>';
+const ICON_RBI_PRESUP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+/* Legacy ICON_RBI mantenido por backward-compat con otros consumidores */
+const ICON_RBI     = ICON_RBI_CARTA;
 const ICON_GENERAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>';
 const ICON_TOPO    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 8 3 16 6 23 3 23 18 16 21 8 18 1 21 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>';
 const ICON_SUELOS  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 7 12 2 21 7 12 12 3 7"/><polyline points="3 12 12 17 21 12"/><polyline points="3 17 12 22 21 17"/></svg>';
@@ -61,16 +67,16 @@ const ICON_PRES    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 
 /* BLOQUE 1 — RBI (lo revisa el revisor RBI dedicado) */
 const AREAS_RBI = [
-  { id: 'rbi-intencion', icon: ICON_RBI, ref: 'Res. 933 Sec. 1.1', label: 'Carta de intención y formalización', docs: [
+  { id: 'rbi-intencion', icon: ICON_RBI_CARTA, ref: 'Res. 933 Sec. 1.1', label: 'Carta de intención y formalización', docs: [
     { id: 'rbi-carta', label: 'Carta de intención firmada por representante legal', required: true },
     { id: 'rbi-cedula', label: 'Cédula del representante legal', required: true },
     { id: 'rbi-acto', label: 'Acto administrativo que autoriza la postulación', required: true }
   ]},
-  { id: 'rbi-titularidad', icon: ICON_RBI, ref: 'Res. 933 Sec. 1.2-1.3', label: 'Titularidad del predio', docs: [
+  { id: 'rbi-titularidad', icon: ICON_RBI_PREDIO, ref: 'Res. 933 Sec. 1.2-1.3', label: 'Titularidad del predio', docs: [
     { id: 'rbi-tenencia', label: 'Documento de tenencia / propiedad', required: true },
     { id: 'rbi-tradicion', label: 'Certificado de tradición y libertad', required: true }
   ]},
-  { id: 'rbi-presupuestal', icon: ICON_RBI, ref: 'Res. 933 Sec. 1.4', label: 'Soporte presupuestal y SUID', docs: [
+  { id: 'rbi-presupuestal', icon: ICON_RBI_PRESUP, ref: 'Res. 933 Sec. 1.4', label: 'Soporte presupuestal y SUID', docs: [
     { id: 'rbi-cdp', label: 'Certificado de disponibilidad presupuestal (CDP)', required: true },
     { id: 'rbi-suid', label: 'Certificado del Sistema Único de Información Deportiva (SUID)', required: true },
     { id: 'rbi-analisis', label: 'Documento de análisis de necesidad', required: true }
@@ -207,6 +213,25 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
     'Tenis de mesa', 'Bádminton', 'Pesas', 'Judo', 'Karate', 'Taekwondo'
   ];
   const datums = ['MAGNA-SIRGAS', 'WGS84'];
+
+  /* Inject postular-specific styles ONCE — reduce modal width para que el
+     stepper de 5 pasos quepa ajustado sin espacio en blanco innecesario. */
+  if (!document.getElementById('postularModalStyle')) {
+    const style = document.createElement('style');
+    style.id = 'postularModalStyle';
+    style.textContent = `
+      #postularOverlay .naowee-modal--wide {
+        width: 840px !important;
+        max-width: 95vw !important;
+        max-height: 92vh;
+      }
+      /* En viewports pequeños relajamos a 95vw — el modal se adapta */
+      @media (max-width: 880px) {
+        #postularOverlay .naowee-modal--wide { width: 95vw !important; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   const overlay = document.createElement('div');
   overlay.className = 'naowee-modal-overlay';

@@ -14,7 +14,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, diasRestantes } from './states.js';
-import { textarea, fileUpload, bindFileUploads, renderReview, runConfetti, validateRequired, bindValidationReset } from './wizard-page.js?v=20260515o';
+import { textarea, fileUpload, bindFileUploads, renderReview, runConfetti, validateRequired, bindValidationReset } from './wizard-page.js?v=20260515p';
 import { toast } from './toast.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;

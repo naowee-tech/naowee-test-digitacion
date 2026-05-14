@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515o">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515p">
 <style>
   /* Quitar elevation/sombra del table-card en esta página (DS aplica box-shadow por default) */
   .naowee-table-card { box-shadow: none !important; }
@@ -76,7 +76,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515o';
+  import { mountShell } from '../shared/shell.js?v=20260515p';
   import { ESTADOS_POSTULACION, formatoMoneda, fechaCorta, diasRestantes } from '../shared/states.js';
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -297,8 +297,17 @@
                   const lbl = mis.pendientes > 0 ? `${mis.pendientes} / ${mis.total} pend.` : `${mis.total} ✓`;
                   misBadge = `<span class="mias-pill ${cls}" title="${mis.total} área${mis.total===1?'':'s'} asignada${mis.total===1?'':'s'} en este proyecto · ${mis.pendientes} pendiente${mis.pendientes===1?'':'s'}${mis.urgentes ? ' · '+mis.urgentes+' urgente'+(mis.urgentes===1?'':'s') : ''}${mis.vencidas ? ' · '+mis.vencidas+' vencida'+(mis.vencidas===1?'':'s') : ''}">${lbl}</span>`;
                 }
+                /* Routing por tipo de revisor (Doug 14/05/2026):
+                   • RBI revisa la postulación en revisar-postulacion.html (gate inicial)
+                   • Doc General revisa los documentos en doc-general.html
+                   • Técnico va al detalle de áreas en doc-tecnica.html
+                   Sin este routing, todos caían a revisar-postulacion y veían
+                   "Esta postulación ya fue procesada" cuando el proyecto avanzó. */
+                const detailHref = tipoRevisor === 'general' ? `doc-general.html?id=${p.idUnico}`
+                  : tipoRevisor === 'tecnico' ? `doc-tecnica.html?id=${p.idUnico}`
+                  : `revisar-postulacion.html?id=${p.idUnico}`;
                 return `
-                  <tr data-estado="${p.estado}" data-prioridad="${p.priorizado ? 'priorizado' : ''}" data-mias="${mis.total > 0 ? '1' : '0'}" data-search="${(p.radicado+' '+p.nombre+' '+p.municipio).toLowerCase()}" onclick="fadeAndGo('revisar-postulacion.html?id=${p.idUnico}')">
+                  <tr data-estado="${p.estado}" data-prioridad="${p.priorizado ? 'priorizado' : ''}" data-mias="${mis.total > 0 ? '1' : '0'}" data-search="${(p.radicado+' '+p.nombre+' '+p.municipio).toLowerCase()}" onclick="fadeAndGo('${detailHref}')">
                     <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
                       <span class="rad-cell" title="${p.radicado || ''}">
                         ${p.priorizado

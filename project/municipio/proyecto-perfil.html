@@ -25,6 +25,7 @@
   import { mountShell } from '../shared/shell.js?v=20260513o';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260514a';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -125,7 +126,7 @@
               })() : ''}
               ${p.estado === 'devuelta_subsanacion' ? `
                 <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-                  <a class="naowee-btn naowee-btn--loud naowee-btn--small" href="subsanar.html?id=${p.idUnico}">Subsanar →</a>
+                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
                 </div>
               ` : ''}
             </div>
@@ -275,7 +276,7 @@
                 `).join('')}
               </div>
               <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
-                <a class="naowee-btn naowee-btn--loud naowee-btn--small" href="subsanar.html?id=${p.idUnico}">Subsanar →</a>
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
               </div>
             </div>
           ` : ''}
@@ -309,6 +310,19 @@
         variant: 'positive',
         title: 'Descarga iniciada',
         message: `${p.conceptoFavorabilidad?.certificado || 'Certificado'} se está generando. En producción este botón descarga el PDF firmado.`
+      });
+    });
+
+    /* Triggers de subsanación → abren modal-subsanar.js (antes era una página dedicada) */
+    document.querySelectorAll('[data-subsanar]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openSubsanarModal({
+          proyectoId: btn.dataset.subsanar,
+          onSubsanado: () => {
+            /* Cuando se completa el envío, recargar la página para reflejar el nuevo estado */
+            setTimeout(() => window.location.reload(), 1200);
+          }
+        });
       });
     });
   }

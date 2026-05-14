@@ -1660,6 +1660,66 @@ const ProjectData = (() => {
     update(s => { s.proyectos.unshift(p); });
   }
 
+  /* Catálogo canónico de áreas técnicas (Res. 933 de 2024 · Art. 3).
+     Single source of truth para inicializar docsTecnica.areas tras aprobar RBI.
+     Doug 14/05/2026: actualizado contra el PDF — solo 6 áreas (sin ambiental ni presupuesto). */
+  const AREAS_CATALOG = {
+    topografico:    { nombre: 'Levantamiento topográfico',              items: 5 },
+    suelos:         { nombre: 'Estudio de suelos',                      items: 4 },
+    arquitectonico: { nombre: 'Diseño arquitectónico',                  items: 8 },
+    estructural:    { nombre: 'Diseño estructural',                     items: 4 },
+    hidrosanitario: { nombre: 'Diseño hidráulico, sanitario y pluvial', items: 6 },
+    electrico:      { nombre: 'Diseño eléctrico (RETIE/RETILAP)',       items: 5 }
+  };
+
+  /* Inicializa docsGeneral + docsTecnica al aprobarse RBI.
+     Lee areasRequeridas de la convocatoria, auto-asigna revisor por especialidad,
+     y deja todo en estado "pendiente" para que el revisor general/técnico arranque. */
+  function initDocsRevisionAfterRBI(idUnico) {
+    const p = getProyecto(idUnico);
+    if (!p) return { ok: false, error: 'proyecto-no-encontrado' };
+    const conv = getConvocatorias().find(c => c.id === p.convocatoriaId);
+    /* Si la convocatoria no define areasRequeridas, usamos las 6 canónicas */
+    const areasReq = (conv?.areasRequeridas && conv.areasRequeridas.length)
+      ? conv.areasRequeridas
+      : Object.keys(AREAS_CATALOG);
+
+    const revGeneral = getRevisorPorArea('general');
+    const docsGeneral = p.docsGeneral || {
+      estado: 'pendiente',
+      revisorId: revGeneral?.id || null,
+      revisor: revGeneral?.nombre || null,
+      asignadoEn: new Date().toISOString(),
+      items: [],
+      checklist: {}
+    };
+
+    const docsTecnica = p.docsTecnica || {
+      estado: 'pendiente',
+      areas: areasReq.map(areaId => {
+        const meta = AREAS_CATALOG[areaId] || { nombre: areaId, items: 4 };
+        const rev = getRevisorPorArea(areaId);
+        return {
+          id: areaId,
+          nombre: meta.nombre,
+          estado: 'pendiente',
+          revisorId: rev?.id || null,
+          revisor: rev?.nombre || null,
+          asignadoEn: new Date().toISOString(),
+          items: meta.items,
+          aprobados: 0,
+          checklist: {}
+        };
+      })
+    };
+
+    setProyecto(idUnico, x => {
+      x.docsGeneral = docsGeneral;
+      x.docsTecnica = docsTecnica;
+    });
+    return { ok: true, areasCount: docsTecnica.areas.length };
+  }
+
   /* ═══════════════════════════════════════════════════════════════════
      v1.1 — Prórroga RBI (flujo nuevo, acta 13/05/2026 Danna)
      ─────────────────────────────────────────────────────────────────
@@ -1935,7 +1995,8 @@ const ProjectData = (() => {
   return {
     load, save, reset, update,
     setPerfil, getPerfil, getPerfilData,
-    getProyectos, getProyecto, setProyecto, addProyecto,
+    getProyectos, getProyecto, setProyecto, addProyecto, initDocsRevisionAfterRBI,
+    AREAS_CATALOG,
     solicitarProrrogaRBI, resolverProrrogaRBI, getProyectosConProrrogaPendiente,
     PRORROGA_DIAS_EXTRA,
     getRevisores, getRevisor, setRevisor, getRevisorActivo, getRevisorPorArea,

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515e">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515c';
+  import { mountShell } from '../shared/shell.js?v=20260515e';
   import { ESTADOS_POSTULACION, ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
   import { openActivarInversionModal } from '../shared/modal-activar-inversion.js?v=20260512m';
   ProjectData.setPerfil('admin');
@@ -156,7 +156,7 @@
             mensajeFlujo = `El equipo revisor del Ministerio se asignará automáticamente por especialidad cuando apruebes la revisión inicial de la postulación.`;
           } else if (p.estado === 'en_revision') {
             titleFlujo = 'Revisión inicial en curso';
-            mensajeFlujo = `Si apruebas la postulación, las <strong>8 áreas técnicas + doc general</strong> se asignarán automáticamente a los 5 revisores por especialidad. Sin intervención manual.`;
+            mensajeFlujo = `Si apruebas la postulación, las <strong>áreas técnicas + doc general</strong> se asignarán automáticamente a los revisores por especialidad. Sin intervención manual.`;
           } else if (p.estado === 'devuelta_subsanacion') {
             titleFlujo = 'Postulación devuelta al municipio';
             mensajeFlujo = `El equipo se asignará cuando vuelva a revisión y la postulación sea aprobada.`;
@@ -205,7 +205,7 @@
             <div class="equipo-revisor__head">
               <div>
                 <div class="equipo-revisor__title">Equipo revisor del Ministerio</div>
-                <div class="equipo-revisor__hint">5 especialistas cubren las 8 áreas técnicas + doc general. La asignación es por especialidad — no se selecciona manualmente.</div>
+                <div class="equipo-revisor__hint">El pool de especialistas cubre las áreas técnicas + doc general. La asignación es por especialidad — no se selecciona manualmente.</div>
               </div>
               ${equipoActivo ? `
                 <div class="equipo-revisor__progress" title="${totalAprobadas} de ${totalAreas} áreas aprobadas">

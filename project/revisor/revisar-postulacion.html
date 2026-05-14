@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515e">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -314,10 +314,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515c';
+  import { mountShell } from '../shared/shell.js?v=20260515e';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515c';
+  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515e';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -796,18 +796,22 @@
             const ok = await confirmFavorableModal();
             if (!ok) return;
             const ahora = new Date().toISOString();
+            /* v2.0 — Inicializa docsGeneral + docsTecnica.areas[] a partir de la
+               convocatoria.areasRequeridas, con auto-asignación de revisor por especialidad. */
+            const initRes = ProjectData.initDocsRevisionAfterRBI(p.idUnico);
+            const areasCount = initRes?.areasCount || 0;
             ProjectData.setProyecto(p.idUnico, x => {
               x.fechaRBIAprobada = ahora;
               x.fechaInicioRevisionDocs = ahora;
               x.historial = x.historial || [];
-              x.historial.push({ ts: ahora, actor: 'revisor', evento: 'RBI aprobado · libera Doc General + 8 áreas técnicas', estado: 'rbi_aprobada' });
+              x.historial.push({ ts: ahora, actor: 'revisor', evento: `RBI aprobado · libera Doc General + ${areasCount} áreas técnicas`, estado: 'rbi_aprobada' });
               x.historial.push({ ts: ahora, actor: 'sistema', evento: 'Auto-asignación de revisores Doc General y técnicos por especialidad', estado: 'en_revision_docs' });
               x.estado = 'en_revision_docs';
             });
-            /* v2.0 — Notificar a los 3 actores siguientes: municipio + revisor general + 4 técnicos. */
+            /* v2.0 — Notificar a los actores siguientes: municipio + revisor general + técnicos. */
             ProjectData.pushNotificacion({ perfil: 'municipio', tipo: 'favorable', titulo: 'RBI aprobado · pasa a revisión técnica', detalle: `${p.idUnico} · El equipo Doc General y los especialistas técnicos revisarán tu proyecto.` });
             ProjectData.pushNotificacion({ perfil: 'revisor', revisorTipo: 'general', tipo: 'nueva', titulo: 'Nueva revisión Doc. General', detalle: `${p.idUnico} · ${p.municipio} · ${p.nombre}` });
-            ProjectData.pushNotificacion({ perfil: 'revisor', revisorTipo: 'tecnico', tipo: 'nueva', titulo: 'Nueva revisión técnica', detalle: `${p.idUnico} · ${p.municipio} · 8 áreas a revisar` });
+            ProjectData.pushNotificacion({ perfil: 'revisor', revisorTipo: 'tecnico', tipo: 'nueva', titulo: 'Nueva revisión técnica', detalle: `${p.idUnico} · ${p.municipio} · ${areasCount} áreas a revisar` });
             toast({ variant: 'positive', title: 'RBI aprobado', message: 'El proyecto avanzó a revisión documental. Doc General y áreas técnicas notificados.' });
             setTimeout(() => { fadeAndGo('bandeja.html'); }, 800);
             return;

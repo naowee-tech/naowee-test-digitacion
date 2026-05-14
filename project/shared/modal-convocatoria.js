@@ -584,6 +584,15 @@ function modalStyles() {
       margin: 20px 0 12px;
     }
     .convo-section:first-child { margin-top: 0; }
+
+    /* Subsección del paso 4: nivel jerárquico bajo "Flujo de revisión".
+       Más sutil que convo-section (uppercase mute) pero más fuerte que helper-block. */
+    .convo-subsection {
+      font-size: 14px; font-weight: 700;
+      color: var(--text-primary);
+      margin: 18px 0 10px;
+      letter-spacing: -.005em;
+    }
     .convo-grid-2 {
       display: grid; gap: 16px;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1372,29 +1381,72 @@ function stepCondiciones() {
    acotada (ej. solo iluminación → no requiere estudio de suelos).
    Cada área muestra al responsable del pool de revisores. */
 const AREAS_REVISION_TECNICA = [
-  { id: 'topografico',    label: 'Levantamiento topográfico',          ref: 'Res. 933 Art. 3.1', revisorEspecialidad: 'topografico' },
-  { id: 'suelos',         label: 'Estudio de suelos',                  ref: 'Res. 933 Art. 3.2', revisorEspecialidad: 'suelos' },
-  { id: 'arquitectonico', label: 'Diseño arquitectónico',              ref: 'Res. 933 Art. 3.3', revisorEspecialidad: 'arquitectonico' },
-  { id: 'estructural',    label: 'Diseño estructural',                 ref: 'Res. 933 Art. 3.4', revisorEspecialidad: 'estructural' },
-  { id: 'hidrosanitario', label: 'Hidrosanitario y red contra incendios', ref: 'Res. 933 Art. 3.5', revisorEspecialidad: 'hidrosanitario' },
-  { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',   ref: 'Res. 933 Art. 3.6', revisorEspecialidad: 'electrico' },
-  { id: 'ambiental',      label: 'Manejo, riesgos y ambiental',        ref: 'Res. 933 Art. 3.7', revisorEspecialidad: 'ambiental' },
-  { id: 'presupuesto',    label: 'Presupuesto integral',               ref: 'Res. 933 Art. 3.8', revisorEspecialidad: 'presupuesto' }
+  /* Áreas técnicas según Resolución 933 de 2024 · Art. 3 (Doug 14/05/2026:
+     actualización contra el PDF oficial — solo 6 áreas, sin "Manejo ambiental"
+     ni "Presupuesto integral" porque NO son áreas con revisor técnico dedicado). */
+  { id: 'topografico',    label: 'Levantamiento topográfico',              ref: 'Res. 933 Art. 3.1', revisorEspecialidad: 'topografico' },
+  { id: 'suelos',         label: 'Estudio de suelos',                      ref: 'Res. 933 Art. 3.2', revisorEspecialidad: 'suelos' },
+  { id: 'arquitectonico', label: 'Diseño arquitectónico',                  ref: 'Res. 933 Art. 3.3', revisorEspecialidad: 'arquitectonico' },
+  { id: 'estructural',    label: 'Diseño estructural',                     ref: 'Res. 933 Art. 3.4', revisorEspecialidad: 'estructural' },
+  { id: 'hidrosanitario', label: 'Diseño hidráulico, sanitario y pluvial', ref: 'Res. 933 Art. 3.5', revisorEspecialidad: 'hidrosanitario' },
+  { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',       ref: 'Res. 933 Art. 3.6', revisorEspecialidad: 'electrico' }
 ];
 
 function stepRevisionTecnica() {
-  /* Lazy: pool de revisores se resuelve en bind, no en render (para que el
-     SSR del innerHTML no falle si data.js todavía no cargó). */
+  /* Orden canónico del flujo de revisión (Doug 14/05/2026):
+       1. RBI · revisor único · obligatorio · no se puede desactivar
+       2. Documentación general · revisor único · obligatorio · no se puede desactivar
+       3. Áreas técnicas · pool de 4 revisores con especialidades · activables/desactivables
+     Las dos primeras son gates del flujo (sin RBI no pasa a Doc General, sin Doc General
+     no pasa a Técnico). Las técnicas se asignan automáticamente por especialidad. */
   return `
-    <h3 class="convo-section">Áreas técnicas requeridas</h3>
+    <h3 class="convo-section">Flujo de revisión</h3>
     <p class="convo-helper-block">
-      Marca las áreas que requieren concepto técnico para esta convocatoria. Cuando un proyecto pase a etapa documental,
-      las áreas se asignan <strong>automáticamente</strong> al revisor responsable por especialidad. Puedes excluir áreas
-      si la convocatoria es acotada (ej. solo iluminación no requiere estudio de suelos).
+      El proyecto recorre tres bloques de revisión en orden. <strong>RBI</strong> y <strong>Documentación general</strong>
+      son obligatorios por Res. 933. En las áreas técnicas puedes excluir las que no apliquen a esta convocatoria
+      (ej. solo iluminación no requiere estudio de suelos).
     </p>
 
+    <!-- ═══ 1. RBI (revisión básica de información) ═══ -->
+    <h4 class="convo-subsection">1 · Revisión básica de información (RBI)</h4>
+    <div class="convo-areas-grid">
+      <label class="convo-area-card convo-area-card--required" data-area="rbi">
+        <input type="checkbox" name="rbiRequerida" value="true" checked disabled>
+        <div class="convo-area-card__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="convo-area-card__main">
+          <div class="convo-area-card__title">Revisión básica indispensable</div>
+          <div class="convo-area-card__ref">Res. 933 · gate de entrada · obligatoria · no se puede desactivar</div>
+          <div class="convo-area-card__rev" data-rev-slot="rbi">
+            <span style="color:var(--text-secondary);font-size:11px">Cargando responsable…</span>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- ═══ 2. Documentación general ═══ -->
+    <h4 class="convo-subsection" style="margin-top:24px">2 · Documentación general</h4>
+    <div class="convo-areas-grid">
+      <label class="convo-area-card convo-area-card--required" data-area="general">
+        <input type="checkbox" name="docGeneralRequerida" value="true" checked disabled>
+        <div class="convo-area-card__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="convo-area-card__main">
+          <div class="convo-area-card__title">Documentación general del proyecto</div>
+          <div class="convo-area-card__ref">Res. 933 Art. 1 y 2 · obligatoria · no se puede desactivar</div>
+          <div class="convo-area-card__rev" data-rev-slot="general">
+            <span style="color:var(--text-secondary);font-size:11px">Cargando responsable…</span>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- ═══ 3. Áreas técnicas ═══ -->
+    <h4 class="convo-subsection" style="margin-top:24px">3 · Áreas técnicas (Res. 933 Art. 3)</h4>
+    <p class="convo-helper-block" style="margin-top:-4px">
+      Marca las áreas técnicas que requieren concepto en esta convocatoria. Se asignan
+      <strong>automáticamente</strong> al revisor del pool por especialidad cuando el proyecto pasa a etapa técnica.
+    </p>
     <div class="convo-areas-grid" id="convoAreasGrid">
-      ${AREAS_REVISION_TECNICA.map((a, i) => `
+      ${AREAS_REVISION_TECNICA.map((a) => `
         <label class="convo-area-card" data-area="${a.id}">
           <input type="checkbox" name="areasRequeridas" value="${a.id}" checked>
           <div class="convo-area-card__check">
@@ -1409,25 +1461,6 @@ function stepRevisionTecnica() {
           </div>
         </label>
       `).join('')}
-    </div>
-
-    <h3 class="convo-section" style="margin-top:24px">Documentación general</h3>
-    <p class="convo-helper-block">
-      Aparte de las áreas técnicas, hay una <strong>documentación general</strong> del proyecto que también requiere
-      aprobación independiente (cartas, certificados, planos catastrales, etc.). La revisa el responsable de Doc. General.
-    </p>
-    <div class="convo-areas-grid">
-      <label class="convo-area-card convo-area-card--required" data-area="general">
-        <input type="checkbox" name="docGeneralRequerida" value="true" checked disabled>
-        <div class="convo-area-card__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="convo-area-card__main">
-          <div class="convo-area-card__title">Documentación general del proyecto</div>
-          <div class="convo-area-card__ref">Res. 933 Art. 1 y 2 · obligatoria · no se puede desactivar</div>
-          <div class="convo-area-card__rev" data-rev-slot="general">
-            <span style="color:var(--text-secondary);font-size:11px">Cargando responsable…</span>
-          </div>
-        </div>
-      </label>
     </div>
 
     <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">

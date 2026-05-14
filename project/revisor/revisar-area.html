@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515q">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515r">
 <style>
   /* ─── Hero strip del proyecto + área ─── */
   .ra-hero {
@@ -290,7 +290,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515q';
+  import { mountShell } from '../shared/shell.js?v=20260515r';
   import { ESTADOS_AREA, formatoMoneda } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -326,11 +326,14 @@
       { n:3, item:'Documentos del profesional responsable.', ref:'Art. 3.4.3' },
       { n:4, item:'Cumple con la NSR-10 vigente.', ref:'Verificación técnica' }
     ]},
-    hidraulico: { nombre: 'Hidráulico, Sanitario y Pluvial', items: [
+    /* Doug 14/05/2026: alineado con AREAS_CATALOG canónico — key `hidrosanitario` */
+    hidrosanitario: { nombre: 'Diseño hidráulico, sanitario y pluvial', items: [
       { n:1, item:'Memoria de cálculo hidráulico, sanitario y pluvial.', ref:'Art. 3.5.1' },
       { n:2, item:'Planos hidráulicos, sanitarios y pluviales.', ref:'Art. 3.5.2' },
       { n:3, item:'Documentos del profesional responsable.', ref:'Art. 3.5.3' },
-      { n:4, item:'Diseño coherente con disponibilidad de servicios públicos.', ref:'Verificación técnica' }
+      { n:4, item:'Coherente con disponibilidad de servicios públicos.', ref:'Verificación técnica' },
+      { n:5, item:'Incluye certificado de disponibilidad de acueducto.', ref:'Art. 3.5.1.1' },
+      { n:6, item:'Incluye certificado de disponibilidad de alcantarillado.', ref:'Art. 3.5.1.2' }
     ]},
     electrico: { nombre: 'Diseño Eléctrico', items: [
       { n:1, item:'Memoria de cálculo eléctrico.', ref:'Art. 3.6.1' },

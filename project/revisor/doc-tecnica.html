@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515q">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515r">
 <style>
   /* ─── LIST page (sin id) — searchbox + tabla ─── */
   .dt-hero { /* legacy del list page, no aplica en detail */ }
@@ -166,10 +166,54 @@
   }
   .dt-area-card__revisor--empty { font-style: italic; }
   .dt-area-card__cta {
-    font-size: 11.5px; font-weight: 700; color: var(--accent);
+    font-size: 11.5px; font-weight: 600; color: var(--text-secondary);
     display: inline-flex; align-items: center; gap: 4px;
   }
+  .dt-area-card__cta--mia {
+    color: var(--accent); font-weight: 700;
+  }
   .dt-area-card__cta svg { width: 12px; height: 12px; }
+
+  /* ─── Jerarquía visual mi-área vs otras (Doug 14/05/2026) ───
+       Las áreas que NO le tocan al revisor activo se muestran muted
+       (border discreto, contenido ligeramente atenuado, CTA "Ver" gris).
+       La propia se resalta con border accent + glow + badge "Tu área". */
+  .dt-area-card--mia {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(215, 64, 9, .08), 0 6px 16px -4px rgba(215, 64, 9, .18);
+    background: linear-gradient(180deg, #fffaf5 0%, var(--surface) 60%);
+  }
+  .dt-area-card--mia:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 4px rgba(215, 64, 9, .12), 0 10px 24px -4px rgba(215, 64, 9, .25);
+  }
+  .dt-area-card__owner-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    padding: 3px 9px; border-radius: var(--radius-full);
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(215, 64, 9, .35);
+    z-index: 2;
+  }
+  /* Otras áreas: muted — el revisor solo puede VER, no decidir */
+  .dt-area-card--otra {
+    opacity: .72;
+    background: #fafbfd;
+  }
+  .dt-area-card--otra:hover {
+    opacity: 1;
+    border-color: var(--border-dark);
+    box-shadow: 0 4px 12px -4px rgba(15, 17, 35, .08);
+    transform: none;
+  }
+  .dt-area-card--otra .dt-area-card__icon {
+    background: #f0f2f7 !important;
+    color: #9c9ebf !important;
+  }
+  .dt-area-card--otra .dt-area-card__title {
+    color: var(--text-secondary);
+  }
   /* Botón Delegar (solo visible en áreas mías) — small ghost CTA */
   .dt-area-card__delegate {
     display: inline-flex; align-items: center; gap: 4px;
@@ -286,7 +330,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515q';
+  import { mountShell } from '../shared/shell.js?v=20260515r';
   import { ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -584,10 +628,16 @@
                   : a.estado === 'en_revision' ? 'var(--accent)'
                   : 'var(--border-dark)';
                 const initial = (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase() || '?';
-                /* Es mi área si soy el revisor asignado Y no está cerrada */
+                /* Es mi área si soy el revisor asignado Y no está cerrada.
+                   Doug 14/05/2026: las áreas que NO son mías se renderizan en
+                   tono muted con CTA "Ver" — solo el dueño puede ejercer
+                   "Revisar" sobre su especialidad. */
                 const esMia = revisorActivo && a.revisorId === revisorActivo.id && a.estado !== 'aprobado';
+                const otraArea = revisorActivo && !esMia && a.revisorId !== revisorActivo.id && a.estado !== 'aprobado';
+                const ctaLabel = a.estado === 'aprobado' ? 'Ver' : (esMia ? 'Revisar' : 'Ver');
                 return `
-                  <article class="dt-area-card" data-estado="${a.estado}" onclick="fadeAndGo('revisar-area.html?id=${p.idUnico}&area=${a.id}')">
+                  <article class="dt-area-card ${esMia ? 'dt-area-card--mia' : ''} ${otraArea ? 'dt-area-card--otra' : ''}" data-estado="${a.estado}" onclick="fadeAndGo('revisar-area.html?id=${p.idUnico}&area=${a.id}')">
+                    ${esMia ? '<span class="dt-area-card__owner-badge">Tu área</span>' : ''}
                     <div class="dt-area-card__head">
                       <div class="dt-area-card__icon">${iconForArea(a.nombre)}</div>
                       <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
@@ -614,7 +664,7 @@
                           Delegar
                         </button>
                       ` : ''}
-                      <span class="dt-area-card__cta">${a.estado === 'aprobado' ? 'Ver' : 'Revisar'} ${ICONS.arrow}</span>
+                      <span class="dt-area-card__cta ${esMia ? 'dt-area-card__cta--mia' : ''}">${ctaLabel} ${ICONS.arrow}</span>
                     </div>
                   </article>
                 `;

@@ -4006,6 +4006,9 @@ body > .naowee-dropdown__menu.is-open {
    v2.0 — Tour guiado (demo-tour.js)
    Overlay oscuro + spotlight clip via box-shadow + tooltip DS canon.
    ═══════════════════════════════════════════════════════════════════ */
+/* Tour overlay click-through: el spotlight y backdrop son INFORMATIVOS.
+   Solo el tooltip captura clicks (vía pointer-events:auto explícito).
+   El usuario puede clickear el botón "Crear convocatoria" sin obstrucción. */
 .demo-tour-overlay {
   position: fixed; inset: 0;
   z-index: 1500;
@@ -4013,27 +4016,32 @@ body > .naowee-dropdown__menu.is-open {
   opacity: 0;
   transition: opacity .22s ease;
 }
-.demo-tour-overlay.is-open { opacity: 1; pointer-events: auto; }
+.demo-tour-overlay.is-open { opacity: 1; }
+/* Backdrop sutil — no bloquea clicks */
 .demo-tour-overlay::before {
   content: '';
   position: fixed; inset: 0;
-  background: rgba(15, 17, 35, .55);
-  pointer-events: auto;
+  background: rgba(15, 17, 35, .25);
+  pointer-events: none;
 }
-/* Spotlight: caja invisible que se "recorta" del overlay con box-shadow gigante */
+/* Spotlight: outline + glow alrededor del target, sin tapar el target ni bloquear clicks */
 .demo-tour-spotlight {
   position: fixed;
   border-radius: 14px;
   pointer-events: none;
-  box-shadow: 0 0 0 9999px rgba(15, 17, 35, .55);
-  border: 2px solid var(--accent, #d74009);
+  background: transparent;
+  border: 3px solid var(--accent, #d74009);
+  box-shadow:
+    0 0 0 4px rgba(215, 64, 9, .25),
+    0 0 32px rgba(215, 64, 9, .4),
+    inset 0 0 0 9999px rgba(255, 255, 255, 0);
   animation: demoTourPulse 1.6s ease-in-out infinite;
   transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
   z-index: 1501;
 }
 @keyframes demoTourPulse {
-  0%, 100% { box-shadow: 0 0 0 9999px rgba(15, 17, 35, .55), 0 0 0 0 rgba(215, 64, 9, .55); }
-  50%      { box-shadow: 0 0 0 9999px rgba(15, 17, 35, .55), 0 0 0 12px rgba(215, 64, 9, 0); }
+  0%, 100% { box-shadow: 0 0 0 4px rgba(215, 64, 9, .25), 0 0 32px rgba(215, 64, 9, .4); }
+  50%      { box-shadow: 0 0 0 8px rgba(215, 64, 9, .15), 0 0 48px rgba(215, 64, 9, .6); }
 }
 .demo-tour-tooltip {
   position: fixed;
@@ -4046,6 +4054,7 @@ body > .naowee-dropdown__menu.is-open {
   z-index: 1502;
   display: flex; flex-direction: column; gap: 10px;
   animation: demoTourTipIn .28s cubic-bezier(.4,0,.2,1);
+  pointer-events: auto; /* botones del tooltip clickables */
 }
 @keyframes demoTourTipIn {
   from { opacity: 0; transform: translateY(8px); }

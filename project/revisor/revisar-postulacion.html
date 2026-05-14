@@ -411,7 +411,7 @@
           <!-- ══════ Layout 2-col: tabs (60%) + decisión sticky (40%) ══════ -->
           <div class="rp-layout">
           <aside class="rp-layout__right">
-          ${(p.estado === 'en_revision' || p.estado === 'presentado') ? `
+          ${(p.estado === 'en_revision' || p.estado === 'en_revision_rbi' || p.estado === 'presentado') ? `
             <section class="rp-decision rp-decision--narrow">
               <div class="rp-decision__head">
                 <div>
@@ -795,15 +795,20 @@
           if (action === 'favorable') {
             const ok = await confirmFavorableModal();
             if (!ok) return;
+            const ahora = new Date().toISOString();
             ProjectData.setProyecto(p.idUnico, x => {
-              x.fechaFavorable = new Date().toISOString();
+              x.fechaRBIAprobada = ahora;
+              x.fechaInicioRevisionDocs = ahora;
               x.historial = x.historial || [];
-              x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: 'Postulación marcada como favorable', estado: 'favorable' });
-              x.historial.push({ ts: new Date().toISOString(), actor: 'sistema', evento: 'Repositorio documental activado · Etapa documental iniciada', estado: 'etapa_documental' });
-              x.estado = 'etapa_documental';
+              x.historial.push({ ts: ahora, actor: 'revisor', evento: 'RBI aprobado · libera Doc General + 8 áreas técnicas', estado: 'rbi_aprobada' });
+              x.historial.push({ ts: ahora, actor: 'sistema', evento: 'Auto-asignación de revisores Doc General y técnicos por especialidad', estado: 'en_revision_docs' });
+              x.estado = 'en_revision_docs';
             });
-            ProjectData.pushNotificacion({ perfil: 'municipio', tipo: 'favorable', titulo: '¡Postulación favorable!', detalle: `${p.idUnico} · Tu proyecto pasó a Etapa Documental` });
-            toast({ variant: 'positive', title: 'Postulación favorable', message: 'El proyecto fue activado y pasó a etapa documental.' });
+            /* v2.0 — Notificar a los 3 actores siguientes: municipio + revisor general + 4 técnicos. */
+            ProjectData.pushNotificacion({ perfil: 'municipio', tipo: 'favorable', titulo: 'RBI aprobado · pasa a revisión técnica', detalle: `${p.idUnico} · El equipo Doc General y los especialistas técnicos revisarán tu proyecto.` });
+            ProjectData.pushNotificacion({ perfil: 'revisor', revisorTipo: 'general', tipo: 'nueva', titulo: 'Nueva revisión Doc. General', detalle: `${p.idUnico} · ${p.municipio} · ${p.nombre}` });
+            ProjectData.pushNotificacion({ perfil: 'revisor', revisorTipo: 'tecnico', tipo: 'nueva', titulo: 'Nueva revisión técnica', detalle: `${p.idUnico} · ${p.municipio} · 8 áreas a revisar` });
+            toast({ variant: 'positive', title: 'RBI aprobado', message: 'El proyecto avanzó a revisión documental. Doc General y áreas técnicas notificados.' });
             setTimeout(() => { fadeAndGo('bandeja.html'); }, 800);
             return;
           }

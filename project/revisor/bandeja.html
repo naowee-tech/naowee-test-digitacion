@@ -82,12 +82,19 @@
   mountShell({ activeId: 'bandeja' });
 
   const proyectos = ProjectData.getProyectos();
-  const enRev = proyectos.filter(p => ['presentado','en_revision','devuelta_subsanacion','etapa_documental'].includes(p.estado));
-  const counts = enRev.reduce((acc, p) => { acc[p.estado] = (acc[p.estado] || 0) + 1; return acc; }, {});
-
-  /* Revisor activo del pool (modelo "todos ven, cada uno aprueba lo suyo"). */
+  /* v2.0 — Bandeja se filtra por el tipo del revisor activo (Danna/Juanma 14/05/2026):
+     - RBI ve proyectos en estado `presentado` o `en_revision_rbi` o `devuelta_subsanacion`
+     - General ve proyectos en `rbi_aprobada`, `en_revision_docs` o `etapa_documental`
+     - Técnico ve mismo scope que General, filtrado por área de su especialidad
+     Legacy `en_revision` se considera equivalente a `en_revision_rbi`. */
   const revisorActivo = ProjectData.getRevisorActivo();
-  const esGeneral = revisorActivo?.especialidades?.includes('general');
+  const tipoRevisor = revisorActivo?.tipo || 'tecnico';
+  const ESTADOS_RBI = ['presentado','en_revision','en_revision_rbi','devuelta_subsanacion'];
+  const ESTADOS_POST_RBI = ['rbi_aprobada','en_revision_docs','etapa_documental','favorable'];
+  const filtroEstado = tipoRevisor === 'rbi' ? ESTADOS_RBI : ESTADOS_POST_RBI;
+  const enRev = proyectos.filter(p => filtroEstado.includes(p.estado));
+  const counts = enRev.reduce((acc, p) => { acc[p.estado] = (acc[p.estado] || 0) + 1; return acc; }, {});
+  const esGeneral = tipoRevisor === 'general';
 
   /* Helper: cuáles áreas de un proyecto le tocan al revisor activo
      + cuántas están pendientes/en revisión + SLA agregado. */

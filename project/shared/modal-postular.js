@@ -612,7 +612,9 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
         nit: perfilMun?.nit || ''
       },
       marcadores: perfilMun?.marcadores || { zomac: false, pdet: false, ebiPnd: false },
-      estado: 'presentado',
+      /* v2.0 — Inicia en `en_revision_rbi`: el revisor RBI tiene 15d hábiles
+         para decidir. Si aprueba → `rbi_aprobada` y libera Doc General + áreas. */
+      estado: 'en_revision_rbi',
       priorizado: !!perfilMun?.marcadores?.zomac || !!perfilMun?.marcadores?.pdet,
       /* v2.0 — Documentos en 3 bloques diferenciados (RBI/General/Técnica)
          para que el revisor de cada tipo sepa qué le toca. */
@@ -633,16 +635,21 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
       observaciones: [],
       historial: [
         { ts: ahora, actor: 'municipio', evento: 'Postulación enviada con 3 bloques de documentación', estado: 'presentado' },
-        { ts: ahora, actor: 'sistema', evento: `Radicado emitido: ${radicado}`, estado: 'presentado' }
+        { ts: ahora, actor: 'sistema', evento: `Radicado emitido: ${radicado}`, estado: 'presentado' },
+        { ts: ahora, actor: 'sistema', evento: 'Asignada al revisor RBI · plazo 15 días hábiles', estado: 'en_revision_rbi' }
       ],
-      fechaPostulacion: ahora
+      fechaPostulacion: ahora,
+      fechaInicioRevisionRBI: ahora
     };
 
     ProjectData.addProyecto(nuevo);
+    /* v2.0 — Notificar al revisor RBI (primer eslabón). Los revisores
+       de Doc General y técnicos reciben notificación cuando RBI se aprueba. */
     ProjectData.pushNotificacion?.({
       perfil: 'revisor',
+      revisorTipo: 'rbi',
       tipo: 'nueva',
-      titulo: 'Nueva postulación recibida',
+      titulo: 'Nueva postulación · RBI por revisar',
       detalle: `${id} · ${nuevo.municipio} · ${nuevo.nombre}`
     });
 

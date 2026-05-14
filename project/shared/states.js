@@ -5,18 +5,25 @@
 /* Color = modificador oficial del DS Naowee (.naowee-badge--{color})
    Uso: <span class="naowee-badge naowee-badge--${ESTADOS_POSTULACION[x].color} naowee-badge--quiet">…</span>
 */
+/* v2.0 — Estados acta Danna/Juanma 14/05/2026. El flujo de revisión es
+   secuencial: RBI primero → Doc General + Áreas técnicas en paralelo. */
 export const ESTADOS_POSTULACION = {
-  borrador:               { label: 'Borrador',                 color: 'neutral',     orden: 0 },
-  presentado:             { label: 'Presentada',               color: 'informative', orden: 1 },
-  en_revision:            { label: 'En revisión',              color: 'caution',     orden: 2 },
-  no_revisada:            { label: 'No revisada',              color: 'neutral',     orden: 3 },
-  devuelta_subsanacion:   { label: 'Devuelta a subsanación',   color: 'caution',     orden: 4 },
-  expirada:               { label: 'Expirada',                 color: 'negative',    orden: 5 },
-  rechazada:              { label: 'Rechazada',                color: 'negative',    orden: 6 },
-  favorable:              { label: 'Favorable',                color: 'positive',    orden: 7 },
-  etapa_documental:       { label: 'Etapa documental',         color: 'brand',       orden: 8 },
-  concepto_favorable:     { label: 'Concepto favorable',       color: 'positive',    orden: 9 },
-  en_inversion:           { label: 'En inversión',             color: 'positive',    orden: 10 }
+  borrador:               { label: 'Borrador',                color: 'neutral',     orden: 0 },
+  presentado:             { label: 'Presentada',              color: 'informative', orden: 1 },
+  en_revision_rbi:        { label: 'En revisión RBI',         color: 'caution',     orden: 2 },
+  /* Legacy compat: en_revision === en_revision_rbi para data antigua */
+  en_revision:            { label: 'En revisión',             color: 'caution',     orden: 2 },
+  devuelta_subsanacion:   { label: 'Devuelta a subsanación',  color: 'caution',     orden: 3 },
+  expirada:               { label: 'Expirada',                color: 'negative',    orden: 4 },
+  rechazada:              { label: 'Rechazada',               color: 'negative',    orden: 5 },
+  /* rbi_aprobada = libera doc general + 8 áreas técnicas en paralelo */
+  rbi_aprobada:           { label: 'RBI aprobada',            color: 'informative', orden: 6 },
+  en_revision_docs:       { label: 'En revisión documental',  color: 'brand',       orden: 7 },
+  /* Legacy compat: favorable + etapa_documental antiguos */
+  favorable:              { label: 'RBI aprobada',            color: 'informative', orden: 6 },
+  etapa_documental:       { label: 'En revisión documental',  color: 'brand',       orden: 7 },
+  concepto_favorable:     { label: 'Concepto favorable',      color: 'positive',    orden: 8 },
+  en_inversion:           { label: 'En inversión',            color: 'positive',    orden: 9 }
 };
 
 export const ESTADOS_DOC = {
@@ -37,17 +44,28 @@ export const ESTADOS_AREA = {
   rechazado:   { label: 'Rechazado',   color: 'negative' }
 };
 
-/* Transiciones permitidas — fuente de verdad de la lógica E2E */
+/* v2.0 — Transiciones permitidas (fuente de verdad de la lógica E2E)
+   Flujo Danna/Juanma 14/05/2026:
+     borrador → presentado → en_revision_rbi
+       ├→ rbi_aprobada → en_revision_docs (general + 8 áreas en paralelo)
+       │   ├→ concepto_favorable → en_inversion
+       │   └→ devuelta_subsanacion (scope: bloque devuelto)
+       ├→ devuelta_subsanacion (scope: RBI)
+       └→ rechazada (terminal)
+*/
 export const TRANSICIONES = {
   borrador:             ['presentado'],
-  presentado:           ['en_revision', 'no_revisada'],
-  en_revision:          ['favorable', 'devuelta_subsanacion', 'rechazada', 'no_revisada'],
-  devuelta_subsanacion: ['en_revision', 'expirada'],
-  no_revisada:          ['en_revision'],
-  favorable:            ['etapa_documental'],
+  presentado:           ['en_revision_rbi'],
+  en_revision_rbi:      ['rbi_aprobada', 'devuelta_subsanacion', 'rechazada'],
+  /* legacy alias */
+  en_revision:          ['rbi_aprobada', 'favorable', 'devuelta_subsanacion', 'rechazada'],
+  rbi_aprobada:         ['en_revision_docs'],
+  favorable:            ['en_revision_docs', 'etapa_documental'],
+  en_revision_docs:     ['concepto_favorable', 'devuelta_subsanacion', 'rechazada'],
   etapa_documental:     ['concepto_favorable', 'devuelta_subsanacion'],
+  devuelta_subsanacion: ['en_revision_rbi', 'en_revision_docs', 'expirada'],
+  expirada:             ['borrador', 'presentado'],
   concepto_favorable:   ['en_inversion'],
-  expirada:             ['borrador'],
   rechazada:            [],
   en_inversion:         []
 };

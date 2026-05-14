@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515t">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515v">
 <style>
   /* ─── Tabs DS dentro del .naowee-table-card ─── */
   .usuarios-card .naowee-tabs {
@@ -27,7 +27,24 @@
   }
   /* Doug 14/05: el header gris (thead) estaba pegado al searchbox y al CTA.
      Agregamos respiro entre toolbar → thead, y entre thead → primera fila. */
-  .usuarios-card .naowee-table-card__table-wrap { padding-top: 6px; }
+  .usuarios-card .naowee-table-card__table-wrap {
+    padding-top: 6px;
+    /* Doug 15/05: extender table-wrap a los bordes del card para que los
+       dividers entre filas sean edge-to-edge (escapar el padding 32px del card). */
+    margin-left: -32px;
+    margin-right: -32px;
+    width: calc(100% + 64px);
+  }
+  /* Reagregar padding interno solo a los cells del extremo para que el
+     contenido respete el respiro del card pero los dividers vayan al borde. */
+  .usuarios-card .naowee-table-card__table-wrap th:first-child,
+  .usuarios-card .naowee-table-card__table-wrap td:first-child {
+    padding-left: 32px;
+  }
+  .usuarios-card .naowee-table-card__table-wrap th:last-child,
+  .usuarios-card .naowee-table-card__table-wrap td:last-child {
+    padding-right: 32px;
+  }
   .usuarios-card thead th {
     padding-top: 14px !important; padding-bottom: 14px !important;
     background: #fafbfd;
@@ -134,9 +151,20 @@
     display: flex; flex-direction: column; gap: 20px;
   }
   .um-modal__grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px;
   }
   @media (max-width: 600px) { .um-modal__grid { grid-template-columns: 1fr; } }
+  /* Doug 15/05: los inputs dentro del grid se desbordaban porque los
+     dropdowns y textfields no constraían su width. minmax(0, 1fr) en el grid
+     + width:100% en los wrappers garantiza que respeten su columna. */
+  .um-modal__grid > .naowee-textfield,
+  .um-modal__grid > .naowee-dropdown {
+    min-width: 0; max-width: 100%;
+  }
+  .um-modal__grid input,
+  .um-modal__grid .naowee-dropdown__trigger {
+    width: 100%; box-sizing: border-box;
+  }
   .um-modal__flags {
     display: flex; gap: 22px; flex-wrap: wrap;
     padding: 14px 16px; background: #fafbfd;
@@ -168,6 +196,32 @@
   /* Tipo: texto label gris (sin badge) */
   .um-tipo-label {
     font-size: 12.5px; font-weight: 500; color: var(--text-secondary);
+  }
+
+  /* ─── Multi-select de revisores (modal Asignar revisores) ─── */
+  .area-multi-list {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .area-multi-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .area-multi-row:hover { border-color: var(--border-dark); }
+  .area-multi-row.is-selected {
+    border-color: var(--accent);
+    background: #fff7f3;
+  }
+  .area-multi-row__main { flex: 1; min-width: 0; }
+  .area-multi-row__name {
+    font-weight: 700; font-size: 13px; color: var(--text-primary);
+  }
+  .area-multi-row__meta {
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;
   }
 </style>
 </head>
@@ -221,7 +275,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515t';
+  import { mountShell } from '../shared/shell.js?v=20260515v';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
@@ -689,34 +743,43 @@
     const isRBI = tipo === 'rbi';
     const isGeneral = tipo === 'general';
     body.innerHTML = `
-      <div class="area-multi-list" style="display:flex;flex-direction:column;gap:8px">
+      <div class="area-multi-list">
         ${revs.map(r => {
           const yaTiene = isRBI ? r.tipo === 'rbi'
                        : isGeneral ? (r.tipo === 'general' || (r.especialidades||[]).includes('general'))
                        : (r.especialidades || []).includes(especialidad);
+          const cbId = `cb-rev-${r.id}`;
           return `
-            <label class="area-multi-row" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid ${yaTiene ? 'var(--accent)' : 'var(--border)'};border-radius:8px;cursor:pointer;background:${yaTiene ? '#fff7f3' : '#fff'}">
-              <input type="checkbox" data-rev="${r.id}" ${yaTiene ? 'checked' : ''} style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+            <label class="area-multi-row ${yaTiene ? 'is-selected' : ''}" for="${cbId}">
+              <label class="naowee-checkbox ${yaTiene ? 'naowee-checkbox--checked' : ''}">
+                <input type="checkbox" id="${cbId}" data-rev="${r.id}" ${yaTiene ? 'checked' : ''}/>
+                <span class="naowee-checkbox__box">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+                  </svg>
+                </span>
+              </label>
               <span class="ava-ring" style="width:28px;height:28px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${r.avatar}</span>
-              <div style="flex:1">
-                <div style="font-weight:700;font-size:13px;color:var(--text-primary)">${r.nombre}</div>
-                <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${(r.especialidades||[]).join(', ') || r.tipo} · ${r.cargaActiva ?? 0} activos</div>
+              <div class="area-multi-row__main">
+                <div class="area-multi-row__name">${r.nombre}</div>
+                <div class="area-multi-row__meta">${(r.especialidades||[]).join(', ') || r.tipo} · ${r.cargaActiva ?? 0} activos</div>
               </div>
             </label>
           `;
         }).join('')}
       </div>
     `;
-    /* Highlight visual on toggle */
+    /* Highlight visual on toggle + sync DS checkbox state */
     body.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', () => {
+        const dsCheckbox = cb.closest('.naowee-checkbox');
         const row = cb.closest('.area-multi-row');
         if (cb.checked) {
-          row.style.borderColor = 'var(--accent)';
-          row.style.background = '#fff7f3';
+          dsCheckbox.classList.add('naowee-checkbox--checked');
+          row.classList.add('is-selected');
         } else {
-          row.style.borderColor = 'var(--border)';
-          row.style.background = '#fff';
+          dsCheckbox.classList.remove('naowee-checkbox--checked');
+          row.classList.remove('is-selected');
         }
       });
     });

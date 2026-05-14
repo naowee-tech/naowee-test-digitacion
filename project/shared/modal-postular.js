@@ -12,7 +12,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, formatoMoneda } from './states.js';
-import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260513o';
+import { textfield, textarea, dropdown, bindDropdowns, renderReview, runConfetti, checkbox, fileUpload, bindFileUploads, mountCheckboxes, multiselect, bindMultiselects, validateRequired, bindValidationReset } from './wizard-page.js?v=20260514a';
 import { bindMasksIn, unmask } from './masks.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -35,43 +35,54 @@ const STEPS = [
 
 /* v1.1 — Áreas técnicas Res. 933 Art. 3 + documentación general.
    Cada área agrupa los anexos PDF que el municipio debe cargar al postular.
-   Antes vivían en municipio/etapa-documental.html; ahora vienen con la postulación. */
+   Antes vivían en municipio/etapa-documental.html; ahora vienen con la postulación.
+   Cada `icon` es un SVG semántico (24x24 stroke=currentColor stroke-width=1.7). */
+const ICON_GENERAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>';
+const ICON_TOPO    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 8 3 16 6 23 3 23 18 16 21 8 18 1 21 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>';
+const ICON_SUELOS  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 7 12 2 21 7 12 12 3 7"/><polyline points="3 12 12 17 21 12"/><polyline points="3 17 12 22 21 17"/></svg>';
+const ICON_ARQ     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><path d="M10 22v-4h4v4"/></svg>';
+const ICON_EST     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="3" x2="21" y2="3"/><rect x="5" y="3" width="3" height="18"/><rect x="11" y="3" width="3" height="18"/><rect x="17" y="3" width="2" height="18"/></svg>';
+const ICON_HIDRO   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>';
+const ICON_ELEC    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+const ICON_AMB     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.48 19.2 2.96c.97 6.43 0 11.48-2.4 14.21A7 7 0 0111 20z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>';
+const ICON_PRES    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="12" y1="18" x2="12" y2="18.01"/><line x1="16" y1="18" x2="16" y2="18.01"/></svg>';
+
 const AREAS_ANEXOS = [
-  { id: 'general', ref: 'Res. 933 Art. 1 y 2', label: 'Documentación general del proyecto', docs: [
+  { id: 'general', icon: ICON_GENERAL, ref: 'Res. 933 Art. 1 y 2', label: 'Documentación general del proyecto', docs: [
     { id: 'mga',      label: 'Ficha MGA con BPIN',                  required: true },
     { id: 'comite',   label: 'Concepto del Comité Municipal del Deporte', required: true },
     { id: 'plano',    label: 'Plano de localización del predio',    required: true },
     { id: 'cert',     label: 'Certificado de uso del suelo',         required: true }
   ]},
-  { id: 'topografico', ref: 'Res. 933 Art. 3.1', label: 'Levantamiento topográfico', docs: [
+  { id: 'topografico', icon: ICON_TOPO, ref: 'Res. 933 Art. 3.1', label: 'Levantamiento topográfico', docs: [
     { id: 'topo-plano',  label: 'Plano topográfico georreferenciado', required: true },
     { id: 'topo-memoria', label: 'Memoria descriptiva del levantamiento', required: true }
   ]},
-  { id: 'suelos', ref: 'Res. 933 Art. 3.2', label: 'Estudio de suelos', docs: [
+  { id: 'suelos', icon: ICON_SUELOS, ref: 'Res. 933 Art. 3.2', label: 'Estudio de suelos', docs: [
     { id: 'suelos-estudio', label: 'Estudio geotécnico firmado', required: true }
   ]},
-  { id: 'arquitectonico', ref: 'Res. 933 Art. 3.3', label: 'Diseño arquitectónico', docs: [
+  { id: 'arquitectonico', icon: ICON_ARQ, ref: 'Res. 933 Art. 3.3', label: 'Diseño arquitectónico', docs: [
     { id: 'arq-planos',  label: 'Planos arquitectónicos (plantas, cortes, fachadas)', required: true },
     { id: 'arq-memoria', label: 'Memoria descriptiva arquitectónica', required: true }
   ]},
-  { id: 'estructural', ref: 'Res. 933 Art. 3.4', label: 'Diseño estructural', docs: [
+  { id: 'estructural', icon: ICON_EST, ref: 'Res. 933 Art. 3.4', label: 'Diseño estructural', docs: [
     { id: 'est-planos',   label: 'Planos estructurales', required: true },
     { id: 'est-memoria',  label: 'Memoria de cálculo estructural', required: true },
     { id: 'est-matricula', label: 'Matrícula profesional COPNIA del responsable', required: true }
   ]},
-  { id: 'hidrosanitario', ref: 'Res. 933 Art. 3.5', label: 'Hidráulico, sanitario y RCI', docs: [
+  { id: 'hidrosanitario', icon: ICON_HIDRO, ref: 'Res. 933 Art. 3.5', label: 'Hidráulico, sanitario y RCI', docs: [
     { id: 'hidro-planos',  label: 'Planos hidrosanitarios + red contra incendio', required: true },
     { id: 'hidro-memoria', label: 'Memoria descriptiva hidráulica', required: true }
   ]},
-  { id: 'electrico', ref: 'Res. 933 Art. 3.6', label: 'Diseño eléctrico (RETIE/RETILAP)', docs: [
+  { id: 'electrico', icon: ICON_ELEC, ref: 'Res. 933 Art. 3.6', label: 'Diseño eléctrico (RETIE/RETILAP)', docs: [
     { id: 'elec-planos',  label: 'Planos eléctricos (fuerza, iluminación, comunicaciones)', required: true },
     { id: 'elec-memoria', label: 'Memoria de cálculo eléctrico', required: true }
   ]},
-  { id: 'ambiental', ref: 'Res. 933 Art. 3.7', label: 'Manejo, riesgos y licencia ambiental', docs: [
+  { id: 'ambiental', icon: ICON_AMB, ref: 'Res. 933 Art. 3.7', label: 'Manejo, riesgos y licencia ambiental', docs: [
     { id: 'amb-plan', label: 'Plan de manejo ambiental', required: true },
     { id: 'amb-riesgos', label: 'Evaluación de riesgos y vulnerabilidad', required: true }
   ]},
-  { id: 'presupuesto', ref: 'Res. 933 Art. 3.8', label: 'Presupuesto integral', docs: [
+  { id: 'presupuesto', icon: ICON_PRES, ref: 'Res. 933 Art. 3.8', label: 'Presupuesto integral', docs: [
     { id: 'pres-detallado', label: 'Presupuesto detallado por capítulos', required: true },
     { id: 'pres-apus',      label: 'Análisis de precios unitarios (APU)', required: true },
     { id: 'pres-cronograma', label: 'Cronograma de obra', required: true }
@@ -279,9 +290,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
               ${AREAS_ANEXOS.map((a, idx) => `
                 <details class="pm-anexo" data-anexo="${a.id}" ${idx === 0 ? 'open' : ''}>
                   <summary class="pm-anexo__head">
-                    <span class="pm-anexo__icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    </span>
+                    <span class="pm-anexo__icon" aria-hidden="true">${a.icon}</span>
                     <span class="pm-anexo__body">
                       <span class="pm-anexo__title">${a.label}</span>
                       <span class="pm-anexo__ref">${a.ref}</span>

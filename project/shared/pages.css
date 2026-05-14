@@ -2072,6 +2072,31 @@
 .naowee-modal .naowee-stepper:has(.naowee-stepper__step[data-step="5"]) .naowee-stepper__step {
   gap: 6px;
 }
+/* Wizards de 6 pasos: solo el step activo muestra label completo; los
+   demás truncan con ellipsis a ~96px para mantener legibilidad sin
+   ensanchar el modal. */
+.naowee-modal .naowee-stepper:has(.naowee-stepper__step[data-step="6"]) {
+  gap: 2px;
+}
+.naowee-modal .naowee-stepper:has(.naowee-stepper__step[data-step="6"]) .naowee-stepper__connector {
+  min-width: 8px;
+  max-width: 20px;
+  flex: 1 1 auto;
+}
+.naowee-modal .naowee-stepper:has(.naowee-stepper__step[data-step="6"]) .naowee-stepper__step {
+  gap: 5px;
+  min-width: 0;
+}
+.naowee-modal .naowee-stepper:has(.naowee-stepper__step[data-step="6"]) .naowee-stepper__label {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+}
+.naowee-modal .naowee-stepper:has(.naowee-stepper__step[data-step="6"]) .naowee-stepper__step--active .naowee-stepper__label {
+  max-width: 140px;
+  font-weight: 600;
+}
 /* Labels visibles en todos los pasos (activo, done, futuro) para que el
    usuario entienda el progreso completo. En futuros se ven en gris. */
 .naowee-modal .naowee-stepper__step:not(.naowee-stepper__step--active):not(.naowee-stepper__step--done) .naowee-stepper__label {
@@ -3830,12 +3855,13 @@ body > .naowee-dropdown__menu.is-open {
 .pm-anexo__head::-webkit-details-marker { display: none; }
 .pm-anexo__head:hover { background: #fafbfd; }
 .pm-anexo__icon {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   border-radius: 8px;
   background: var(--orange-bg);
   color: var(--accent);
   display: flex; align-items: center; justify-content: center;
 }
+.pm-anexo__icon svg { width: 19px; height: 19px; }
 .pm-anexo__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .pm-anexo__title {
   font-size: 13.5px; font-weight: 700; color: var(--text-primary);

@@ -251,13 +251,14 @@ function checkbox({ name, value, label, checked = false }) {
      __file-tag (cuando hay archivo) | __progress (subiendo).
    Estados visuales del DS: --uploaded (verde 2px), --confirmed (gris),
    --error (rojo), --loading (con __progress-ring + __progress-text). */
-function fileUpload({ name, label, required = false, accept = '', maxSize = 20, helper = '' }) {
+function fileUpload({ name, label, required = false, accept = '', maxSize = 20, helper = '', multiple = false }) {
   const acceptStr = accept.split(',').map(s => s.trim().replace(/^\./,'').toUpperCase()).join(', ');
   return `
-    <div class="naowee-file-uploader" data-name="${name}" data-state="empty"
-         data-accept="${accept}" data-max-size="${maxSize}">
+    <div class="naowee-file-uploader ${multiple ? 'naowee-file-uploader--multiple' : ''}" data-name="${name}" data-state="empty"
+         data-accept="${accept}" data-max-size="${maxSize}" data-multiple="${multiple ? '1' : '0'}">
       <label class="naowee-file-uploader__label ${required ? 'naowee-file-uploader__label--required' : ''}">${label}</label>
-      <input type="file" name="${name}" accept="${accept}" hidden ${required ? 'required' : ''}/>
+      <input type="file" name="${name}" accept="${accept}" hidden ${required ? 'required' : ''} ${multiple ? 'multiple' : ''}/>
+      ${multiple ? '<div class="naowee-file-uploader__stack" data-stack></div>' : ''}
       <div class="naowee-file-uploader__input-wrap" data-wrap>
         <span class="naowee-file-uploader__placeholder" data-slot>Sin archivo adjunto</span>
         <button type="button" class="naowee-file-uploader__action" data-action>Subir documento</button>
@@ -1120,6 +1121,21 @@ function modalStyles() {
     }
     .naowee-file-uploader__file-tag--error svg { color: #b42318; }
 
+    /* Multi-file: stack vertical de archivos subidos arriba del input-wrap.
+       Cada item conserva la apariencia de un file-tag uploaded (DS) y se
+       acomoda en columna con gap pequeño. */
+    .naowee-file-uploader__stack {
+      display: flex; flex-direction: column;
+      gap: 8px; margin-bottom: 10px;
+    }
+    .naowee-file-uploader__stack:empty { display: none; }
+    .naowee-file-uploader__stack .naowee-file-uploader__file-tag {
+      width: 100%; justify-content: flex-start;
+    }
+    .naowee-file-uploader__stack .naowee-file-uploader__file-tag [data-name] {
+      flex: 1;
+    }
+
     /* ═══ Naowee message — overrides mínimos sobre DS oficial v1.8.0 ═══
        El DS define toda la anatomía:
        - .naowee-message: column flex, padding xtiny, border-radius 20px
@@ -1339,37 +1355,14 @@ function stepCondiciones() {
       options: FUENTES
     })}
     <div class="convo-grid-2" style="margin-top:12px">
-      ${textfield({ label: 'Presupuesto total disponible (COP)', name: 'presupuestoTotal', type: 'number', placeholder: '80.000.000.000', helper: 'Techo presupuestal de la convocatoria' })}
-      ${textfield({ label: 'Monto máximo por proyecto (COP)', name: 'montoMaximoProyecto', type: 'number', placeholder: '12.000.000.000', helper: 'Tope de solicitud al Ministerio' })}
+      ${textfield({ label: 'Presupuesto total disponible (COP)', name: 'presupuestoTotal', type: 'text', mask: 'money', placeholder: '80.000.000.000', helper: 'Techo presupuestal de la convocatoria' })}
+      ${textfield({ label: 'Monto máximo por proyecto (COP)', name: 'montoMaximoProyecto', type: 'text', mask: 'money', placeholder: '12.000.000.000', helper: 'Tope de solicitud al Ministerio' })}
     </div>
 
     <h3 class="convo-section">Documentos adjuntos</h3>
     ${fileUpload({ name: 'actoAdmin', label: 'Acto administrativo de apertura', required: true, accept: '.pdf', maxSize: 20, helper: 'Resolución o acuerdo que formaliza la apertura · PDF, máx. 20 MB' })}
     ${fileUpload({ name: 'terminosRef', label: 'Términos de referencia', required: true, accept: '.pdf', maxSize: 20, helper: 'Documento detallado con criterios de evaluación y cronograma · PDF, máx. 20 MB' })}
-    ${fileUpload({ name: 'plantillas', label: 'Plantillas y anexos (opcional)', accept: '.zip,.pdf', maxSize: 50, helper: 'Formatos descargables (carta de intención, certificaciones, etc.) · ZIP o PDF, máx. 50 MB' })}
-
-    <div class="naowee-message naowee-message--informative" role="status">
-      <div class="naowee-message__header">
-        <span class="naowee-message__icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 7v4M8 4.5h.01" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </span>
-        <span class="naowee-message__body">
-          <strong>Trazabilidad automática.</strong> Al publicar, el sistema registra usuario, fecha y cambia el estado a <strong>Abierta</strong>.
-        </span>
-      </div>
-    </div>
-
-    <div class="convo-section">Notificación a municipios</div>
-    <label class="convo-toggle">
-      <input type="checkbox" name="notificarAlPublicar" checked>
-      <span class="convo-toggle__check"></span>
-      <span class="convo-toggle__body">
-        <span class="convo-toggle__title">Notificar a municipios al publicar</span>
-        <span class="convo-toggle__sub">Se enviará el correo institucional con plantilla precargada. Podrás reconfigurar canales y cuerpo desde el detalle de la convocatoria.</span>
-      </span>
-    </label>
+    ${fileUpload({ name: 'plantillas', label: 'Plantillas y anexos (opcional)', accept: '.zip,.pdf', maxSize: 50, helper: 'Formatos descargables (carta de intención, certificaciones, etc.) · ZIP o PDF, máx. 50 MB · puedes apilar varios archivos', multiple: true })}
   `;
 }
 
@@ -1908,15 +1901,42 @@ function bindFileUpload(field) {
   const wrap = field.querySelector('[data-wrap]');
   const accept = (field.dataset.accept || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
   const maxBytes = parseInt(field.dataset.maxSize || '20', 10) * 1024 * 1024;
+  const isMultiple = field.dataset.multiple === '1';
+  const stack = field.querySelector('[data-stack]');
 
   /* SVGs reutilizados */
   const fileSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
   const xSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
 
+  /* En multi-file: lista de archivos acumulados + render del stack arriba del input.
+     El input nativo se usa solo para abrir el file picker; los archivos se guardan
+     en un array interno y se inyectan al FormData manualmente al publicar. */
+  const acceptedFiles = isMultiple ? [] : null;
+  field._acceptedFiles = acceptedFiles;
+
+  const renderStack = () => {
+    if (!stack) return;
+    stack.innerHTML = acceptedFiles.map((f, idx) => `
+      <span class="naowee-file-uploader__file-tag naowee-file-uploader__file-tag--uploaded" data-stack-item data-idx="${idx}">
+        ${fileSvg}
+        <span data-name>${f.name}</span>
+        <button type="button" class="naowee-file-uploader__file-dismiss" aria-label="Quitar archivo" data-remove-idx="${idx}">${xSvg}</button>
+      </span>
+    `).join('');
+    stack.querySelectorAll('[data-remove-idx]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const i = parseInt(btn.dataset.removeIdx, 10);
+        acceptedFiles.splice(i, 1);
+        renderStack();
+      });
+    });
+  };
+
   const renderEmpty = () => {
     wrap.innerHTML = `
-      <span class="naowee-file-uploader__placeholder" data-slot>Sin archivo adjunto</span>
-      <button type="button" class="naowee-file-uploader__action" data-action>Subir documento</button>`;
+      <span class="naowee-file-uploader__placeholder" data-slot>${isMultiple && acceptedFiles?.length ? 'Agregar otro archivo' : 'Sin archivo adjunto'}</span>
+      <button type="button" class="naowee-file-uploader__action" data-action>${isMultiple && acceptedFiles?.length ? 'Subir otro' : 'Subir documento'}</button>`;
     field.dataset.state = 'empty';
     bindAction();
   };
@@ -1991,7 +2011,17 @@ function bindFileUpload(field) {
     setTimeout(() => {
       clearInterval(tick);
       updateProgress(100);
-      setTimeout(() => renderUploaded(file.name), 220);
+      setTimeout(() => {
+        if (isMultiple) {
+          /* Apilar y reset del input-wrap para permitir otra subida */
+          acceptedFiles.push({ name: file.name, size: file.size });
+          renderStack();
+          input.value = '';
+          renderEmpty();
+        } else {
+          renderUploaded(file.name);
+        }
+      }, 220);
     }, 800 + Math.random() * 500);
   };
 
@@ -2004,8 +2034,13 @@ function bindFileUpload(field) {
   bindAction();
 
   input.addEventListener('change', () => {
-    const file = input.files[0];
-    if (file) handleFile(file);
+    if (isMultiple) {
+      /* Procesar uno por uno; handleFile resetea input.value al final */
+      Array.from(input.files).forEach(f => handleFile(f));
+    } else {
+      const file = input.files[0];
+      if (file) handleFile(file);
+    }
   });
 
   /* Drag & drop — toggle clase --dragover del DS sobre el field padre */
@@ -2651,6 +2686,33 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   /* ═══ File uploads — naowee-file-uploader DS oficial ═══ */
   overlay.querySelectorAll('.naowee-file-uploader').forEach(field => bindFileUpload(field));
 
+  /* ═══ Money mask (es-CO miles con puntos) ═══
+     Para inputs marcados con data-mask="money": cada keystroke formatea
+     el valor mostrado con thousand separator es-CO. Al leer FormData,
+     parseInt(value.replace(/\D/g,'')) recupera el entero limpio. */
+  overlay.querySelectorAll('input[data-mask="money"]').forEach(inp => {
+    const format = (raw) => {
+      const digits = String(raw).replace(/\D/g, '');
+      if (!digits) return '';
+      return Number(digits).toLocaleString('es-CO');
+    };
+    inp.addEventListener('input', () => {
+      const cursorAtEnd = inp.selectionStart === inp.value.length;
+      inp.value = format(inp.value);
+      if (cursorAtEnd) {
+        inp.setSelectionRange(inp.value.length, inp.value.length);
+      }
+    });
+    inp.addEventListener('blur', () => { inp.value = format(inp.value); });
+    inp.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const txt = (e.clipboardData || window.clipboardData).getData('text');
+      inp.value = format(txt);
+    });
+    /* Formato inicial si ya hay value */
+    if (inp.value) inp.value = format(inp.value);
+  });
+
   /* ═══ Paso 4: resolver responsable de cada área desde el pool ═══
      Inyecta el nombre + avatar del revisor que cubre cada especialidad. */
   overlay.querySelectorAll('[data-rev-slot]').forEach(slot => {
@@ -2755,13 +2817,21 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       fuentes,
       areasRequeridas, /* ids de áreas técnicas que requieren concepto · Sprint 2 */
       docGeneralRequerida: true, /* siempre true por Res. 933 · disabled en UI */
-      presupuestoTotal: parseInt(fd.get('presupuestoTotal')) || 0,
-      montoMaximoProyecto: parseInt(fd.get('montoMaximoProyecto')) || 0,
+      presupuestoTotal: parseInt(String(fd.get('presupuestoTotal') || '').replace(/\D/g, '')) || 0,
+      montoMaximoProyecto: parseInt(String(fd.get('montoMaximoProyecto') || '').replace(/\D/g, '')) || 0,
       permiteSegunda: fd.get('permiteSegunda') === 'true',
       documentos: {
         actoAdmin: fd.get('actoAdmin')?.name ? { name: fd.get('actoAdmin').name, size: fd.get('actoAdmin').size } : null,
         terminosRef: fd.get('terminosRef')?.name ? { name: fd.get('terminosRef').name, size: fd.get('terminosRef').size } : null,
-        plantillas: fd.get('plantillas')?.name ? { name: fd.get('plantillas').name, size: fd.get('plantillas').size } : null
+        /* plantillas ahora es multi-file: leer el array interno del uploader (apilado).
+           Backward-compat: si por alguna razón el array no está, fallback a fd.get(). */
+        plantillas: (() => {
+          const field = overlay.querySelector('.naowee-file-uploader[data-name="plantillas"]');
+          const stacked = field?._acceptedFiles;
+          if (Array.isArray(stacked) && stacked.length) return stacked.map(f => ({ name: f.name, size: f.size }));
+          const single = fd.get('plantillas');
+          return single?.name ? [{ name: single.name, size: single.size }] : [];
+        })()
       },
       estado: 'abierta',
       creadaPor: 'admin',
@@ -2769,15 +2839,13 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       postulaciones: 0
     };
 
-    /* Si el toggle está ON, preparar y disparar notificación a municipios. */
-    const notificarAlPublicar = fd.get('notificarAlPublicar') === 'on';
+    /* Notificación a municipios: el toggle UI fue removido por Doug 14/05;
+       al publicar siempre se prepara y dispara la notificación (comportamiento
+       canónico del flujo — el detalle de la convocatoria permite reconfigurar). */
     nueva.notificacion = ProjectData.defaultNotificacion(nueva);
 
     ProjectData.addConvocatoria(nueva);
-
-    if (notificarAlPublicar) {
-      ProjectData.enviarNotificacion(nueva.id);
-    }
+    ProjectData.enviarNotificacion(nueva.id);
 
     ProjectData.pushNotificacion({
       perfil: 'municipio',

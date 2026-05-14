@@ -325,6 +325,16 @@
         });
       });
     });
+
+    /* Auto-abrir el modal si llegó vía redirect desde subsanar.html?id=X */
+    if (params.get('subsanar') === '1' && p.estado === 'devuelta_subsanacion') {
+      setTimeout(() => {
+        openSubsanarModal({
+          proyectoId: p.idUnico,
+          onSubsanado: () => setTimeout(() => window.location.reload(), 1200)
+        });
+      }, 300);
+    }
   }
 </script>
 </body>

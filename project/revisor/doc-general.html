@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260514a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515a">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -187,7 +187,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260514v2';
+  import { mountShell } from '../shared/shell.js?v=20260515a';
   import { formatoMoneda, fechaCorta } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -315,7 +315,7 @@
                       <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
                         <span class="rad-cell">
                           ${pr.priorizado
-                            ? `<span class="prio-flag" title="Priorizado">${ICONS.flag}</span>`
+                            ? `<span class="prio-flag" title="Proyecto de enfoque">${ICONS.flag}</span>`
                             : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`}
                           ${(pr.radicado || '—').split('-CONV-')[0]}
                         </span>
@@ -400,9 +400,9 @@
         <!-- Hero canónico project-hero (con banderín + paddings consistentes) -->
         <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
           ${p.priorizado ? `
-            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto priorizado por el Ministerio">
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto de enfoque del Ministerio">
               <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
-              <span class="prio-ribbon__tooltip" role="tooltip">Priorizado por el Ministerio</span>
+              <span class="prio-ribbon__tooltip" role="tooltip">Proyecto de enfoque del Ministerio</span>
             </span>
           ` : ''}
           <div class="project-hero__top">

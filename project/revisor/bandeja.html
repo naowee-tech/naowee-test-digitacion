@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260514a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515a">
 <style>
   /* Quitar elevation/sombra del table-card en esta página (DS aplica box-shadow por default) */
   .naowee-table-card { box-shadow: none !important; }
@@ -76,7 +76,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260514v2';
+  import { mountShell } from '../shared/shell.js?v=20260515a';
   import { ESTADOS_POSTULACION, formatoMoneda, fechaCorta, diasRestantes } from '../shared/states.js';
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -152,7 +152,7 @@
     presentado: 'Sin asignar',
     en_revision: 'En revisión',
     devuelta_subsanacion: 'En subsanación',
-    priorizado: 'Priorizados'
+    priorizado: 'De enfoque'
   };
   const FILTER_LABELS = { estado: 'Estado', prioridad: 'Prioridad' };
 
@@ -252,7 +252,7 @@
                 <button type="button" class="naowee-filter-dropdown__option" data-value="priorizado" aria-selected="false">
                   <span class="ff-checkbox">${ICONS.check}</span>
                   <span class="ff-dot" data-color="caution"></span>
-                  <span class="ff-label">Priorizados</span>
+                  <span class="ff-label">De enfoque</span>
                 </button>
               </div>
             </div>
@@ -296,7 +296,7 @@
                     <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
                       <span class="rad-cell" title="${p.radicado || ''}">
                         ${p.priorizado
-                          ? `<span class="prio-flag" title="Proyecto priorizado por el Ministerio" aria-label="Priorizado">${ICONS.flag}</span>`
+                          ? `<span class="prio-flag" title="Proyecto de enfoque del Ministerio" aria-label="Proyecto de enfoque">${ICONS.flag}</span>`
                           : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`}
                         ${(p.radicado || '—').split('-CONV-')[0]}
                       </span>

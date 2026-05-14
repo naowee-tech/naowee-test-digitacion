@@ -802,6 +802,47 @@ function modalStyles() {
       line-height: 1.45;
       margin: 0;
     }
+
+    /* ═══ XOR pills (Específica → por municipios o por departamentos) ═══ */
+    .convo-xor-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-top: 6px;
+    }
+    .convo-xor-pill {
+      position: relative;
+      display: flex; flex-direction: column;
+      gap: 4px; padding: 14px 16px 14px 44px;
+      border: 1.5px solid var(--border-dark, #d0d4e6);
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+    .convo-xor-pill:hover { border-color: var(--accent, #d74009); }
+    .convo-xor-pill > input[type="radio"] {
+      position: absolute; left: 16px; top: 50%;
+      transform: translateY(-50%);
+      width: 18px; height: 18px;
+      accent-color: var(--accent, #d74009);
+      cursor: pointer;
+    }
+    .convo-xor-pill:has(input[type="radio"]:checked) {
+      border-color: var(--accent, #d74009);
+      background: #fff7f3;
+      box-shadow: 0 0 0 3px rgba(215,64,9,.08);
+    }
+    .convo-xor-pill__title {
+      font-size: 13.5px; font-weight: 700;
+      color: var(--text-primary);
+    }
+    .convo-xor-pill__hint {
+      font-size: 11.5px; font-weight: 500;
+      color: var(--text-secondary);
+    }
+    @media (max-width: 600px) {
+      .convo-xor-row { grid-template-columns: 1fr; }
+    }
+
     .naowee-modal-overlay .naowee-modal--wide { width: 760px; max-width: 95vw; }
 
     /* ═══ Multi-select dropdown con tags ═══ */
@@ -1211,6 +1252,25 @@ function stepAlcance() {
   return `
     <h3 class="convo-section">Alcance territorial</h3>
     ${dropdown({ label: 'Cobertura territorial', name: 'cobertura', required: true, options: COBERTURAS, value: 'Nacional', placeholder: 'Seleccionar cobertura…' })}
+
+    <!-- Específica desdoblada en XOR: el admin elige si la convocatoria
+         se acota por departamentos o por municipios (Doug 14/05/2026). -->
+    <div id="especificaTipoWrap" style="display:none;margin-top:14px">
+      <label class="naowee-textfield__label naowee-textfield__label--required">¿Cómo acotas la convocatoria específica?</label>
+      <div class="convo-xor-row" role="radiogroup" aria-label="Tipo de cobertura específica">
+        <label class="convo-xor-pill">
+          <input type="radio" name="especificaTipo" value="municipios" checked>
+          <span class="convo-xor-pill__title">Por municipios</span>
+          <span class="convo-xor-pill__hint">Eliges los municipios uno por uno</span>
+        </label>
+        <label class="convo-xor-pill">
+          <input type="radio" name="especificaTipo" value="departamentos">
+          <span class="convo-xor-pill__title">Por departamentos</span>
+          <span class="convo-xor-pill__hint">Solo gobernaciones podrán postular</span>
+        </label>
+      </div>
+    </div>
+
     <div id="deptosWrap" style="display:none;margin-top:12px">
       ${multiSelect({
         label: 'Departamentos incluidos',
@@ -1240,7 +1300,10 @@ function stepAlcance() {
       <!-- Hidden inputs poblados dinámicamente al agregar/quitar chips para que FormData los recoja -->
       <span id="muniHiddenInputs"></span>
     </div>
-    <div class="convo-filters-block">
+    <!-- Filtros ZOMAC/PDET solo aplican cuando hay municipios involucrados
+         (Nacional o Específica-municipios). En Departamental u Específica-departamentos
+         la convocatoria es entre gobernaciones y los filtros municipales no aplican. -->
+    <div id="zomacPdetWrap" class="convo-filters-block">
       <div class="convo-filters-block__label">Filtros adicionales <span class="convo-filters-block__hint">(opcional)</span></div>
       <div class="convo-filters-block__row">
         ${checkbox({ name: 'soloZOMAC', value: 'true', label: 'Solo municipios ZOMAC' })}
@@ -2416,18 +2479,40 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     syncCheckbox(inp);
   });
 
-  /* Lógica condicional cobertura */
+  /* Lógica condicional cobertura — Doug 14/05/2026
+     • Nacional → muestra ZOMAC/PDET (todos los municipios pueden postular).
+     • Departamental → solo gobernaciones, sin filtros municipales.
+     • Específica → desdoblada en XOR:
+        - por municipios → muniWrap + ZOMAC/PDET visibles
+        - por departamentos → deptosWrap visible, sin ZOMAC/PDET */
   const coberturaDD = overlay.querySelector('.naowee-dropdown[data-name="cobertura"]');
   const coberturaHidden = coberturaDD?.querySelector('input[type="hidden"]');
+  const especificaRadios = overlay.querySelectorAll('input[name="especificaTipo"]');
+  const getEspecificaTipo = () => {
+    const checked = overlay.querySelector('input[name="especificaTipo"]:checked');
+    return checked?.value || 'municipios';
+  };
   const updateCobertura = () => {
     const v = coberturaHidden?.value || 'Nacional';
+    const tipo = getEspecificaTipo();
     const deptosWrap = overlay.querySelector('#deptosWrap');
     const muniWrap = overlay.querySelector('#muniWrap');
-    if (deptosWrap) deptosWrap.style.display = (v === 'Departamental') ? 'block' : 'none';
-    if (muniWrap) muniWrap.style.display = (v === 'Específica') ? 'block' : 'none';
+    const especificaTipoWrap = overlay.querySelector('#especificaTipoWrap');
+    const zomacPdetWrap = overlay.querySelector('#zomacPdetWrap');
+
+    const showDeptos = (v === 'Departamental') || (v === 'Específica' && tipo === 'departamentos');
+    const showMuni = (v === 'Específica' && tipo === 'municipios');
+    const showEspecificaTipo = (v === 'Específica');
+    const showZomacPdet = (v === 'Nacional') || (v === 'Específica' && tipo === 'municipios');
+
+    if (deptosWrap) deptosWrap.style.display = showDeptos ? 'block' : 'none';
+    if (muniWrap) muniWrap.style.display = showMuni ? 'block' : 'none';
+    if (especificaTipoWrap) especificaTipoWrap.style.display = showEspecificaTipo ? 'block' : 'none';
+    if (zomacPdetWrap) zomacPdetWrap.style.display = showZomacPdet ? 'block' : 'none';
   };
   updateCobertura();
   coberturaHidden?.addEventListener('change', updateCobertura);
+  especificaRadios.forEach(r => r.addEventListener('change', updateCobertura));
 
   /* ═══ Autocomplete de municipios (combobox) ═══
      Fuente: lista de usuariosMunicipales registrados en el panel admin/usuarios.
@@ -2640,10 +2725,13 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       cierre: fd.get('cierre'),
       emisionConcepto: fd.get('emisionConcepto') || null,
       cobertura,
-      departamentos: (cobertura === 'Departamental') ? departamentos : [],
-      municipios: cobertura === 'Específica' ? municipiosTxt : [],
-      soloZOMAC: fd.get('soloZOMAC') === 'true',
-      soloPDET: fd.get('soloPDET') === 'true',
+      /* especificaTipo solo aplica si cobertura === 'Específica'. XOR municipios|departamentos */
+      especificaTipo: cobertura === 'Específica' ? (fd.get('especificaTipo') || 'municipios') : null,
+      departamentos: (cobertura === 'Departamental' || (cobertura === 'Específica' && fd.get('especificaTipo') === 'departamentos')) ? departamentos : [],
+      municipios: (cobertura === 'Específica' && (fd.get('especificaTipo') || 'municipios') === 'municipios') ? municipiosTxt : [],
+      /* ZOMAC/PDET solo se persisten cuando aplican (Nacional o Específica-municipios) */
+      soloZOMAC: ((cobertura === 'Nacional') || (cobertura === 'Específica' && (fd.get('especificaTipo') || 'municipios') === 'municipios')) && fd.get('soloZOMAC') === 'true',
+      soloPDET: ((cobertura === 'Nacional') || (cobertura === 'Específica' && (fd.get('especificaTipo') || 'municipios') === 'municipios')) && fd.get('soloPDET') === 'true',
       tiposSolicitud,
       fasesProyecto,
       fuentes,

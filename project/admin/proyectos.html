@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260514a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515a">
 <style>
   /* Paginador wrapper — alineado al lenguaje del DS pero local a esta tabla */
   .proyectos-pagination {
@@ -35,7 +35,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260514v2';
+  import { mountShell } from '../shared/shell.js?v=20260515a';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'proyectos' });
@@ -136,7 +136,7 @@
                 <button type="button" class="naowee-filter-dropdown__option" data-value="priorizado" aria-selected="false">
                   <span class="ff-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
                   <span class="ff-dot" data-color="caution"></span>
-                  <span class="ff-label">Priorizados</span>
+                  <span class="ff-label">De enfoque</span>
                 </button>
               </div>
             </div>
@@ -166,7 +166,7 @@
                     <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
                       <span class="rad-cell" title="${p.radicado || ''}">
                         ${p.priorizado
-                          ? `<span class="prio-flag" title="Proyecto priorizado por el Ministerio" aria-label="Priorizado"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg></span>`
+                          ? `<span class="prio-flag" title="Proyecto de enfoque del Ministerio" aria-label="Proyecto de enfoque"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg></span>`
                           : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`}
                         ${(p.radicado || '—').split('-CONV-')[0]}
                       </span>
@@ -228,7 +228,7 @@
     concepto_favorable: 'Concepto favorable',
     en_inversion: 'En inversión',
     expirada: 'Expirada',
-    priorizado: 'Priorizado'
+    priorizado: 'De enfoque'
   };
   const FILTER_LABELS = { estado: 'Estado', prioridad: 'Prioridad', convocatoria: 'Convocatoria' };
   const activeFilters = {};

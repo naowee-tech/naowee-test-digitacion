@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260514a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515a">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -294,8 +294,8 @@
       <div class="rp-confirm-modal__icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <div class="rp-confirm-modal__title" id="rpConfirmTitle">¿Marcar postulación como favorable?</div>
-      <div class="rp-confirm-modal__sub" id="rpConfirmSub">El proyecto pasará a Etapa Documental y se activará el repositorio de documentos. La asignación de las 8 áreas técnicas + doc general se hará automáticamente por especialidad.</div>
+      <div class="rp-confirm-modal__title" id="rpConfirmTitle">¿Aprobar RBI de esta postulación?</div>
+      <div class="rp-confirm-modal__sub" id="rpConfirmSub">El proyecto pasará a revisión documental. La asignación de las 8 áreas técnicas + documentación general se hará automáticamente por especialidad. Esta acción se registra como <strong>Aprobado en RBI</strong>.</div>
     </div>
     <div class="rp-confirm-modal__body">
       <dl class="rp-confirm-modal__row"><dt>Proyecto</dt><dd id="rpConfirmProj">—</dd></dl>
@@ -306,7 +306,7 @@
       <button type="button" class="naowee-btn naowee-btn--mute" id="rpConfirmCancel">Cancelar</button>
       <button type="button" class="naowee-btn naowee-btn--loud btn-favorable" id="rpConfirmAccept">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Sí, marcar favorable
+        Sí, aprobar RBI
       </button>
     </div>
   </div>
@@ -314,10 +314,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260514v2';
+  import { mountShell } from '../shared/shell.js?v=20260515a';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260514v2';
+  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515a';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -364,9 +364,9 @@
           <!-- ══════ Hero del proyecto (canónico project-hero) ══════ -->
           <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
             ${p.priorizado ? `
-              <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto priorizado por el Ministerio">
+              <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto de enfoque del Ministerio">
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
-                <span class="prio-ribbon__tooltip" role="tooltip">Priorizado por el Ministerio</span>
+                <span class="prio-ribbon__tooltip" role="tooltip">Proyecto de enfoque del Ministerio</span>
               </span>
             ` : ''}
             <div class="project-hero__top">
@@ -423,12 +423,12 @@
               <div id="prorrogaWidget" class="prorroga-widget"></div>
 
               <div class="rp-prio-wrap">
-                ${checkbox({ name: 'prioCheck', value: 'priorizado', label: 'Marcar como priorizado · zonas como Chocó tienen tiempos de revisión especiales', checked: !!p.priorizado })}
+                ${checkbox({ name: 'prioCheck', value: 'priorizado', label: 'Marcar como proyecto de enfoque · zonas como Chocó tienen tiempos de revisión especiales', checked: !!p.priorizado })}
               </div>
 
               <div class="rp-cta-grid">
                 <button type="button" class="naowee-btn naowee-btn--loud btn-decision btn-favorable" data-action="favorable">
-                  ${ICONS.check} Marcar favorable
+                  ${ICONS.check} Aprobado en RBI
                 </button>
                 <button type="button" class="naowee-btn naowee-btn--loud btn-decision btn-devolver" data-action="devolver">
                   ${ICONS.revert} Devolver a subsanación

@@ -333,7 +333,7 @@ const SEED_FREE = {
         { ts: '2026-04-15T09:12:00', actor: 'municipio', evento: 'Postulación enviada', estado: 'presentado' },
         { ts: '2026-04-15T09:13:00', actor: 'sistema', evento: `Radicado emitido: RAD-2026-001-CONV-2026-001`, estado: 'presentado' },
         { ts: '2026-04-16T11:00:00', actor: 'revisor', evento: 'Postulación tomada para revisión', estado: 'en_revision' },
-        { ts: '2026-04-18T14:30:00', actor: 'revisor', evento: 'Marcada como proyecto priorizado (zona Chocó)', estado: 'en_revision' }
+        { ts: '2026-04-18T14:30:00', actor: 'revisor', evento: 'Marcada como proyecto de enfoque (zona Chocó)', estado: 'en_revision' }
       ],
       fechaPostulacion: '2026-04-15T09:12:00',
       fechaInicioRevision: '2026-04-16T11:00:00',

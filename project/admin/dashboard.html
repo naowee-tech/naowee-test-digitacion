@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260514a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515a">
 
 <style>
   /* CSS de .estado-row* removido 13/05/2026 — la sección "Distribución por
@@ -33,10 +33,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260514v2';
+  import { mountShell } from '../shared/shell.js?v=20260515a';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha } from '../shared/states.js';
-  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260514v2';
-  import { Tour } from '../shared/demo-tour.js?v=20260514v2';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260515a';
+  import { Tour } from '../shared/demo-tour.js?v=20260515a';
 
   /* Asegurar perfil = admin si llegan desde la landing */
   ProjectData.setPerfil('admin');
@@ -245,7 +245,7 @@
                 ${recientes.map(p => {
                   const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'gris' };
                   const flag = p.priorizado
-                    ? '<span class="prio-flag" title="Priorizado"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 21V4a1 1 0 011-1h13a1 1 0 01.8 1.6L15 9l3.8 4.4A1 1 0 0118 15H5v6a.5.5 0 01-1 0z"/></svg></span>'
+                    ? '<span class="prio-flag" title="Proyecto de enfoque"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 21V4a1 1 0 011-1h13a1 1 0 01.8 1.6L15 9l3.8 4.4A1 1 0 0118 15H5v6a.5.5 0 01-1 0z"/></svg></span>'
                     : '<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>';
                   return `
                     <tr onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')">

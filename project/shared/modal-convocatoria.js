@@ -741,7 +741,7 @@ function modalStyles() {
       border: 1px solid var(--border-dark, #d0d4e6);
       border-radius: var(--radius-md, 8px);
       box-shadow: 0 12px 32px -8px rgba(0,0,0,.18);
-      z-index: 10;
+      z-index: 9999;
       padding: 4px;
     }
     .muni-autocomplete__opt {
@@ -1956,6 +1956,29 @@ function bindFileUpload(field) {
   });
 }
 
+/* ═══ Cerrar todos los menus DS abiertos (single + multi + autocomplete) ═══
+   Cada dd anota su `_hideMenu()` en una propiedad del nodo; este helper
+   recorre los wrappers conocidos y dispara el hideMenu correspondiente.
+   `except` es el dropdown que va a abrirse (no se cierra). */
+function closeAllNaoweeDropdowns(except) {
+  document.querySelectorAll('.naowee-dropdown.is-open, .naowee-multiselect.is-open').forEach(dd => {
+    if (dd === except) return;
+    if (typeof dd._hideMenu === 'function') {
+      dd._hideMenu();
+    } else {
+      /* Fallback: el portal mantiene `.naowee-dropdown__menu.is-open` en body */
+      dd.classList.remove('is-open', 'naowee-dropdown--open');
+    }
+  });
+  /* Cerrar también muni-autocomplete (no usa _hideMenu) */
+  document.querySelectorAll('.muni-autocomplete[data-open="1"]').forEach(ac => {
+    if (ac === except) return;
+    ac.removeAttribute('data-open');
+    const menu = ac.querySelector('.muni-autocomplete__menu');
+    if (menu) menu.hidden = true;
+  });
+}
+
 /* ═══ Bind dropdowns — Portal al body (z-index alto, escapa overflow del modal) ═══ */
 function bindDropdowns(scope) {
   const dropdowns = [];
@@ -2029,10 +2052,8 @@ function bindDropdowns(scope) {
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       const willOpen = !dd.classList.contains('is-open');
-      /* Cerrar otros dropdowns */
-      dropdowns.forEach(({ dd: d }) => {
-        if (d !== dd && d._hideMenu) d._hideMenu();
-      });
+      /* Cerrar TODOS los dropdowns abiertos (single + multi + autocomplete) */
+      closeAllNaoweeDropdowns(dd);
       if (willOpen) {
         positionMenu();
         showMenu();
@@ -2202,8 +2223,8 @@ function bindMultiSelects(scope) {
       if (e.target.closest('[data-remove]')) return;
       e.stopPropagation();
       const willOpen = !dd.classList.contains('is-open');
-      /* Cerrar otros multiselects */
-      dropdowns.forEach(({ dd: d }) => { if (d !== dd && d._hideMenu) d._hideMenu(); });
+      /* Cerrar TODOS los dropdowns abiertos (single + multi + autocomplete) */
+      closeAllNaoweeDropdowns(dd);
       if (willOpen) {
         positionMenu();
         showMenu();
@@ -2502,7 +2523,7 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     }
     function search() {
       const q = normalize(input.value.trim());
-      if (!q) { menu.hidden = true; return; }
+      if (!q) { menu.hidden = true; wrap.removeAttribute('data-open'); return; }
       const matches = catalogo
         .filter(u => !seleccionados.has(u.municipio))
         .filter(u => {
@@ -2511,12 +2532,18 @@ export function openConvocatoriaModal({ onCreated } = {}) {
           return m.includes(q) || d.includes(q);
         })
         .slice(0, 8);
+      /* Antes de mostrar el menu, cerrar cualquier dropdown DS abierto */
+      closeAllNaoweeDropdowns(wrap);
+      wrap.setAttribute('data-open', '1');
       renderMenu(matches);
     }
     input.addEventListener('input', search);
     input.addEventListener('focus', search);
     document.addEventListener('click', e => {
-      if (!wrap.contains(e.target)) menu.hidden = true;
+      if (!wrap.contains(e.target)) {
+        menu.hidden = true;
+        wrap.removeAttribute('data-open');
+      }
     });
     /* Tag em-flag-pill ya está en pages.css del módulo Usuarios; aquí solo aprovechamos */
     renderChips();

@@ -1521,14 +1521,23 @@ const ProjectData = (() => {
     electrico: 'electrico',
     ambiental: 'ambiental',
     presupuesto: 'presupuesto',
-    general: 'general'
+    general: 'general',
+    /* v2.0 — RBI también es un "área" reviewable en el panel de usuarios */
+    rbi: 'rbi'
   };
 
-  /* Busca en el equipo revisor quién cubre una especialidad de área. */
+  /* Busca en el equipo revisor quién cubre un área.
+     v2.0: si la key es 'rbi' o 'general', busca por `tipo` (rol dedicado);
+     para áreas técnicas sigue buscando por `especialidades`. */
   function getRevisorPorArea(areaKey) {
     const spec = AREA_TO_SPECIALTY[areaKey];
     if (!spec) return null;
-    return getRevisores().find(r => (r.especialidades || []).includes(spec)) || null;
+    const revs = getRevisores();
+    if (spec === 'rbi') return revs.find(r => r.tipo === 'rbi') || null;
+    if (spec === 'general') return revs.find(r => r.tipo === 'general')
+                                 || revs.find(r => (r.especialidades||[]).includes('general'))
+                                 || null;
+    return revs.find(r => (r.especialidades || []).includes(spec)) || null;
   }
 
   /* SLA: días estándar de revisión técnica (Res. 933 + acuerdo demo). */

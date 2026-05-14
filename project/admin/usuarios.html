@@ -205,17 +205,21 @@
 
   const pageContent = document.getElementById('pageContent');
 
-  /* Catálogo de áreas Res. 933 + general (espejo del paso 4 de convocatoria-crear) */
+  /* v2.0 — Catálogo ampliado con los 3 roles de revisor (Danna 14/05/2026):
+     - RBI dedicado (revisa bloque 1)
+     - Doc General dedicado (revisa bloque 2)
+     - 8 áreas técnicas (cubren bloque 3) */
   const AREAS_CATALOGO = [
-    { id: 'topografico',    label: 'Levantamiento topográfico',          ref: 'Res. 933 Art. 3.1', especialidad: 'topografico' },
-    { id: 'suelos',         label: 'Estudio de suelos',                  ref: 'Res. 933 Art. 3.2', especialidad: 'suelos' },
-    { id: 'arquitectonico', label: 'Diseño arquitectónico',              ref: 'Res. 933 Art. 3.3', especialidad: 'arquitectonico' },
-    { id: 'estructural',    label: 'Diseño estructural',                 ref: 'Res. 933 Art. 3.4', especialidad: 'estructural' },
-    { id: 'hidrosanitario', label: 'Hidrosanitario y red contra incendios', ref: 'Res. 933 Art. 3.5', especialidad: 'hidrosanitario' },
-    { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',   ref: 'Res. 933 Art. 3.6', especialidad: 'electrico' },
-    { id: 'ambiental',      label: 'Manejo, riesgos y ambiental',        ref: 'Res. 933 Art. 3.7', especialidad: 'ambiental' },
-    { id: 'presupuesto',    label: 'Presupuesto integral',               ref: 'Res. 933 Art. 3.8', especialidad: 'presupuesto' },
-    { id: 'general',        label: 'Documentación general del proyecto', ref: 'Res. 933 Art. 1 y 2', especialidad: 'general' }
+    { id: 'rbi',            label: 'Requisitos Básicos Indispensables',  ref: 'Res. 933 Sec. 1 (RBI)', especialidad: 'rbi', tipo: 'rbi' },
+    { id: 'general',        label: 'Documentación general del proyecto', ref: 'Res. 933 Sec. 2',       especialidad: 'general', tipo: 'general' },
+    { id: 'topografico',    label: 'Levantamiento topográfico',          ref: 'Res. 933 Art. 3.1',     especialidad: 'topografico', tipo: 'tecnico' },
+    { id: 'suelos',         label: 'Estudio de suelos',                  ref: 'Res. 933 Art. 3.2',     especialidad: 'suelos', tipo: 'tecnico' },
+    { id: 'arquitectonico', label: 'Diseño arquitectónico',              ref: 'Res. 933 Art. 3.3',     especialidad: 'arquitectonico', tipo: 'tecnico' },
+    { id: 'estructural',    label: 'Diseño estructural',                 ref: 'Res. 933 Art. 3.4',     especialidad: 'estructural', tipo: 'tecnico' },
+    { id: 'hidrosanitario', label: 'Hidrosanitario y red contra incendios', ref: 'Res. 933 Art. 3.5', especialidad: 'hidrosanitario', tipo: 'tecnico' },
+    { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',   ref: 'Res. 933 Art. 3.6',     especialidad: 'electrico', tipo: 'tecnico' },
+    { id: 'ambiental',      label: 'Manejo, riesgos y ambiental',        ref: 'Res. 933 Art. 3.7',     especialidad: 'ambiental', tipo: 'tecnico' },
+    { id: 'presupuesto',    label: 'Presupuesto integral',               ref: 'Res. 933 Art. 3.8',     especialidad: 'presupuesto', tipo: 'tecnico' }
   ];
 
   const TIPOS_ENTIDAD = [

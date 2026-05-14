@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515r">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515s">
 <style>
   /* Quitar elevation/sombra del table-card en esta página (DS aplica box-shadow por default) */
   .naowee-table-card { box-shadow: none !important; }
@@ -76,7 +76,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515r';
+  import { mountShell } from '../shared/shell.js?v=20260515s';
   import { ESTADOS_POSTULACION, formatoMoneda, fechaCorta, diasRestantes } from '../shared/states.js';
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -92,7 +92,16 @@
   const ESTADOS_RBI = ['presentado','en_revision','en_revision_rbi','devuelta_subsanacion'];
   const ESTADOS_POST_RBI = ['rbi_aprobada','en_revision_docs','etapa_documental','favorable'];
   const filtroEstado = tipoRevisor === 'rbi' ? ESTADOS_RBI : ESTADOS_POST_RBI;
-  const enRev = proyectos.filter(p => filtroEstado.includes(p.estado));
+  /* Doug 14/05/2026: además del filtro por tipo, incluir proyectos donde el
+     revisor activo tenga áreas delegadas (revisorId === self.id). Caso real:
+     un revisor RBI al que le delegaron un área técnica debe poder ver ese
+     proyecto en su bandeja aunque esté en `en_revision_docs`. */
+  const tieneAreaAsignada = (p) => {
+    if (!revisorActivo) return false;
+    return (p.docsTecnica?.areas || []).some(a => a.revisorId === revisorActivo.id)
+        || (p.docsGeneral?.revisorId === revisorActivo.id);
+  };
+  const enRev = proyectos.filter(p => filtroEstado.includes(p.estado) || tieneAreaAsignada(p));
   const counts = enRev.reduce((acc, p) => { acc[p.estado] = (acc[p.estado] || 0) + 1; return acc; }, {});
   const esGeneral = tipoRevisor === 'general';
 

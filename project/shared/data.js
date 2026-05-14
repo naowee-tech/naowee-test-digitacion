@@ -7,12 +7,24 @@
 */
 
 const KEY = 'naowee.project.v6';
+/* v2.0 — Flag de modo demo (Doug 14/05/2026):
+   'guided' (default) → SEED minimal sin convocatorias ni proyectos.
+   'free'             → SEED completo con 33 proyectos en varios estados. */
+const DEMO_MODE_KEY = 'naowee.project.demoMode';
+function getDemoMode() {
+  const v = localStorage.getItem(DEMO_MODE_KEY);
+  return v === 'free' ? 'free' : 'guided';
+}
+function setDemoMode(mode) {
+  localStorage.setItem(DEMO_MODE_KEY, mode === 'free' ? 'free' : 'guided');
+  localStorage.removeItem(KEY); /* fuerza re-seed con el nuevo modo */
+}
 
 /* ───── Estado inicial demo — datos reales ─────
    Convocatoria abierta + 1 proyecto en revisión + 1 favorable + 1 en
    etapa documental + 1 en inversión, para que cada rol vea movimiento
    real al entrar. */
-const SEED = {
+const SEED_FREE = {
   perfilActivo: 'admin', // 'admin' | 'municipio' | 'revisor'
   perfiles: {
     admin: {
@@ -1439,12 +1451,29 @@ const SEED = {
   ]
 };
 
+/* v2.0 — SEED guiado (default): catálogos del sistema cargados, transacciones vacías.
+   El usuario arranca con 0 convocatorias y 0 proyectos. El tour lo lleva paso a paso. */
+const SEED_GUIDED = {
+  perfilActivo: SEED_FREE.perfilActivo,
+  perfiles: SEED_FREE.perfiles,
+  revisores: SEED_FREE.revisores,
+  usuariosMunicipales: SEED_FREE.usuariosMunicipales,
+  convocatorias: [],
+  proyectos: [],
+  notificaciones: []
+};
+
+/* Selector — load() lo invoca según `demoMode` */
+function pickSeed() {
+  return getDemoMode() === 'free' ? SEED_FREE : SEED_GUIDED;
+}
+
 const ProjectData = (() => {
   /* Versión del schema. Bumpear cuando el SEED cambie en forma incompatible
      (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
      ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 7;
+  const SCHEMA_VERSION = 8;
 
   /* v1.1 — Días extra que concede el admin cuando aprueba prórroga RBI.
      Solo se puede solicitar UNA VEZ por proyecto. */
@@ -1466,7 +1495,7 @@ const ProjectData = (() => {
           (s.perfiles?.revisor && !s.perfiles.revisor.revisorId);
         if (isLegacy) {
           console.info('[data] state legacy detectado → reset al SEED v' + SCHEMA_VERSION);
-          const fresh = JSON.parse(JSON.stringify(SEED));
+          const fresh = JSON.parse(JSON.stringify(pickSeed()));
           fresh.__schema = SCHEMA_VERSION;
           localStorage.setItem(KEY, JSON.stringify(fresh));
           return fresh;
@@ -1474,7 +1503,7 @@ const ProjectData = (() => {
         return s;
       }
     } catch (e) { console.warn('[data] parse fallback', e); }
-    const fresh = JSON.parse(JSON.stringify(SEED));
+    const fresh = JSON.parse(JSON.stringify(pickSeed()));
     fresh.__schema = SCHEMA_VERSION;
     return fresh;
   }
@@ -1917,7 +1946,10 @@ const ProjectData = (() => {
     getConvocatorias, addConvocatoria, setConvocatoria,
     defaultNotificacion, enviarNotificacion, inspectReenvio, NOTIF_THROTTLE_HOURS,
     pushHistorial, pushNotificacion,
-    SEED
+    /* v2.0 — Modo demo (Doug 14/05/2026) */
+    getDemoMode, setDemoMode,
+    /* SEED legacy alias (debug) — apunta a FREE para consumidores que aún lo usan */
+    SEED: SEED_FREE
   };
 })();
 

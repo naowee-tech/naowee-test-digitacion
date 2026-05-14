@@ -265,12 +265,34 @@ function renderDemoSwitcher(perfil) {
         <div class="demo-role-switcher__panel-label">Cambiar de perfil (simulado)</div>
         <div class="demo-role-switcher__list">${items}</div>
         ${equipoItems}
+        ${renderDemoModeSection()}
         <div class="demo-role-switcher__panel-footer">
           <button type="button" class="demo-reset-btn" id="demoResetBtn" title="Restablece el mock data al estado original (útil después de probar acciones como activar inversión)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
             Reiniciar demo
           </button>
         </div>
+      </div>
+    </div>
+  `;
+}
+
+/* v2.0 — Sección "Modo demo" en el switcher (Doug 14/05/2026) */
+function renderDemoModeSection() {
+  const mode = ProjectData.getDemoMode?.() || 'guided';
+  const esGuiado = mode === 'guided';
+  return `
+    <div class="demo-role-switcher__panel-label" style="margin-top:8px">Modo demo</div>
+    <div class="demo-mode-row">
+      <div class="demo-mode-row__current">
+        <span class="demo-mode-row__chip ${esGuiado ? 'is-active' : ''}">Guiado · vacío</span>
+        <span class="demo-mode-row__chip ${esGuiado ? '' : 'is-active'}">Libre · con datos</span>
+      </div>
+      <div class="demo-mode-row__actions">
+        ${esGuiado
+          ? `<button type="button" class="demo-mode-row__btn" id="demoSwitchModeBtn">Saltar a modo libre →</button>`
+          : `<button type="button" class="demo-mode-row__btn" id="demoSwitchModeBtn">← Volver al modo guiado</button>`}
+        <button type="button" class="demo-mode-row__btn demo-mode-row__btn--quiet" id="demoRestartTourBtn">Reiniciar tour</button>
       </div>
     </div>
   `;
@@ -414,6 +436,23 @@ function bindShell() {
       ProjectData.reset();
       window.location.reload();
     });
+
+    /* v2.0 — Toggle Modo guiado / libre (Doug 14/05/2026) */
+    document.getElementById('demoSwitchModeBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cur = ProjectData.getDemoMode?.() || 'guided';
+      const next = cur === 'guided' ? 'free' : 'guided';
+      ProjectData.setDemoMode(next);
+      /* Limpia flag de tour cerrado para que reaparezca si vuelve a guided */
+      if (next === 'guided') localStorage.removeItem('naowee.project.tourClosed');
+      window.location.href = pathPrefix() + 'admin/dashboard.html';
+    });
+    /* Reiniciar tour: limpia flag de cerrado y refresca el tour */
+    document.getElementById('demoRestartTourBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      localStorage.removeItem('naowee.project.tourClosed');
+      window.location.reload();
+    });
   }
 
   /* Cerrar sesión → volver al index para reset */
@@ -527,6 +566,14 @@ export function mountShell({ activeId = 'inicio' } = {}) {
   mountNaoweeFooter();
   bindShell();
   document.title = `${MENUS[perfil].label} — Naowee Project`;
+
+  /* v2.0 — Tour guiado: se monta automáticamente en cada página cuando
+     demoMode === 'guided'. Doug 14/05/2026. */
+  const mode = ProjectData.getDemoMode?.() || 'guided';
+  if (mode === 'guided') {
+    import('./demo-tour.js?v=20260514v2').then(m => m.Tour.mount()).catch(() => {});
+  }
+
   return { perfil, perfilData: ProjectData.getPerfilData(perfil) };
 }
 

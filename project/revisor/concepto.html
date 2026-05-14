@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515m">
 <style>
   /* ─── Hero KPIs específicos de esta página ─── */
   .cf-summary {
@@ -135,7 +135,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515l';
+  import { mountShell } from '../shared/shell.js?v=20260515m';
   import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'concepto' });
@@ -240,10 +240,9 @@
         <!-- Tab: En proceso de cierre -->
         <div class="proj-tab-panel proj-tab-panel--flush" data-panel="proceso">
           ${enProceso.length === 0 ? `
-            <div class="cf-empty">
-              <div class="cf-empty__icon">${ICONS.empty}</div>
-              <div class="cf-empty__title">Sin proyectos en proceso de cierre</div>
-              <div class="cf-empty__msg">Todos los proyectos en revisión documental aparecerán aquí mientras esperan que se aprueben todas las áreas técnicas + la doc. general.</div>
+            <div class="table-empty">
+              <div class="table-empty__title">Sin proyectos en proceso de cierre</div>
+              <div class="table-empty__msg">Los proyectos en revisión documental aparecerán aquí mientras esperan que se aprueben todas las áreas técnicas y la doc. general.</div>
             </div>
           ` : `
             <table class="naowee-table--in-card">
@@ -268,10 +267,9 @@
         <!-- Tab: Conceptos emitidos -->
         <div class="proj-tab-panel proj-tab-panel--flush" data-panel="emitidos" hidden>
           ${conConcepto.length === 0 ? `
-            <div class="cf-empty">
-              <div class="cf-empty__icon">${ICONS.cert}</div>
-              <div class="cf-empty__title">Sin conceptos emitidos aún</div>
-              <div class="cf-empty__msg">Apenas se aprueben todas las revisiones de un proyecto, el concepto de favorabilidad se emite automáticamente y aparecerá acá.</div>
+            <div class="table-empty">
+              <div class="table-empty__title">Sin conceptos emitidos aún</div>
+              <div class="table-empty__msg">Cuando se aprueben todas las revisiones de un proyecto, el concepto de favorabilidad se emitirá automáticamente y aparecerá aquí.</div>
             </div>
           ` : `
             <table class="naowee-table--in-card">

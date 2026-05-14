@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515m">
 
 <style>
   /* CSS de .estado-row* removido 13/05/2026 — la sección "Distribución por
@@ -33,10 +33,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515l';
+  import { mountShell } from '../shared/shell.js?v=20260515m';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha } from '../shared/states.js';
-  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260515l';
-  import { Tour } from '../shared/demo-tour.js?v=20260515l';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260515m';
+  import { Tour } from '../shared/demo-tour.js?v=20260515m';
 
   /* Asegurar perfil = admin si llegan desde la landing */
   ProjectData.setPerfil('admin');
@@ -232,34 +232,41 @@
             <a href="proyectos.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todas</a>
           </div>
           <div class="panel-card__body">
-            <table class="dash-table">
-              <thead>
-                <tr>
-                  <th>Proyecto</th>
-                  <th>Estado</th>
-                  <th class="numeric">Presupuesto</th>
-                  <th class="numeric">Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${recientes.map(p => {
-                  const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'gris' };
-                  const flag = p.priorizado
-                    ? '<span class="prio-flag" title="Proyecto de enfoque"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 21V4a1 1 0 011-1h13a1 1 0 01.8 1.6L15 9l3.8 4.4A1 1 0 0118 15H5v6a.5.5 0 01-1 0z"/></svg></span>'
-                    : '<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>';
-                  return `
-                    <tr onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')">
-                      <td class="name-cell">
-                        <div class="name-cell__inner">${flag}<span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div>
-                        <div class="meta-line">${p.radicado || '—'} · ${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</div>
-                      </td>
-                      <td><span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet naowee-badge--small">${est.label}</span></td>
-                      <td class="numeric" style="font-weight:600">${formatoMoneda(p.presupuesto)}</td>
-                      <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px">${formatoFecha(p.fechaPostulacion)}</td>
-                    </tr>`;
-                }).join('')}
-              </tbody>
-            </table>
+            ${recientes.length === 0 ? `
+              <div class="table-empty">
+                <div class="table-empty__title">Sin postulaciones todavía</div>
+                <div class="table-empty__msg">Cuando los municipios radiquen proyectos en una convocatoria, aparecerán aquí.</div>
+              </div>
+            ` : `
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Proyecto</th>
+                    <th>Estado</th>
+                    <th class="numeric">Presupuesto</th>
+                    <th class="numeric">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${recientes.map(p => {
+                    const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'gris' };
+                    const flag = p.priorizado
+                      ? '<span class="prio-flag" title="Proyecto de enfoque"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 21V4a1 1 0 011-1h13a1 1 0 01.8 1.6L15 9l3.8 4.4A1 1 0 0118 15H5v6a.5.5 0 01-1 0z"/></svg></span>'
+                      : '<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>';
+                    return `
+                      <tr onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')">
+                        <td class="name-cell">
+                          <div class="name-cell__inner">${flag}<span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div>
+                          <div class="meta-line">${p.radicado || '—'} · ${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</div>
+                        </td>
+                        <td><span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet naowee-badge--small">${est.label}</span></td>
+                        <td class="numeric" style="font-weight:600">${formatoMoneda(p.presupuesto)}</td>
+                        <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px">${formatoFecha(p.fechaPostulacion)}</td>
+                      </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            `}
           </div>
         </article>
 
@@ -273,28 +280,35 @@
             <a href="convocatorias.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todas</a>
           </div>
           <div class="panel-card__body">
-            <table class="dash-table">
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Convocatoria</th>
-                  <th class="numeric">Cierre</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${convocatorias.slice(0, 6).map(c => {
-                  const titulo = c.nombre && c.nombre.trim() ? c.nombre : `Convocatoria ${c.id}`;
-                  return `
-                    <tr onclick="fadeAndGo('convocatoria-detalle.html?id=${c.id}')">
-                      <td><span class="code-cell">${c.id}</span></td>
-                      <td class="name-cell">
-                        <div class="name-cell__inner"><span class="name-cell__title" title="${titulo}">${titulo}</span></div>
-                      </td>
-                      <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px;white-space:nowrap">${c.cierre ? formatoFecha(c.cierre) : '—'}</td>
-                    </tr>`;
-                }).join('')}
-              </tbody>
-            </table>
+            ${convocatorias.length === 0 ? `
+              <div class="table-empty">
+                <div class="table-empty__title">Sin convocatorias publicadas</div>
+                <div class="table-empty__msg">Crea una convocatoria desde el botón "Crear convocatoria" para que los municipios puedan postular.</div>
+              </div>
+            ` : `
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Convocatoria</th>
+                    <th class="numeric">Cierre</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${convocatorias.slice(0, 6).map(c => {
+                    const titulo = c.nombre && c.nombre.trim() ? c.nombre : `Convocatoria ${c.id}`;
+                    return `
+                      <tr onclick="fadeAndGo('convocatoria-detalle.html?id=${c.id}')">
+                        <td><span class="code-cell">${c.id}</span></td>
+                        <td class="name-cell">
+                          <div class="name-cell__inner"><span class="name-cell__title" title="${titulo}">${titulo}</span></div>
+                        </td>
+                        <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px;white-space:nowrap">${c.cierre ? formatoFecha(c.cierre) : '—'}</td>
+                      </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            `}
           </div>
         </article>
       </div>

@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515m">
 </head>
 <body>
 <div class="shell">
@@ -22,7 +22,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515l';
+  import { mountShell } from '../shared/shell.js?v=20260515m';
   import { ESTADOS_POSTULACION, formatoMoneda, fechaCorta, diasRestantes } from '../shared/states.js';
   import { openPostularModal } from '../shared/modal-postular.js?v=20260513o';
   ProjectData.setPerfil('municipio');
@@ -100,6 +100,12 @@
           </div>
         </div>
         <div class="naowee-table-card__active-tags" id="filterTags" style="display:none"></div>
+        ${misProyectos.length === 0 ? `
+          <div class="table-empty">
+            <div class="table-empty__title">Aún no has postulado proyectos</div>
+            <div class="table-empty__msg">Entra a una convocatoria abierta y radica tu primer proyecto. Aparecerá aquí con su estado en revisión.</div>
+          </div>
+        ` : `
         <div class="naowee-table-card__table-wrap">
           <table class="naowee-table--in-card" id="projTable">
             <thead>
@@ -175,6 +181,7 @@
             <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small table-empty-state__btn" id="emptyClearBtn">Limpiar filtros</button>
           </div>
         </div>
+        `}
       </div>
     </div>
   `;

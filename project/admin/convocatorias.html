@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515m">
 </head>
 <body>
 <div class="shell">
@@ -21,9 +21,9 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515l';
+  import { mountShell } from '../shared/shell.js?v=20260515m';
   import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
-  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260515l';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260515m';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });
 
@@ -177,7 +177,12 @@
         </div>
         <div class="naowee-table-card__active-tags" id="filterTags" style="display:none"></div>
         <div id="viewSlot">
-          <div id="cardsView" class="convo-grid">${convocatorias.map(renderCard).join('')}</div>
+          ${convocatorias.length === 0 ? `
+            <div class="table-empty">
+              <div class="table-empty__title">Sin convocatorias publicadas</div>
+              <div class="table-empty__msg">Crea la primera convocatoria desde el botón "Nueva convocatoria". Los municipios la verán y podrán postular sus proyectos.</div>
+            </div>
+          ` : `<div id="cardsView" class="convo-grid">${convocatorias.map(renderCard).join('')}</div>`}
         </div>
       </div>
     </div>

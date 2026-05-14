@@ -487,6 +487,28 @@
 .naowee-empty-state__title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .naowee-empty-state__msg { color: var(--text-secondary); margin-bottom: 18px; }
 
+/* Empty state canónico para tablas y listados (Doug 14/05/2026 — patrón
+   inspirado en admin/prorrogas).
+   Uso: <div class="table-empty"><div class="table-empty__title">…</div>
+        <div class="table-empty__msg">…</div></div>
+   Vive dentro de un card/panel container — no añade su propio borde. */
+.table-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-secondary);
+}
+.table-empty__title {
+  font-size: 14px; font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.table-empty__msg {
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
 /* Empty state limpio — sin border punteado, con icon arriba.
    Para usar dentro de un container que ya provee el "card". */
 .empty-state-clean {

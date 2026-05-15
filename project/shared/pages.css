@@ -4857,56 +4857,221 @@ body > .naowee-dropdown__menu.is-open {
   margin-right: 4px;
   font-variant-numeric: tabular-nums;
 }
+/* ─── File card refinado (Doug 17/05/2026) ─────────────────────────────
+   Pattern document-tile: tile rojo PDF + nombre/meta + botón preview.
+   Layout: [tile 36×42] [main flex:1] [preview 32×32]
+   Inspirado en Adobe Reader / iCloud Files. */
 .subs-review__file {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  align-self: flex-start;
+  gap: 14px;
+  align-self: stretch;
   max-width: 100%;
-  padding: 7px 12px;
-  background: #fff5ee;
-  border: 1px solid #ffd9c4;
+  padding: 12px 14px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e7e9f3);
   border-radius: var(--radius-md, 8px);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent, #d74009);
-  line-height: 1.2;
+  transition: border-color .15s, box-shadow .15s, transform .12s;
 }
-.subs-review__file svg {
-  width: 14px; height: 14px;
+.subs-review__file:hover {
+  border-color: var(--border-dark, #d0d4e6);
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 12px -4px rgba(0,0,0,.06);
+}
+/* Tile estilo doc — gradiente rojo (PDF default), corner fold sutil */
+.subs-review__file-tile {
+  position: relative;
+  width: 36px; height: 42px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #e63946 0%, #c41e3a 100%);
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5px;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(196, 30, 58, .25);
+}
+.subs-review__file-tile-corner {
+  position: absolute;
+  top: 0; right: 0;
+  width: 10px; height: 10px;
+  background: #fff;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  opacity: .28;
+  border-bottom-left-radius: 2px;
+}
+.subs-review__file-tile-text {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .9px;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+/* Variantes por extensión — JPG/PNG verdes, otros neutros */
+.subs-review__file[data-ext="JPG"] .subs-review__file-tile,
+.subs-review__file[data-ext="JPEG"] .subs-review__file-tile,
+.subs-review__file[data-ext="PNG"] .subs-review__file-tile {
+  background: linear-gradient(135deg, #1f8923 0%, #166f30 100%);
+  box-shadow: 0 1px 3px rgba(21, 128, 61, .25);
+}
+.subs-review__file[data-ext="DOC"] .subs-review__file-tile,
+.subs-review__file[data-ext="DOCX"] .subs-review__file-tile {
+  background: linear-gradient(135deg, #1f78d1 0%, #1864a8 100%);
+  box-shadow: 0 1px 3px rgba(31, 120, 209, .25);
+}
+.subs-review__file-main {
+  flex: 1;
+  min-width: 0;
 }
 .subs-review__file-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #282834);
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 280px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: -.1px;
+}
+.subs-review__file-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-secondary, #646587);
+  margin-top: 4px;
+  letter-spacing: .15px;
+  line-height: 1.2;
 }
 .subs-review__file-size {
-  color: var(--text-secondary, #646587);
-  font-weight: 500;
-  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--text-primary, #282834);
+  font-variant-numeric: tabular-nums;
 }
-.subs-review__file--missing {
-  background: var(--bg, #f5f6fa);
-  border-color: var(--border, #e7e9f3);
-  color: var(--text-secondary, #646587);
-  font-weight: 500;
+.subs-review__file-dot {
+  opacity: .6;
+}
+.subs-review__file-time {
   font-style: italic;
 }
-.subs-review__note {
-  font-size: 12.5px;
-  color: var(--text-secondary, #646587);
-  line-height: 1.5;
-  padding: 10px 12px;
-  background: var(--bg, #f5f6fa);
+/* Botón preview — outline neutro, hover accent naranja */
+.subs-review__file-preview {
+  width: 32px; height: 32px;
   border-radius: var(--radius-md, 8px);
-  border-left: 2px solid var(--border-dark, #d0d4e6);
+  border: 1px solid var(--border, #e7e9f3);
+  background: var(--bg, #f5f6fa);
+  color: var(--text-secondary, #646587);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .15s, color .15s, background .15s, transform .12s;
+}
+.subs-review__file-preview:hover {
+  background: var(--surface, #fff);
+  color: var(--accent, #d74009);
+  border-color: var(--accent, #d74009);
+  transform: scale(1.06);
+}
+.subs-review__file-preview:active {
+  transform: scale(.96);
+}
+.subs-review__file-preview svg {
+  width: 15px; height: 15px;
+}
+
+/* File missing — variante distinta (no usa el card pattern) */
+.subs-review__file-missing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff8f6;
+  border: 1px dashed #ffc4bb;
+  border-radius: var(--radius-md, 8px);
+  align-self: stretch;
+  max-width: 100%;
+}
+.subs-review__file-missing-icon {
+  width: 20px; height: 20px;
+  color: #b42318;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.subs-review__file-missing-icon svg {
+  width: 18px; height: 18px;
+}
+.subs-review__file-missing-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.subs-review__file-missing-text strong {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #b42318;
+  line-height: 1.2;
+}
+.subs-review__file-missing-text span {
+  font-size: 11.5px;
+  color: var(--text-secondary, #646587);
+  line-height: 1.3;
+}
+
+/* ─── Nota refinada (Doug 17/05/2026) ──────────────────────────────────
+   Eyebrow label "Tu nota para el revisor" + quote glyph + texto destacado.
+   Pattern: testimonio / comentario humano (vs. cita técnica plana). */
+.subs-review__note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #fafbfd 0%, var(--surface, #fff) 100%);
+  border: 1px solid var(--border, #e7e9f3);
+  border-left: 3px solid var(--blue-info, #1f78d1);
+  border-radius: var(--radius-md, 8px);
   word-break: break-word;
 }
+.subs-review__note-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.subs-review__note-quote {
+  width: 13px; height: 13px;
+  color: var(--blue-info, #1f78d1);
+  flex-shrink: 0;
+  opacity: .65;
+}
+.subs-review__note-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--blue-info, #1f78d1);
+  line-height: 1;
+}
+.subs-review__note-text {
+  font-size: 13px;
+  color: var(--text-primary, #282834);
+  line-height: 1.5;
+  margin: 0;
+  font-style: normal;
+  font-weight: 500;
+}
+
 @media (max-width: 640px) {
-  .subs-review__file-name {
-    max-width: 180px;
+  .subs-review__file {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+  .subs-review__file-tile {
+    width: 32px; height: 38px;
   }
   .subs-review__item {
     padding: 14px;

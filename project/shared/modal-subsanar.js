@@ -382,7 +382,10 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
         const resp = (fd.get(`respuesta_${o.idx}`) || '').toString().trim();
         const sop = fd.get(`soporte_${o.idx}`);
         const sopName = sop?.name || '';
-        const sopSize = sop?.size ? ` · ${formatBytes(sop.size)}` : '';
+        const sopSize = sop?.size ? formatBytes(sop.size) : '';
+        const sopExt = sopName.includes('.')
+          ? sopName.split('.').pop().toUpperCase().slice(0, 4)
+          : 'FILE';
         return `
           <li class="subs-review__item">
             <span class="subs-review__num" aria-hidden="true">
@@ -391,18 +394,43 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
             <div class="subs-review__body">
               <div class="subs-review__obs"><span class="subs-review__obs-num">${i + 1}.</span> ${escape(o.detalle || '—')}</div>
               ${sopName ? `
-                <div class="subs-review__file">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-                  <span class="subs-review__file-name">${escape(sopName)}</span>
-                  <span class="subs-review__file-size">${escape(sopSize)}</span>
+                <div class="subs-review__file" data-ext="${escape(sopExt)}">
+                  <span class="subs-review__file-tile" aria-hidden="true">
+                    <span class="subs-review__file-tile-corner"></span>
+                    <span class="subs-review__file-tile-text">${escape(sopExt)}</span>
+                  </span>
+                  <div class="subs-review__file-main">
+                    <div class="subs-review__file-name" title="${escape(sopName)}">${escape(sopName)}</div>
+                    <div class="subs-review__file-meta">
+                      ${sopSize ? `<span class="subs-review__file-size">${escape(sopSize)}</span>` : ''}
+                      <span class="subs-review__file-dot" aria-hidden="true">·</span>
+                      <span class="subs-review__file-time">adjuntado ahora</span>
+                    </div>
+                  </div>
+                  <button type="button" class="subs-review__file-preview has-tooltip" data-tooltip="Vista previa del documento" aria-label="Vista previa de ${escape(sopName)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
                 </div>
               ` : `
-                <div class="subs-review__file subs-review__file--missing">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span>Sin documento adjunto</span>
+                <div class="subs-review__file-missing">
+                  <span class="subs-review__file-missing-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </span>
+                  <div class="subs-review__file-missing-text">
+                    <strong>Sin documento adjunto</strong>
+                    <span>El revisor pidió evidencia para esta observación</span>
+                  </div>
                 </div>
               `}
-              ${resp ? `<div class="subs-review__note">${escape(resp)}</div>` : ''}
+              ${resp ? `
+                <div class="subs-review__note">
+                  <div class="subs-review__note-head">
+                    <svg class="subs-review__note-quote" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 7h4v4H7c0 2 0 4 2 4v2c-3 0-4-2-4-4V7zm9 0h4v4h-4c0 2 0 4 2 4v2c-3 0-4-2-4-4V7z"/></svg>
+                    <span class="subs-review__note-label">Tu nota para el revisor</span>
+                  </div>
+                  <p class="subs-review__note-text">${escape(resp)}</p>
+                </div>
+              ` : ''}
             </div>
           </li>
         `;

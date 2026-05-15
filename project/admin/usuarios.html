@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516j">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516l">
 <style>
   /* ─── Tabs DS dentro del .naowee-table-card ───
      Doug 15/05: el DS ya provee el patrón edge-to-edge con negative margin
@@ -76,14 +76,16 @@
   .area-mgmt-card__icon--estructural    { background: #e7e9f3; color: #4b4f7a; }
   .area-mgmt-card__icon--hidrosanitario { background: #e0f2fe; color: #0369a1; }
   .area-mgmt-card__icon--electrico      { background: #fef3c7; color: #ca8a04; }
-  /* Multi-revisor: lista minimalista (thumbnail DS + nombre).
-     Doug 15/05: reemplazamos el pill verde por una composición DS con
-     naowee-thumbnail + texto plano, separados por punto medio para
-     múltiples revisores en la misma área. */
+  /* Multi-revisor: stack de thumbnails apilados + nombre del principal.
+     Doug 15/05: cuando varios revisores cubren una misma especialidad,
+     mostramos los avatares apilados (overlap -8px) con borde blanco para
+     separar — patrón GitHub/Figma — y al lado el nombre del principal
+     (el de menor cargaActiva) con un sufijo "+N" si hay más.
+     El "principal" es solo un display hint — el sistema asigna al de
+     menor carga en runtime, no es un flag manual. */
   .area-mgmt-card__revs {
     display: flex; flex-wrap: wrap; align-items: center;
-    column-gap: 10px; row-gap: 6px;
-    margin-top: 8px;
+    gap: 8px; margin-top: 8px;
   }
   .area-mgmt-card__main { min-width: 0; }
   .area-mgmt-card__title {
@@ -93,11 +95,31 @@
     font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;
     font-weight: 500; letter-spacing: 0;
   }
-  .area-mgmt-card__rev {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; font-weight: 500; color: var(--text-primary);
+  /* Stack: thumbnails con overlap, anillo blanco */
+  .rev-stack {
+    display: inline-flex; align-items: center;
+    padding-left: 0;
   }
-  .area-mgmt-card__rev .naowee-thumbnail { box-shadow: none; }
+  .rev-stack .naowee-thumbnail,
+  .rev-stack__more {
+    box-shadow: 0 0 0 2px var(--surface, #fff);
+    flex-shrink: 0;
+  }
+  .rev-stack > * + * { margin-left: -8px; }
+  .rev-stack__more {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--border); color: var(--text-secondary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .area-mgmt-card__rev-name {
+    font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .area-mgmt-card__rev-count {
+    font-size: 11.5px; color: var(--text-secondary);
+    font-weight: 500;
+  }
   .area-mgmt-card__rev--missing {
     display: inline-flex; align-items: center; gap: 6px;
     color: #b42318; font-size: 12px; font-weight: 500;
@@ -409,7 +431,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516j';
+  import { mountShell } from '../shared/shell.js?v=20260516l';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
@@ -602,18 +624,31 @@
                     <div class="area-mgmt-card__main">
                       <div class="area-mgmt-card__title">${a.label}</div>
                       <div class="area-mgmt-card__ref">${a.ref}</div>
-                      ${revisores.length ? `
-                        <div class="area-mgmt-card__revs">
-                          ${revisores.map(r => `
-                            <span class="area-mgmt-card__rev">
-                              <span class="naowee-thumbnail naowee-thumbnail--xsmall" style="background:${r.color}22;color:${r.color}">
-                                <span class="naowee-thumbnail__initials">${r.avatar}</span>
-                              </span>
-                              ${r.nombre}
+                      ${revisores.length ? (() => {
+                        /* Principal = el de menor cargaActiva (a quien el sistema asignará primero).
+                           Mostramos hasta 3 thumbnails apilados; el resto en "+N". El nombre
+                           visible es siempre el del principal, con sufijo "+N" sólo si hay otros. */
+                        const sorted = [...revisores].sort((a, b) => (a.cargaActiva ?? 0) - (b.cargaActiva ?? 0));
+                        const MAX_STACK = 3;
+                        const visibles = sorted.slice(0, MAX_STACK);
+                        const restantes = sorted.length - visibles.length;
+                        const principal = sorted[0];
+                        const otros = sorted.length - 1;
+                        return `
+                          <div class="area-mgmt-card__revs">
+                            <span class="rev-stack" aria-label="${sorted.length} revisor${sorted.length === 1 ? '' : 'es'}">
+                              ${visibles.map(r => `
+                                <span class="naowee-thumbnail naowee-thumbnail--xsmall" style="background:${r.color}22;color:${r.color}" title="${r.nombre}">
+                                  <span class="naowee-thumbnail__initials">${r.avatar}</span>
+                                </span>
+                              `).join('')}
+                              ${restantes > 0 ? `<span class="rev-stack__more" title="${sorted.slice(MAX_STACK).map(r => r.nombre).join(', ')}">+${restantes}</span>` : ''}
                             </span>
-                          `).join('')}
-                        </div>
-                      ` : `
+                            <span class="area-mgmt-card__rev-name">${principal.nombre}</span>
+                            ${otros > 0 ? `<span class="area-mgmt-card__rev-count">y ${otros} más</span>` : ''}
+                          </div>
+                        `;
+                      })() : `
                         <span class="area-mgmt-card__rev--missing">Sin responsable</span>
                       `}
                     </div>

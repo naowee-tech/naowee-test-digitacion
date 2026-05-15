@@ -52,8 +52,8 @@
   box-shadow: none !important;
 }
 
-/* Botón "volver" — ghost del DS, separado del hero */
-.back-btn { margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px; }
+/* Botón "volver" — ghost del DS, separado del hero (Doug 15/05: spacing tightened) */
+.back-btn { margin-bottom: 8px; display: inline-flex; align-items: center; gap: 6px; }
 
 /* Card con tabs (proyecto-detalle) — separar tabs del top del card */
 .proj-tabs-card { padding: 0; overflow: hidden; }
@@ -67,11 +67,12 @@
 .proj-tab-panel--flush { padding: 16px 28px 0; }
 .proj-tab-panel--flush > .naowee-table--in-card { width: 100% !important; margin: 0 !important; }
 
-/* Header de convocatoria-detalle: título con badge inline + descripción colapsable */
-.convo-header { margin-bottom: 24px; }
+/* Header de convocatoria-detalle: título con badge inline + descripción colapsable.
+   Doug 15/05: spacing tightened — header más compacto. */
+.convo-header { margin-bottom: 14px; }
 .convo-header__title {
-  font-size: 24px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em;
-  color: var(--text-primary); margin: 0 0 6px;
+  font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em;
+  color: var(--text-primary); margin: 0 0 4px;
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 .convo-header__badge { vertical-align: middle; font-size: 12px; }
@@ -85,7 +86,7 @@
 }
 .convo-desc[data-collapsed="true"] .convo-desc__text {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -327,11 +328,17 @@
    .page tiene padding 28px 32px, así que escapamos con negative margins
    para que la cenefa toque las tres bordes del viewport (sin bottom). */
 .convo-status-cenefa--top {
-  margin: -28px -32px 22px;
-  padding: 18px 32px;
+  margin: -28px -32px 14px;
+  padding: 12px 32px;
   border-top: 0;
   border-bottom: 1px solid var(--border);
 }
+/* Doug 15/05: cenefa top en versión compacta — icon más pequeño y title/msg en línea */
+.convo-status-cenefa--top .convo-status-cenefa__icon { width: 36px; height: 36px; }
+.convo-status-cenefa--top .convo-status-cenefa__icon svg { width: 18px; height: 18px; }
+.convo-status-cenefa--top .convo-status-cenefa__title { font-size: 14px; margin-bottom: 2px; }
+.convo-status-cenefa--top .convo-status-cenefa__msg { font-size: 12px; line-height: 1.4; max-width: 660px; }
+.convo-status-cenefa--top .naowee-btn--large { height: 38px; padding: 0 16px; font-size: 13px; }
 
 /* ═══════════════════════════════════════════════════════════════════
    Convo bento (Doug 15/05/2026 · v2 — jerarquía 1 hero + 3 compactas)

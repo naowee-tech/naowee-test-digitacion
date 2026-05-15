@@ -3132,6 +3132,30 @@ body > .naowee-dropdown__menu.is-open {
   .naowee-toast-item { min-width: 0; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   Naowee searchbox — clear button & native ✕ override.
+   El DS provee .naowee-searchbox__clear pero queda vacío si la página no
+   lo incluye en el markup. Además, <input type="search"> renderiza el
+   botón nativo (✕) del navegador que tiene un estilo Webkit que rompe la
+   coherencia con el DS. Globalmente:
+     1. Ocultamos el ✕ nativo de webkit + el cross de IE.
+     2. Aseguramos que el clear DS, cuando existe, se vea consistente.
+   El JS de shell.js auto-inyecta el botón DS en cualquier searchbox que no
+   lo traiga, para que aparezca el ✕ DS al escribir.
+   ═══════════════════════════════════════════════════════════════════ */
+.naowee-searchbox__input::-webkit-search-cancel-button,
+.naowee-searchbox__input::-webkit-search-decoration,
+.naowee-searchbox__input::-webkit-search-results-button,
+.naowee-searchbox__input::-webkit-search-results-decoration {
+  -webkit-appearance: none; appearance: none;
+}
+.naowee-searchbox__input::-ms-clear { display: none; width: 0; height: 0; }
+
+/* Asegurar foco visible en el clear, color icon-secondary del DS */
+.naowee-searchbox__clear:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+
 /* ═══ Project card (custom — lista de proyectos) ═══ */
 .proj-card {
   background: var(--surface); border: 1px solid var(--border);

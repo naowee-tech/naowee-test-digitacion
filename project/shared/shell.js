@@ -567,6 +567,12 @@ export function mountShell({ activeId = 'inicio' } = {}) {
   bindShell();
   document.title = `${MENUS[perfil].label} — Naowee Project`;
 
+  /* Global: auto-inyectar botón clear DS en todos los .naowee-searchbox.
+     También observa el DOM para enhancer searchboxes que se rendericen
+     posteriormente (modales, paneles, etc.). Doug 15/05. */
+  enhanceSearchboxes(document);
+  observeSearchboxes();
+
   /* v2.0 — Tour guiado: se monta automáticamente en cada página cuando
      demoMode === 'guided'. Doug 14/05/2026. */
   const mode = ProjectData.getDemoMode?.() || 'guided';
@@ -577,5 +583,55 @@ export function mountShell({ activeId = 'inicio' } = {}) {
   return { perfil, perfilData: ProjectData.getPerfilData(perfil) };
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   enhanceSearchboxes — Agrega botón clear DS a cualquier .naowee-searchbox
+   que no lo tenga + wire del click handler. El CSS del DS muestra/oculta
+   el botón automáticamente vía :not(:placeholder-shown) ~ __clear.
+   ═══════════════════════════════════════════════════════════════════ */
+const CLEAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+export function enhanceSearchboxes(root = document) {
+  const wraps = root.querySelectorAll('.naowee-searchbox__input-wrap');
+  wraps.forEach(wrap => {
+    if (wrap.dataset.dsClearEnhanced === '1') return;
+    wrap.dataset.dsClearEnhanced = '1';
+    const input = wrap.querySelector('.naowee-searchbox__input');
+    if (!input) return;
+    /* No duplicar si ya existe un __clear en el markup */
+    let clearBtn = wrap.querySelector('.naowee-searchbox__clear');
+    if (!clearBtn) {
+      clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'naowee-searchbox__clear';
+      clearBtn.setAttribute('aria-label', 'Limpiar búsqueda');
+      clearBtn.tabIndex = -1;
+      clearBtn.innerHTML = CLEAR_SVG;
+      wrap.appendChild(clearBtn);
+    }
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.focus();
+    });
+  });
+}
+
+let _searchboxObserver = null;
+function observeSearchboxes() {
+  if (_searchboxObserver) return;
+  _searchboxObserver = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (n.matches?.('.naowee-searchbox__input-wrap') || n.querySelector?.('.naowee-searchbox__input-wrap')) {
+          enhanceSearchboxes(n.parentNode || document);
+        }
+      }
+    }
+  });
+  _searchboxObserver.observe(document.body, { childList: true, subtree: true });
+}
+
 export { ICONS };
-window.ProjectShell = { mountShell, ICONS };
+window.ProjectShell = { mountShell, ICONS, enhanceSearchboxes };

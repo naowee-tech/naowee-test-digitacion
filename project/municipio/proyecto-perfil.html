@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
 </head>
 <body>
 <div class="shell">
@@ -22,10 +22,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516a';
+  import { mountShell } from '../shared/shell.js?v=20260516b';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260516a';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260516b';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -178,13 +178,18 @@
         ` : ''}
 
         ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? `
-          <!-- Observaciones del revisor (solo si hay devolución) -->
+          <!-- Observaciones del revisor (solo si hay devolución) — Doug 15/05/2026:
+               CTA "Subsanar" inline para ir directo al modal sin scrollear al tab. -->
           <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
             <div class="naowee-message__header">
               <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
-              <span class="naowee-message__title">Postulación devuelta — ${p.observaciones.length} observación${p.observaciones.length === 1 ? '' : 'es'} para subsanar</span>
+              <span class="naowee-message__title">Postulación devuelta — ${p.observaciones.filter(o => o.autor === 'revisor').length} observación${p.observaciones.filter(o => o.autor === 'revisor').length === 1 ? '' : 'es'} para subsanar</span>
             </div>
             <div class="naowee-message__text">Tienes 15 días hábiles desde la devolución. Si necesitas más tiempo, puedes solicitar una prórroga.</div>
+            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" data-subsanar="${p.idUnico}">
+              Subsanar
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
           </div>
         ` : ''}
 
@@ -193,7 +198,7 @@
           <div class="naowee-tabs naowee-tabs--animated" role="tablist">
             <button class="naowee-tab naowee-tab--selected" data-tab="datos" role="tab" type="button">Datos del proyecto</button>
             <button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial</button>
-            ${(p.observaciones || []).length > 0 ? `<button class="naowee-tab" data-tab="observaciones" role="tab" type="button">Observaciones <span class="tab-count">${p.observaciones.length}</span></button>` : ''}
+            ${(p.observaciones || []).length > 0 ? `<button class="naowee-tab" data-tab="observaciones" role="tab" type="button">Conversación <span class="tab-count">${p.observaciones.length}</span></button>` : ''}
             <span class="naowee-tabs__indicator"></span>
           </div>
 
@@ -276,7 +281,7 @@
                     <span class="naowee-message__icon">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </span>
-                    <span class="naowee-message__body">Ya subsanaste las observaciones. Quedan aquí como histórico.</span>
+                    <span class="naowee-message__body">Ya subsanaste las observaciones. La conversación queda aquí como histórico.</span>
                   </div>
                 </div>
               ` : ''}

@@ -61,6 +61,32 @@
 
     pageContent.innerHTML = `
       <div class="page-fade-in">
+
+        ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? (() => {
+          /* Doug 16/05/2026: cenefa edge-to-edge top (mismo patrón que la
+             cenefa verde de "te fue asignada" en revisar-area y la azul de
+             "Convocatoria activa" en convocatoria-detalle). CTA Subsanar
+             en el lado derecho via __action wrapper, large size. */
+          const obsCount = p.observaciones.filter(o => o.autor === 'revisor').length;
+          return `
+            <div class="convo-status-cenefa convo-status-cenefa--caution convo-status-cenefa--top">
+              <span class="convo-status-cenefa__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="12" r="9"/></svg>
+              </span>
+              <div class="convo-status-cenefa__body">
+                <div class="convo-status-cenefa__title">Postulación devuelta — ${obsCount} observación${obsCount === 1 ? '' : 'es'} para subsanar</div>
+                <p class="convo-status-cenefa__msg">Tienes 15 días hábiles desde la devolución. Si necesitas más tiempo, puedes solicitar una prórroga.</p>
+              </div>
+              <div class="convo-status-cenefa__action">
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" data-subsanar="${p.idUnico}">
+                  Subsanar
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        })() : ''}
+
         <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           ${backLabel}
@@ -168,23 +194,10 @@
           </div>
         ` : ''}
 
-        ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? `
-          <!-- Observaciones del revisor (solo si hay devolución) — Doug 15/05/2026:
-               CTA "Subsanar" inline para ir directo al modal sin scrollear al tab. -->
-          <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
-  <div class="naowee-message__header">
-    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
-    <span class="naowee-message__title">Postulación devuelta — ${p.observaciones.filter(o => o.autor === 'revisor').length} observación${p.observaciones.filter(o => o.autor === 'revisor').length === 1 ? '' : 'es'} para subsanar</span>
-  </div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">Tienes 15 días hábiles desde la devolución. Si necesitas más tiempo, puedes solicitar una prórroga.</p>
-    <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" data-subsanar="${p.idUnico}">
-              Subsanar
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </button>
-  </div>
-</div>
-        ` : ''}
+        <!-- Doug 16/05/2026: el banner caution "Postulación devuelta" se
+             movió a cenefa edge-to-edge top (mismo patrón DS que verde y azul).
+             CTA Subsanar large en el lado opuesto al texto. -->
+
 
         <!-- ═══ Card unificada con tabs DS Naowee ═══ -->
         <div class="naowee-card proj-tabs-card">
@@ -365,16 +378,19 @@
       });
     });
 
-    /* Triggers de subsanación → abren modal-subsanar.js (antes era una página dedicada) */
-    document.querySelectorAll('[data-subsanar]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        openSubsanarModal({
-          proyectoId: btn.dataset.subsanar,
-          onSubsanado: () => {
-            /* Cuando se completa el envío, recargar la página para reflejar el nuevo estado */
-            setTimeout(() => window.location.reload(), 1200);
-          }
-        });
+    /* Triggers de subsanación → abren modal-subsanar.js (antes era una página dedicada).
+       Doug 16/05/2026: event delegation en document para que funcione con
+       cualquier botón [data-subsanar] presente o agregado dinámicamente
+       (ej: cenefa edge-to-edge top + botón en tab Conversación). */
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-subsanar]');
+      if (!btn) return;
+      e.preventDefault();
+      openSubsanarModal({
+        proyectoId: btn.dataset.subsanar,
+        onSubsanado: () => {
+          setTimeout(() => window.location.reload(), 1200);
+        }
       });
     });
 

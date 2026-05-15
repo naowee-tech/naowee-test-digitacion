@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515w">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515x">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -181,25 +181,93 @@
   .rp-decision__title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
   .rp-decision__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
 
-  /* Wrapper del naowee-checkbox de priorización: card-style cuando hover/checked */
-  .rp-prio-wrap {
-    padding: 10px 14px; background: #fff; border: 1px solid var(--border);
-    border-radius: var(--radius-md); margin-bottom: 14px;
-    transition: border-color .15s, background .15s;
+  /* Doug 15/05/2026: rediseño del panel de decisión.
+     ─ prio-toggle: pill compacto con icono flag, click toggle persistente
+     ─ prorroga-link: button-link compacto debajo de las CTAs
+     ─ Mantenemos las 3 CTAs principales (aprobar/devolver/rechazar) */
+  .rp-prio-toggle {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: border-color .18s, background .18s, box-shadow .18s;
+    user-select: none;
   }
-  .rp-prio-wrap:has(.naowee-checkbox--checked) {
-    border-color: var(--accent); background: var(--orange-bg);
+  .rp-prio-toggle:hover { border-color: var(--border-dark); }
+  .rp-prio-toggle.is-active {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #fff7f3 0%, #ffffff 70%);
+    box-shadow: 0 1px 3px rgba(215, 64, 9, .08);
   }
-  .rp-prio-wrap .naowee-checkbox { margin: 0; }
-  .rp-prio-wrap .naowee-checkbox__label { font-size: 13px; color: var(--text-primary); }
-  /* Force-hide del input nativo (algunos browsers no respetan el opacity:0 del DS) */
-  .rp-prio-wrap .naowee-checkbox input[type="checkbox"] {
-    position: absolute !important;
-    opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-    pointer-events: none !important;
-    margin: 0 !important;
+  .rp-prio-toggle__icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: #f5f6fa; color: #9c9ebf;
+    transition: background .18s, color .18s;
+  }
+  .rp-prio-toggle.is-active .rp-prio-toggle__icon {
+    background: var(--accent); color: #fff;
+  }
+  .rp-prio-toggle__main { flex: 1; min-width: 0; }
+  .rp-prio-toggle__title {
+    font-size: 12.5px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .rp-prio-toggle__sub {
+    font-size: 11px; color: var(--text-secondary); margin-top: 2px;
+    line-height: 1.35;
+  }
+  /* Switch nativo del DS */
+  .rp-prio-switch {
+    position: relative; width: 36px; height: 20px;
+    background: var(--border-dark); border-radius: 999px;
+    flex-shrink: 0;
+    transition: background .2s;
+  }
+  .rp-prio-switch::after {
+    content: ''; position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #fff; border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.18);
+    transition: transform .22s cubic-bezier(.4,0,.2,1);
+  }
+  .rp-prio-toggle.is-active .rp-prio-switch { background: var(--accent); }
+  .rp-prio-toggle.is-active .rp-prio-switch::after { transform: translateX(16px); }
+
+  /* Prórroga link compacto al final del panel */
+  .rp-prorroga-link {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px dashed var(--border-dark);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .rp-prorroga-link:hover {
+    background: #fafbfd;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .rp-prorroga-link svg { width: 14px; height: 14px; }
+
+  /* Ribbon-pop animation cuando el proyecto se marca como enfoque */
+  @keyframes ribbonPop {
+    0%   { transform: scale(0.6) translateY(-8px); opacity: 0; }
+    60%  { transform: scale(1.1) translateY(0); opacity: 1; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .prio-ribbon.is-popping {
+    animation: ribbonPop .42s cubic-bezier(.18,.89,.32,1.28);
   }
 
   .rp-cta-grid {
@@ -314,10 +382,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515w';
+  import { mountShell } from '../shared/shell.js?v=20260515x';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515w';
+  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515x';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -420,11 +488,22 @@
                 </div>
               </div>
 
-              <div id="prorrogaWidget" class="prorroga-widget"></div>
-
-              <div class="rp-prio-wrap">
-                ${checkbox({ name: 'prioCheck', value: 'priorizado', label: 'Marcar como proyecto de enfoque · zonas como Chocó tienen tiempos de revisión especiales', checked: !!p.priorizado })}
-              </div>
+              <!-- Toggle compacto de "Proyecto de enfoque" — Doug 15/05/2026.
+                   Click instant-toggle: persiste p.priorizado, anima la bandera del
+                   hero, y muestra snackbar DS bottom-center. -->
+              <button type="button"
+                      class="rp-prio-toggle ${p.priorizado ? 'is-active' : ''}"
+                      id="prioToggle"
+                      aria-pressed="${p.priorizado ? 'true' : 'false'}">
+                <span class="rp-prio-toggle__icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+                </span>
+                <span class="rp-prio-toggle__main">
+                  <span class="rp-prio-toggle__title">Proyecto de enfoque</span>
+                  <span class="rp-prio-toggle__sub">Zonas como Chocó tienen tiempos de revisión especiales</span>
+                </span>
+                <span class="rp-prio-switch" aria-hidden="true"></span>
+              </button>
 
               <div class="rp-cta-grid">
                 <button type="button" class="naowee-btn naowee-btn--loud btn-decision btn-favorable" data-action="favorable">
@@ -437,6 +516,9 @@
                   ${ICONS.xicon} Rechazar
                 </button>
               </div>
+
+              <!-- Prórroga link compacto al final, en lugar del banner que ocupaba mucho espacio -->
+              <div id="prorrogaWidget" class="prorroga-widget"></div>
 
               <div class="rp-obs-block" id="obsBlock">
                 <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:14px" id="obsTitle">Observaciones</div>
@@ -620,20 +702,21 @@
       const obsForm = document.getElementById('obsForm');
       if (obsForm) bindDropdowns(obsForm);
 
-      /* v1.1 — Widget de prórroga RBI (solicitar al admin, esperar resolución) */
+      /* v1.1 — Widget de prórroga RBI (solicitar al admin, esperar resolución).
+         Doug 15/05/2026: cuando NO hay prórroga, mostrar solo un link compacto;
+         cuando ya existe (pendiente/aprobada/rechazada) sí usar el message
+         completo con detalles. Más compacto sin sacrificar info crítica. */
       function renderProrrogaWidget() {
         const widget = document.getElementById('prorrogaWidget');
         if (!widget) return;
         const pr = (ProjectData.getProyecto(p.idUnico) || p).prorrogaRBI;
         if (!pr) {
           widget.innerHTML = `
-            <div class="prorroga-empty">
-              <div class="prorroga-empty__main">
-                <div class="prorroga-empty__title">¿Necesitas más tiempo para revisar?</div>
-                <div class="prorroga-empty__sub">Puedes solicitar al admin 15 días hábiles extra <strong>una sola vez</strong>. Se aplica solo si la convocatoria sigue abierta.</div>
-              </div>
-              <button type="button" class="prorroga-empty__cta" id="btnSolicitarProrroga">Solicitar prórroga</button>
-            </div>
+            <button type="button" class="rp-prorroga-link" id="btnSolicitarProrroga"
+                    title="Puedes solicitar al admin 15 días hábiles extra una sola vez">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              Solicitar prórroga (15 días extra)
+            </button>
           `;
           document.getElementById('btnSolicitarProrroga').addEventListener('click', openProrrogaDialog);
           return;
@@ -731,6 +814,58 @@
       }
 
       renderProrrogaWidget();
+
+      /* Doug 15/05/2026: toggle compacto de "Proyecto de enfoque" con
+         persistencia inmediata + animación del ribbon en el hero + snackbar
+         del DS bottom-center. */
+      const prioToggle = document.getElementById('prioToggle');
+      if (prioToggle) {
+        prioToggle.addEventListener('click', async () => {
+          const wasActive = prioToggle.classList.contains('is-active');
+          const willActivate = !wasActive;
+          /* Persistir el cambio inmediatamente */
+          ProjectData.setProyecto(p.idUnico, x => { x.priorizado = willActivate; return x; });
+          /* Toggle visual del propio botón */
+          prioToggle.classList.toggle('is-active', willActivate);
+          prioToggle.setAttribute('aria-pressed', willActivate ? 'true' : 'false');
+          /* Toggle de la bandera en el hero del proyecto */
+          const heroBox = document.querySelector('.project-hero');
+          const existingRibbon = heroBox?.querySelector('.prio-ribbon');
+          if (willActivate) {
+            heroBox?.classList.add('project-hero--priorizado');
+            if (!existingRibbon && heroBox) {
+              /* Crear el ribbon con animación pop */
+              const ribbon = document.createElement('span');
+              ribbon.className = 'prio-ribbon is-popping';
+              ribbon.setAttribute('tabindex', '0');
+              ribbon.setAttribute('role', 'img');
+              ribbon.setAttribute('aria-label', 'Proyecto de enfoque del Ministerio');
+              ribbon.innerHTML = `
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+                <span class="prio-ribbon__tooltip" role="tooltip">Proyecto de enfoque del Ministerio</span>
+              `;
+              heroBox.prepend(ribbon);
+            } else if (existingRibbon) {
+              existingRibbon.classList.remove('is-popping');
+              void existingRibbon.offsetWidth; /* reflow para reiniciar animación */
+              existingRibbon.classList.add('is-popping');
+            }
+          } else {
+            heroBox?.classList.remove('project-hero--priorizado');
+            if (existingRibbon) existingRibbon.remove();
+          }
+          /* Snackbar del DS bottom-center */
+          try {
+            const mod = await import('../shared/toast.js');
+            mod.snackbar({
+              text: willActivate
+                ? 'Proyecto marcado como de enfoque · La bandera aparecerá en todas las vistas'
+                : 'Etiqueta de enfoque removida',
+              duration: 3200
+            });
+          } catch (_) {}
+        });
+      }
 
       /* Validación reactiva del botón "Confirmar acción":
          3 requeridos — Categoría, Tipo, Detalle (≥20 chars).

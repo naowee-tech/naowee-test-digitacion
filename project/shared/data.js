@@ -317,7 +317,7 @@ const SEED_FREE = {
         nit: '891.680.014-2'
       },
       estado: 'en_revision',
-      priorizado: true,
+      priorizado: true, /* Ejemplo narrativo: Quibdó-Chocó zona PDET (Doug 15/05/2026) */
       cartaIntencion: { name: 'carta-intencion-quibdo.pdf', size: 482000 },
       documentos: [
         { id: 'carta', nombre: 'Carta de intención', archivo: 'carta-intencion-quibdo.pdf', size: 482000, subidoEn: '2026-04-15T09:12:00' },
@@ -365,7 +365,7 @@ const SEED_FREE = {
       },
       formuladora: { nombre: 'Alcaldía de Bahía Solano', nit: '891.680.025-8' },
       estado: 'devuelta_subsanacion',
-      priorizado: true,
+      priorizado: false,
       /* Observaciones multi-área (Res. 933 Art. 9): el revisor devolvió
          por distintas razones técnicas a la vez. El municipio puede subsanar
          cada área de forma independiente y en paralelo. */
@@ -434,7 +434,7 @@ const SEED_FREE = {
       representante: { nombre: 'Daniel Romero', documento: 'CC 11.802.190', cargo: 'Alcalde' },
       formuladora: { nombre: 'Alcaldía de Riosucio', nit: '800.103.456-1' },
       estado: 'en_revision',
-      priorizado: true,
+      priorizado: false,
       historial: [
         { ts: '2026-04-22T08:00:00', actor: 'municipio', evento: 'Postulación enviada', estado: 'presentado' },
         { ts: '2026-04-22T08:01:00', actor: 'sistema', evento: 'Radicado emitido', estado: 'presentado' },
@@ -474,7 +474,7 @@ const SEED_FREE = {
       representante: { nombre: 'Carlos Mosquera Rentería', documento: 'CC 11.804.553', cargo: 'Secretario de Planeación' },
       formuladora: { nombre: 'Alcaldía de Quibdó', nit: '891.680.018-9' },
       estado: 'en_revision',
-      priorizado: true,
+      priorizado: false,
       historial: [
         { ts: '2026-04-28T11:30:00', actor: 'municipio', evento: 'Postulación enviada', estado: 'presentado' },
         { ts: '2026-04-30T09:00:00', actor: 'revisor', evento: 'En revisión', estado: 'en_revision' }
@@ -561,7 +561,7 @@ const SEED_FREE = {
       },
       formuladora: { nombre: 'Alcaldía de Istmina', nit: '800.094.220-5' },
       estado: 'etapa_documental',
-      priorizado: true,
+      priorizado: false,
       historial: [
         { ts: '2026-03-20T10:00:00', actor: 'municipio', evento: 'Postulación enviada', estado: 'presentado' },
         { ts: '2026-03-21T09:00:00', actor: 'revisor', evento: 'En revisión', estado: 'en_revision' },
@@ -686,7 +686,7 @@ const SEED_FREE = {
       representante: { nombre: 'Daniel Romero', cargo: 'Alcalde' },
       formuladora: { nombre: 'Alcaldía de Riosucio', nit: '800.103.456-1' },
       estado: 'en_inversion',
-      priorizado: true,
+      priorizado: false,
       inversion: {
         activadaEn: '2026-03-15T11:00:00',
         montoAprobado: 4800000000,
@@ -740,7 +740,7 @@ const SEED_FREE = {
       representante: { nombre: 'Lucía Romero', documento: 'CC 35.802.110', cargo: 'Alcaldesa Municipal' },
       formuladora: { nombre: 'Alcaldía de Bahía Solano', nit: '800.094.250-7' },
       estado: 'etapa_documental',
-      priorizado: true,
+      priorizado: false,
       fechaPostulacion: '2026-03-22T11:30:00',
       fechaFavorable: '2026-04-03T16:00:00',
       historial: [
@@ -980,7 +980,7 @@ const SEED_FREE = {
       representante: { nombre: 'Sandra Lozano', documento: 'CC 35.760.190', cargo: 'Alcaldesa' },
       formuladora: { nombre: 'Alcaldía de Condoto', nit: '800.094.180-1' },
       estado: 'etapa_documental',
-      priorizado: true,
+      priorizado: false,
       fechaPostulacion: '2026-03-15T08:00:00',
       fechaFavorable: '2026-03-28T15:00:00',
       historial: [
@@ -1072,7 +1072,7 @@ const SEED_FREE = {
       fase: 'Fase II — Obra', tipoSolicitud: 'Construcción nueva',
       representante: { nombre: 'Luz Mary Caicedo', documento: 'CC 31.992.114', cargo: 'Secretaria de Deporte' },
       formuladora: { nombre: 'Alcaldía Distrital de Buenaventura', nit: '890.399.029-5' },
-      estado: 'en_inversion', priorizado: true,
+      estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2025-04-12T10:00:00',
       inversion: { activadaEn: '2025-08-01T15:30:00', montoAprobado: 2600000000, bpin: '2025760010234', centroCosto: 'CC-MIN-VAC-2025-040', ejecutor: 'Alcaldía Distrital de Buenaventura' },
       historial: [
@@ -1132,7 +1132,7 @@ const SEED_FREE = {
       fase: 'Fase II — Obra', tipoSolicitud: 'Mejoramiento',
       representante: { nombre: 'Andrea Burbano', documento: 'CC 36.940.122', cargo: 'Secretaria de Deportes' },
       formuladora: { nombre: 'Alcaldía de Pasto', nit: '891.280.000-3' },
-      estado: 'en_inversion', priorizado: true,
+      estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2025-05-15T08:45:00',
       inversion: { activadaEn: '2025-08-20T14:00:00', montoAprobado: 3400000000, bpin: '2025520010078', centroCosto: 'CC-MIN-NAR-2025-043', ejecutor: 'Alcaldía de Pasto' },
       historial: [
@@ -1174,7 +1174,7 @@ const SEED_FREE = {
       fase: 'Fase II — Obra', tipoSolicitud: 'Mantenimiento mayor',
       representante: { nombre: 'Yahir Acuña', documento: 'CC 91.452.213', cargo: 'Alcalde' },
       formuladora: { nombre: 'Alcaldía de Sincelejo', nit: '892.200.024-7' },
-      estado: 'en_inversion', priorizado: true,
+      estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2024-10-05T15:00:00',
       inversion: { activadaEn: '2025-02-25T14:15:00', montoAprobado: 2500000000, bpin: '2024700010044', centroCosto: 'CC-MIN-SUC-2024-081', ejecutor: 'Alcaldía de Sincelejo' },
       historial: [
@@ -1235,7 +1235,7 @@ const SEED_FREE = {
       fase: 'Fase II — Obra', tipoSolicitud: 'Mejoramiento',
       representante: { nombre: 'Mirian Suárez', documento: 'CC 23.985.122', cargo: 'Alcaldesa' },
       formuladora: { nombre: 'Alcaldía de Tunja', nit: '891.800.846-7' },
-      estado: 'en_inversion', priorizado: true,
+      estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2024-04-02T14:30:00',
       inversion: { activadaEn: '2024-08-18T09:30:00', montoAprobado: 2200000000, bpin: '2024150030023', centroCosto: 'CC-MIN-BOY-2024-023', ejecutor: 'Alcaldía de Tunja' },
       historial: [
@@ -1276,7 +1276,7 @@ const SEED_FREE = {
       fase: 'Fase II — Obra', tipoSolicitud: 'Mejoramiento',
       representante: { nombre: 'Miguel Ángel Bueno', documento: 'CC 91.483.770', cargo: 'Alcalde' },
       formuladora: { nombre: 'Alcaldía de Floridablanca', nit: '890.205.176-2' },
-      estado: 'en_inversion', priorizado: true,
+      estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2023-09-30T10:15:00',
       inversion: { activadaEn: '2024-02-28T11:45:00', montoAprobado: 1800000000, bpin: '2023680010070', centroCosto: 'CC-MIN-SAN-2023-070', ejecutor: 'Alcaldía de Floridablanca' },
       historial: [
@@ -1318,7 +1318,7 @@ const SEED_FREE = {
       fase: 'Fase II — Obra', tipoSolicitud: 'Mejoramiento',
       representante: { nombre: 'Mauricio Salazar', documento: 'CC 10.005.221', cargo: 'Alcalde' },
       formuladora: { nombre: 'Alcaldía de Pereira', nit: '891.480.030-2' },
-      estado: 'en_inversion', priorizado: true,
+      estado: 'en_inversion', priorizado: false,
       fechaPostulacion: '2023-04-10T11:00:00',
       inversion: { activadaEn: '2023-08-30T14:00:00', montoAprobado: 3000000000, bpin: '2023660060008', centroCosto: 'CC-MIN-RIS-2023-008', ejecutor: 'Alcaldía de Pereira' },
       historial: [
@@ -1370,7 +1370,7 @@ const SEED_FREE = {
       representante: { nombre: 'Luisa Fernanda Quintero', documento: 'CC 17.450.213', cargo: 'Gobernadora del Vichada', contacto: '+57 311 803 9921' },
       formuladora: { nombre: 'Gobernación del Vichada', tipo: 'Gobernación Departamental', nit: '892.099.346-3' },
       marcadores: { zomac: true, pdet: false, ebiPnd: true },
-      estado: 'en_revision', priorizado: true,
+      estado: 'en_revision', priorizado: false,
       observaciones: [],
       historial: [
         { ts: '2026-04-26T10:00:00', actor: 'municipio', evento: 'Postulación enviada por Gobernación', estado: 'presentado' },
@@ -1399,7 +1399,7 @@ const SEED_FREE = {
       representante: { nombre: 'Aida Quilcué Vivas', documento: 'CC 25.482.117', cargo: 'Gobernadora del Resguardo', contacto: '+57 320 458 7711' },
       formuladora: { nombre: 'Resguardo Indígena Nasa Wesx', tipo: 'Resguardo Indígena', nit: '900.184.522-1' },
       marcadores: { zomac: false, pdet: true, ebiPnd: true },
-      estado: 'etapa_documental', priorizado: true,
+      estado: 'etapa_documental', priorizado: false,
       observaciones: [],
       historial: [
         { ts: '2026-04-08T11:30:00', actor: 'municipio', evento: 'Postulación enviada por Resguardo', estado: 'presentado' },
@@ -1427,7 +1427,7 @@ const SEED_FREE = {
       representante: { nombre: 'Hernán Mosquera Romaña', documento: 'CC 11.804.298', cargo: 'Representante legal del Consejo', contacto: '+57 311 884 5022' },
       formuladora: { nombre: 'Consejo Comunitario de Curvaradó', tipo: 'Consejo Comunitario Afrodescendiente', nit: '900.342.881-7' },
       marcadores: { zomac: true, pdet: true, ebiPnd: true },
-      estado: 'concepto_favorable', priorizado: true,
+      estado: 'concepto_favorable', priorizado: false,
       conceptoFavorabilidad: {
         emitidoEn: '2026-05-03T16:30:00',
         observaciones: 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024. Comunidad PDET con priorización integral. Apto para activación de inversión.'
@@ -1473,7 +1473,7 @@ const ProjectData = (() => {
      (ej. nueva clave en revisores, nuevo perfil, restructure de áreas, o
      ajustes de montos del seed que invalidan el state guardado).
      Si el state guardado tiene versión distinta → auto-reset. */
-  const SCHEMA_VERSION = 8;
+  const SCHEMA_VERSION = 9;
 
   /* v1.1 — Días extra que concede el admin cuando aprueba prórroga RBI.
      Solo se puede solicitar UNA VEZ por proyecto. */

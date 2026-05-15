@@ -61,4 +61,67 @@ export function toast({ variant = 'positive', title, message = '', duration = 42
   return { dismiss };
 }
 
-export default { toast };
+/* ═══════════════════════════════════════════════════════════════════
+   snackbar — Notificación temporal centrada en el borde inferior,
+   usa la estructura oficial del DS (.naowee-snackbar) con badge
+   info opcional + texto + acción opcional. Reemplaza el uso de toast()
+   cuando la interacción amerita una respuesta más prominente y centrada
+   (ej. confirmación de toggle, acción en flujo).
+
+   API:
+     snackbar({ text, action?, onAction?, badge?, duration? })
+       text: string  → contenido
+       action: string → label del botón opcional
+       onAction: fn  → callback al click del botón
+       badge: bool (default true) → icono info circular
+       duration: ms (default 3500, 0 = sticky)
+   ═══════════════════════════════════════════════════════════════════ */
+function ensureSnackbarRoot() {
+  let el = document.getElementById('naoweeSnackbarRoot');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'naoweeSnackbarRoot';
+    el.className = 'naowee-snackbar-root';
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', 'Notificaciones');
+    el.style.cssText = 'position:fixed;left:0;right:0;bottom:24px;display:flex;justify-content:center;z-index:1200;pointer-events:none';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+const SNACKBAR_BADGE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+export function snackbar({ text, action = '', onAction, badge = true, duration = 3500 } = {}) {
+  const root = ensureSnackbarRoot();
+  const node = document.createElement('div');
+  node.className = 'naowee-snackbar naowee-snackbar--floating';
+  node.style.cssText = 'pointer-events:auto;opacity:0;transform:translateY(10px);transition:opacity .22s ease, transform .22s cubic-bezier(.18,.89,.32,1.28)';
+  node.innerHTML = `
+    <div class="naowee-snackbar__content">
+      ${badge ? `<span class="naowee-snackbar__badge">${SNACKBAR_BADGE_SVG}</span>` : ''}
+      <span class="naowee-snackbar__text">${text}</span>
+    </div>
+    ${action ? `<button type="button" class="naowee-snackbar__action">${action}</button>` : ''}
+  `;
+  if (action && onAction) {
+    node.querySelector('.naowee-snackbar__action')?.addEventListener('click', () => {
+      onAction();
+      dismiss();
+    });
+  }
+  const dismiss = () => {
+    node.style.opacity = '0';
+    node.style.transform = 'translateY(10px)';
+    setTimeout(() => node.remove(), 240);
+  };
+  root.appendChild(node);
+  requestAnimationFrame(() => {
+    node.style.opacity = '1';
+    node.style.transform = 'translateY(0)';
+  });
+  if (duration > 0) setTimeout(dismiss, duration);
+  return { dismiss };
+}
+
+export default { toast, snackbar };

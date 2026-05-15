@@ -7,12 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516d">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516f">
 <style>
   /* ─── Tabs DS dentro del .naowee-table-card ─── */
+  /* Doug 15/05: el divider bajo los tabs debe ir edge-to-edge con el card.
+     Padding lateral mantiene los labels alineados con el contenido,
+     pero el border-bottom se extiende a los bordes vía pseudoelemento. */
   .usuarios-card .naowee-tabs {
-    padding: 0 18px; margin: 0;
-    border-bottom: 1px solid var(--border);
+    position: relative;
+    padding: 0 32px; margin: 0;
+  }
+  .usuarios-card .naowee-tabs::after {
+    content: '';
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 1px; background: var(--border);
   }
   .usuarios-panel { display: none; animation: tabFadeIn .25s ease both; }
   .usuarios-panel.is-active { display: block; }
@@ -87,8 +95,8 @@
     font-size: 13px; font-weight: 700; color: var(--text-primary);
   }
   .area-mgmt-card__ref {
-    font-size: 11px; color: var(--text-secondary); margin-top: 3px;
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;
+    font-weight: 500; letter-spacing: 0;
   }
   .area-mgmt-card__rev {
     display: inline-flex; align-items: center; gap: 6px;
@@ -99,16 +107,9 @@
   .area-mgmt-card__rev--missing {
     background: #fff0ee; color: #b42318;
   }
-  .area-mgmt-card__change {
-    background: transparent; border: 1px solid var(--border-dark);
-    border-radius: var(--radius-md);
-    padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 600;
-    color: var(--text-secondary); cursor: pointer;
-    transition: all .15s;
-  }
-  .area-mgmt-card__change:hover {
-    background: var(--orange-bg); border-color: var(--accent); color: var(--accent);
-  }
+  /* Doug 15/05: el botón "Asignar revisores" usa el DS quiet (ghost) directamente,
+     no necesita estilos custom — sólo overrideamos el alineamiento dentro del card. */
+  .area-mgmt-card .naowee-btn { flex-shrink: 0; }
 
   /* ─── Modal de edición de usuario ─── */
   .um-modal-overlay {
@@ -227,34 +228,21 @@
   /* ─── Modal "ancho" para asignación de revisores con búsqueda (Doug 15/05) ─── */
   .um-modal--wide { max-width: 720px; }
 
-  /* Toolbar (search + invitar) en la cabecera del body del modal */
+  /* Toolbar (search + invitar) en la cabecera del body del modal · usa DS searchbox + btn loud */
   .area-toolbar {
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 14px;
   }
-  .area-toolbar .naowee-searchbox,
   .area-toolbar__search { flex: 1; min-width: 0; }
-  .area-toolbar__search input {
-    width: 100%; box-sizing: border-box;
-    height: 40px; padding: 0 12px 0 36px;
-    border: 1px solid var(--border-dark); border-radius: var(--radius-md);
-    font: inherit; font-size: 13px; color: var(--text-primary);
-    background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23646587' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>") no-repeat 12px 50% / 16px 16px;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  .area-toolbar__search input:focus {
-    outline: none; border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(215,64,9,.15);
-  }
+  .area-toolbar__invite { flex-shrink: 0; }
 
   /* Sección "Asignados" / "Disponibles" dentro del modal */
   .area-sect { margin-bottom: 18px; }
   .area-sect:last-child { margin-bottom: 0; }
   .area-sect-head {
     display: flex; align-items: baseline; gap: 10px;
-    padding: 0 4px 8px;
-    margin-bottom: 6px;
-    border-bottom: 1px solid var(--border);
+    padding: 0 4px 6px;
+    margin-bottom: 8px;
   }
   .area-sect-head__title {
     font-size: 12px; font-weight: 700;
@@ -422,7 +410,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516d';
+  import { mountShell } from '../shared/shell.js?v=20260516f';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
@@ -628,7 +616,7 @@
                         <span class="area-mgmt-card__rev area-mgmt-card__rev--missing">⚠ Sin responsable</span>
                       `}
                     </div>
-                    <button type="button" class="area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-tipo="${a.tipo}" data-area-label="${a.label}">Asignar revisores</button>
+                    <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-tipo="${a.tipo}" data-area-label="${a.label}">Asignar revisores</button>
                   </div>
                 `;
               }).join('')}
@@ -967,11 +955,16 @@
 
     body.innerHTML = `
       <div class="area-toolbar">
-        <div class="area-toolbar__search">
-          <input type="search" id="areaSearch" placeholder="Buscar por nombre, correo o especialidad…" value="${_searchTerm.replace(/"/g, '&quot;')}" autocomplete="off">
+        <div class="naowee-searchbox naowee-searchbox--medium area-toolbar__search">
+          <div class="naowee-searchbox__input-wrap">
+            <span class="naowee-searchbox__icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </span>
+            <input type="search" class="naowee-searchbox__input" id="areaSearch" placeholder="Buscar por nombre, correo o especialidad…" value="${_searchTerm.replace(/"/g, '&quot;')}" autocomplete="off">
+          </div>
         </div>
-        <button type="button" class="naowee-btn naowee-btn--outline area-toolbar__invite" id="areaInviteBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small area-toolbar__invite" id="areaInviteBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Invitar nuevo
         </button>
       </div>
@@ -1156,6 +1149,9 @@
         else { wrap.classList.remove('is-selected'); ds.classList.remove('naowee-checkbox--checked'); }
       });
     });
+    /* Ocultar el modal de área detrás (visualmente) para no mostrar doble backdrop.
+       Conservamos su estado para restaurarlo al cerrar el invite. */
+    areaOverlay.style.display = 'none';
     inviteOverlay.hidden = false;
     inviteOverlay.classList.add('is-open');
     setTimeout(() => document.getElementById('inviteNombre').focus(), 100);
@@ -1165,6 +1161,8 @@
     setTimeout(() => {
       inviteOverlay.classList.remove('is-open', 'is-closing');
       inviteOverlay.hidden = true;
+      /* Restaurar el modal de área detrás si aún está activo */
+      if (_currentArea) areaOverlay.style.display = '';
     }, 200);
   }
   document.getElementById('inviteCancel').addEventListener('click', closeInviteModal);
@@ -1176,9 +1174,9 @@
     const specs = Array.from(document.querySelectorAll('#inviteSpecsList input[type="checkbox"]:checked'))
       .map(cb => ({ esp: cb.dataset.spec, tipo: cb.dataset.tipo }));
 
-    if (!nombre) { toast({ variant: 'critical', title: 'Falta el nombre', message: 'Ingresa el nombre completo del revisor.' }); return; }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast({ variant: 'critical', title: 'Correo inválido', message: 'Ingresa un correo institucional válido.' }); return; }
-    if (!specs.length) { toast({ variant: 'critical', title: 'Selecciona al menos una especialidad', message: 'El revisor debe cubrir al menos un área.' }); return; }
+    if (!nombre) { toast({ variant: 'negative', title: 'Falta el nombre', message: 'Ingresa el nombre completo del revisor.' }); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast({ variant: 'negative', title: 'Correo inválido', message: 'Ingresa un correo institucional válido.' }); return; }
+    if (!specs.length) { toast({ variant: 'negative', title: 'Selecciona al menos una especialidad', message: 'El revisor debe cubrir al menos un área.' }); return; }
 
     /* Determinar tipo principal: si seleccionó RBI o General puros, usar ese; si no, técnico */
     const hasRBI = specs.some(s => s.tipo === 'rbi');

@@ -4100,7 +4100,13 @@ body > .naowee-dropdown__menu.is-open {
   z-index: 1502;
   display: flex; flex-direction: column; gap: 10px;
   animation: demoTourTipIn .28s cubic-bezier(.4,0,.2,1);
-  pointer-events: auto; /* botones del tooltip clickables */
+  pointer-events: none; /* default: no clicks (Doug 15/05) */
+}
+/* El tooltip sólo intercepta clicks cuando el tour está abierto.
+   Si no, queda invisible (opacity:0 del parent) y permite que la sidebar
+   y el resto del UI reciban hover/click normalmente. */
+.demo-tour-overlay.is-open .demo-tour-tooltip {
+  pointer-events: auto;
 }
 @keyframes demoTourTipIn {
   from { opacity: 0; transform: translateY(8px); }

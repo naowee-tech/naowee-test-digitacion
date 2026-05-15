@@ -7,39 +7,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515x">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515y">
 <style>
-  /* ─── Tabs locales (mismo patrón que admin/usuarios.html) ─── */
-  .prorroga-tabs {
-    display: flex; gap: 4px;
-    border-bottom: 1.5px solid var(--border);
-    margin-bottom: 22px;
+  /* ─── Tabs canónicos DS (Doug 15/05/2026): mismo patrón que usuarios.html
+     con naowee-tabs--animated + indicator. Divider edge-to-edge. ─── */
+  .prorroga-card {
+    padding: 0 !important;
+    overflow: hidden;
   }
-  .prorroga-tab {
-    appearance: none; background: transparent; border: 0;
-    padding: 12px 18px;
-    font: inherit; font-size: 13.5px; font-weight: 600;
-    color: var(--text-secondary); cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color .15s, border-color .15s;
-    display: inline-flex; align-items: center; gap: 8px;
-    margin-bottom: -1.5px;
+  .prorroga-card .naowee-tabs {
+    padding: 0 18px; margin: 0;
+    border-bottom: 1px solid var(--border);
   }
-  .prorroga-tab:hover { color: var(--text-primary); }
-  .prorroga-tab.is-active {
-    color: var(--accent); border-bottom-color: var(--accent);
-  }
-  .prorroga-tab__count {
-    background: var(--orange-bg); color: var(--accent);
-    font-size: 10.5px; font-weight: 700;
-    padding: 2px 8px; border-radius: 999px;
-  }
-  .prorroga-panel { display: none; animation: tabFadeIn .25s ease both; }
+  .prorroga-panel { display: none; animation: tabFadeIn .25s ease both; padding: 22px; }
   .prorroga-panel.is-active { display: block; }
   @keyframes tabFadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* Tabla edge-to-edge dentro del panel (escapar el padding del panel) */
+  .prorroga-panel .naowee-table-card__table-wrap {
+    margin-left: -22px;
+    margin-right: -22px;
+    width: calc(100% + 44px);
+  }
+  .prorroga-panel .naowee-table--in-card th:first-child,
+  .prorroga-panel .naowee-table--in-card td:first-child { padding-left: 22px; }
+  .prorroga-panel .naowee-table--in-card th:last-child,
+  .prorroga-panel .naowee-table--in-card td:last-child { padding-right: 22px; }
 
   /* Celdas de tabla específicas */
   .pr-cell-proyecto { min-width: 220px; }
@@ -143,7 +138,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515x';
+  import { mountShell } from '../shared/shell.js?v=20260515y';
   import { toast } from '../shared/toast.js';
 
   ProjectData.setPerfil('admin');
@@ -183,16 +178,15 @@
           </div>
         </div>
 
-        <div class="naowee-card" style="padding:18px">
-          <div class="prorroga-tabs">
-            <button type="button" class="prorroga-tab is-active" data-panel="pendientes">
-              Pendientes
-              <span class="prorroga-tab__count">${pendientes.length}</span>
+        <div class="naowee-card prorroga-card">
+          <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+            <button class="naowee-tab naowee-tab--selected" data-panel="pendientes" role="tab" type="button">
+              Pendientes <span class="tab-count">${pendientes.length}</span>
             </button>
-            <button type="button" class="prorroga-tab" data-panel="historial">
-              Historial
-              <span class="prorroga-tab__count">${resueltas.length}</span>
+            <button class="naowee-tab" data-panel="historial" role="tab" type="button">
+              Historial <span class="tab-count">${resueltas.length}</span>
             </button>
+            <span class="naowee-tabs__indicator"></span>
           </div>
 
           <div class="prorroga-panel is-active" data-panel="pendientes">
@@ -306,14 +300,34 @@
   }
 
   function bindTabs() {
-    const tabs = document.querySelectorAll('.prorroga-tab');
+    const tabsEl = document.querySelector('.prorroga-card .naowee-tabs');
+    if (!tabsEl) return;
+    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+    const tabs = tabsEl.querySelectorAll('.naowee-tab');
     const panels = document.querySelectorAll('.prorroga-panel');
+
+    const positionIndicator = (tab) => {
+      const r = tab.getBoundingClientRect();
+      const parent = tabsEl.getBoundingClientRect();
+      indicator.style.width = r.width + 'px';
+      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+    };
+    const initial = tabsEl.querySelector('.naowee-tab--selected');
+    if (initial) requestAnimationFrame(() => positionIndicator(initial));
+    /* Aplicar inicial al primer panel */
+    panels.forEach(pp => pp.classList.toggle('is-active', pp.dataset.panel === initial?.dataset.panel));
+
     tabs.forEach(t => {
       t.addEventListener('click', () => {
         const key = t.dataset.panel;
-        tabs.forEach(x => x.classList.toggle('is-active', x === t));
+        tabs.forEach(x => x.classList.toggle('naowee-tab--selected', x === t));
         panels.forEach(pp => pp.classList.toggle('is-active', pp.dataset.panel === key));
+        positionIndicator(t);
       });
+    });
+    window.addEventListener('resize', () => {
+      const sel = tabsEl.querySelector('.naowee-tab--selected');
+      if (sel) positionIndicator(sel);
     });
   }
 

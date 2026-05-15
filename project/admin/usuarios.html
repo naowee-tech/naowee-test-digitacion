@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516l">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516m">
 <style>
   /* ─── Tabs DS dentro del .naowee-table-card ───
      Doug 15/05: el DS ya provee el patrón edge-to-edge con negative margin
@@ -431,7 +431,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516l';
+  import { mountShell } from '../shared/shell.js?v=20260516m';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
@@ -922,9 +922,13 @@
     if (tipo === 'general') return r.tipo === 'general' || (r.especialidades || []).includes('general');
     return (r.especialidades || []).includes(especialidad);
   }
+  /* Umbrales de carga (Doug 15/05):
+       ≤6  → verde (capacidad disponible)
+       7-9 → naranja (ocupado pero disponible)
+       ≥10 → rojo (sobrecargado)                                          */
   function _loadBucket(n) {
-    if (n >= 5) return { cls: 'area-pill-load--high', label: `${n} activos` };
-    if (n >= 2) return { cls: 'area-pill-load--mid',  label: `${n} activos` };
+    if (n >= 10) return { cls: 'area-pill-load--high', label: `${n} activos` };
+    if (n >= 7)  return { cls: 'area-pill-load--mid',  label: `${n} activos` };
     return { cls: 'area-pill-load--low', label: `${n} activos` };
   }
   /* Normaliza para que la búsqueda no falle con tildes ("maria" ≡ "María") */

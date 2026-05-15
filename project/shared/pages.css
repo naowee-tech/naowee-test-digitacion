@@ -3463,19 +3463,9 @@ body > .naowee-dropdown__menu.is-open {
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
 
-/* ═══ SLA pill (días restantes por área) ═══ */
-.sla-pill {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 8px; border-radius: 999px;
-  font-size: 11px; font-weight: 700;
-  white-space: nowrap; flex-shrink: 0;
-  border: 1px solid transparent;
-}
-.sla-pill svg { flex-shrink: 0; opacity: .9; }
-.sla-pill--ok      { background: #e6f4e7; color: #15803d; border-color: #b7dfb9; }
-.sla-pill--warn    { background: #fff3e6; color: #b45309; border-color: #ffbf75; }
-.sla-pill--urgent  { background: #fff0ee; color: #b42318; border-color: #ffc4bb; }
-.sla-pill--vencido { background: #b42318; color: #fff; border-color: #b42318; }
+/* ═══ SLA pill — deprecado: ahora usa naowee-badge canónico DS ═══
+   El mapeo vencido→negative · urgent→caution · warn→informative · ok→positive
+   vive en el render JS de cada página (ver admin/proyecto-detalle.html). */
 
 /* ═══ Equipo revisor card (proyecto-detalle) ═══
    Modelo: todos ven el proyecto, cada quien aprueba lo suyo. */

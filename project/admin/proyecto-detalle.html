@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516w">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
@@ -332,14 +332,22 @@
                   const e = ESTADOS_AREA[a.estado];
                   const pct = a.items > 0 ? (a.aprobados / a.items * 100) : 0;
                   const r = a.revisorId ? ProjectData.getRevisor(a.revisorId) : null;
-                  /* SLA: días restantes hasta fechaLimite. Solo aplica cuando NO está aprobada. */
+                  /* SLA: días restantes hasta fechaLimite. Solo aplica cuando NO está aprobada.
+                     Usa naowee-badge canónico DS (mismo patrón que tabla bandeja revisor):
+                       vencido (<0)   → negative
+                       urgent (≤3d)   → caution
+                       warn   (4-7d)  → informative
+                       ok     (>7d)   → positive */
                   let slaHtml = '';
                   if (a.fechaLimite && a.estado !== 'aprobado') {
                     const ms = new Date(a.fechaLimite) - new Date();
                     const dias = Math.ceil(ms / 86400000);
-                    const cls = dias < 0 ? 'sla-pill--vencido' : dias <= 3 ? 'sla-pill--urgent' : dias <= 7 ? 'sla-pill--warn' : 'sla-pill--ok';
+                    const variant = dias < 0 ? 'negative'
+                      : dias <= 3 ? 'caution'
+                      : dias <= 7 ? 'informative'
+                      : 'positive';
                     const lbl = dias < 0 ? `Vencido ${Math.abs(dias)}d` : dias === 0 ? 'Vence hoy' : `${dias}d restantes`;
-                    slaHtml = `<span class="sla-pill ${cls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${lbl}</span>`;
+                    slaHtml = `<span class="naowee-badge naowee-badge--${variant} naowee-badge--quiet" title="SLA del área de revisión"><span class="naowee-badge__dot"></span>${lbl}</span>`;
                   }
                   return `
                     <div class="area-card" data-area-id="${a.id}">

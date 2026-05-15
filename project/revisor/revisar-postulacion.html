@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516w">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -30,15 +30,11 @@
   }
   .prorroga-empty__cta:hover { background: var(--orange-bg); border-color: var(--accent); }
 
-  /* Plazo pill (mismo lenguaje que .plazo-inline pero como chip) */
-  .plazo-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border-radius: var(--radius-full);
-    font-size: 12px; font-weight: 600; color: var(--text-secondary);
-    background: #fafbff; border: 1px solid var(--border);
-  }
-  .plazo-pill--urgent { background: #fff0e6; color: #c54500; border-color: #ff9b66; }
-  .plazo-pill--ok { background: var(--green-bg); color: var(--green); border-color: #b7dfb9; }
+  /* .plazo-pill removido — dead code (no había usos en el render).
+     Si se necesita un chip de plazo en esta página, usar naowee-badge canónico:
+     <span class="naowee-badge naowee-badge--{caution|positive} naowee-badge--quiet">
+       <span class="naowee-badge__dot"></span>{label}
+     </span> */
 
   /* CTAs semánticos para decisión: verde favorable, naranja devolver, rojo rechazar.
      Elevation verde memorizada en --shadow-green-cta (token global). */

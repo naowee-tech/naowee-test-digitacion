@@ -665,11 +665,18 @@
   filter: drop-shadow(0 1px 2px rgba(255,117,0,.4));
 }
 /* Doug 16/05/2026: header del card es column-stack (title arriba, subtitle
-   abajo) en lugar de lineal. El divider border-bottom va edge-to-edge
-   automáticamente porque el header rellena todo el ancho del card padre. */
+   abajo) en lugar de lineal. Padding top reducido de 22→18 para menos
+   espacio "muerto" arriba del title. */
 .naowee-card__header {
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
-  padding: 22px 26px 16px; border-bottom: 1px solid var(--border);
+  padding: 18px 26px 14px; border-bottom: 1px solid var(--border);
+}
+/* Doug 16/05/2026: el DS CDN aplica padding por default a .naowee-card,
+   eso hacía que el __header quedara inset y el divider border-bottom NO
+   llegara a los bordes del card. Cuando hay __header como hijo directo
+   forzamos padding:0 para que el header (y su divider) toquen el edge. */
+.naowee-card:has(> .naowee-card__header) {
+  padding: 0 !important;
 }
 .naowee-card__title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
 .naowee-card__subtitle { font-size: 12.5px; color: var(--text-secondary); margin-top: 0; }

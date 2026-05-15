@@ -11,6 +11,17 @@
 
 ---
 
+## [Unreleased] — `v2.0.x` (próximo PATCH)
+
+> Cambios acumulados desde `project-v2.0.0`. Cuando se junten suficientes fixes UI se promueve a `project-v2.0.1`.
+
+### Fixed
+- **`municipio/proyecto-perfil.html`** · layout del certificado: el card del certificado tenía 2 `</div>` faltantes (`__main` y `__top` quedaban abiertos), por lo que el `proj-tabs-card` se renderizaba como hermano de `__main` dentro de `__top` (flex container) y quedaba side-by-side con el certificado en lugar de debajo. Cierre estructural correcto: el certificado ahora ocupa el ancho completo del contenedor en el medio del layout, con la card de tabs (Datos / Historial / Conversación) apilada debajo.
+
+cache: `pages.css` → `20260517f`
+
+---
+
 ## [project-v2.0.0] — 2026-05-17 · MVP entregado a desarrollo
 
 > **Hito:** Primera entrega formal end-to-end del módulo Project para los 3 perfiles (Admin · Municipio · Revisor). A partir de esta versión, todo cambio nuevo se incorpora vía PATCH (UI) o MINOR (sub-funcionalidades), siguiendo la política acordada.

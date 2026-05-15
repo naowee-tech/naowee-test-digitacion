@@ -268,9 +268,6 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   <div class="naowee-message__content">
     <p class="naowee-message__text">Año ${conv.anio || conv.bienio || ''} · Tope por proyecto: <strong>${formatoMoneda(conv.montoMaximoProyecto)}</strong> · Entidad: <strong>${perfilMun?.entidad || ''}</strong> (${perfilMun?.municipio || perfilMun?.departamento || ''})</p>
   </div>
-</div>erfilMun?.entidad || ''}</strong> (${perfilMun?.municipio || perfilMun?.departamento || ''})</p>
-  </div>
-</div>
 </div>
 
             <div class="ai-section-title">Identificación del proyecto</div>
@@ -323,9 +320,6 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   <div class="naowee-message__content">
     <p class="naowee-message__text">Documentos legales y de soporte presupuestal. Los valida primero el <strong>revisor RBI del Ministerio</strong>; si los aprueba, se libera la revisión del resto de bloques.</p>
   </div>
-</div>sor RBI del Ministerio</strong>; si los aprueba, se libera la revisión del resto de bloques.</p>
-  </div>
-</div>
 </div>
             <div class="pm-anexos-list" data-anexos-list="rbi">
               ${AREAS_RBI.map((a, idx) => `
@@ -367,9 +361,6 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   <div class="naowee-message__content">
     <p class="naowee-message__text">Análisis del proyecto, planeación territorial, licencias y servicios públicos. Los valida el <strong>revisor de documentación general</strong> una vez aprobado el RBI.</p>
   </div>
-</div>os. Los valida el <strong>revisor de documentación general</strong> una vez aprobado el RBI.</p>
-  </div>
-</div>
 </div>
             <div class="pm-anexos-list" data-anexos-list="general">
               ${AREAS_GENERAL.map((a, idx) => `
@@ -411,9 +402,6 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   <div class="naowee-message__content">
     <p class="naowee-message__text">Anexos técnicos por especialidad (Art. 3 Res. 933). Cada área es revisada por su <strong>especialista del Ministerio</strong> en paralelo, una vez aprobado el RBI.</p>
   </div>
-</div>da por su <strong>especialista del Ministerio</strong> en paralelo, una vez aprobado el RBI.</p>
-  </div>
-</div>
 </div>
             <div class="pm-anexos-list" data-anexos-list="tecnica">
               ${AREAS_TECNICA.map((a, idx) => `

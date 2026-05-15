@@ -332,6 +332,172 @@
   border-top: 0;
   border-bottom: 1px solid var(--border);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Convo bento (Doug 15/05/2026)
+   Grid 2x2 asimétrico:
+     - col1 row1 (1.3fr): Período y alcance — datos + barra de progreso
+     - col2 row1 (1fr):   KPI Postulaciones (hero compacto)
+     - col1 row2:         Notificación (dinámico: municipios|departamentos|…)
+     - col2 row2:         Configuración financiera (lista de specs)
+   En mobile, todas las cards se apilan en columna única.
+   ═══════════════════════════════════════════════════════════════════ */
+.convo-bento {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+@media (max-width: 900px) {
+  .convo-bento { grid-template-columns: 1fr; }
+}
+.bento-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 20px);
+  padding: 18px 20px;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-card, 0 1px 4px rgba(0,0,0,.04));
+}
+.bento-card__head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.bento-card__head-icon {
+  width: 24px; height: 24px;
+  border-radius: 8px;
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.bento-card__head-title {
+  font-size: 12.5px; font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.bento-card__head-pill { margin-left: auto; }
+.bento-card__body { flex: 1; }
+
+/* ── Card "Período y alcance" ── */
+.bento-periodo__row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 5px 0;
+  font-size: 13px;
+}
+.bento-periodo__lbl {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.bento-periodo__val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.bento-periodo__bar {
+  margin-top: 14px;
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.bento-periodo__fill {
+  display: block; height: 100%;
+  border-radius: 999px;
+  transition: width .4s cubic-bezier(.16,1,.3,1);
+}
+.bento-periodo__fill--positive { background: var(--green, #1f8923); }
+.bento-periodo__fill--caution  { background: var(--accent, #d74009); }
+.bento-periodo__fill--negative { background: #c01818; }
+.bento-periodo__fill--neutral  { background: var(--text-secondary, #646587); }
+
+/* ── Card KPI (Postulaciones) ── */
+.bento-card--kpi .bento-card__body--kpi {
+  display: flex; flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.bento-kpi__num {
+  font-size: 44px; font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+.bento-kpi__delta {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ── Card Notificación (dinámica) ── */
+.bento-card--notif .bento-notif__body {
+  display: flex; flex-direction: column;
+  gap: 12px;
+}
+.bento-notif__metric {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.bento-notif__metric-num {
+  font-size: 18px; font-weight: 600;
+  color: var(--text-primary);
+}
+.bento-notif__metric-num strong {
+  font-size: 24px; font-weight: 700;
+}
+.bento-notif__metric-lbl {
+  font-size: 12.5px; color: var(--text-secondary);
+}
+.bento-notif__meta {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: 12px;
+  padding-top: 8px; border-top: 1px solid var(--border);
+}
+.bento-notif__meta-lbl { color: var(--text-secondary); }
+.bento-notif__meta-val { color: var(--text-primary); font-weight: 500; }
+.bento-notif__channels {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+.bento-notif__cta {
+  margin-top: auto; align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.bento-card--notif-caution .bento-card__head-icon {
+  background: #fff8ee; color: #b45309;
+}
+.bento-card--notif-positive .bento-card__head-icon {
+  background: var(--green-bg, #e6f4e7); color: var(--green, #1f8923);
+}
+
+/* ── Card Configuración financiera ── */
+.bento-card--config .bento-config__body {
+  display: flex; flex-direction: column;
+}
+.bento-config__row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed var(--border);
+}
+.bento-config__row:last-child { border-bottom: 0; }
+.bento-config__lbl {
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: .04em;
+}
+.bento-config__val {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+.bento-config__val--strong { font-size: 15px; }
+.bento-config__val--chips {
+  display: inline-flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;
+}
 .convo-status-cenefa--abierta {
   background: linear-gradient(90deg, var(--blue-bg, #eef5ff) 0%, #f7fbff 70%, var(--surface) 100%);
   border-top-color: #c7dbf7;

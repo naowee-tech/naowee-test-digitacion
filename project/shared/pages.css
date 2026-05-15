@@ -1685,6 +1685,77 @@
 .has-tooltip:focus-visible::before {
   opacity: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   .naowee-sla — Pill transversal de SLA / cuenta regresiva
+   ═══════════════════════════════════════════════════════════════════
+   Doug 16/05/2026: unifica 5 variantes paralelas (.hero-deadline,
+   .sla-chip, .plazo-inline, .countdown, hardcoded inline) en UN solo
+   componente DS-like minimalista.
+
+   Diseño:
+     - Pill compacto con border de 1px del color semántico (sutil, 32%
+       alpha — sin background sólido)
+     - Icon clock + número en bold + label descriptivo
+     - Color ÚNICO del texto+icon, semántico por variante
+     - Sin background — la ligereza viene del border + currentColor
+
+   Semántica (Doug spec):
+     --ok       → verde   · a tiempo (>5 días)
+     --warn     → naranja · pocos días (≤5)
+     --vencido  → rojo    · expirado (≤0)
+
+   Estructura HTML:
+     <span class="naowee-sla naowee-sla--ok" title="Plazo Res. 933">
+       <svg class="naowee-sla__icon">clock</svg>
+       <strong class="naowee-sla__num">15 días</strong>
+       <span class="naowee-sla__label">para subsanar</span>
+     </span>
+
+   Helper JS (inline):
+     const slaVariant = dias <= 0 ? 'vencido' : dias <= 5 ? 'warn' : 'ok';
+     const slaText = dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`;
+*/
+.naowee-sla {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-full, 9999px);
+  background: transparent;
+  font-size: 12px; font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.naowee-sla__icon {
+  width: 12px; height: 12px;
+  flex-shrink: 0;
+  opacity: .85;
+}
+.naowee-sla__num { font-weight: 700; }
+.naowee-sla__label { font-weight: 500; opacity: .92; }
+
+/* Variantes — solo color del texto+icon vía currentColor + border semi-transparente */
+.naowee-sla--ok {
+  color: var(--green, #15803d);
+  border-color: rgba(31, 137, 35, .32);
+}
+.naowee-sla--warn {
+  color: #b45309;
+  border-color: rgba(180, 83, 9, .32);
+}
+.naowee-sla--vencido {
+  color: #b42318;
+  border-color: rgba(180, 35, 24, .32);
+}
+
+/* Variante --inline (sin border, solo color de texto) — para uso dentro
+   de cards densas donde el pill border ya no aporta. */
+.naowee-sla--bare {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
 .inversion-fuente__tooltip-title {
   font-size: 10px; font-weight: 700; letter-spacing: .4px;
   text-transform: uppercase; color: rgba(255,255,255,.65);

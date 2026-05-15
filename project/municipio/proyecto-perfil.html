@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516z">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517a">
 </head>
 <body>
 <div class="shell">
@@ -25,7 +25,7 @@
   import { mountShell } from '../shared/shell.js?v=20260516b';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260516b';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260517a';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -46,11 +46,8 @@
       : p.estado === 'devuelta_subsanacion' ? diasRestantes(p.fechaDevolucion)
       : p.estado === 'etapa_documental' ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion, 20)
       : null;
-    const slaCls = dias === null ? ''
-      : dias <= 0 ? 'sla-chip--vencido'
-      : dias <= 3 ? 'sla-chip--urgent'
-      : dias <= 7 ? 'sla-chip--warning'
-      : 'sla-chip--ok';
+    /* Doug 16/05/2026: slaCls legacy removido — el badge ahora usa el utility
+       transversal .naowee-sla con slaVariant calculado inline en el render. */
     const slaLabel = p.estado === 'devuelta_subsanacion' ? 'para subsanar'
       : p.estado === 'etapa_documental' ? 'revisión documental'
       : 'respuesta Ministerio';
@@ -110,25 +107,23 @@
               <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
               <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
               ${dias !== null ? (() => {
-                const cls = dias <= 0 ? 'hero-deadline--vencido'
-                  : dias <= 3 ? 'hero-deadline--urgent'
-                  : dias <= 7 ? 'hero-deadline--warning'
-                  : 'hero-deadline--ok';
+                /* Doug 16/05/2026: utility transversal .naowee-sla.
+                   Semántica: vencido (≤0) · warn (≤5) · ok (>5) */
+                const slaVariant = dias <= 0 ? 'vencido' : dias <= 5 ? 'warn' : 'ok';
+                const slaTime = dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`;
                 return `
-                  <div class="hero-deadline ${cls}" title="Plazo Resolución 933">
-                    <span class="hero-deadline__icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                  <div style="display:flex;justify-content:flex-end;margin-top:10px">
+                    <span class="naowee-sla naowee-sla--${slaVariant}" title="Plazo Resolución 933">
+                      <svg class="naowee-sla__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                      <strong class="naowee-sla__num">${slaTime}</strong>
+                      <span class="naowee-sla__label">${slaLabel}</span>
                     </span>
-                    <span class="hero-deadline__time">${dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`}</span>
-                    <span class="hero-deadline__sep"></span>
-                    <span class="hero-deadline__label">${slaLabel}</span>
                   </div>`;
               })() : ''}
-              ${p.estado === 'devuelta_subsanacion' ? `
-                <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
-                </div>
-              ` : ''}
+              <!-- Doug 16/05/2026: botón Subsanar removido del top — el banner
+                   contextual abajo y el badge "Devuelta a subsanación" en la lista
+                   de proyectos ya proveen el CTA. Evita duplicación. -->
+
             </div>
           </div>
         </div>

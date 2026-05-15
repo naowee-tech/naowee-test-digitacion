@@ -93,7 +93,9 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
   const areas = Object.keys(obsPorArea);
   const isMultiArea = areas.length > 1;
   const dias = diasRestantes(p.fechaDevolucion);
-  const slaCls = dias === null ? '' : dias <= 0 ? 'sla-chip--vencido' : dias <= 3 ? 'sla-chip--urgent' : dias <= 7 ? 'sla-chip--warning' : 'sla-chip--ok';
+  /* Doug 16/05/2026: usar utility transversal .naowee-sla.
+     Semántica unificada: vencido (≤0) · warn (≤5) · ok (>5). */
+  const slaVariant = dias === null ? '' : dias <= 0 ? 'vencido' : dias <= 5 ? 'warn' : 'ok';
 
   const overlay = document.createElement('div');
   overlay.className = 'naowee-modal-overlay';
@@ -131,9 +133,10 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
                 </div>
               </div>
               ${dias !== null ? `
-                <span class="sla-chip ${slaCls}" title="Plazo legal Res. 933">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-                  ${dias <= 0 ? 'Vencido' : `${dias} día${dias === 1 ? '' : 's'} para subsanar`}
+                <span class="naowee-sla naowee-sla--${slaVariant}" title="Plazo legal Res. 933">
+                  <svg class="naowee-sla__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                  <strong class="naowee-sla__num">${dias <= 0 ? 'Vencido' : `${dias} día${dias === 1 ? '' : 's'}`}</strong>
+                  ${dias > 0 ? '<span class="naowee-sla__label">para subsanar</span>' : ''}
                 </span>
               ` : ''}
             </div>

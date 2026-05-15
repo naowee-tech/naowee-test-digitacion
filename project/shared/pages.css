@@ -323,6 +323,15 @@
   gap: 18px;
   flex-wrap: wrap;
 }
+/* Doug 15/05: Variante top — banner pegado al header, edge-to-edge con .page.
+   .page tiene padding 28px 32px, así que escapamos con negative margins
+   para que la cenefa toque las tres bordes del viewport (sin bottom). */
+.convo-status-cenefa--top {
+  margin: -28px -32px 22px;
+  padding: 18px 32px;
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+}
 .convo-status-cenefa--abierta {
   background: linear-gradient(90deg, var(--blue-bg, #eef5ff) 0%, #f7fbff 70%, var(--surface) 100%);
   border-top-color: #c7dbf7;

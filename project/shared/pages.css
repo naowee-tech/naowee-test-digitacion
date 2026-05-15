@@ -334,70 +334,109 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   Convo bento (Doug 15/05/2026)
-   Grid 2x2 asimétrico:
-     - col1 row1 (1.3fr): Período y alcance — datos + barra de progreso
-     - col2 row1 (1fr):   KPI Postulaciones (hero compacto)
-     - col1 row2:         Notificación (dinámico: municipios|departamentos|…)
-     - col2 row2:         Configuración financiera (lista de specs)
+   Convo bento (Doug 15/05/2026 · v2 — jerarquía 1 hero + 3 compactas)
+   Grid:
+     - Col izquierda (1.5fr): Card Período y alcance (HERO, span 3 filas)
+     - Col derecha (1fr): 3 cards compactas apiladas
+         1. Postulaciones (KPI)
+         2. Notificación (estado + CTA condensado)
+         3. Configuración financiera (lista densa)
+   Sin box-shadow, sólo border 1px (look más minimalista).
    En mobile, todas las cards se apilan en columna única.
    ═══════════════════════════════════════════════════════════════════ */
 .convo-bento {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1.5fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 12px;
   margin-bottom: 22px;
 }
+.bento-card--periodo  { grid-column: 1; grid-row: 1 / span 3; }
+.bento-card--kpi      { grid-column: 2; grid-row: 1; }
+.bento-card--notif    { grid-column: 2; grid-row: 2; }
+.bento-card--config   { grid-column: 2; grid-row: 3; }
 @media (max-width: 900px) {
-  .convo-bento { grid-template-columns: 1fr; }
+  .convo-bento { grid-template-columns: 1fr; grid-template-rows: none; }
+  .bento-card--periodo, .bento-card--kpi, .bento-card--notif, .bento-card--config {
+    grid-column: 1; grid-row: auto;
+  }
 }
 .bento-card {
   background: var(--surface, #fff);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl, 20px);
-  padding: 18px 20px;
+  padding: 16px 18px;
   display: flex; flex-direction: column;
-  box-shadow: var(--shadow-card, 0 1px 4px rgba(0,0,0,.04));
 }
 .bento-card__head {
   display: flex; align-items: center; gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 .bento-card__head-icon {
-  width: 24px; height: 24px;
-  border-radius: 8px;
+  width: 22px; height: 22px;
+  border-radius: 7px;
   background: var(--orange-bg, #fff3e6);
   color: var(--accent, #d74009);
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+.bento-card__head-icon svg { width: 14px; height: 14px; }
 .bento-card__head-title {
-  font-size: 12.5px; font-weight: 700;
+  font-size: 11.5px; font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: .02em;
+  letter-spacing: .04em;
   text-transform: uppercase;
 }
-.bento-card__head-pill { margin-left: auto; }
+.bento-card__head-pill { margin-left: auto; font-size: 10.5px; }
 .bento-card__body { flex: 1; }
 
-/* ── Card "Período y alcance" ── */
+/* ── Card HERO "Período y alcance" (col izq, span 3 filas) ── */
+.bento-card--periodo { padding: 22px 24px; }
+.bento-card--periodo .bento-card__head { margin-bottom: 18px; }
+.bento-card--periodo .bento-card__head-title { font-size: 12.5px; }
+.bento-periodo__dates {
+  display: flex; flex-direction: column; gap: 0;
+  margin-bottom: 20px;
+}
 .bento-periodo__row {
   display: flex; align-items: baseline; justify-content: space-between;
-  padding: 5px 0;
-  font-size: 13px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 14px;
 }
+.bento-periodo__row:last-child { border-bottom: 0; }
 .bento-periodo__lbl {
   color: var(--text-secondary);
   font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 .bento-periodo__val {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
+}
+.bento-periodo__progress {
+  margin-top: auto;
+  padding-top: 18px;
+}
+.bento-periodo__progress-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.bento-periodo__progress-lbl {
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.bento-periodo__progress-pct {
+  font-size: 18px; font-weight: 700;
+  color: var(--text-primary);
 }
 .bento-periodo__bar {
-  margin-top: 14px;
-  height: 8px;
+  height: 10px;
   background: var(--border);
   border-radius: 999px;
   overflow: hidden;
@@ -413,55 +452,39 @@
 .bento-periodo__fill--negative { background: #c01818; }
 .bento-periodo__fill--neutral  { background: var(--text-secondary, #646587); }
 
-/* ── Card KPI (Postulaciones) ── */
+/* ── Card KPI compacta (Postulaciones) ── */
 .bento-card--kpi .bento-card__body--kpi {
-  display: flex; flex-direction: column;
-  justify-content: center;
-  gap: 4px;
+  display: flex; align-items: baseline; gap: 10px;
 }
 .bento-kpi__num {
-  font-size: 44px; font-weight: 700;
+  font-size: 32px; font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
   letter-spacing: -.02em;
 }
 .bento-kpi__delta {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* ── Card Notificación (dinámica) ── */
-.bento-card--notif .bento-notif__body {
-  display: flex; flex-direction: column;
-  gap: 12px;
-}
-.bento-notif__metric {
-  display: flex; flex-direction: column; gap: 2px;
-}
-.bento-notif__metric-num {
-  font-size: 18px; font-weight: 600;
-  color: var(--text-primary);
-}
-.bento-notif__metric-num strong {
-  font-size: 24px; font-weight: 700;
-}
-.bento-notif__metric-lbl {
-  font-size: 12.5px; color: var(--text-secondary);
-}
-.bento-notif__meta {
-  display: flex; align-items: baseline; justify-content: space-between;
-  font-size: 12px;
-  padding-top: 8px; border-top: 1px solid var(--border);
-}
-.bento-notif__meta-lbl { color: var(--text-secondary); }
-.bento-notif__meta-val { color: var(--text-primary); font-weight: 500; }
-.bento-notif__channels {
   font-size: 11.5px;
   color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* ── Card Notificación compacta ── */
+.bento-card--notif .bento-notif__body {
+  display: flex; flex-direction: column;
+  gap: 10px;
+}
+.bento-notif__summary {
+  font-size: 13px; color: var(--text-primary);
+  line-height: 1.45;
+}
+.bento-notif__summary strong { font-weight: 700; }
+.bento-notif__meta {
+  font-size: 11px; color: var(--text-secondary);
+  line-height: 1.4;
 }
 .bento-notif__cta {
-  margin-top: auto; align-self: flex-start;
+  align-self: flex-start;
   display: inline-flex; align-items: center; gap: 6px;
 }
 .bento-card--notif-caution .bento-card__head-icon {
@@ -471,14 +494,14 @@
   background: var(--green-bg, #e6f4e7); color: var(--green, #1f8923);
 }
 
-/* ── Card Configuración financiera ── */
+/* ── Card Configuración financiera (densa) ── */
 .bento-card--config .bento-config__body {
   display: flex; flex-direction: column;
 }
 .bento-config__row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 9px 0;
-  font-size: 13px;
+  padding: 7px 0;
+  font-size: 12.5px;
   border-bottom: 1px dashed var(--border);
 }
 .bento-config__row:last-child { border-bottom: 0; }
@@ -486,15 +509,16 @@
   color: var(--text-secondary);
   font-weight: 500;
   text-transform: uppercase;
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: .04em;
 }
 .bento-config__val {
   color: var(--text-primary);
   font-weight: 600;
   text-align: right;
+  font-size: 12.5px;
 }
-.bento-config__val--strong { font-size: 15px; }
+.bento-config__val--strong { font-size: 13.5px; }
 .bento-config__val--chips {
   display: inline-flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;
 }

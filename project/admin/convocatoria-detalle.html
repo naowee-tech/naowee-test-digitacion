@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516p">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516q">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516p';
+  import { mountShell } from '../shared/shell.js?v=20260516q';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });
@@ -169,30 +169,38 @@
 
           return `
         <div class="convo-bento">
-          <!-- Card 1: Período y alcance (top-left, alto) -->
+          <!-- Card HERO: Período y alcance (col izquierda, span 3 filas) -->
           <div class="bento-card bento-card--periodo">
             <div class="bento-card__head">
               <span class="bento-card__head-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </span>
               <span class="bento-card__head-title">Período y alcance</span>
               <span class="naowee-badge naowee-badge--${semVariant} naowee-badge--quiet bento-card__head-pill">${semLabel}</span>
             </div>
             <div class="bento-card__body">
-              <div class="bento-periodo__row">
-                <span class="bento-periodo__lbl">Bienio</span>
-                <span class="bento-periodo__val">${(c.bienio || '—').replace('-', ' · ')}</span>
+              <div class="bento-periodo__dates">
+                <div class="bento-periodo__row">
+                  <span class="bento-periodo__lbl">Bienio</span>
+                  <span class="bento-periodo__val">${(c.bienio || '—').replace('-', ' · ')}</span>
+                </div>
+                <div class="bento-periodo__row">
+                  <span class="bento-periodo__lbl">Apertura</span>
+                  <span class="bento-periodo__val">${fechaCorta(c.apertura)}</span>
+                </div>
+                <div class="bento-periodo__row">
+                  <span class="bento-periodo__lbl">Cierre</span>
+                  <span class="bento-periodo__val">${fechaCorta(c.cierre)}</span>
+                </div>
               </div>
-              <div class="bento-periodo__row">
-                <span class="bento-periodo__lbl">Apertura</span>
-                <span class="bento-periodo__val">${fechaCorta(c.apertura)}</span>
-              </div>
-              <div class="bento-periodo__row">
-                <span class="bento-periodo__lbl">Cierre</span>
-                <span class="bento-periodo__val">${fechaCorta(c.cierre)}</span>
-              </div>
-              <div class="bento-periodo__bar">
-                <span class="bento-periodo__fill bento-periodo__fill--${semVariant}" style="width:${progreso}%"></span>
+              <div class="bento-periodo__progress">
+                <div class="bento-periodo__progress-head">
+                  <span class="bento-periodo__progress-lbl">Progreso del período</span>
+                  <span class="bento-periodo__progress-pct">${progreso}%</span>
+                </div>
+                <div class="bento-periodo__bar">
+                  <span class="bento-periodo__fill bento-periodo__fill--${semVariant}" style="width:${progreso}%"></span>
+                </div>
               </div>
             </div>
           </div>
@@ -211,36 +219,25 @@
             </div>
           </div>
 
-          <!-- Card 3: Notificación (bottom-left, dinámica) -->
+          <!-- Card compacta: Notificación dinámica -->
           <div class="bento-card bento-card--notif bento-card--notif-${notifCfg.variant}">
             <div class="bento-card__head">
               <span class="bento-card__head-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               </span>
-              <span class="bento-card__head-title">Notificación ${destLbl.preposicion} ${destLbl.plural}</span>
+              <span class="bento-card__head-title">Notif. ${destLbl.preposicion} ${destLbl.plural}</span>
               <span class="naowee-badge naowee-badge--${notifCfg.variant} naowee-badge--quiet bento-card__head-pill">${notifCfg.label}</span>
             </div>
             <div class="bento-card__body bento-notif__body">
               ${n && n.envio ? `
-                <div class="bento-notif__metric">
-                  <span class="bento-notif__metric-num"><strong>${n.envio.exitosos}</strong> de ${totalDest}</span>
-                  <span class="bento-notif__metric-lbl">con éxito${n.envio.conFalla ? ` · <strong style="color:#c01818">${n.envio.conFalla} con falla</strong>` : ''}</span>
-                </div>
-                <div class="bento-notif__meta">
-                  <span class="bento-notif__meta-lbl">Última actualización</span>
-                  <span class="bento-notif__meta-val">${formatoFecha(n.envio.ts, true)}</span>
-                </div>
+                <div class="bento-notif__summary"><strong>${n.envio.exitosos}/${totalDest}</strong> con éxito${n.envio.conFalla ? ` · <strong style="color:#c01818">${n.envio.conFalla} con falla</strong>` : ''}</div>
+                <div class="bento-notif__meta">${formatoFecha(n.envio.ts, true)}${canalesActivos.length ? ` · ${canalesActivos.join(' + ')}` : ''}</div>
               ` : n ? `
-                <div class="bento-notif__metric">
-                  <span class="bento-notif__metric-num"><strong>${totalDest}</strong> ${destLbl.plural}</span>
-                  <span class="bento-notif__metric-lbl">destinatarios configurados</span>
-                </div>
+                <div class="bento-notif__summary"><strong>${totalDest}</strong> ${destLbl.plural} configurados</div>
+                ${canalesActivos.length ? `<div class="bento-notif__meta">Canales: ${canalesActivos.join(' + ')}</div>` : ''}
               ` : `
-                <div class="bento-notif__metric">
-                  <span class="bento-notif__metric-lbl">La convocatoria está publicada pero no se ha enviado notificación.</span>
-                </div>
+                <div class="bento-notif__summary">Sin enviar aún</div>
               `}
-              ${canalesActivos.length ? `<div class="bento-notif__channels">Canales: ${canalesActivos.join(' · ')}</div>` : ''}
               <a class="naowee-btn ${notifCfg.variant === 'caution' ? 'naowee-btn--loud' : 'naowee-btn--mute'} naowee-btn--small bento-notif__cta" href="convocatoria-notificar.html?id=${c.id}">
                 ${notifCfg.cta}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>

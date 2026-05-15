@@ -555,9 +555,13 @@
           <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
-    <span class="naowee-message__body"><strong>${devueltas} área${devueltas === 1 ? '' : 's'} devuelta${devueltas === 1 ? '' : 's'} con observaciones</strong> Requiere acción del municipio para subsanar antes de continuar.</span>
+    <span class="naowee-message__title">${devueltas} área${devueltas === 1 ? '' : 's'} devuelta${devueltas === 1 ? '' : 's'} con observaciones</span>
   </div>
-  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" id="btnNotify">${ICONS.notify} Notificar municipio</button>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Requiere acción del municipio para subsanar antes de continuar.</p>
+    <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" id="btnNotify">${ICONS.notify} Notificar municipio</button>
+  </div>
+</div>-btn--loud naowee-btn--small naowee-message__action" id="btnNotify">${ICONS.notify} Notificar municipio</button>
 </div>
         ` : ''}
 

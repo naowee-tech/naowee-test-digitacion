@@ -514,16 +514,28 @@
           <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:18px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="naowee-message__body"><strong>Documentación general aprobada</strong> Aprobada el ${fechaCorta(dg.aprobadoEn)}. El proyecto está listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</span>
+    <span class="naowee-message__title">Documentación general aprobada</span>
   </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Aprobada el ${fechaCorta(dg.aprobadoEn)}. El proyecto está listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</p>
+  </div>
+</div>á listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</p>
+  </div>
+</div>
 </div>
         ` : !esRevisorGeneral ? `
           <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="4" y="7" width="8" height="6" rx="1" stroke="#fff" stroke-width="1.4"/><path d="M6 7V5a2 2 0 0 1 4 0v2" stroke="#fff" stroke-width="1.4"/></svg></span>
-    <span class="naowee-message__body"><strong>Documentación general asignada a ${revisorGeneralPool?.nombre || 'el Revisor General'}</strong> Solo el revisor de Documentación General puede aprobar o devolver este checklist.
-              ${revisorActivo ? `Estás logueado como <strong>${revisorActivo.nombre}</strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}</span>
+    <span class="naowee-message__title">Documentación general asignada a ${revisorGeneralPool?.nombre || 'el Revisor General'}</span>
   </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Solo el revisor de Documentación General puede aprobar o devolver este checklist.
+              ${revisorActivo ? `Estás logueado como <strong>${revisorActivo.nombre}</strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}</p>
+  </div>
+</div>strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}</p>
+  </div>
+</div>
 </div>
         ` : ''}
 

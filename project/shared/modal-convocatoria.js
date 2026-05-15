@@ -1500,15 +1500,19 @@ function stepRevisionTecnica() {
     </div>
 
     <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">
-      <div class="naowee-message__header">
-        <span class="naowee-message__icon">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
         </span>
-        <span class="naowee-message__body">
-          <strong>Cobertura por especialidad.</strong> Cada revisor del pool tiene asignadas 1–2 especialidades fijas. Si una
-          especialidad no tiene revisor asignado, podrás definirlo desde el panel "Gestión de usuarios y áreas".
-        </span>
-      </div>
+    <span class="naowee-message__title">Cobertura por especialidad</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Cada revisor del pool tiene asignadas 1–2 especialidades fijas. Si una
+          especialidad no tiene revisor asignado, podrás definirlo desde el panel "Gestión de usuarios y áreas".</p>
+  </div>
+</div>definirlo desde el panel "Gestión de usuarios y áreas".</p>
+  </div>
+</div>
     </div>
   `;
 }

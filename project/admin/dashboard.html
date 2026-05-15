@@ -153,9 +153,13 @@
         <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:20px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="naowee-message__body"><strong>${conConcepto} proyecto${conConcepto > 1 ? 's' : ''} listo${conConcepto > 1 ? 's' : ''} para activar inversión</strong> El equipo revisor emitió ${conConcepto > 1 ? 'sus conceptos' : 'su concepto'} favorable${conConcepto > 1 ? 's' : ''}. Revisa los proyectos y activa la inversión correspondiente.</span>
+    <span class="naowee-message__title">${conConcepto} proyecto${conConcepto > 1 ? 's' : ''} listo${conConcepto > 1 ? 's' : ''} para activar inversión</span>
   </div>
-  <a class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" href="inversion.html">Ver tabla de inversión →</a>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">El equipo revisor emitió ${conConcepto > 1 ? 'sus conceptos' : 'su concepto'} favorable${conConcepto > 1 ? 's' : ''}. Revisa los proyectos y activa la inversión correspondiente.</p>
+    <a class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" href="inversion.html">Ver tabla de inversión →</a>
+  </div>
+</div>tn naowee-btn--loud naowee-btn--small naowee-message__action" href="inversion.html">Ver tabla de inversión →</a>
 </div>
       ` : ''}
 

@@ -81,8 +81,14 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
             <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:20px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="naowee-message__body"><strong>Concepto favorable emitido</strong> ${p.conceptoFavorabilidad?.observaciones || 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'}</span>
+    <span class="naowee-message__title">Concepto favorable emitido</span>
   </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">${p.conceptoFavorabilidad?.observaciones || 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'}</p>
+  </div>
+</div>rvaciones || 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'}</p>
+  </div>
+</div>
 </div>
 
             <div class="ai-section-title">Datos de la inversión</div>
@@ -97,8 +103,14 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
               <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px;margin-bottom:18px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="naowee-message__body"><strong>Registro SUID del escenario</strong> Al activar este proyecto se habilitará el formulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</span>
+    <span class="naowee-message__title">Registro SUID del escenario</span>
   </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Al activar este proyecto se habilitará el formulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</p>
+  </div>
+</div>ulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</p>
+  </div>
+</div>
 </div>
               <div class="ai-section-title">SUID (opcional)</div>
               <div class="ai-grid-1">
@@ -318,10 +330,16 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
         <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="naowee-message__body"><strong>Siguiente paso</strong> ${isInfra
-            ? 'Coordina con el municipio el diligenciamiento del Registro SUID del escenario para inventariar la infraestructura en el sistema nacional.'
-            : 'El proyecto ahora se ejecuta bajo seguimiento. Las actas, avances y reportes financieros aparecerán en la Tabla de inversión.'}</span>
+    <span class="naowee-message__title">Siguiente paso</span>
   </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">${isInfra
+            ? 'Coordina con el municipio el diligenciamiento del Registro SUID del escenario para inventariar la infraestructura en el sistema nacional.'
+            : 'El proyecto ahora se ejecuta bajo seguimiento. Las actas, avances y reportes financieros aparecerán en la Tabla de inversión.'}</p>
+  </div>
+</div>eguimiento. Las actas, avances y reportes financieros aparecerán en la Tabla de inversión.'}</p>
+  </div>
+</div>
 </div>
       </div>
     `;

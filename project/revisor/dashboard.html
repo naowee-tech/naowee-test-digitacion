@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517f">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517g">
 </head>
 <body>
 <div class="shell">
@@ -40,17 +40,10 @@
 
   /* Revisor activo del pool (modelo "todos ven, cada quien aprueba lo suyo"). */
   const revisorActivo = ProjectData.getRevisorActivo();
-
-  /* Doug 17/05/2026: panel "Notificaciones para ti" — filtra por revisorId
-     del activo. Notifs con revisorId !== activo se omiten; notifs sin
-     revisorId (legacy globales del rol revisor) también entran como
-     fallback para no perder mensajes históricos. */
-  const allNotifs = ProjectData.load?.()?.notificaciones || [];
-  const misNotifs = revisorActivo
-    ? allNotifs.filter(n => (n.perfil === 'revisor' || !n.perfil) && (!n.revisorId || n.revisorId === revisorActivo.id))
-    : allNotifs.filter(n => n.perfil === 'revisor');
-  const misNotifsRecientes = misNotifs.slice(0, 5);
-  const misNotifsNoLeidas = misNotifs.filter(n => !n.leida).length;
+  /* Doug 17/05/2026: panel "Notificaciones para ti" removido del dashboard
+     del revisor. La data de notificaciones sigue persistiendo en
+     localStorage (per-revisor con revisorId) para futuras vistas, pero
+     no se renderiza aquí. */
   const esGeneral = revisorActivo?.especialidades?.includes('general');
 
   /* Mis áreas: todas las áreas (técnicas o doc-general) asignadas al revisor activo
@@ -167,65 +160,10 @@
         </div>
       ` : ''}
 
-      ${revisorActivo && misNotifsRecientes.length > 0 ? `
-        <!-- ═══ Panel "Notificaciones para ti" — Doug 17/05/2026 ═══
-             Feed personal del revisor activo. Filtrado por revisorId.
-             Cada item es clickable y navega al deep-link del notif. -->
-        <article class="rev-notif-panel">
-          <header class="rev-notif-panel__head">
-            <div class="rev-notif-panel__title-row">
-              <span class="rev-notif-panel__bell" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-              </span>
-              <div>
-                <h3 class="rev-notif-panel__title">Notificaciones para ti</h3>
-                <p class="rev-notif-panel__sub">${misNotifsNoLeidas > 0 ? `<strong>${misNotifsNoLeidas} sin leer</strong> · ` : ''}Acciones que requieren tu atención directa</p>
-              </div>
-            </div>
-            ${misNotifsNoLeidas > 0 ? `<span class="naowee-badge naowee-badge--informative naowee-badge--small">${misNotifsNoLeidas}</span>` : ''}
-          </header>
-          <ul class="rev-notif-panel__list">
-            ${misNotifsRecientes.map(n => {
-              const ts = n.ts ? new Date(n.ts) : null;
-              const ago = ts ? (() => {
-                const diff = Date.now() - ts.getTime();
-                const min = Math.floor(diff / 60000);
-                if (min < 1) return 'Justo ahora';
-                if (min < 60) return `Hace ${min} min`;
-                const h = Math.floor(min / 60);
-                if (h < 24) return `Hace ${h} h`;
-                const d = Math.floor(h / 24);
-                if (d < 7) return `Hace ${d} día${d === 1 ? '' : 's'}`;
-                return ts.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
-              })() : '';
-              const tipoIcon = n.tipo === 'subsanacion'
-                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
-                : n.tipo === 'favorabilidad'
-                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
-              const tipoCls = n.tipo === 'subsanacion' ? 'rev-notif-panel__icon--info'
-                : n.tipo === 'favorabilidad' ? 'rev-notif-panel__icon--positive'
-                : 'rev-notif-panel__icon--neutral';
-              const cta = n.href || '#';
-              return `
-                <li class="rev-notif-panel__item ${!n.leida ? 'is-unread' : ''}" data-notif-id="${n.id}" data-href="${cta}" role="link" tabindex="0">
-                  <span class="rev-notif-panel__icon ${tipoCls}" aria-hidden="true">${tipoIcon}</span>
-                  <div class="rev-notif-panel__body">
-                    <div class="rev-notif-panel__row">
-                      <span class="rev-notif-panel__item-title">${n.titulo || 'Notificación'}</span>
-                      <span class="rev-notif-panel__time">${ago}</span>
-                    </div>
-                    <p class="rev-notif-panel__detail">${n.detalle || ''}</p>
-                  </div>
-                  <span class="rev-notif-panel__chev" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                  </span>
-                </li>
-              `;
-            }).join('')}
-          </ul>
-        </article>
-      ` : ''}
+      <!-- Doug 17/05/2026: panel "Notificaciones para ti" removido del
+           dashboard del revisor (feedback de Doug — no aplica para todos
+           los revisores). La data per-revisor sigue disponible en
+           localStorage para futuras vistas. -->
 
       <div class="kpi-grid-section-title">Carga global del equipo revisor</div>
       <div class="kpi-grid">
@@ -388,28 +326,7 @@
     }
   });
 
-  /* Doug 17/05/2026: notif panel — click marca como leída + navega al href.
-     Keyboard: Enter/Space también activa para a11y. */
-  document.querySelectorAll('.rev-notif-panel__item').forEach(li => {
-    const fire = () => {
-      const id = li.dataset.notifId;
-      const href = li.dataset.href;
-      if (id) {
-        ProjectData.update?.(s => {
-          const idx = (s.notificaciones || []).findIndex(n => n.id === id);
-          if (idx >= 0) s.notificaciones[idx].leida = true;
-        });
-      }
-      if (href && href !== '#') {
-        if (typeof fadeAndGo === 'function') fadeAndGo(href);
-        else window.location.href = href;
-      }
-    };
-    li.addEventListener('click', fire);
-    li.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fire(); }
-    });
-  });
+  /* Doug 17/05/2026: handler del panel notif removido junto con el panel. */
 </script>
 </body>
 </html>

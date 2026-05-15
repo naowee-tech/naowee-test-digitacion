@@ -18,7 +18,10 @@
 ### Fixed
 - **`municipio/proyecto-perfil.html`** · layout del certificado: el card del certificado tenía 2 `</div>` faltantes (`__main` y `__top` quedaban abiertos), por lo que el `proj-tabs-card` se renderizaba como hermano de `__main` dentro de `__top` (flex container) y quedaba side-by-side con el certificado en lugar de debajo. Cierre estructural correcto: el certificado ahora ocupa el ancho completo del contenedor en el medio del layout, con la card de tabs (Datos / Historial / Conversación) apilada debajo.
 
-cache: `pages.css` → `20260517f`
+### Removed
+- **Panel "Notificaciones para ti"** del dashboard del revisor (`revisor/dashboard.html`) — feedback de Doug: no aplica para todos los revisores. Se removieron HTML render, JS click handler, fetch de `allNotifs/misNotifs/misNotifsRecientes/misNotifsNoLeidas`, y todo el bloque CSS `.rev-notif-panel` (~120 líneas) en `pages.css`. La data de notificaciones per-revisor sigue persistiendo en `localStorage` (con `revisorId`) por si más adelante se reintroduce otra vista.
+
+cache: `pages.css` → `20260517g`
 
 ---
 

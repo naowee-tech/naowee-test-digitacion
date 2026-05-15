@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516i">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516j">
 <style>
   /* ─── Tabs DS dentro del .naowee-table-card ───
      Doug 15/05: el DS ya provee el patrón edge-to-edge con negative margin
@@ -76,10 +76,14 @@
   .area-mgmt-card__icon--estructural    { background: #e7e9f3; color: #4b4f7a; }
   .area-mgmt-card__icon--hidrosanitario { background: #e0f2fe; color: #0369a1; }
   .area-mgmt-card__icon--electrico      { background: #fef3c7; color: #ca8a04; }
-  /* Multi-revisor: lista de chips con wrap */
+  /* Multi-revisor: lista minimalista (thumbnail DS + nombre).
+     Doug 15/05: reemplazamos el pill verde por una composición DS con
+     naowee-thumbnail + texto plano, separados por punto medio para
+     múltiples revisores en la misma área. */
   .area-mgmt-card__revs {
-    display: flex; flex-wrap: wrap; gap: 6px;
-    margin-top: 6px;
+    display: flex; flex-wrap: wrap; align-items: center;
+    column-gap: 10px; row-gap: 6px;
+    margin-top: 8px;
   }
   .area-mgmt-card__main { min-width: 0; }
   .area-mgmt-card__title {
@@ -91,12 +95,16 @@
   }
   .area-mgmt-card__rev {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 8px; border-radius: 999px;
-    background: var(--green-bg); color: var(--green);
-    font-size: 11.5px; font-weight: 600;
+    font-size: 12px; font-weight: 500; color: var(--text-primary);
   }
+  .area-mgmt-card__rev .naowee-thumbnail { box-shadow: none; }
   .area-mgmt-card__rev--missing {
-    background: #fff0ee; color: #b42318;
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #b42318; font-size: 12px; font-weight: 500;
+  }
+  .area-mgmt-card__rev--missing::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; display: inline-block;
   }
   /* Doug 15/05: el botón "Asignar revisores" usa el DS quiet (ghost) directamente,
      no necesita estilos custom — sólo overrideamos el alineamiento dentro del card. */
@@ -401,7 +409,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516i';
+  import { mountShell } from '../shared/shell.js?v=20260516j';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');
@@ -598,13 +606,15 @@
                         <div class="area-mgmt-card__revs">
                           ${revisores.map(r => `
                             <span class="area-mgmt-card__rev">
-                              <span class="ava-ring" style="width:18px;height:18px;background:${r.color}22;color:${r.color};font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</span>
+                              <span class="naowee-thumbnail naowee-thumbnail--xsmall" style="background:${r.color}22;color:${r.color}">
+                                <span class="naowee-thumbnail__initials">${r.avatar}</span>
+                              </span>
                               ${r.nombre}
                             </span>
                           `).join('')}
                         </div>
                       ` : `
-                        <span class="area-mgmt-card__rev area-mgmt-card__rev--missing">⚠ Sin responsable</span>
+                        <span class="area-mgmt-card__rev--missing">Sin responsable</span>
                       `}
                     </div>
                     <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-tipo="${a.tipo}" data-area-label="${a.label}">Asignar revisores</button>

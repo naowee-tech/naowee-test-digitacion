@@ -417,9 +417,8 @@
                     <span class="naowee-message__icon">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
                     </span>
-                    <span class="naowee-message__title">Throttle activo · Faltan ${inspect.hoursRemaining}h</span>
+                    <span class="naowee-message__body"><strong>Throttle activo · Faltan ${inspect.hoursRemaining}h.</strong> Para evitar spam, el sistema bloquea reenvíos consecutivos en menos de ${ProjectData.NOTIF_THROTTLE_HOURS}h. Marca "Forzar reenvío" si es estrictamente necesario.</span>
                   </div>
-                  <div class="naowee-message__text">Para evitar spam, el sistema bloquea reenvíos consecutivos en menos de ${ProjectData.NOTIF_THROTTLE_HOURS}h. Marca "Forzar reenvío" si es estrictamente necesario.</div>
                 </div>
                 <label class="send-confirm-modal__toggle" for="sendForce">
                   <label class="naowee-checkbox" data-cb-wrap>

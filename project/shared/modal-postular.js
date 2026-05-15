@@ -261,12 +261,11 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
                ni descripción breve (eso vive en los docs). Solo lo esencial. -->
           <div class="ai-step-panel" data-panel="1">
             <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
-              <div class="naowee-message__header">
-                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-                <span class="naowee-message__title">Postulando a ${conv.id}</span>
-              </div>
-              <div class="naowee-message__text">Año ${conv.anio || conv.bienio || ''} · Tope por proyecto: <strong>${formatoMoneda(conv.montoMaximoProyecto)}</strong> · Entidad: <strong>${perfilMun?.entidad || ''}</strong> (${perfilMun?.municipio || perfilMun?.departamento || ''})</div>
-            </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__body"><strong>Postulando a ${conv.id}</strong> Año ${conv.anio || conv.bienio || ''} · Tope por proyecto: <strong>${formatoMoneda(conv.montoMaximoProyecto)}</strong> · Entidad: <strong>${perfilMun?.entidad || ''}</strong> (${perfilMun?.municipio || perfilMun?.departamento || ''})</span>
+  </div>
+</div>
 
             <div class="ai-section-title">Identificación del proyecto</div>
             ${textfield({ label: 'Nombre del proyecto', name: 'nombre', required: true, placeholder: 'Ej: Construcción Coliseo Cubierto Quibdó', maxlength: 200 })}
@@ -311,12 +310,11 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
                del flujo de revisión secuencial. -->
           <div class="ai-step-panel" data-panel="2" hidden>
             <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
-              <div class="naowee-message__header">
-                <span class="naowee-message__icon">${ICON_RBI}</span>
-                <span class="naowee-message__title">Bloque 1 · Requisitos Básicos Indispensables (RBI)</span>
-              </div>
-              <div class="naowee-message__text">Documentos legales y de soporte presupuestal. Los valida primero el <strong>revisor RBI del Ministerio</strong>; si los aprueba, se libera la revisión del resto de bloques.</div>
-            </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon">${ICON_RBI}</span>
+    <span class="naowee-message__body"><strong>Bloque 1 · Requisitos Básicos Indispensables (RBI)</strong> Documentos legales y de soporte presupuestal. Los valida primero el <strong>revisor RBI del Ministerio</strong>; si los aprueba, se libera la revisión del resto de bloques.</span>
+  </div>
+</div>
             <div class="pm-anexos-list" data-anexos-list="rbi">
               ${AREAS_RBI.map((a, idx) => `
                 <details class="pm-anexo" data-anexo="${a.id}" ${idx === 0 ? 'open' : ''}>
@@ -350,12 +348,11 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
                cuando el RBI está aprobado. -->
           <div class="ai-step-panel" data-panel="3" hidden>
             <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
-              <div class="naowee-message__header">
-                <span class="naowee-message__icon">${ICON_GENERAL}</span>
-                <span class="naowee-message__title">Bloque 2 · Documentación general</span>
-              </div>
-              <div class="naowee-message__text">Análisis del proyecto, planeación territorial, licencias y servicios públicos. Los valida el <strong>revisor de documentación general</strong> una vez aprobado el RBI.</div>
-            </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon">${ICON_GENERAL}</span>
+    <span class="naowee-message__body"><strong>Bloque 2 · Documentación general</strong> Análisis del proyecto, planeación territorial, licencias y servicios públicos. Los valida el <strong>revisor de documentación general</strong> una vez aprobado el RBI.</span>
+  </div>
+</div>
             <div class="pm-anexos-list" data-anexos-list="general">
               ${AREAS_GENERAL.map((a, idx) => `
                 <details class="pm-anexo" data-anexo="${a.id}" ${idx === 0 ? 'open' : ''}>
@@ -389,12 +386,11 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
                Se activan en paralelo con doc general cuando RBI está aprobado. -->
           <div class="ai-step-panel" data-panel="4" hidden>
             <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
-              <div class="naowee-message__header">
-                <span class="naowee-message__icon">${ICON_TOPO}</span>
-                <span class="naowee-message__title">Bloque 3 · Documentación técnica (8 áreas)</span>
-              </div>
-              <div class="naowee-message__text">Anexos técnicos por especialidad (Art. 3 Res. 933). Cada área es revisada por su <strong>especialista del Ministerio</strong> en paralelo, una vez aprobado el RBI.</div>
-            </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon">${ICON_TOPO}</span>
+    <span class="naowee-message__body"><strong>Bloque 3 · Documentación técnica (8 áreas)</strong> Anexos técnicos por especialidad (Art. 3 Res. 933). Cada área es revisada por su <strong>especialista del Ministerio</strong> en paralelo, una vez aprobado el RBI.</span>
+  </div>
+</div>
             <div class="pm-anexos-list" data-anexos-list="tecnica">
               ${AREAS_TECNICA.map((a, idx) => `
                 <details class="pm-anexo" data-anexo="${a.id}" ${idx === 0 ? 'open' : ''}>
@@ -752,12 +748,11 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
         </ul>
 
         <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">
-          <div class="naowee-message__header">
-            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-            <span class="naowee-message__title">Siguiente paso</span>
-          </div>
-          <div class="naowee-message__text">Tu postulación entró al ciclo de revisión de <strong>Requisitos Básicos Indispensables (RBI)</strong>. El revisor del Ministerio tiene 15 días hábiles para validarla. Si la aprueba, el equipo técnico revisará cada área en paralelo. Si la devuelve, podrás subsanar en 15 días hábiles.</div>
-        </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__body"><strong>Siguiente paso</strong> Tu postulación entró al ciclo de revisión de <strong>Requisitos Básicos Indispensables (RBI)</strong>. El revisor del Ministerio tiene 15 días hábiles para validarla. Si la aprueba, el equipo técnico revisará cada área en paralelo. Si la devuelve, podrás subsanar en 15 días hábiles.</span>
+  </div>
+</div>
       </div>
     `;
 

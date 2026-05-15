@@ -74,12 +74,11 @@
         </div>
 
         <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
-          <div class="naowee-message__header">
-            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
-            <span class="naowee-message__title">${dias} día${dias === 1 ? '' : 's'} hábil${dias === 1 ? '' : 'es'} restante${dias === 1 ? '' : 's'}</span>
-          </div>
-          <div class="naowee-message__text">Si solicitas prórroga, el plazo se ampliará por hasta 15 días hábiles adicionales.</div>
-        </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__body"><strong>${dias} día${dias === 1 ? '' : 's'} hábil${dias === 1 ? '' : 'es'} restante${dias === 1 ? '' : 's'}</strong> Si solicitas prórroga, el plazo se ampliará por hasta 15 días hábiles adicionales.</span>
+  </div>
+</div>
 
         <form id="formProrroga" class="wz-card" novalidate>
           <div class="wz-stepper-wrap">

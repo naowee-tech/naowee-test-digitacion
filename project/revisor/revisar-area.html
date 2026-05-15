@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517c">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517d">
 <style>
   /* ─── Hero strip del proyecto + área ─── */
   .ra-hero {
@@ -227,6 +227,35 @@
   }
   .ra-doc-pill__download:active { transform: scale(.94); }
   .ra-doc-pill__download svg { width: 13px; height: 13px; }
+
+  /* Doug 17/05/2026: highlight de documentos nuevos cuando el área
+     está en estado 'subsanada'. Pill con bg azul info + tag "NUEVO"
+     a la derecha del nombre, y la card padre con border-top azul. */
+  .ra-docs-card--has-new {
+    border-top: 3px solid var(--blue-info, #1f78d1);
+  }
+  .ra-doc-pill--new {
+    background: var(--blue-bg, #eef5ff);
+    border: 1px solid #c8dcf5;
+  }
+  .ra-doc-pill--new:hover { background: #e0eefb; }
+  .ra-doc-pill--new .ra-doc-pill__icon {
+    background: #d4e7fa;
+    color: var(--blue-info, #1f78d1);
+  }
+  .ra-doc-pill__new-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: var(--blue-info, #1f78d1);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    border-radius: var(--radius-full, 9999px);
+    vertical-align: 2px;
+    line-height: 1.4;
+  }
 
   /* "Ver más" button — toggle inline expansion */
   .ra-docs-card__more {
@@ -635,6 +664,10 @@
     const e = ESTADOS_AREA[areaState.estado] || { label: areaState.estado, color: 'neutral' };
     const aprobado = areaState.estado === 'aprobado';
     const devuelto = areaState.estado === 'devuelto';
+    /* Doug 17/05/2026: 'subsanada' = el municipio respondió y mandó nuevos
+       docs. Se trata como editable (igual que 'pendiente'/'en_revision') —
+       la cenefa info indica que hay material nuevo para re-evaluar. */
+    const subsanada = areaState.estado === 'subsanada';
 
     /* Gate "solo apruebas lo tuyo" (modelo Andrea + Danna 29/04/2026):
        cada área tiene un revisor del equipo asignado por especialidad.
@@ -647,7 +680,9 @@
       : ProjectData.getRevisorPorArea(areaId);
     const esMia = !!(revisorActivo && areaRev && revisorActivo.id === areaRev.id);
     const bloqueado = !aprobado && !devuelto && !esMia;
-    /* readOnly cubre: ya cerrada (aprobada/devuelta) O no es tu especialidad */
+    /* readOnly cubre: ya cerrada (aprobada/devuelta) O no es tu especialidad.
+       NOTA: 'subsanada' NO entra en readOnly — es el estado donde el revisor
+       debe re-evaluar después de recibir nueva documentación del municipio. */
     const readOnly = aprobado || devuelto || bloqueado;
 
     /* Helper: nombre del revisor a mostrar — prioriza pool sobre legacy string. */
@@ -698,6 +733,19 @@
               iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 4 3 12 11 12"/></svg>`;
               title = 'Área devuelta al municipio';
               msg = `Devuelta por <strong>${revisorDisplay()}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. Esperando subsanación del municipio. Esta vista es solo de consulta.`;
+            } else if (subsanada) {
+              /* Doug 17/05/2026: nuevo estado — el municipio respondió con
+                 documentos corregidos. Cenefa info para diferenciar de
+                 "pendiente normal" y dar contexto del re-trabajo. */
+              variant = 'informative';
+              iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
+              const subsFecha = areaState.subsanadoEn
+                ? new Date(areaState.subsanadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+                : '';
+              const docsCount = areaState.nuevosDocsCount || 0;
+              const obsCount = areaState.nuevasObsCount || 0;
+              title = 'Subsanación recibida — re-evalúa el área';
+              msg = `El municipio envió <strong>${docsCount} documento${docsCount === 1 ? '' : 's'} corregido${docsCount === 1 ? '' : 's'}</strong>${obsCount > 0 ? ` y <strong>${obsCount} respuesta${obsCount === 1 ? '' : 's'}</strong> a las observaciones` : ''}${subsFecha ? ` el ${subsFecha}` : ''}. Revisa el material nuevo y vuelve a evaluar cada ítem del checklist.${slaTxt} <strong>Aprobar</strong> cierra el área. <strong>Devolver</strong> envía nuevas observaciones y reinicia el ciclo.`;
             } else if (bloqueado) {
               variant = 'caution';
               iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
@@ -837,29 +885,40 @@
               const COLLAPSED_LIMIT = 4;
               const overflow = stubDocs.length > COLLAPSED_LIMIT;
               const artNum = areaId === 'topografico' ? '1' : areaId === 'suelos' ? '2' : areaId === 'arquitectonico' ? '3' : areaId === 'estructural' ? '4' : areaId === 'hidrosanitario' ? '5' : areaId === 'electrico' ? '6' : '';
+              /* Doug 17/05/2026: si el área está en 'subsanada', ordenar
+                 los docs nuevos (subsanacionDe) primero y marcarlos con
+                 una pill "Nuevo" para que el revisor sepa qué cambió. */
+              const newDocsFirst = subsanada
+                ? [
+                    ...stubDocs.filter(d => d.subsanacionDe),
+                    ...stubDocs.filter(d => !d.subsanacionDe)
+                  ]
+                : stubDocs;
+              const nuevosCount = stubDocs.filter(d => d.subsanacionDe).length;
               return `
-                <aside class="ra-docs-card" id="raDocsCard">
+                <aside class="ra-docs-card${subsanada && nuevosCount > 0 ? ' ra-docs-card--has-new' : ''}" id="raDocsCard">
                   <div class="ra-docs-card__head">
                     <div class="ra-docs-card__title-group">
-                      <div class="ra-docs-card__title">Documentos cargados</div>
+                      <div class="ra-docs-card__title">Documentos cargados${nuevosCount > 0 ? ` <span class="naowee-badge naowee-badge--informative naowee-badge--small" style="margin-left:6px;vertical-align:1px">${nuevosCount} nuevo${nuevosCount === 1 ? '' : 's'}</span>` : ''}</div>
                       <div class="ra-docs-card__sub">${stubDocs.length} archivo${stubDocs.length === 1 ? '' : 's'}${artNum ? ` · Res. 933 Art. 3.${artNum}` : ''}</div>
                     </div>
                     <span class="naowee-badge naowee-badge--informative naowee-badge--quiet ra-docs-card__count">${stubDocs.length}</span>
                   </div>
                   <div class="ra-docs-card__list">
-                    ${stubDocs.map((d, i) => {
+                    ${newDocsFirst.map((d, i) => {
                       const sizeKb = Math.round((d.size || 0) / 1024);
                       const fechaTxt = d.subidoEn
                         ? new Date(d.subidoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
                         : '';
                       const isExtra = i >= COLLAPSED_LIMIT;
+                      const isNew = !!d.subsanacionDe;
                       return `
-                        <div class="ra-doc-pill"${isExtra ? ' data-extra="true"' : ''}>
+                        <div class="ra-doc-pill${isNew ? ' ra-doc-pill--new' : ''}"${isExtra ? ' data-extra="true"' : ''}>
                           <span class="ra-doc-pill__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                           </span>
                           <div class="ra-doc-pill__main">
-                            <div class="ra-doc-pill__name" title="${d.nombre}">${d.nombre}</div>
+                            <div class="ra-doc-pill__name" title="${d.nombre}">${d.nombre}${isNew ? ' <span class="ra-doc-pill__new-tag">NUEVO</span>' : ''}</div>
                             <div class="ra-doc-pill__meta" title="${d.archivo}">${sizeKb} KB${fechaTxt ? ' · ' + fechaTxt : ''}</div>
                           </div>
                           <button type="button" class="ra-doc-pill__download has-tooltip" data-doc-id="${d.id}" data-tooltip="Descargar PDF" aria-label="Descargar ${d.nombre}">

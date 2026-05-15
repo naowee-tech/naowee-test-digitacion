@@ -504,6 +504,23 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
       }
     });
 
+    /* Doug 17/05/2026: end-to-end del flujo de subsanación.
+       Cada área enviada cambia a estado 'subsanada' (nuevo) que
+         (a) deja la card editable de nuevo en revisar-area.html
+         (b) muestra cenefa info "Subsanación recibida" al revisor
+         (c) reinicia el SLA de re-evaluación
+       Además se push UNA notificación por revisor asignado (no genérica),
+       con `revisorId` y `href` deep-link para que el dashboard del revisor
+       pueda filtrarla y ofrecer la acción directa. */
+    const docsPorArea = {};
+    adjuntosPersist.forEach(d => {
+      docsPorArea[d.area] = (docsPorArea[d.area] || 0) + 1;
+    });
+    const obsPorAreaCount = {};
+    respuestasPersist.forEach(r => {
+      obsPorAreaCount[r.area] = (obsPorAreaCount[r.area] || 0) + 1;
+    });
+
     ProjectData.setProyecto(p.idUnico, x => {
       x.subsanacionAreas = x.subsanacionAreas || {};
       areasEnviadas.forEach(a => {
@@ -512,6 +529,40 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
       areasParciales.forEach(a => {
         x.subsanacionAreas[a.key] = { ts: ahora, estado: 'parcial', respondidas: a.respondidas, total: a.total };
       });
+      /* Reset del estado de cada área subsanada → 'subsanada' (re-evaluable).
+         Se conserva el checklist anterior como referencia y se setea
+         subsanadoEn + nuevosDocsCount + nuevasObsCount para el banner. */
+      if (x.docsTecnica?.areas) {
+        x.docsTecnica = {
+          ...x.docsTecnica,
+          areas: x.docsTecnica.areas.map(ar => {
+            const enviada = areasEnviadas.find(ae => ae.key === ar.id);
+            if (!enviada) return ar;
+            return {
+              ...ar,
+              estado: 'subsanada',
+              subsanadoEn: ahora,
+              nuevosDocsCount: docsPorArea[ar.id] || 0,
+              nuevasObsCount: obsPorAreaCount[ar.id] || 0,
+              /* SLA reset: 15 días para re-evaluar */
+              fechaLimite: (() => {
+                const lim = new Date(ahora);
+                lim.setDate(lim.getDate() + 15);
+                return lim.toISOString();
+              })()
+            };
+          })
+        };
+      }
+      if (x.docsGeneral && areasEnviadas.find(ae => ae.key === 'general')) {
+        x.docsGeneral = {
+          ...x.docsGeneral,
+          estadoRevision: 'subsanada',
+          subsanadoEn: ahora,
+          nuevosDocsCount: docsPorArea.general || 0,
+          nuevasObsCount: obsPorAreaCount.general || 0
+        };
+      }
       if (todasCompletas) {
         x.estado = 'en_revision';
         x.fechaInicioRevision = ahora;
@@ -525,9 +576,14 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
           x.observaciones[i] = { ...o, respondida: true };
         }
       });
-      /* Persistir documentos de soporte de subsanación */
+      /* Persistir documentos de soporte de subsanación + areaId canónico
+         (revisar-area.html filtra docs por d.areaId). */
       x.documentos = x.documentos || [];
-      adjuntosPersist.forEach(d => x.documentos.push(d));
+      adjuntosPersist.forEach(d => x.documentos.push({
+        ...d,
+        areaId: d.area,
+        bloque: d.area === 'general' ? 'general' : 'tecnica'
+      }));
       x.historial = x.historial || [];
       x.historial.push({
         ts: ahora, actor: 'municipio',
@@ -539,31 +595,91 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
       return x;
     });
 
+    /* Per-revisor notifications: una por área (con su revisorId asignado)
+       para que cada revisor vea EXACTAMENTE las áreas que le tocan a él. */
+    const proyectoEnriquecido = ProjectData.getProyecto(p.idUnico);
+    const revisoresNotificados = new Map(); /* revisorId → {areas:[], total} */
+    areasEnviadas.forEach(a => {
+      const areaState = (proyectoEnriquecido?.docsTecnica?.areas || []).find(ar => ar.id === a.key);
+      const revisorId = a.key === 'general'
+        ? proyectoEnriquecido?.docsGeneral?.revisorId
+        : areaState?.revisorId;
+      if (!revisorId) return;
+      const acc = revisoresNotificados.get(revisorId) || { areas: [], total: 0 };
+      acc.areas.push({ key: a.key, nombre: a.nombre, count: a.count, docs: docsPorArea[a.key] || 0 });
+      acc.total += a.count;
+      revisoresNotificados.set(revisorId, acc);
+    });
+    revisoresNotificados.forEach((info, revisorId) => {
+      const r = ProjectData.getRevisor?.(revisorId);
+      const primeraArea = info.areas[0];
+      const isMulti = info.areas.length > 1;
+      const docsTotal = info.areas.reduce((s, a) => s + a.docs, 0);
+      const href = isMulti
+        ? `doc-tecnica.html?id=${p.idUnico}`
+        : (primeraArea.key === 'general'
+          ? `doc-general.html?id=${p.idUnico}`
+          : `revisar-area.html?id=${p.idUnico}&area=${primeraArea.key}`);
+      ProjectData.pushNotificacion({
+        perfil: 'revisor',
+        revisorId,
+        proyectoId: p.idUnico,
+        tipo: 'subsanacion',
+        titulo: isMulti
+          ? `Subsanación recibida · ${info.areas.length} áreas`
+          : `Subsanación recibida · ${primeraArea.nombre}`,
+        detalle: `${p.nombre || p.idUnico} — ${muniNombre} envió ${docsTotal} documento${docsTotal === 1 ? '' : 's'} corregido${docsTotal === 1 ? '' : 's'} y ${info.total} respuesta${info.total === 1 ? '' : 's'} para tu revisión.`,
+        href
+      });
+    });
+    /* Notif global para el coordinador admin (auditoria del flujo) */
     ProjectData.pushNotificacion({
-      perfil: 'revisor',
+      perfil: 'admin',
+      proyectoId: p.idUnico,
       tipo: 'subsanacion',
       titulo: todasCompletas ? 'Postulación re-enviada a revisión' : 'Subsanación parcial recibida',
-      detalle: `${p.idUnico} · ${areasEnviadas.length} área${areasEnviadas.length === 1 ? '' : 's'} subsanada${areasEnviadas.length === 1 ? '' : 's'}`
+      detalle: `${p.idUnico} · ${areasEnviadas.length} área${areasEnviadas.length === 1 ? '' : 's'} subsanada${areasEnviadas.length === 1 ? '' : 's'} · ${respuestasPersist.length} respuesta${respuestasPersist.length === 1 ? '' : 's'}`,
+      href: `proyecto-detalle.html?id=${p.idUnico}`
     });
+
+    /* Lista de nombres de revisores notificados para el toast + success */
+    const nombresNotificados = Array.from(revisoresNotificados.keys())
+      .map(rid => ProjectData.getRevisor?.(rid)?.nombre)
+      .filter(Boolean);
+    const notifResumen = nombresNotificados.length === 0
+      ? 'el equipo revisor'
+      : nombresNotificados.length === 1
+      ? nombresNotificados[0]
+      : nombresNotificados.length === 2
+      ? `${nombresNotificados[0]} y ${nombresNotificados[1]}`
+      : `${nombresNotificados[0]} y ${nombresNotificados.length - 1} revisores más`;
 
     toast({
       variant: 'positive',
       title: todasCompletas ? 'Subsanación completa enviada' : 'Progreso guardado',
       message: todasCompletas
-        ? `Postulación volvió a estado "En revisión". El revisor fue notificado.`
+        ? `Postulación volvió a "En revisión". ${notifResumen} fue notificado${nombresNotificados.length === 1 ? '' : 's'}.`
         : `${areasEnviadas.length} de ${areas.length} áreas completas. Puedes volver a finalizar las pendientes.`
     });
 
-    renderSuccessScreen({ todasCompletas, areasEnviadas, areasParciales, totalAreas: areas.length });
+    renderSuccessScreen({ todasCompletas, areasEnviadas, areasParciales, totalAreas: areas.length, nombresNotificados });
     if (typeof onSubsanado === 'function') onSubsanado();
   });
 
   /* Success screen dentro del modal */
-  function renderSuccessScreen({ todasCompletas, areasEnviadas, areasParciales, totalAreas }) {
+  function renderSuccessScreen({ todasCompletas, areasEnviadas, areasParciales, totalAreas, nombresNotificados = [] }) {
     const body = overlay.querySelector('.naowee-modal__body');
     const footer = overlay.querySelector('.naowee-modal__footer');
     const stepper = overlay.querySelector('.naowee-stepper');
     if (stepper) stepper.style.display = 'none';
+
+    const revisoresMsg = nombresNotificados.length === 0
+      ? 'El equipo revisor fue notificado'
+      : nombresNotificados.length === 1
+      ? `<strong>${nombresNotificados[0]}</strong> fue notificado`
+      : nombresNotificados.length === 2
+      ? `<strong>${nombresNotificados[0]}</strong> y <strong>${nombresNotificados[1]}</strong> fueron notificados`
+      : `<strong>${nombresNotificados[0]}</strong> y <strong>${nombresNotificados.length - 1}</strong> revisores más fueron notificados`;
 
     body.innerHTML = `
       <div class="ai-success">
@@ -575,7 +691,7 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
         </div>
         <h2 class="ai-success__title">${todasCompletas ? '¡Subsanación enviada!' : 'Subsanación parcial guardada'}</h2>
         <p class="ai-success__sub">${todasCompletas
-          ? `Tu postulación volvió a revisión. El revisor recibió ${areasEnviadas.length} área${areasEnviadas.length === 1 ? '' : 's'} corregida${areasEnviadas.length === 1 ? '' : 's'} y emitirá el concepto en los próximos días.`
+          ? `${revisoresMsg} y verán los nuevos documentos en su bandeja. La postulación vuelve a estado "En revisión".`
           : `Guardamos ${areasEnviadas.length} de ${totalAreas} áreas. Las restantes (${areasParciales.map(a => a.nombre).join(', ')}) siguen pendientes — puedes volver y completarlas antes del vencimiento.`}</p>
         <div class="ai-success__stamp">
           <div class="ai-success__stamp-row">

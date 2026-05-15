@@ -39,8 +39,10 @@ export const ESTADOS_AREA = {
   en_revision: { label: 'En revisión', color: 'caution' },
   aprobado:    { label: 'Aprobado',    color: 'positive' },
   /* devuelto = subsanable por el municipio (corregible)
+     subsanada = el municipio respondió, esperando re-evaluación del revisor
      rechazado = no subsanable, requiere replantear el proyecto (Res. 933 Art. 9) */
   devuelto:    { label: 'Devuelto a subsanación', color: 'caution' },
+  subsanada:   { label: 'Subsanación recibida',   color: 'informative' },
   rechazado:   { label: 'Rechazado',   color: 'negative' }
 };
 

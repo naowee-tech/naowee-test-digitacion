@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515z">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516a">
 </head>
 <body>
 <div class="shell">
@@ -22,10 +22,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515z';
+  import { mountShell } from '../shared/shell.js?v=20260516a';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260515z';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260516a';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -280,32 +280,53 @@
                   </div>
                 </div>
               ` : ''}
-              <!-- Doug 15/05/2026: observaciones como ventana de chat con avatar
-                   del revisor, mensaje y timestamp. Mejor UX que el block
-                   border-left previo, más conversacional. -->
-              <div class="obs-chat">
-                ${p.observaciones.map(o => {
-                  const initials = (o.autorNombre || 'Revisor').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
-                  const color = o.autorColor || '#d74009';
-                  const rol = o.autorRol || (o.autor === 'revisor' ? 'Revisor' : 'Municipio');
-                  const fromMuni = o.autor === 'municipio';
-                  return `
-                    <div class="obs-chat__msg ${fromMuni ? 'obs-chat__msg--right' : ''}">
-                      <span class="obs-chat__avatar" style="background:${color}22;color:${color}">${initials}</span>
-                      <div class="obs-chat__bubble">
-                        <div class="obs-chat__meta">
-                          <strong>${o.autorNombre || 'Revisor'}</strong>
-                          <span class="obs-chat__rol">${rol}</span>
-                          ${o.area ? `<span class="obs-chat__tag">${o.area}</span>` : ''}
-                          ${o.tipo ? `<span class="obs-chat__tag obs-chat__tag--accent">${o.tipo}</span>` : ''}
+              <!-- Doug 15/05/2026: observaciones como ventana de chat con
+                   thumbnail DS oficial (naowee-thumbnail), badges DS y
+                   resolución de autor con fallback al pool de revisores. -->
+              ${(() => {
+                /* Fallback de autorNombre cuando la observación es legacy:
+                   busca en el pool de revisores via getRevisorPorArea + perfil del muni */
+                const perfilMun = ProjectData.getPerfilData?.('municipio');
+                const muniNombre = perfilMun?.nombre || 'Municipio';
+                const muniColor = perfilMun?.color || '#1f78d1';
+                const revGeneral = ProjectData.getRevisorPorArea?.('general');
+                const revRBI = ProjectData.getRevisorPorArea?.('rbi');
+
+                function resolveAutor(o) {
+                  if (o.autorNombre) return { nombre: o.autorNombre, color: o.autorColor, rol: o.autorRol };
+                  if (o.autor === 'municipio') return { nombre: muniNombre, color: muniColor, rol: 'Municipio' };
+                  /* Default: revisor — intenta resolver por área */
+                  if (o.area && /general/i.test(o.area)) return { nombre: revGeneral?.nombre || 'Revisor general', color: revGeneral?.color || '#d74009', rol: 'Doc General' };
+                  if (o.area && (o.area === 'arquitectonico' || /arquitect/i.test(o.area))) {
+                    const r = ProjectData.getRevisorPorArea?.('arquitectonico');
+                    return { nombre: r?.nombre || 'Revisor técnico', color: r?.color || '#d74009', rol: o.area };
+                  }
+                  /* Default: RBI */
+                  return { nombre: revRBI?.nombre || 'Revisor RBI', color: revRBI?.color || '#d74009', rol: 'RBI' };
+                }
+                return `<div class="obs-chat">
+                  ${p.observaciones.map(o => {
+                    const autor = resolveAutor(o);
+                    const initials = autor.nombre.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+                    const fromMuni = o.autor === 'municipio';
+                    return `
+                      <div class="obs-chat__msg ${fromMuni ? 'obs-chat__msg--right' : ''}">
+                        <span class="naowee-thumbnail naowee-thumbnail--small" style="background:${autor.color}22;color:${autor.color}">${initials}</span>
+                        <div class="obs-chat__bubble">
+                          <div class="obs-chat__meta">
+                            <strong>${autor.nombre}</strong>
+                            <span class="naowee-badge naowee-badge--${fromMuni ? 'informative' : 'caution'} naowee-badge--quiet naowee-badge--small">${autor.rol}</span>
+                            ${o.area ? `<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${o.area}</span>` : ''}
+                            ${o.tipo ? `<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">${o.tipo}</span>` : ''}
+                          </div>
+                          <div class="obs-chat__text">${o.detalle || ''}</div>
+                          <div class="obs-chat__time">${formatoFecha(o.ts, true)}</div>
                         </div>
-                        <div class="obs-chat__text">${o.detalle || ''}</div>
-                        <div class="obs-chat__time">${formatoFecha(o.ts, true)}</div>
                       </div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
+                    `;
+                  }).join('')}
+                </div>`;
+              })()}
               ${p.estado === 'devuelta_subsanacion' ? `
                 <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
                   <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>

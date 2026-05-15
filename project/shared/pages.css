@@ -4181,12 +4181,21 @@ body > .naowee-dropdown__menu.is-open {
   flex-direction: row-reverse;
   align-self: flex-end;
 }
+/* obs-chat__avatar legacy — mantenido por backward-compat con páginas
+   que aún usan la clase custom. El render canónico usa naowee-thumbnail
+   directamente con tamaño --small (32px) sin shadow. */
 .obs-chat__avatar {
-  width: 36px; height: 36px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12.5px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(15, 17, 35, .08);
+}
+/* Asegurar que las thumbnails dentro del chat NO tengan shadow del DS */
+.obs-chat .naowee-thumbnail {
+  box-shadow: none;
+  align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  flex-shrink: 0;
 }
 .obs-chat__bubble {
   background: var(--surface, #fff);
@@ -4217,23 +4226,8 @@ body > .naowee-dropdown__menu.is-open {
   font-size: 12.5px; font-weight: 700;
   color: var(--text-primary, #282834);
 }
-.obs-chat__rol {
-  background: var(--orange-bg, #fff3e6);
-  color: var(--accent, #d74009);
-  padding: 2px 7px; border-radius: 999px;
-  font-size: 10px; font-weight: 700; letter-spacing: .3px;
-  text-transform: uppercase;
-}
-.obs-chat__tag {
-  background: #f5f6fa;
-  color: var(--text-secondary, #646587);
-  padding: 1px 6px; border-radius: 4px;
-  font-size: 10.5px; font-weight: 600;
-}
-.obs-chat__tag--accent {
-  background: #fff0ee;
-  color: #b42318;
-}
+/* obs-chat__rol y obs-chat__tag legacy (mantenidos para fallback).
+   El render canónico usa .naowee-badge --quiet --small del DS. */
 .obs-chat__text {
   font-size: 13.5px; line-height: 1.5;
   color: var(--text-primary, #282834);

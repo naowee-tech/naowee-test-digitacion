@@ -86,8 +86,6 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
   <div class="naowee-message__content">
     <p class="naowee-message__text">${p.conceptoFavorabilidad?.observaciones || 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'}</p>
   </div>
-</div>rvaciones || 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'}</p>
-  </div>
 </div>
 </div>
 
@@ -107,8 +105,6 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
   </div>
   <div class="naowee-message__content">
     <p class="naowee-message__text">Al activar este proyecto se habilitará el formulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</p>
-  </div>
-</div>ulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</p>
   </div>
 </div>
 </div>
@@ -336,8 +332,6 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
     <p class="naowee-message__text">${isInfra
             ? 'Coordina con el municipio el diligenciamiento del Registro SUID del escenario para inventariar la infraestructura en el sistema nacional.'
             : 'El proyecto ahora se ejecuta bajo seguimiento. Las actas, avances y reportes financieros aparecerán en la Tabla de inversión.'}</p>
-  </div>
-</div>eguimiento. Las actas, avances y reportes financieros aparecerán en la Tabla de inversión.'}</p>
   </div>
 </div>
 </div>

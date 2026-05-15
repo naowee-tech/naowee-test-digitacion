@@ -456,8 +456,6 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
             ? 'El revisor RBI valida en los próximos 15 días hábiles. Recibirás notificación en tu panel cuando emita concepto.'
             : 'Completa las áreas restantes antes del vencimiento para reanudar la revisión.'}</p>
   </div>
-</div>          : 'Completa las áreas restantes antes del vencimiento para reanudar la revisión.'}</p>
-  </div>
 </div>
 </div>
       </div>

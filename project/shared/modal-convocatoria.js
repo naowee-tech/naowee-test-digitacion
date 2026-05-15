@@ -1510,8 +1510,6 @@ function stepRevisionTecnica() {
     <p class="naowee-message__text">Cada revisor del pool tiene asignadas 1–2 especialidades fijas. Si una
           especialidad no tiene revisor asignado, podrás definirlo desde el panel "Gestión de usuarios y áreas".</p>
   </div>
-</div>definirlo desde el panel "Gestión de usuarios y áreas".</p>
-  </div>
 </div>
     </div>
   `;

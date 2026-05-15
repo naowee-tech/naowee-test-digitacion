@@ -32,7 +32,7 @@
   const c = ProjectData.getConvocatorias().find(x => x.id === id);
 
   if (!c) {
-    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Convocatoria no encontrada</div><a class="naowee-btn naowee-btn--quiet" href="convocatorias.html">Volver</a></div>`;
+    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Convocatoria no encontrada</div>`;
   } else {
     const proyectos = ProjectData.getProyectos(p => p.convocatoriaId === c.id);
     const totalPresupuesto = proyectos.reduce((s, p) => s + (p.presupuesto || 0), 0);
@@ -113,7 +113,7 @@
     <p class="naowee-message__text">Los municipios fueron notificados. Las postulaciones aparecerán acá apenas se reciban.</p>
   </div>
 </div>
-</div>
+
         ` : ''}
 
         <!-- Bento grid: 4 cards (Período, Postulaciones, Notificación, Configuración).

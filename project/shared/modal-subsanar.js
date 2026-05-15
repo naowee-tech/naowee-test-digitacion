@@ -457,7 +457,7 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
             : 'Completa las áreas restantes antes del vencimiento para reanudar la revisión.'}</p>
   </div>
 </div>
-</div>
+
       </div>
     `;
     footer.innerHTML = `

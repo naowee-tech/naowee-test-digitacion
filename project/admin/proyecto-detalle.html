@@ -32,7 +32,7 @@
   const p = ProjectData.getProyecto(id);
 
   if (!p) {
-    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Proyecto no encontrado</div><a class="naowee-btn naowee-btn--quiet" href="proyectos.html">Volver</a></div>`;
+    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
   } else {
     const est = ESTADOS_POSTULACION[p.estado];
     const puedeActivar = p.estado === 'concepto_favorable';
@@ -207,7 +207,7 @@
     <p class="naowee-message__text">${mensajeFlujo}</p>
   </div>
 </div>
-</div>
+
 
             <div class="equipo-revisor__head">
               <div>

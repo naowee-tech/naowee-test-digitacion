@@ -41,9 +41,7 @@
   if (!p) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no encontrado</div>
-        <a class="naowee-btn naowee-btn--quiet" href="dashboard.html">Volver</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
   } else {
     const dias = diasRestantes(p.fechaDevolucion);
     const STEPS = [
@@ -82,7 +80,7 @@
     <p class="naowee-message__text">Si solicitas prórroga, el plazo se ampliará por hasta 15 días hábiles adicionales.</p>
   </div>
 </div>
-</div>
+
 
         <form id="formProrroga" class="wz-card" novalidate>
           <div class="wz-stepper-wrap">

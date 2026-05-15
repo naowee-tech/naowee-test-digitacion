@@ -410,9 +410,7 @@
   if (!p) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no encontrado</div>
-        <a class="naowee-btn naowee-btn--quiet" href="bandeja.html">Volver a la bandeja</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
   } else {
     const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'neutral' };
     const dias = p.estado === 'en_revision' ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion) : null;
@@ -557,7 +555,7 @@
     <p class="naowee-message__text">Estado actual: ${est.label}. La decisión de revisión ya no está disponible.</p>
   </div>
 </div>
-</div>
+
           `}
           </aside>
 
@@ -751,7 +749,7 @@
     <p class="naowee-message__text">${detail}</p>
   </div>
 </div>
-</div>
+
         `;
       }
 
@@ -774,7 +772,7 @@
     <p class="naowee-message__text">Indica por qué necesitas más tiempo. El admin verá tu motivo y aprobará o rechazará la solicitud.</p>
   </div>
 </div>
-</div>
+
               <label class="naowee-textfield naowee-textfield--multiline">
                 <span class="naowee-textfield__label naowee-textfield__label--required">Motivo de la solicitud</span>
                 <div class="naowee-textfield__input-wrap" style="height:auto;padding:12px;align-items:flex-start">

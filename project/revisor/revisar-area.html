@@ -428,9 +428,7 @@
   if (!p || !areaInfo) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Área no encontrada</div>
-        <a class="naowee-btn naowee-btn--quiet" href="doc-tecnica.html">Volver</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Área no encontrada</div>`;
   } else {
     const areaState = p.docsTecnica.areas.find(a => a.id === areaId);
     const e = ESTADOS_AREA[areaState.estado] || { label: areaState.estado, color: 'neutral' };
@@ -502,7 +500,7 @@
     <p class="naowee-message__text">Aprobada por <strong>${revisorDisplay()}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. La decisión es final — esta vista es solo de consulta.</p>
   </div>
 </div>
-</div>
+
           ` : devuelto ? `
             <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
   <div class="naowee-message__header">
@@ -513,7 +511,7 @@
     <p class="naowee-message__text">Devuelta por <strong>${revisorDisplay()}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. Esperando subsanación del municipio. Esta vista es solo de consulta.</p>
   </div>
 </div>
-</div>
+
           ` : bloqueado ? `
             <!-- Bloqueado: el área pertenece a otro revisor del equipo. Vista de consulta. -->
             <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
@@ -581,12 +579,6 @@
                       <div class="ra-doc-row__main">
                         <div class="ra-doc-row__name">${d.nombre}</div>
                         <div class="ra-doc-row__meta">${d.archivo} · ${Math.round((d.size || 0) / 1024)} KB${d.subidoEn ? ' · cargado ' + new Date(d.subidoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</div>
-                      </div>
-                      <a class="ra-doc-row__action" href="#" onclick="event.preventDefault();" title="Descargar / abrir en visor (demo)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Abrir
-                      </a>
-                    </div>
                   `).join('')}
                 </div>
               </section>

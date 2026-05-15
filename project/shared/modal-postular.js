@@ -768,7 +768,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
     <p class="naowee-message__text">Tu postulación entró al ciclo de revisión de <strong>Requisitos Básicos Indispensables (RBI)</strong>. El revisor del Ministerio tiene 15 días hábiles para validarla. Si la aprueba, el equipo técnico revisará cada área en paralelo. Si la devuelve, podrás subsanar en 15 días hábiles.</p>
   </div>
 </div>
-</div>
+
       </div>
     `;
 

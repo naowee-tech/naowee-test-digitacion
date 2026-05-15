@@ -131,10 +131,7 @@
   if (!p || !['en_inversion', 'concepto_favorable'].includes(p.estado)) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no disponible para crear inversión</div>
-        <p class="naowee-empty-state__msg">El proyecto debe tener concepto favorable o estar en inversión para crear el formulario completo.</p>
-        <a class="naowee-btn naowee-btn--quiet" href="inversion.html">Volver a inversión</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no disponible para crear inversión</div>`;
   } else {
     const isInfra = p.tipo === 'infraestructura';
     const yaExiste = !!p.proyectoInversion;
@@ -208,7 +205,7 @@
     <p class="naowee-message__text">Este proyecto se creó el ${formatoFecha(p.proyectoInversion?.creadoEn)}. Los cambios quedarán en el historial de modificaciones.</p>
   </div>
 </div>
-</div>
+
         ` : ''}
 
         <form id="formIC" class="wz-card" novalidate>

@@ -387,9 +387,7 @@
     document.getElementById('pageContent').innerHTML = `
       <div class="naowee-empty-state">
         <div class="naowee-empty-state__title">Proyecto no apto para Registro SUID</div>
-        <div class="naowee-empty-state__msg">Solo proyectos en estado <strong>En inversión</strong> de tipo Infraestructura pueden registrar escenario.</div>
-        <a class="naowee-btn naowee-btn--quiet" href="inversion.html">Volver a tabla de inversión</a>
-      </div>`;
+        <div class="naowee-empty-state__msg">Solo proyectos en estado <strong>En inversión</strong> de tipo Infraestructura pueden registrar escenario.</div>`;
   } else {
     const suidCode = p.inversion?.suidEscenario
       || p.registroSuid?.codigo

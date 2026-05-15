@@ -87,7 +87,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
     <p class="naowee-message__text">${p.conceptoFavorabilidad?.observaciones || 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'}</p>
   </div>
 </div>
-</div>
+
 
             <div class="ai-section-title">Datos de la inversión</div>
             <div class="ai-grid-2">
@@ -107,7 +107,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
     <p class="naowee-message__text">Al activar este proyecto se habilitará el formulario de Registro de Escenarios para inventariar la infraestructura en el sistema nacional.</p>
   </div>
 </div>
-</div>
+
               <div class="ai-section-title">SUID (opcional)</div>
               <div class="ai-grid-1">
                 ${textfield({ label: 'Código SUID', name: 'suid', placeholder: 'SUID-CHO-XXX-001', helper: 'Se puede asignar después' })}
@@ -334,7 +334,7 @@ export function openActivarInversionModal({ proyectoId, onActivado } = {}) {
             : 'El proyecto ahora se ejecuta bajo seguimiento. Las actas, avances y reportes financieros aparecerán en la Tabla de inversión.'}</p>
   </div>
 </div>
-</div>
+
       </div>
     `;
 

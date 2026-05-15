@@ -92,9 +92,7 @@
   if (!c) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>
-        <a class="naowee-btn naowee-btn--quiet" href="convocatorias.html">Volver al listado</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>`;
   } else {
     if (!c.notificacion) c.notificacion = ProjectData.defaultNotificacion(c);
 

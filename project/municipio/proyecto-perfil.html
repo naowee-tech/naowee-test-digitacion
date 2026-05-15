@@ -38,9 +38,7 @@
   if (!p) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no encontrado</div>
-        <a class="naowee-btn naowee-btn--quiet" href="proyectos.html">Volver</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
   } else {
     const est = ESTADOS_POSTULACION[p.estado];
     const dias = p.estado === 'en_revision' || p.estado === 'presentado'

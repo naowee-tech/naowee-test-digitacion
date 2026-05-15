@@ -1511,7 +1511,6 @@ function stepRevisionTecnica() {
           especialidad no tiene revisor asignado, podrás definirlo desde el panel "Gestión de usuarios y áreas".</p>
   </div>
 </div>
-    </div>
   `;
 }
 

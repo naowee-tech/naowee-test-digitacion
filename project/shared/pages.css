@@ -347,14 +347,16 @@
 .convo-bento {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  grid-template-rows: auto auto auto;
+  grid-template-rows: auto auto;
   gap: 12px;
   margin-bottom: 22px;
 }
-.bento-card--periodo  { grid-column: 1; grid-row: 1 / span 3; }
+.bento-card--periodo  { grid-column: 1; grid-row: 1 / span 2; }
 .bento-card--kpi      { grid-column: 2; grid-row: 1; }
-.bento-card--notif    { grid-column: 2; grid-row: 2; }
-.bento-card--config   { grid-column: 2; grid-row: 3; }
+.bento-card--config   { grid-column: 2; grid-row: 2; }
+/* La card --notif se suprimió de convocatoria-detalle (Doug 15/05).
+   El CSS permanece disponible por si otra página la usa.        */
+.bento-card--notif    { grid-column: 2; grid-row: auto; }
 @media (max-width: 900px) {
   .convo-bento { grid-template-columns: 1fr; grid-template-rows: none; }
   .bento-card--periodo, .bento-card--kpi, .bento-card--notif, .bento-card--config {

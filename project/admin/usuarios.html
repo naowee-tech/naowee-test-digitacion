@@ -7,21 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516f">
+<link rel="stylesheet" href="../shared/pages.css?v=20260516g">
 <style>
-  /* ─── Tabs DS dentro del .naowee-table-card ─── */
-  /* Doug 15/05: el divider bajo los tabs debe ir edge-to-edge con el card.
-     Padding lateral mantiene los labels alineados con el contenido,
-     pero el border-bottom se extiende a los bordes vía pseudoelemento. */
-  .usuarios-card .naowee-tabs {
-    position: relative;
-    padding: 0 32px; margin: 0;
-  }
-  .usuarios-card .naowee-tabs::after {
-    content: '';
-    position: absolute; left: 0; right: 0; bottom: 0;
-    height: 1px; background: var(--border);
-  }
+  /* ─── Tabs DS dentro del .naowee-table-card ───
+     Doug 15/05: el DS ya provee el patrón edge-to-edge con negative margin
+     (.naowee-table-card .naowee-tabs { margin: 0 -20px; padding: 0 20px; }).
+     No overrideamos margin/padding — sólo permitimos que el card no recorte. */
   .usuarios-panel { display: none; animation: tabFadeIn .25s ease both; }
   .usuarios-panel.is-active { display: block; }
   @keyframes tabFadeIn {
@@ -410,7 +401,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516f';
+  import { mountShell } from '../shared/shell.js?v=20260516g';
   import { toast } from '../shared/toast.js';
   import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
   ProjectData.setPerfil('admin');

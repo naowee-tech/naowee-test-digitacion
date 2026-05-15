@@ -4411,6 +4411,9 @@ body > .naowee-dropdown__menu.is-open {
   background: var(--green, #15803d);
   transition: width .4s cubic-bezier(.4, 0, .2, 1);
 }
+/* Legacy .subs-obs (deprecated 16/05/2026) — reemplazado por .subs-obs-item
+   smart accordion. Se mantiene por backward-compat si algún consumer aún
+   referencia el class. */
 .subs-obs {
   border-left: 3px solid var(--accent, #d74009);
   padding-left: 14px;
@@ -4431,6 +4434,172 @@ body > .naowee-dropdown__menu.is-open {
   color: var(--text-primary);
   margin: 0 0 10px;
   font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   .subs-obs-item — Smart accordion para subsanar (Doug 16/05/2026)
+   ═══════════════════════════════════════════════════════════════════
+   Reemplaza el listado vertical de .subs-obs con un patrón details/summary
+   colapsable. Auto-progression UX:
+     - Primer pendiente abierto al mount
+     - Click "Marcar subsanada" → collapse done + auto-open next pendiente
+     - Smooth scroll al next
+     - State done: bg verde + número con check + título tachado sutil
+     - Editar (re-click header) reabre y permite re-marcar */
+.subs-obs-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: var(--surface, #fff);
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+.subs-obs-item:not([open]):hover {
+  border-color: var(--border-dark);
+}
+.subs-obs-item[open] {
+  border-color: var(--accent, #d74009);
+  box-shadow: 0 4px 12px -4px rgba(215, 64, 9, .12);
+}
+.subs-obs-item--done {
+  border-color: var(--green-border, #b7dfb9) !important;
+  background: #fafdfa;
+  box-shadow: none !important;
+}
+
+/* Header (clickable summary) */
+.subs-obs-item__head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  transition: background .12s;
+}
+.subs-obs-item__head::-webkit-details-marker,
+.subs-obs-item__head::marker { display: none; }
+.subs-obs-item__head:hover { background: #fafbff; }
+.subs-obs-item--done .subs-obs-item__head:hover { background: #f4faf5; }
+
+/* Numero circular - naranja vacío default · verde con check cuando done */
+.subs-obs-item__num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11.5px; font-weight: 700;
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+  flex-shrink: 0;
+  border: 1.5px solid transparent;
+  transition: all .15s;
+}
+.subs-obs-item--done .subs-obs-item__num {
+  background: var(--green, #1f8923);
+  color: #fff;
+  border-color: var(--green, #1f8923);
+}
+.subs-obs-item--done .subs-obs-item__num-text { display: none; }
+.subs-obs-item__num-check { display: none; }
+.subs-obs-item--done .subs-obs-item__num-check { display: block; }
+.subs-obs-item__num-check svg { width: 14px; height: 14px; }
+
+/* Head body: title + ref stacked */
+.subs-obs-item__head-body {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.subs-obs-item__title {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.subs-obs-item--done .subs-obs-item__title {
+  color: var(--text-secondary);
+}
+.subs-obs-item__ref {
+  font-size: 10.5px; color: var(--text-secondary);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: .2px;
+}
+
+/* Status pill en el header */
+.subs-obs-item__status {
+  font-size: 10px; font-weight: 700; letter-spacing: .35px;
+  text-transform: uppercase; padding: 3px 9px;
+  border-radius: var(--radius-full, 9999px);
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.subs-obs-item__status--pendiente {
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+}
+.subs-obs-item__status--done {
+  background: var(--green-bg, #e6f4e7);
+  color: var(--green, #1f8923);
+}
+.subs-obs-item__status svg { width: 10px; height: 10px; }
+
+/* Chevron rotativo */
+.subs-obs-item__chev {
+  width: 18px; height: 18px;
+  color: var(--text-secondary);
+  transition: transform .25s cubic-bezier(.32,.72,0,1);
+  flex-shrink: 0;
+}
+.subs-obs-item[open] .subs-obs-item__chev { transform: rotate(180deg); }
+
+/* Body expandible */
+.subs-obs-item__body {
+  padding: 14px 16px 16px;
+  border-top: 1px dashed var(--border);
+  background: var(--surface, #fff);
+}
+
+/* Detalle de la observación (cita destacada) */
+.subs-obs-item__detalle {
+  font-size: 13px; line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  background: var(--orange-bg, #fff3e6);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--accent);
+}
+
+/* CTA "Marcar como subsanada" inline */
+.subs-obs-item__mark {
+  margin-top: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  background: var(--green, #15803d);
+  color: #fff;
+  border: 0;
+  border-radius: var(--radius-md);
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .12s, box-shadow .15s, opacity .15s;
+}
+.subs-obs-item__mark:hover:not(:disabled) {
+  background: #166f30;
+  box-shadow: 0 4px 10px rgba(21, 128, 61, .25);
+  transform: translateY(-1px);
+}
+.subs-obs-item__mark:disabled {
+  background: #c9c9d1;
+  cursor: not-allowed;
+  opacity: .7;
+}
+.subs-obs-item__mark svg { width: 13px; height: 13px; }
+.subs-obs-item--done .subs-obs-item__mark {
+  /* Cuando está done y reabierto, el botón muestra "Actualizar" en azul info */
+  background: var(--blue-info, #1f78d1);
+}
+.subs-obs-item--done .subs-obs-item__mark:hover:not(:disabled) {
+  background: #1864a8;
+  box-shadow: 0 4px 10px rgba(31, 120, 209, .25);
 }
 /* Summary en modal: sin sticky (el modal__body es scroll independiente) */
 .subs-summary--in-modal {

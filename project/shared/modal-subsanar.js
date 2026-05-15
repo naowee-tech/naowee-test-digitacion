@@ -161,17 +161,39 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
                   </div>
                   <div class="subs-area__progress"><span data-progress style="width:0%"></span></div>
                   <div class="subs-area__body">
-                    ${areaObs.map(o => `
-                      <div class="subs-obs">
-                        <div class="subs-obs__head">
-                          <span class="subs-obs__chip">${o.tipo || 'Observación'}</span>
-                          <span class="subs-obs__ref">${o.ref ? `Ref. ${o.ref} · ` : ''}${formatoFecha(o.ts)}</span>
-                        </div>
-                        <p class="subs-obs__body">${o.detalle || ''}</p>
-                        ${textarea({ label: 'Tu respuesta', name: `respuesta_${o.idx}`, required: true, placeholder: 'Describe cómo se subsanó esta observación…', maxlength: 1000, rows: 3 })}
-                        ${fileUpload({ name: `soporte_${o.idx}`, label: 'Documento de soporte (opcional)', accept: '.pdf,.jpg,.jpeg,.png', maxSize: 20 })}
-                      </div>
-                    `).join('')}
+                    ${areaObs.map((o, i) => {
+                      /* Doug 16/05/2026: smart accordion. Truncar el detalle
+                         a la primera oración para el header, mostrar completo
+                         dentro del body como "cita destacada". */
+                      const titleShort = (o.detalle || 'Observación').split('.')[0].slice(0, 80) || 'Observación';
+                      return `
+                        <details class="subs-obs-item" data-obs-idx="${o.idx}">
+                          <summary class="subs-obs-item__head">
+                            <span class="subs-obs-item__num">
+                              <span class="subs-obs-item__num-text">${i + 1}</span>
+                              <span class="subs-obs-item__num-check">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              </span>
+                            </span>
+                            <div class="subs-obs-item__head-body">
+                              <div class="subs-obs-item__title" title="${o.detalle || ''}">${titleShort}</div>
+                              <div class="subs-obs-item__ref">${o.ref ? `Ref. ${o.ref} · ` : ''}${formatoFecha(o.ts)}</div>
+                            </div>
+                            <span class="subs-obs-item__status subs-obs-item__status--pendiente" data-obs-status>Pendiente</span>
+                            <svg class="subs-obs-item__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                          </summary>
+                          <div class="subs-obs-item__body">
+                            <div class="subs-obs-item__detalle">${o.detalle || ''}</div>
+                            ${textarea({ label: 'Tu respuesta', name: `respuesta_${o.idx}`, required: true, placeholder: 'Describe cómo se subsanó esta observación…', maxlength: 1000, rows: 3 })}
+                            ${fileUpload({ name: `soporte_${o.idx}`, label: 'Documento de soporte (opcional)', accept: '.pdf,.jpg,.jpeg,.png', maxSize: 20 })}
+                            <button type="button" class="subs-obs-item__mark" data-mark-subsanada disabled>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              <span data-mark-label>Marcar como subsanada</span>
+                            </button>
+                          </div>
+                        </details>
+                      `;
+                    }).join('')}
                   </div>
                 </div>
               `;
@@ -200,7 +222,14 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
   bindFileUploads(form);
   bindValidationReset(form);
 
-  /* Estado por-área: progreso + chip dinámico */
+  /* ═══ Smart accordion: primer pendiente abierto, resto closed ═══ */
+  const allItems = Array.from(form.querySelectorAll('.subs-obs-item'));
+  if (allItems[0]) allItems[0].open = true;
+
+  /* ═══ Estado por-área: cuenta items con .subs-obs-item--done ═══
+     Doug 16/05/2026: cambio de criterio — antes era textarea.length >= 10
+     (auto-detected). Ahora es explícito vía "Marcar como subsanada" para
+     dar control al user + momento celebratorio cuando avanza. */
   function updateAreaStatus() {
     let totalSubsanadas = 0;
     const totalObs = observaciones.length;
@@ -208,11 +237,11 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
       const areaObs = obsPorArea[areaKey];
       const card = form.querySelector(`.subs-area[data-area="${areaKey}"]`);
       if (!card) return;
-      const respondidas = areaObs.filter(o => {
-        const ta = form.querySelector(`textarea[name="respuesta_${o.idx}"]`);
-        return ta && ta.value.trim().length >= 10;
+      const subsanadas = areaObs.filter(o => {
+        const item = card.querySelector(`.subs-obs-item[data-obs-idx="${o.idx}"]`);
+        return item?.classList.contains('subs-obs-item--done');
       }).length;
-      const pct = areaObs.length ? (respondidas / areaObs.length) * 100 : 0;
+      const pct = areaObs.length ? (subsanadas / areaObs.length) * 100 : 0;
       card.querySelector('[data-progress]').style.width = pct + '%';
       const chip = card.querySelector('[data-status]');
       card.classList.toggle('is-complete', pct === 100);
@@ -220,20 +249,72 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
       if (pct === 100) {
         chip.className = 'subs-area__status subs-area__status--completa';
         chip.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:4px;vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg>Lista para reenviar';
-        totalSubsanadas += areaObs.length;
       } else if (pct > 0) {
         chip.className = 'subs-area__status subs-area__status--parcial';
-        chip.textContent = `${respondidas}/${areaObs.length} parcial`;
-        totalSubsanadas += respondidas;
+        chip.textContent = `${subsanadas}/${areaObs.length} parcial`;
       } else {
         chip.className = 'subs-area__status subs-area__status--pendiente';
         chip.textContent = 'Pendiente';
       }
+      totalSubsanadas += subsanadas;
     });
     overlay.querySelector('#statsSubsanadas').textContent = totalSubsanadas;
     overlay.querySelector('#statsPendientes').textContent = totalObs - totalSubsanadas;
+    /* Bloquear "Continuar" hasta tener todo subsanado */
+    updateContinueBtn(totalSubsanadas === totalObs);
   }
-  form.addEventListener('input', updateAreaStatus);
+  function updateContinueBtn(allDone) {
+    const btn = overlay.querySelector('#subsBtnNext');
+    if (!btn) return;
+    btn.disabled = !allDone;
+    btn.title = allDone ? '' : 'Marca todas las observaciones como subsanadas para continuar';
+    btn.style.opacity = allDone ? '' : '.5';
+    btn.style.cursor = allDone ? '' : 'not-allowed';
+  }
+
+  /* Enable "Marcar subsanada" cuando textarea tiene ≥10 chars */
+  form.addEventListener('input', (e) => {
+    if (e.target.matches('textarea[name^="respuesta_"]')) {
+      const item = e.target.closest('.subs-obs-item');
+      const btn = item?.querySelector('[data-mark-subsanada]');
+      if (btn) btn.disabled = e.target.value.trim().length < 10;
+      /* Si el item ya estaba done y user editó → el botón cambia a "Actualizar" */
+      const lbl = item?.querySelector('[data-mark-label]');
+      if (lbl && item.classList.contains('subs-obs-item--done')) {
+        lbl.textContent = 'Actualizar respuesta';
+      }
+    }
+  });
+
+  /* Click "Marcar subsanada" → mark done + collapse + auto-open next pendiente */
+  form.addEventListener('click', (e) => {
+    const markBtn = e.target.closest('[data-mark-subsanada]');
+    if (!markBtn || markBtn.disabled) return;
+    e.preventDefault();
+    const item = markBtn.closest('.subs-obs-item');
+    if (!item) return;
+    /* Marcar como done visualmente */
+    item.classList.add('subs-obs-item--done');
+    const status = item.querySelector('[data-obs-status]');
+    status.className = 'subs-obs-item__status subs-obs-item__status--done';
+    status.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Subsanada';
+    /* Reset label del botón a "Actualizar" para próximas ediciones */
+    const lbl = markBtn.querySelector('[data-mark-label]');
+    if (lbl) lbl.textContent = 'Actualizar respuesta';
+    /* Collapse current */
+    item.open = false;
+    /* Update stats + buttons */
+    updateAreaStatus();
+    /* Auto-open next pendiente con smooth scroll */
+    const next = allItems.find(it => !it.classList.contains('subs-obs-item--done') && !it.open);
+    if (next) {
+      next.open = true;
+      setTimeout(() => {
+        next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 120);
+    }
+  });
+
   updateAreaStatus();
 
   /* Navegación de pasos */

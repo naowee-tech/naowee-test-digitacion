@@ -171,8 +171,8 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
                           <summary class="subs-obs-item__head">
                             <span class="subs-obs-item__num">
                               <span class="subs-obs-item__num-text">${i + 1}</span>
-                              <span class="subs-obs-item__num-check">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              <span class="subs-obs-item__num-check" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                               </span>
                             </span>
                             <div class="subs-obs-item__head-body">
@@ -183,13 +183,14 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
                             <svg class="subs-obs-item__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                           </summary>
                           <div class="subs-obs-item__body">
-                            <div class="subs-obs-item__detalle">${o.detalle || ''}</div>
-                            ${textarea({ label: 'Tu respuesta', name: `respuesta_${o.idx}`, required: true, placeholder: 'Describe cómo se subsanó esta observación…', maxlength: 1000, rows: 3 })}
-                            ${fileUpload({ name: `soporte_${o.idx}`, label: 'Documento de soporte (opcional)', accept: '.pdf,.jpg,.jpeg,.png', maxSize: 20 })}
-                            <button type="button" class="subs-obs-item__mark" data-mark-subsanada disabled>
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                              <span data-mark-label>Marcar como subsanada</span>
-                            </button>
+                            ${fileUpload({ name: `soporte_${o.idx}`, label: 'Documento corregido', required: true, accept: '.pdf,.jpg,.jpeg,.png', maxSize: 20 })}
+                            ${textarea({ label: 'Nota para el revisor', name: `respuesta_${o.idx}`, required: false, placeholder: 'Aclara qué se corrigió o agrega contexto adicional (opcional)…', maxlength: 1000, rows: 3 })}
+                            <div class="subs-obs-item__actions">
+                              <button type="button" class="subs-obs-item__mark" data-mark-subsanada disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                Marcar como subsanada
+                              </button>
+                            </div>
                           </div>
                         </details>
                       `;
@@ -272,40 +273,34 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
     btn.style.cursor = allDone ? '' : 'not-allowed';
   }
 
-  /* Enable "Marcar subsanada" cuando textarea tiene ≥10 chars */
-  form.addEventListener('input', (e) => {
-    if (e.target.matches('textarea[name^="respuesta_"]')) {
+  /* Enable "Marcar subsanada" cuando hay archivo adjunto.
+     Doug 17/05/2026: el documento es lo que importa al revisor, la nota
+     queda opcional para aclarar contexto. */
+  form.addEventListener('change', (e) => {
+    if (e.target.matches('input[type="file"][name^="soporte_"]')) {
       const item = e.target.closest('.subs-obs-item');
       const btn = item?.querySelector('[data-mark-subsanada]');
-      if (btn) btn.disabled = e.target.value.trim().length < 10;
-      /* Si el item ya estaba done y user editó → el botón cambia a "Actualizar" */
-      const lbl = item?.querySelector('[data-mark-label]');
-      if (lbl && item.classList.contains('subs-obs-item--done')) {
-        lbl.textContent = 'Actualizar respuesta';
-      }
+      if (!btn) return;
+      btn.disabled = !e.target.files || e.target.files.length === 0;
     }
   });
 
-  /* Click "Marcar subsanada" → mark done + collapse + auto-open next pendiente */
+  /* Click "Marcar subsanada" → mark done + collapse + auto-open next pendiente.
+     Doug 17/05/2026: removido el estado "Actualizar respuesta" (botón azul).
+     El item queda done; si el user lo reabre puede editar libremente y el
+     CTA mantiene la misma acción. */
   form.addEventListener('click', (e) => {
     const markBtn = e.target.closest('[data-mark-subsanada]');
     if (!markBtn || markBtn.disabled) return;
     e.preventDefault();
     const item = markBtn.closest('.subs-obs-item');
     if (!item) return;
-    /* Marcar como done visualmente */
     item.classList.add('subs-obs-item--done');
     const status = item.querySelector('[data-obs-status]');
     status.className = 'subs-obs-item__status subs-obs-item__status--done';
     status.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Subsanada';
-    /* Reset label del botón a "Actualizar" para próximas ediciones */
-    const lbl = markBtn.querySelector('[data-mark-label]');
-    if (lbl) lbl.textContent = 'Actualizar respuesta';
-    /* Collapse current */
     item.open = false;
-    /* Update stats + buttons */
     updateAreaStatus();
-    /* Auto-open next pendiente con smooth scroll */
     const next = allItems.find(it => !it.classList.contains('subs-obs-item--done') && !it.open);
     if (next) {
       next.open = true;
@@ -362,24 +357,76 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
     });
   });
 
-  /* Review agrupado por área */
+  /* Review agrupado por área (paso 2 readonly).
+     Doug 17/05/2026: redesign UX/UI — cada observación es una row con
+     check verde, detalle, archivo destacado tipo chip + nota opcional como
+     cita gris. El header del grupo lleva un badge "Listo para enviar" si
+     todas las obs del área están done. */
   function buildReview() {
     const fd = new FormData(form);
-    const groups = areas.map(areaKey => {
+    const escape = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const formatBytes = (b) => {
+      if (!b) return '';
+      if (b < 1024) return `${b} B`;
+      if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+      return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+    };
+    const html = areas.map(areaKey => {
       const areaObs = obsPorArea[areaKey];
-      const rows = [];
-      areaObs.forEach((o, i) => {
-        const resp = fd.get(`respuesta_${o.idx}`) || '';
+      const totalDone = areaObs.filter(o => {
+        const item = form.querySelector(`.subs-obs-item[data-obs-idx="${o.idx}"]`);
+        return item?.classList.contains('subs-obs-item--done');
+      }).length;
+      const allDone = totalDone === areaObs.length;
+      const items = areaObs.map((o, i) => {
+        const resp = (fd.get(`respuesta_${o.idx}`) || '').toString().trim();
         const sop = fd.get(`soporte_${o.idx}`);
-        rows.push([
-          `${i + 1}. ${(o.detalle || '—').slice(0, 100)}${(o.detalle || '').length > 100 ? '…' : ''}`,
-          `<div style="font-size:13px;color:var(--text-primary)">${resp.slice(0, 300) || '<span style="color:var(--text-secondary);font-style:italic">Sin respuesta</span>'}</div>
-           ${sop?.name ? `<div style="margin-top:4px;font-size:11px;color:var(--accent)">📎 ${sop.name}</div>` : ''}`
-        ]);
-      });
-      return { title: `${AREA_NOMBRES[areaKey] || areaKey} · ${areaObs.length} obs.`, rows };
-    });
-    overlay.querySelector('#subsReviewBox').innerHTML = renderReview(groups);
+        const sopName = sop?.name || '';
+        const sopSize = sop?.size ? ` · ${formatBytes(sop.size)}` : '';
+        return `
+          <li class="subs-review__item">
+            <span class="subs-review__num" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div class="subs-review__body">
+              <div class="subs-review__obs"><span class="subs-review__obs-num">${i + 1}.</span> ${escape(o.detalle || '—')}</div>
+              ${sopName ? `
+                <div class="subs-review__file">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                  <span class="subs-review__file-name">${escape(sopName)}</span>
+                  <span class="subs-review__file-size">${escape(sopSize)}</span>
+                </div>
+              ` : `
+                <div class="subs-review__file subs-review__file--missing">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>Sin documento adjunto</span>
+                </div>
+              `}
+              ${resp ? `<div class="subs-review__note">${escape(resp)}</div>` : ''}
+            </div>
+          </li>
+        `;
+      }).join('');
+      return `
+        <div class="subs-review__group ${allDone ? 'is-complete' : ''}">
+          <div class="subs-review__group-head">
+            <span class="subs-review__group-icon">${AREA_ICONS[areaKey] || AREA_ICONS.general}</span>
+            <div class="subs-review__group-info">
+              <div class="subs-review__group-title">${AREA_NOMBRES[areaKey] || areaKey}</div>
+              <div class="subs-review__group-meta">${totalDone} de ${areaObs.length} ${areaObs.length === 1 ? 'observación subsanada' : 'observaciones subsanadas'}</div>
+            </div>
+            <span class="naowee-badge ${allDone ? 'naowee-badge--positive' : 'naowee-badge--caution'} naowee-badge--small">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                ${allDone ? '<polyline points="20 6 9 17 4 12"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
+              </svg>
+              ${allDone ? 'Listo para enviar' : 'Incompleto'}
+            </span>
+          </div>
+          <ol class="subs-review__list">${items}</ol>
+        </div>
+      `;
+    }).join('');
+    overlay.querySelector('#subsReviewBox').innerHTML = `<div class="subs-review">${html}</div>`;
   }
 
   /* Envío con persistencia por-área */
@@ -389,11 +436,15 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
     const areasEnviadas = [];
     const areasParciales = [];
 
+    /* Doug 17/05/2026: criterio de "respondida" cambió de
+       textarea.length >= 10 a la clase .subs-obs-item--done (set explícito
+       por el user vía "Marcar como subsanada"). El documento es ahora
+       el campo mandatorio, la nota es opcional. */
     areas.forEach(areaKey => {
       const areaObs = obsPorArea[areaKey];
       const respondidas = areaObs.filter(o => {
-        const r = fd.get(`respuesta_${o.idx}`) || '';
-        return r.trim().length >= 10;
+        const item = form.querySelector(`.subs-obs-item[data-obs-idx="${o.idx}"]`);
+        return item?.classList.contains('subs-obs-item--done');
       });
       if (respondidas.length === areaObs.length) {
         areasEnviadas.push({ key: areaKey, nombre: AREA_NOMBRES[areaKey], count: respondidas.length });
@@ -418,22 +469,28 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
     const respuestasPersist = [];
     const adjuntosPersist = [];
     observaciones.forEach((o, idx) => {
+      const item = form.querySelector(`.subs-obs-item[data-obs-idx="${idx}"]`);
+      const isDone = item?.classList.contains('subs-obs-item--done');
+      if (!isDone) return;
       const resp = (fd.get(`respuesta_${idx}`) || '').toString().trim();
       const soporte = fd.get(`soporte_${idx}`);
-      if (resp.length >= 10) {
-        respuestasPersist.push({
-          ts: ahora,
-          autor: 'municipio',
-          autorNombre: muniNombre,
-          autorAvatar: muniAvatar,
-          autorColor: '#1f78d1',
-          autorRol: 'Municipio',
-          area: o.area || 'general',
-          tipo: 'Respuesta del municipio',
-          replyToTs: o.ts,
-          detalle: resp
-        });
-      }
+      /* Persist siempre la respuesta cuando el item está done. Si el
+         municipio no escribió nota, generamos una entrada por defecto que
+         menciona el documento corregido (que sí es el mandatorio). */
+      respuestasPersist.push({
+        ts: ahora,
+        autor: 'municipio',
+        autorNombre: muniNombre,
+        autorAvatar: muniAvatar,
+        autorColor: '#1f78d1',
+        autorRol: 'Municipio',
+        area: o.area || 'general',
+        tipo: 'Respuesta del municipio',
+        replyToTs: o.ts,
+        detalle: resp || (soporte?.name
+          ? `Documento corregido adjunto: ${soporte.name}.`
+          : 'Observación marcada como subsanada por el municipio.')
+      });
       if (soporte?.name) {
         adjuntosPersist.push({
           id: `subs-${idx}-${Date.now()}`,

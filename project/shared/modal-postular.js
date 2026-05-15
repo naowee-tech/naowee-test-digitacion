@@ -759,7 +759,7 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
           `).join('')}
         </ul>
 
-        <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px">
+        <div class="naowee-message naowee-message--informative" role="status" style="margin-top:18px;text-align:left">
   <div class="naowee-message__header">
     <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
     <span class="naowee-message__title">Siguiente paso</span>

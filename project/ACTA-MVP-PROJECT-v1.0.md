@@ -11,13 +11,23 @@
 | Campo | Valor |
 |---|---|
 | Producto | **Naowee Project** — módulo de gestión de proyectos de inversión |
-| Versión | **v1.0** (primera entrega formal end-to-end) |
+| Versión oficial | **`project-v2.0.0`** · MVP entregada a desarrollo |
 | Fecha | 17 mayo 2026 |
 | Branch | `project/refinements-validation-suite` |
+| Tag git | `project-v2.0.0` ([ver release](https://github.com/naowee-tech/naowee-test-digitacion/releases/tag/project-v2.0.0)) |
 | Pull Request | [#9 — naowee-tech/naowee-test-digitacion](https://github.com/naowee-tech/naowee-test-digitacion/pull/9) |
+| Demo Pages | https://naowee-tech.github.io/naowee-test-digitacion/project/index.html |
 | Demo local | `http://localhost:4700/index.html` |
 | Stack técnico | HTML + CSS + JS vanilla · Naowee DS v1.8.0 (CDN) · LocalStorage como backend simulado |
-| Documentos relacionados | `docs/V2-FLUJOS-POR-ROL.md` · `FLUJO-E2E.md` · `DEMO-SCRIPT-DEV-HANDOFF.md` |
+| Documentos relacionados | `CHANGELOG.md` · `docs/V2-FLUJOS-POR-ROL.md` · `FLUJO-E2E.md` · `DEMO-SCRIPT-DEV-HANDOFF.md` |
+
+> **Política de versionado** (acordada con Doug 17/05/2026):
+> - `v2.0.0` es la **MVP entregada a desarrollo**
+> - Cambios de **UI / UX** posteriores → **PATCH** (`v2.0.x`)
+> - **Sub-funcionalidades / mejoras internas** → **MINOR** (`v2.x.0`)
+> - **Nuevas funcionalidades top-level / breaking changes** → **MAJOR** (`v3.0.0+`)
+>
+> Detalle completo en [`CHANGELOG.md`](./CHANGELOG.md).
 
 ---
 

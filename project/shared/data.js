@@ -1816,6 +1816,35 @@ const ProjectData = (() => {
     });
   }
 
+  /* Doug 15/05/2026: admin puede invitar nuevos revisores al pool desde el
+     modal "Asignar revisores". Genera un id auto, avatar de iniciales, color
+     aleatorio del set DS, y los marca como invitados (estado: 'pending')
+     hasta que acepten — para la demo se considera activado al instante. */
+  const REVISOR_COLORS = ['#d74009','#1f78d1','#7c3aed','#0d7a83','#b45309','#15803d','#0369a1','#c2410c'];
+  function addRevisor(input) {
+    const id = `rev-${Date.now().toString(36)}`;
+    const nombre = (input.nombre || '').trim();
+    const initials = nombre.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase() || '??';
+    const color = REVISOR_COLORS[Math.floor(Math.random() * REVISOR_COLORS.length)];
+    const rev = {
+      id,
+      nombre,
+      tipo: input.tipo || 'tecnico',
+      especialidad: input.especialidad || (input.especialidades || []).join(' + ') || '—',
+      especialidades: input.especialidades || [],
+      email: input.email || null,
+      avatar: initials,
+      color,
+      cargaActiva: 0,
+      estado: input.estado || 'invitado'  /* invitado | activo | inactivo */
+    };
+    update(s => {
+      s.revisores = s.revisores || [];
+      s.revisores.push(rev);
+    });
+    return rev;
+  }
+
   /* ═══ Usuarios municipales (entidades territoriales) ═══
      Lista a la que se notifica cuando una convocatoria se abre. */
   function getUsuariosMunicipales(filter) {
@@ -1999,7 +2028,7 @@ const ProjectData = (() => {
     AREAS_CATALOG,
     solicitarProrrogaRBI, resolverProrrogaRBI, getProyectosConProrrogaPendiente,
     PRORROGA_DIAS_EXTRA,
-    getRevisores, getRevisor, setRevisor, getRevisorActivo, getRevisorPorArea,
+    getRevisores, getRevisor, setRevisor, addRevisor, getRevisorActivo, getRevisorPorArea,
     getRevisoresPorTipo,
     AREA_TO_SPECIALTY, SLA_DIAS_REVISION,
     getUsuariosMunicipales, getUsuarioMunicipal,

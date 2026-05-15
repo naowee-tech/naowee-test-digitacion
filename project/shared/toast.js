@@ -85,8 +85,11 @@ function ensureSnackbarRoot() {
     el.setAttribute('role', 'region');
     el.setAttribute('aria-label', 'Notificaciones');
     /* z-index 10001 → arriba del pill DEMO (9999) y de cualquier overlay del modal.
-       bottom: 88px deja espacio para que NO choque con el pill demo (que vive ~bottom: 22px). */
-    el.style.cssText = 'position:fixed;left:0;right:0;bottom:88px;display:flex;justify-content:center;z-index:10001;pointer-events:none';
+       bottom: 88px deja espacio para que NO choque con el pill demo (que vive ~bottom: 22px).
+       flex-direction:column-reverse + align-items:center → cada nuevo snackbar
+       aparece ABAJO (cerca del fondo). Los anteriores quedan apilados arriba
+       mientras animan fuera. gap:8px da respiración entre items apilados. */
+    el.style.cssText = 'position:fixed;left:0;right:0;bottom:88px;display:flex;flex-direction:column-reverse;align-items:center;gap:8px;z-index:10001;pointer-events:none';
     document.body.appendChild(el);
   }
   return el;
@@ -126,6 +129,17 @@ export function snackbar({ text, action = '', onAction, badge = true, duration =
     node.style.transition = 'opacity .22s ease-in, transform .22s ease-in';
     setTimeout(() => node.remove(), 240);
   };
+  /* Antes de añadir el nuevo, dispara el dismiss de los snackbars previos
+     que aún estén "vivos" (no marcados como leaving). Esto produce el efecto
+     "el anterior sale sutilmente" mientras el nuevo entra apilado debajo. */
+  root.querySelectorAll('.naowee-snackbar').forEach(prev => {
+    if (prev.dataset.leaving === 'true') return;
+    prev.dataset.leaving = 'true';
+    prev.style.opacity = '0';
+    prev.style.transform = 'translateY(-12px)';
+    prev.style.transition = 'opacity .25s ease-in, transform .28s ease-in';
+    setTimeout(() => prev.remove(), 280);
+  });
   root.appendChild(node);
   /* Force layout then enter — doble rAF garantiza que el browser pinte el estado inicial */
   requestAnimationFrame(() => requestAnimationFrame(() => {

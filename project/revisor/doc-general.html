@@ -19,7 +19,22 @@
     padding: 16px 22px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between; gap: 14px;
     background: linear-gradient(180deg, #fafbff 0%, var(--surface) 100%);
+    cursor: pointer; list-style: none;
+    transition: background .15s;
   }
+  .dg-bloque__head::-webkit-details-marker,
+  .dg-bloque__head::marker { display: none; }
+  .dg-bloque__head:hover { background: linear-gradient(180deg, #f5f6fa 0%, #fafbff 100%); }
+  /* Cuando está cerrado, el head no necesita borde inferior (no hay items debajo) */
+  .dg-bloque:not([open]) .dg-bloque__head { border-bottom: 0; }
+  .dg-bloque__chev {
+    width: 18px; height: 18px;
+    color: var(--text-secondary);
+    transition: transform .25s cubic-bezier(.32,.72,0,1);
+    flex-shrink: 0;
+  }
+  .dg-bloque[open] .dg-bloque__chev { transform: rotate(180deg); }
+  .dg-bloque__progress { margin-left: auto; }
   .dg-bloque__title {
     display: flex; align-items: center; gap: 10px;
     font-size: 14px; font-weight: 700; color: var(--text-primary);
@@ -52,6 +67,27 @@
     border-bottom: 1px solid var(--border);
     transition: background .15s;
   }
+  /* Acciones por item: download icon + toggle/pill agrupados */
+  .dg-item__actions {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .dg-item__download {
+    width: 34px; height: 34px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-dark, #d0d4e6);
+    background: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    color: var(--text-secondary);
+    transition: border-color .12s, background .12s, color .12s, transform .12s;
+  }
+  .dg-item__download:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--orange-bg, #fff3e6);
+  }
+  .dg-item__download:active { transform: scale(.94); }
+  .dg-item__download svg { width: 14px; height: 14px; }
   .dg-item:last-child { border-bottom: 0; }
   .dg-item:hover { background: #fafbff; }
   .dg-item__num {
@@ -272,7 +308,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260516b';
   import { formatoMoneda, fechaCorta } from '../shared/states.js';
-  import { toast } from '../shared/toast.js';
+  import { toast, snackbar } from '../shared/toast.js';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'doc-general' });
@@ -296,7 +332,9 @@
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
     x:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>'
+    flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    chev:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
   };
 
   /* Checklist Bloque 1+2 (Res. 933 de 2024) */
@@ -520,7 +558,7 @@
     <p class="naowee-message__text">Aprobada el ${fechaCorta(dg.aprobadoEn)}. El proyecto está listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</p>
   </div>
 </div>
-</div>
+
         ` : !esRevisorGeneral ? `
           <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
   <div class="naowee-message__header">
@@ -532,15 +570,17 @@
               ${revisorActivo ? `Estás logueado como <strong>${revisorActivo.nombre}</strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}</p>
   </div>
 </div>
-</div>
+
         ` : ''}
 
         ${CHECKLIST.map((bloque, i) => {
           const done = bloque.items.filter(it => ['cumple','nocumple','na'].includes(checklist[it.n])).length;
           const pct = Math.round((done / bloque.items.length) * 100);
+          /* Bloque colapsable nativo con <details>/<summary>. Abierto por
+             default; el usuario puede plegar para reducir scroll vertical. */
           return `
-            <section class="dg-bloque">
-              <div class="dg-bloque__head">
+            <details class="dg-bloque" open>
+              <summary class="dg-bloque__head">
                 <div class="dg-bloque__title">
                   <span class="dg-bloque__num">${i + 1}</span>
                   <span>${bloque.titulo}</span>
@@ -549,11 +589,16 @@
                   <div class="dg-bloque__progress-bar"><span style="width:${pct}%"></span></div>
                   <span class="dg-bloque__progress-text">${done} de ${bloque.items.length} verificados</span>
                 </div>
-              </div>
+                <span class="dg-bloque__chev" aria-hidden="true">${ICONS.chev}</span>
+              </summary>
               <div>
                 ${bloque.items.map(it => {
                   const sel = checklist[it.n];
                   const itemClass = sel === 'cumple' ? 'is-cumple' : sel === 'nocumple' ? 'is-nocumple' : sel === 'na' ? 'is-na' : '';
+                  /* Botón download disponible en ambos modos (read-only y editable):
+                     el revisor o el supervisor pueden necesitar descargar el adjunto
+                     en cualquier estado del proyecto. */
+                  const downloadBtn = `<button type="button" class="dg-item__download" data-download="${it.n}" title="Descargar documento adjunto" aria-label="Descargar adjunto del item ${it.n}">${ICONS.download}</button>`;
                   if (aprobado) {
                     /* Read-only: pill inline en lugar de toggle editable */
                     const pill = sel === 'cumple'   ? `<span class="dg-readonly-pill dg-readonly-pill--cumple">${ICONS.check} Cumple</span>`
@@ -567,7 +612,10 @@
                           <div class="dg-item__text">${it.item}</div>
                           <div class="dg-item__ref">${it.ref}</div>
                         </div>
-                        ${pill}
+                        <div class="dg-item__actions">
+                          ${downloadBtn}
+                          ${pill}
+                        </div>
                       </div>`;
                   }
                   return `
@@ -577,15 +625,18 @@
                         <div class="dg-item__text">${it.item}</div>
                         <div class="dg-item__ref">${it.ref}</div>
                       </div>
-                      <div class="dg-toggle" role="group">
-                        <button type="button" class="dg-toggle__btn ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple">${ICONS.check} Cumple</button>
-                        <button type="button" class="dg-toggle__btn ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple">${ICONS.x} No cumple</button>
-                        <button type="button" class="dg-toggle__btn ${sel === 'na' ? 'is-active--na' : ''}" data-r="na">N/A</button>
+                      <div class="dg-item__actions">
+                        ${downloadBtn}
+                        <div class="dg-toggle" role="group">
+                          <button type="button" class="dg-toggle__btn ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple">${ICONS.check} Cumple</button>
+                          <button type="button" class="dg-toggle__btn ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple">${ICONS.x} No cumple</button>
+                          <button type="button" class="dg-toggle__btn ${sel === 'na' ? 'is-active--na' : ''}" data-r="na">N/A</button>
+                        </div>
                       </div>
                     </div>`;
                 }).join('')}
               </div>
-            </section>
+            </details>
           `;
         }).join('')}
 
@@ -651,6 +702,22 @@
         bloqueEl.querySelector('.dg-bloque__progress-text').textContent = `${done} de ${bl.items.length} verificados`;
       });
     }
+
+    /* Click en download button — disponible en read-only y editable.
+       Mock: snackbar de confirmación. En producción: trigger fetch del adjunto
+       desde el storage del proyecto. */
+    document.querySelectorAll('.dg-item__download').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const n = btn.dataset.download;
+        const item = CHECKLIST.flatMap(b => b.items).find(it => String(it.n) === String(n));
+        const label = item ? item.item.replace(/\.$/, '').slice(0, 60) : `Adjunto ${n}`;
+        snackbar({
+          text: `Descargando: ${label}…`,
+          duration: 2500
+        });
+      });
+    });
 
     /* Click en cada toggle — solo en modo editable */
     if (!aprobado) document.querySelectorAll('.dg-item').forEach(itemEl => {

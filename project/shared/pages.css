@@ -534,6 +534,33 @@
   background: linear-gradient(90deg, var(--blue-bg, #eef5ff) 0%, #f7fbff 70%, var(--surface) 100%);
   border-top-color: #c7dbf7;
 }
+/* Doug 16/05/2026: variantes semánticas DS reutilizables (no domain-specific).
+   Usar: --positive para "asignada/aprobada", --caution para "devuelta/bloqueada",
+   --informative como alias de --abierta, --neutral como alias de --cerrada,
+   --negative como alias de --vencida. */
+.convo-status-cenefa--positive,
+.convo-status-cenefa--asignada {
+  background: linear-gradient(90deg, var(--green-bg, #e6f4e7) 0%, #f4faf5 70%, var(--surface) 100%);
+  border-top-color: var(--green-border, #b7dfb9);
+}
+.convo-status-cenefa--caution,
+.convo-status-cenefa--devuelta,
+.convo-status-cenefa--bloqueada {
+  background: linear-gradient(90deg, var(--orange-bg, #fff3e6) 0%, #fff8ef 70%, var(--surface) 100%);
+  border-top-color: var(--orange-border, #ffbf75);
+}
+.convo-status-cenefa--informative {
+  background: linear-gradient(90deg, var(--blue-bg, #eef5ff) 0%, #f7fbff 70%, var(--surface) 100%);
+  border-top-color: #c7dbf7;
+}
+.convo-status-cenefa--neutral {
+  background: linear-gradient(90deg, var(--grey-bg, #f5f6fa) 0%, #fafbff 70%, var(--surface) 100%);
+  border-top-color: var(--border);
+}
+.convo-status-cenefa--negative {
+  background: linear-gradient(90deg, var(--red-bg, #fff0ee) 0%, #fff8f7 70%, var(--surface) 100%);
+  border-top-color: var(--red-border, #ffc4bb);
+}
 .convo-status-cenefa--cerrada {
   background: linear-gradient(90deg, var(--grey-bg, #f5f6fa) 0%, #fafbff 70%, var(--surface) 100%);
   border-top-color: var(--border);
@@ -556,6 +583,25 @@
   background: var(--text-secondary, #646587); color: #fff;
 }
 .convo-status-cenefa--vencida .convo-status-cenefa__icon {
+  background: #b42318; color: #fff;
+}
+/* Iconos de las variantes nuevas DS-semánticas */
+.convo-status-cenefa--positive .convo-status-cenefa__icon,
+.convo-status-cenefa--asignada .convo-status-cenefa__icon {
+  background: var(--green, #1f8923); color: #fff;
+}
+.convo-status-cenefa--caution .convo-status-cenefa__icon,
+.convo-status-cenefa--devuelta .convo-status-cenefa__icon,
+.convo-status-cenefa--bloqueada .convo-status-cenefa__icon {
+  background: var(--accent, #d74009); color: #fff;
+}
+.convo-status-cenefa--informative .convo-status-cenefa__icon {
+  background: var(--blue-info, #1f78d1); color: #fff;
+}
+.convo-status-cenefa--neutral .convo-status-cenefa__icon {
+  background: var(--text-secondary, #646587); color: #fff;
+}
+.convo-status-cenefa--negative .convo-status-cenefa__icon {
   background: #b42318; color: #fff;
 }
 .convo-status-cenefa__icon svg { width: 22px; height: 22px; }

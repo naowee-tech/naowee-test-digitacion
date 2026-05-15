@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515y">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515z">
 <style>
   /* ─── Hero strip del proyecto + área ─── */
   .ra-hero {
@@ -329,7 +329,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515y';
+  import { mountShell } from '../shared/shell.js?v=20260515z';
   import { ESTADOS_AREA, formatoMoneda } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -784,6 +784,23 @@
           .filter(it => state[it.n] === 'nocumple')
           .map(it => ({ n: it.n, item: it.item, ref: it.ref }));
         openReturnModal(observaciones, () => {
+        /* Doug 15/05/2026: además de la metadata del área, persistir cada
+           ítem como observación en el hilo de chat del proyecto + cambiar
+           estado a `devuelta_subsanacion` para que el municipio vea la
+           pantalla con los detalles. */
+        const ahora = new Date().toISOString();
+        const obsPush = observaciones.map(o => ({
+          ts: ahora,
+          autor: 'revisor',
+          autorNombre: revisorActivo?.nombre || 'Revisor técnico',
+          autorAvatar: revisorActivo?.avatar || 'RT',
+          autorColor: revisorActivo?.color || '#7c3aed',
+          autorRol: areaInfo.nombre,
+          area: areaInfo.nombre,
+          tipo: 'Ítem no cumple',
+          ref: o.ref,
+          detalle: o.item
+        }));
         ProjectData.setProyecto(p.idUnico, x => {
           const ar = x.docsTecnica.areas.find(a => a.id === areaId);
           ar.estado = 'devuelto';
@@ -791,9 +808,20 @@
           ar.observaciones = observaciones;
           ar.revisorId = revisorActivo?.id || ar.revisorId;
           ar.revisor = revisorActivo?.nombre || ar.revisor || 'Equipo revisor';
-          ar.revisadoEn = new Date().toISOString();
+          ar.revisadoEn = ahora;
+          /* Marcar proyecto como devuelto en subsanación a nivel global +
+             append observaciones al hilo de chat. */
+          x.estado = 'devuelta_subsanacion';
+          x.fechaDevolucion = ahora;
+          x.observaciones = x.observaciones || [];
+          obsPush.forEach(o => x.observaciones.push(o));
           x.historial = x.historial || [];
-          x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Área devuelta · ${areaInfo.nombre} · ${nocumple} observación(es) · por ${revisorActivo?.nombre || 'revisor'}` });
+          x.historial.push({
+            ts: ahora, actor: 'revisor',
+            evento: `Área devuelta · ${areaInfo.nombre} · ${nocumple} observación(es) · por ${revisorActivo?.nombre || 'revisor'}`,
+            estado: 'devuelta_subsanacion'
+          });
+          return x;
         });
         ProjectData.pushNotificacion({
           perfil: 'municipio',

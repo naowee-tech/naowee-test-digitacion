@@ -4162,3 +4162,86 @@ body > .naowee-dropdown__menu.is-open {
   background: #fafbfd;
   color: var(--text-primary, #282834);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Observaciones — chat-style (Doug 15/05/2026)
+   Avatar circular + bubble con meta (autor·rol·tags) + texto + timestamp.
+   Default left-aligned (revisor); .obs-chat__msg--right invierte (municipio).
+   ═══════════════════════════════════════════════════════════════════ */
+.obs-chat {
+  display: flex; flex-direction: column;
+  gap: 14px;
+  padding: 4px 0 8px;
+}
+.obs-chat__msg {
+  display: flex; align-items: flex-start; gap: 10px;
+  max-width: 92%;
+}
+.obs-chat__msg--right {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+.obs-chat__avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(15, 17, 35, .08);
+}
+.obs-chat__bubble {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e7e9f3);
+  border-radius: 14px;
+  padding: 10px 14px;
+  flex: 1; min-width: 0;
+  position: relative;
+}
+.obs-chat__msg:not(.obs-chat__msg--right) .obs-chat__bubble {
+  border-top-left-radius: 4px;
+  background: linear-gradient(180deg, #fff7f3 0%, #fff 30%);
+  border-color: var(--orange-border, #ffbf75);
+}
+.obs-chat__msg--right .obs-chat__bubble {
+  border-top-right-radius: 4px;
+  background: linear-gradient(180deg, #f0f6ff 0%, #fff 30%);
+  border-color: #b8d4f5;
+}
+.obs-chat__meta {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary, #646587);
+}
+.obs-chat__meta strong {
+  font-size: 12.5px; font-weight: 700;
+  color: var(--text-primary, #282834);
+}
+.obs-chat__rol {
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+  padding: 2px 7px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.obs-chat__tag {
+  background: #f5f6fa;
+  color: var(--text-secondary, #646587);
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 10.5px; font-weight: 600;
+}
+.obs-chat__tag--accent {
+  background: #fff0ee;
+  color: #b42318;
+}
+.obs-chat__text {
+  font-size: 13.5px; line-height: 1.5;
+  color: var(--text-primary, #282834);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.obs-chat__time {
+  font-size: 10.5px; color: var(--text-secondary, #646587);
+  margin-top: 6px;
+  opacity: .8;
+}

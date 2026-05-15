@@ -14,7 +14,7 @@
 
 import ProjectData from './data.js';
 import { formatoFecha, diasRestantes } from './states.js';
-import { textarea, fileUpload, bindFileUploads, renderReview, runConfetti, validateRequired, bindValidationReset } from './wizard-page.js?v=20260515y';
+import { textarea, fileUpload, bindFileUploads, renderReview, runConfetti, validateRequired, bindValidationReset } from './wizard-page.js?v=20260515z';
 import { toast } from './toast.js';
 
 const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -324,6 +324,45 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
     }
 
     const todasCompletas = areasParciales.length === 0;
+    /* Doug 15/05/2026: persist:
+       - Cada respuesta como nueva observación (autor: municipio) en el chat
+       - Cada documento adjunto en p.documentos para que el revisor lo vea
+       - Marcar cada observación original como respondida (o.respondida = true) */
+    const perfilMun = ProjectData.getPerfilData?.('municipio');
+    const muniNombre = perfilMun?.nombre || 'Municipio';
+    const muniAvatar = (perfilMun?.nombre || 'MU').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+    const respuestasPersist = [];
+    const adjuntosPersist = [];
+    observaciones.forEach((o, idx) => {
+      const resp = (fd.get(`respuesta_${idx}`) || '').toString().trim();
+      const soporte = fd.get(`soporte_${idx}`);
+      if (resp.length >= 10) {
+        respuestasPersist.push({
+          ts: ahora,
+          autor: 'municipio',
+          autorNombre: muniNombre,
+          autorAvatar: muniAvatar,
+          autorColor: '#1f78d1',
+          autorRol: 'Municipio',
+          area: o.area || 'general',
+          tipo: 'Respuesta del municipio',
+          replyToTs: o.ts,
+          detalle: resp
+        });
+      }
+      if (soporte?.name) {
+        adjuntosPersist.push({
+          id: `subs-${idx}-${Date.now()}`,
+          nombre: `Soporte de subsanación · ${AREA_NOMBRES[o.area || 'general'] || o.area}`,
+          archivo: soporte.name,
+          size: soporte.size || 0,
+          subidoEn: ahora,
+          subsanacionDe: o.ts,
+          area: o.area || 'general'
+        });
+      }
+    });
+
     ProjectData.setProyecto(p.idUnico, x => {
       x.subsanacionAreas = x.subsanacionAreas || {};
       areasEnviadas.forEach(a => {
@@ -336,11 +375,23 @@ export function openSubsanarModal({ proyectoId, onSubsanado } = {}) {
         x.estado = 'en_revision';
         x.fechaInicioRevision = ahora;
       }
+      /* Append respuestas del municipio al hilo de observaciones */
+      x.observaciones = x.observaciones || [];
+      respuestasPersist.forEach(r => x.observaciones.push(r));
+      /* Marcar las observaciones del revisor como respondidas (para QA del revisor) */
+      x.observaciones.forEach((o, i) => {
+        if (o.autor === 'revisor' && respuestasPersist.some(r => r.replyToTs === o.ts)) {
+          x.observaciones[i] = { ...o, respondida: true };
+        }
+      });
+      /* Persistir documentos de soporte de subsanación */
+      x.documentos = x.documentos || [];
+      adjuntosPersist.forEach(d => x.documentos.push(d));
       x.historial = x.historial || [];
       x.historial.push({
         ts: ahora, actor: 'municipio',
         evento: todasCompletas
-          ? `Subsanación completa enviada · ${areasEnviadas.length} área(s)`
+          ? `Subsanación completa enviada · ${areasEnviadas.length} área(s) · ${respuestasPersist.length} respuesta(s)${adjuntosPersist.length ? ' · ' + adjuntosPersist.length + ' adjunto(s)' : ''}`
           : `Subsanación parcial · ${areasEnviadas.length} de ${areas.length} áreas completas`,
         estado: x.estado
       });

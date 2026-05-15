@@ -84,7 +84,9 @@ function ensureSnackbarRoot() {
     el.className = 'naowee-snackbar-root';
     el.setAttribute('role', 'region');
     el.setAttribute('aria-label', 'Notificaciones');
-    el.style.cssText = 'position:fixed;left:0;right:0;bottom:24px;display:flex;justify-content:center;z-index:1200;pointer-events:none';
+    /* z-index 10001 → arriba del pill DEMO (9999) y de cualquier overlay del modal.
+       bottom: 88px deja espacio para que NO choque con el pill demo (que vive ~bottom: 22px). */
+    el.style.cssText = 'position:fixed;left:0;right:0;bottom:88px;display:flex;justify-content:center;z-index:10001;pointer-events:none';
     document.body.appendChild(el);
   }
   return el;
@@ -96,7 +98,15 @@ export function snackbar({ text, action = '', onAction, badge = true, duration =
   const root = ensureSnackbarRoot();
   const node = document.createElement('div');
   node.className = 'naowee-snackbar naowee-snackbar--floating';
-  node.style.cssText = 'pointer-events:auto;opacity:0;transform:translateY(10px);transition:opacity .22s ease, transform .22s cubic-bezier(.18,.89,.32,1.28)';
+  /* Animación más sutil: empieza 24px abajo con opacity 0, entra hacia arriba
+     con fade. Salida: fade out + ligero desplazamiento hacia abajo. */
+  node.style.cssText = `
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .28s ease-out, transform .32s cubic-bezier(.16, 1, .3, 1);
+    will-change: opacity, transform;
+  `;
   node.innerHTML = `
     <div class="naowee-snackbar__content">
       ${badge ? `<span class="naowee-snackbar__badge">${SNACKBAR_BADGE_SVG}</span>` : ''}
@@ -112,14 +122,16 @@ export function snackbar({ text, action = '', onAction, badge = true, duration =
   }
   const dismiss = () => {
     node.style.opacity = '0';
-    node.style.transform = 'translateY(10px)';
+    node.style.transform = 'translateY(8px)';
+    node.style.transition = 'opacity .22s ease-in, transform .22s ease-in';
     setTimeout(() => node.remove(), 240);
   };
   root.appendChild(node);
-  requestAnimationFrame(() => {
+  /* Force layout then enter — doble rAF garantiza que el browser pinte el estado inicial */
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     node.style.opacity = '1';
     node.style.transform = 'translateY(0)';
-  });
+  }));
   if (duration > 0) setTimeout(dismiss, duration);
   return { dismiss };
 }

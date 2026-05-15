@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515y">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515z">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -270,7 +270,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515y';
+  import { mountShell } from '../shared/shell.js?v=20260515z';
   import { formatoMoneda, fechaCorta } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -763,14 +763,43 @@
         toast({ variant: 'caution', title: 'Sin ítems para devolver', message: 'Marca al menos un ítem como "No cumple" antes de devolver.' });
         return;
       }
+      /* Doug 15/05/2026: cuando doc-general devuelve, persistir cada ítem
+         "no cumple" como observación en el hilo de chat (autor=revisor general)
+         + cambiar estado del proyecto a `devuelta_subsanacion` para que el
+         municipio vea la pantalla de subsanación y los datos lleguen. */
+      const ahora = new Date().toISOString();
+      const items = CHECKLIST.flatMap(b => b.items);
+      const noCumpleItems = items.filter(it => state[it.n] === 'nocumple');
+      const obsPush = noCumpleItems.map(it => ({
+        ts: ahora,
+        autor: 'revisor',
+        autorNombre: revisorActivo?.nombre || 'Revisor Doc General',
+        autorAvatar: revisorActivo?.avatar || 'LR',
+        autorColor: revisorActivo?.color || '#1f78d1',
+        autorRol: 'Doc General',
+        area: 'Documentación general',
+        tipo: 'Ítem no cumple',
+        ref: it.ref,
+        detalle: it.item
+      }));
       ProjectData.setProyecto(p.idUnico, x => {
         x.docsGeneral = x.docsGeneral || {};
         x.docsGeneral.checklist = { ...state };
         x.docsGeneral.estadoRevision = 'devuelto';
         x.docsGeneral.revisorId = revisorActivo?.id || x.docsGeneral.revisorId;
         x.docsGeneral.revisor = revisorActivo?.nombre || x.docsGeneral.revisor || 'Revisor general';
+        x.docsGeneral.devueltoEn = ahora;
+        x.fechaDevolucion = ahora;
+        x.estado = 'devuelta_subsanacion';
+        x.observaciones = x.observaciones || [];
+        obsPush.forEach(o => x.observaciones.push(o));
         x.historial = x.historial || [];
-        x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Documentación general devuelta · ${noCumpleCount} ítem(s) no cumplen · por ${revisorActivo?.nombre || 'revisor general'}` });
+        x.historial.push({
+          ts: ahora, actor: 'revisor',
+          evento: `Documentación general devuelta · ${noCumpleCount} ítem(s) no cumplen · por ${revisorActivo?.nombre || 'revisor general'}`,
+          estado: 'devuelta_subsanacion'
+        });
+        return x;
       });
       ProjectData.pushNotificacion({
         perfil: 'municipio',

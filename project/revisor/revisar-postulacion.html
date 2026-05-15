@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260515y">
+<link rel="stylesheet" href="../shared/pages.css?v=20260515z">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -382,10 +382,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260515y';
+  import { mountShell } from '../shared/shell.js?v=20260515z';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515y';
+  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260515z';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -979,7 +979,16 @@
             x.estado = 'devuelta_subsanacion';
             x.fechaDevolucion = new Date().toISOString();
             x.observaciones = x.observaciones || [];
-            x.observaciones.push({ ts: new Date().toISOString(), autor: 'revisor', area, tipo, detalle });
+            const rev = ProjectData.getRevisorActivo?.();
+            x.observaciones.push({
+              ts: new Date().toISOString(),
+              autor: 'revisor',
+              autorNombre: rev?.nombre || 'Revisor RBI',
+              autorAvatar: rev?.avatar || 'R',
+              autorColor: rev?.color || '#d74009',
+              autorRol: 'RBI',
+              area, tipo, detalle
+            });
             x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Devuelta a subsanación · ${tipo}: ${detalle.substring(0, 60)}…`, estado: 'devuelta_subsanacion' });
           } else if (pendingAction === 'rechazar') {
             x.estado = 'rechazada';

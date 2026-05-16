@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517h">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517i">
 </head>
 <body>
 <div class="shell">
@@ -84,22 +84,18 @@
     return out;
   }
 
-  /* Doug 17/05/2026: pill compacto para descargar doc de la convocatoria.
-     Icono PDF rojo + label + tamaño + icono download. Click muestra
-     snackbar "Descargando..." (no hay backend de archivos reales). */
-  function renderDocPill(d) {
+  /* Doug 17/05/2026 (rev2): chip compacto inline para docs de convocatoria.
+     Pattern wrap horizontal (como .convo-card__fuentes) en lugar de pills
+     full-row — reduce drásticamente la altura de la card. Tooltip DS muestra
+     filename + size. Click → snackbar de descarga. */
+  function renderDocChip(d) {
     return `
-      <a href="#" class="convo-doc-pill" data-doc-name="${d.file.name}" title="Descargar ${d.label} (${d.file.name})">
-        <span class="convo-doc-pill__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <a href="#" class="convo-doc-chip has-tooltip" data-doc-name="${d.file.name}" data-tooltip="${d.file.name} · ${formatBytes(d.file.size)} · Click para descargar">
+        <span class="convo-doc-chip__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         </span>
-        <span class="convo-doc-pill__main">
-          <span class="convo-doc-pill__lbl">${d.label}</span>
-          <span class="convo-doc-pill__meta">PDF · ${formatBytes(d.file.size)}</span>
-        </span>
-        <span class="convo-doc-pill__action" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </span>
+        <span class="convo-doc-chip__lbl">${d.label}</span>
+        <svg class="convo-doc-chip__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       </a>
     `;
   }
@@ -145,11 +141,12 @@
           ${docs.length ? `
             <div class="convo-card__docs">
               <div class="convo-card__docs-head">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span>Documentos publicados por el Ministerio</span>
+                <span class="convo-card__docs-count">${docs.length}</span>
               </div>
-              <div class="convo-card__docs-list">
-                ${docs.map(renderDocPill).join('')}
+              <div class="convo-card__docs-chips">
+                ${docs.map(renderDocChip).join('')}
               </div>
             </div>
           ` : ''}

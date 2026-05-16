@@ -24,7 +24,7 @@
 ### Added
 - **Descarga de documentos de convocatoria** en `municipio/convocatorias.html` — feedback Juanma: el municipio (ente departamental o municipal) debe poder ver y descargar los documentos que el Ministerio subió al crear la convocatoria (Acto administrativo, Términos de referencia, Anexos). Implementado:
   - Seed `CONV-2026-001` (única convocatoria abierta) ahora incluye `documentos: { actoAdmin, terminosRef, plantillas[] }` para que la demo muestre los descargables.
-  - Cards (vista grilla): bloque "Documentos publicados por el Ministerio" con pill por doc (icono PDF rojo + label + meta `PDF · XX KB` + icono download), hover accent naranja.
+  - Cards (vista grilla): bloque "Documentos publicados por el Ministerio" con **chip cluster horizontal** (pattern wrap como `.convo-card__fuentes`), cada chip con icono PDF rojo + label + arrow download. Tooltip DS muestra filename + size completo. Counter `(N)` en el header. Compacto: 3-4 chips ocupan 1-2 líneas en vez de 4 rows.
   - Lista (vista tabla): nueva columna "Documentos" con iconos compactos de PDF (rojo) por doc + tooltip DS canónico, `+N` cuando hay >3.
   - Click en cualquier doc → snackbar `informative` con el nombre del archivo (no hay backend de archivos reales en la demo).
 - **Columna "Apertura"** agregada a la tabla `dl` de la card de convocatoria — antes solo se mostraba "Cierre", ahora también la fecha de apertura para que el municipio vea la ventana completa.
@@ -32,7 +32,7 @@
 ### Changed
 - **Gate de postulación por ventana de fechas** en `municipio/convocatorias.html` (feedback Juanma): aun si `estado === 'abierta'`, el municipio NO puede postular si la fecha actual está fuera del rango `apertura..cierre`. CTA "Postular" queda en estado disabled (DS Naowee) con tooltip explicativo (`Postulaciones abren el dd MMM` o `Postulaciones cerraron el dd MMM`). Nueva función `isPostulable(c)` + `razonNoPostulable(c)` en el render. Aplica a vista cards y lista.
 
-cache: `pages.css` → `20260517h`
+cache: `pages.css` → `20260517i`
 
 ---
 

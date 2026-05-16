@@ -2984,4 +2984,4 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   });
 }
 
-export { textfield, textarea, dropdown, checkbox, bindDropdowns, fileUpload, bindFileUpload };
+export { textfield, textarea, dropdown, checkbox, bindDropdowns, fileUpload, bindFileUpload, datepicker, bindDatepickers };

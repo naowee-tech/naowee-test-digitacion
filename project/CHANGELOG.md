@@ -55,6 +55,24 @@
 - **Alineación de badges** en `revisor/doc-general.html` — el download icon se desplazaba horizontalmente cuando cambiaba el ancho del badge (Cumple/N/A/No cumple/Sin verificar). Fix: nuevo `.dg-item__pill-slot` con `width: 140px + justify-content: flex-start`, envuelve la pill (modo read-only) o el toggle group (modo editable). Resultado: download icon en posición estable independiente del estado del badge; los pills siempre left-aligned dentro de su slot fijo.
 - **Tooltip clipped en sidebar de docs** (`revisor/revisar-area.html`) — el tooltip DS canónico del botón download quedaba enmascarado dentro del card por dos `overflow: hidden` en cadena (`.ra-docs-card` y `.ra-docs-card__list`). El `overflow-y: auto` de la lista además clipea implícitamente el eje X (CSS quirk: cuando un eje es non-visible, el otro tampoco puede serlo). Fix: ambos contenedores migrados a `overflow: visible`. El crecimiento del listado se contiene con el patrón "Ver más" existente (no se necesita scroll interno).
 
+### Refactored
+- **Registro SUID del escenario deportivo (Res. 933 Art. 10)** — el formulario inline de 9 secciones (`admin/registro-suid.html`, 963 líneas) usaba componentes hardcoded (segments custom, chips custom, photo slots, textarea sin DS, type=date nativo, messages custom, sin stepper). Refactor completo replicando el patrón del wizard de escenarios oficial ([naowee-test-escenarios/escenario-08-dashboard.html](https://naowee-tech.github.io/naowee-test-escenarios/escenario-08-dashboard.html?mode=single)) con DS Naowee canonical:
+  - **Nuevo `shared/modal-suid.js`** — modal wizard de 8 pasos:
+    1. **Datos básicos** — catastral + zona (con `naowee-message --informative` de pre-validación y `--positive` cuando el catastral es único)
+    2. **Georreferencia** — lat/lng con CTA "Usar coordenadas del proyecto" + dirección
+    3. **Identificación deportiva** — segmentos (CAR Sí/No, tipo infra Recreativa/Alta competencia) + dropdowns (tipo infra general, tipo escenario)
+    4. **Características físicas** — áreas/aforo con money mask + año/sub-espacios/pisos + estado conservación
+    5. **Disciplinas** — chip multi-toggle (21 disciplinas catálogo nacional)
+    6. **Dotación** — chip multi-toggle (servicios) + dropdown acceso + chip accesibilidad
+    7. **Programas y fotografías** — textarea + multiselect programas Mindeporte + población + datepicker DS Naowee + grid de 6 photo slots
+    8. **Administración** — responsable, contacto, horario, presupuesto operativo + `naowee-message --positive` "Listo para inventariar"
+  - **Helpers locales DS-aligned:** `radioSegment()` (segmented control con hidden input) y `chipMulti()` (multi-toggle con check icon).
+  - **Components canonical reutilizados:** `textfield`, `dropdown`, `multiselect`, `datepicker`, `fileUpload`, `textarea`, `naowee-message`, `naowee-stepper--pulse`, `naowee-modal--wide`.
+  - **Persistencia preservada:** mismo data shape (`p.registroSuid`) + push notif admin + historial.
+  - **Datepicker DS Naowee** ahora exportado desde `modal-convocatoria.js` (era función privada interna) para que `modal-suid.js` y futuros wizards lo reutilicen.
+  - **`admin/registro-suid.html`** convertido a launcher de 100 líneas (era 963 de form inline) — abre el modal automáticamente, fallback empty-state con CTA reabrir si el user cierra sin completar (mismo patrón que `municipio/postular.html`).
+  - **`admin/inversion.html`** — pill "Diligenciar SUID" en la tabla ahora abre el modal in-place (event delegation con `data-suid-modal`) en lugar de navegar a `registro-suid.html`. Tooltip DS canónico (`has-tooltip + data-tooltip`).
+
 cache: `pages.css` → `20260517l` · `modal-postular.js` → `20260517n`
 
 ---

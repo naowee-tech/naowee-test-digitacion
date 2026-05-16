@@ -67,27 +67,37 @@
     border-bottom: 1px solid var(--border);
     transition: background .15s;
   }
-  /* Acciones por item: download icon + toggle/pill agrupados */
+  /* Acciones por item: download icon + toggle/pill agrupados.
+     Doug 17/05/2026: pill-slot con ancho fijo (140px) + left-aligned para
+     que el botón download mantenga posición estable aunque varíe el badge
+     (Cumple / N/A / No cumple / Sin verificar). */
   .dg-item__actions {
-    display: inline-flex; align-items: center; gap: 8px;
+    display: inline-flex; align-items: center; gap: 10px;
   }
+  .dg-item__pill-slot {
+    width: 140px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+  }
+  /* Ghost button DS Naowee: icon-only naranja, hover orange-bg sutil
+     (sin border). Reemplaza la versión outline previa. */
   .dg-item__download {
     width: 34px; height: 34px;
     border-radius: var(--radius-md, 8px);
-    border: 1px solid var(--border-dark, #d0d4e6);
-    background: #fff;
+    border: 0;
+    background: transparent;
+    color: var(--accent, #d74009);
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer; flex-shrink: 0;
-    color: var(--text-secondary);
-    transition: border-color .12s, background .12s, color .12s, transform .12s;
+    transition: background .12s, transform .12s;
   }
   .dg-item__download:hover {
-    border-color: var(--accent);
-    color: var(--accent);
     background: var(--orange-bg, #fff3e6);
   }
   .dg-item__download:active { transform: scale(.94); }
-  .dg-item__download svg { width: 14px; height: 14px; }
+  .dg-item__download svg { width: 16px; height: 16px; }
   .dg-item:last-child { border-bottom: 0; }
   .dg-item:hover { background: #fafbff; }
   .dg-item__num {
@@ -721,7 +731,7 @@
                         </div>
                         <div class="dg-item__actions">
                           ${downloadBtn}
-                          ${pill}
+                          <span class="dg-item__pill-slot">${pill}</span>
                         </div>
                       </div>`;
                   }
@@ -734,11 +744,13 @@
                       </div>
                       <div class="dg-item__actions">
                         ${downloadBtn}
-                        <div class="dg-toggle" role="group" aria-label="Verificar cumplimiento">
-                          <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple" data-tooltip="Marcar como cumple" aria-label="Cumple">${ICONS.check}</button>
-                          <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple" data-tooltip="Marcar como no cumple" aria-label="No cumple">${ICONS.x}</button>
-                          <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'na' ? 'is-active--na' : ''}" data-r="na" data-tooltip="No aplica" aria-label="N/A">${ICONS.dash || '<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg>'}</button>
-                        </div>
+                        <span class="dg-item__pill-slot">
+                          <div class="dg-toggle" role="group" aria-label="Verificar cumplimiento">
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple" data-tooltip="Marcar como cumple" aria-label="Cumple">${ICONS.check}</button>
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple" data-tooltip="Marcar como no cumple" aria-label="No cumple">${ICONS.x}</button>
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'na' ? 'is-active--na' : ''}" data-r="na" data-tooltip="No aplica" aria-label="N/A">${ICONS.dash || '<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg>'}</button>
+                          </div>
+                        </span>
                       </div>
                     </div>`;
                 }).join('')}

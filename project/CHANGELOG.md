@@ -50,6 +50,10 @@
   - On change del dropdown: actualiza `conv` reference, subtitle del modal header, helper line y tope del campo "Monto solicitado". El submit final usa `conv.id` actualizado.
   - **Picker modal separado removido del flujo** — la función `openConvocatoriaPickerModal` queda como dead-code por backward-compat, no se invoca desde ningún lado.
 
+### Fixed (cont.)
+- **Download icon button → ghost button DS Naowee** transversal en `revisor/doc-general.html` (`.dg-item__download`) y `revisor/revisar-area.html` (`.ra-doc-pill__download`). Antes: outline con border + bg blanco + color text-secondary. Ahora: pattern ghost canónico DS — `border: 0`, `background: transparent`, `color: var(--accent)` (naranja), hover `background: var(--orange-bg)` sutil. Icon-only, sin transición de border ni color.
+- **Alineación de badges** en `revisor/doc-general.html` — el download icon se desplazaba horizontalmente cuando cambiaba el ancho del badge (Cumple/N/A/No cumple/Sin verificar). Fix: nuevo `.dg-item__pill-slot` con `width: 140px + justify-content: flex-start`, envuelve la pill (modo read-only) o el toggle group (modo editable). Resultado: download icon en posición estable independiente del estado del badge; los pills siempre left-aligned dentro de su slot fijo.
+
 cache: `pages.css` → `20260517l` · `modal-postular.js` → `20260517n`
 
 ---

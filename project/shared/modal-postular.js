@@ -368,18 +368,16 @@ function openConvocatoriaPickerModal({ onPick, onCancel }) {
 
 export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   const todas = ProjectData.getConvocatorias();
-  /* Doug 17/05/2026: si no se pre-seleccionó convocatoria, lanzar picker
-     primero para que el municipio elija a cuál asociar el proyecto. */
-  if (!convocatoriaId) {
-    openConvocatoriaPickerModal({
-      onPick: (pickedId) => openPostularModal({ convocatoriaId: pickedId, onPostulado })
-    });
-    return;
-  }
-  const conv = todas.find(c => c.id === convocatoriaId) ||
-               todas.find(c => c.estado === 'abierta');
+  /* Doug 17/05/2026 (rev 3): el picker modal separado se reemplazó por un
+     dropdown DENTRO del wizard como primer campo (más práctico — el user
+     ve y puede cambiar la convocatoria sin un modal extra). El picker
+     legacy se mantiene como función no-usada por backward-compat. */
+  const convsPostulables = todas.filter(isPostulableConv);
+  let conv = (convocatoriaId && todas.find(c => c.id === convocatoriaId)) ||
+             convsPostulables[0] ||
+             todas.find(c => c.estado === 'abierta');
   if (!conv) {
-    alert('No hay convocatorias abiertas en este momento.');
+    alert('No hay convocatorias abiertas para postular en este momento.');
     return;
   }
 
@@ -430,6 +428,20 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
       @media (max-width: 880px) {
         #postularOverlay .naowee-modal--wide { width: 95vw !important; }
       }
+      /* Doug 17/05/2026 (rev 3): helper line bajo el dropdown de convocatoria.
+         Reemplaza el banner azul informative que era estático — ahora es
+         un complemento sutil al dropdown que se actualiza al cambiar la
+         convocatoria seleccionada. */
+      #postularOverlay .pm-conv-helper {
+        margin: 8px 0 4px;
+        font-size: 12.5px;
+        color: var(--text-secondary, #646587);
+        line-height: 1.5;
+      }
+      #postularOverlay .pm-conv-helper strong {
+        color: var(--text-primary, #282834);
+        font-weight: 700;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -459,19 +471,21 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
           <!-- PASO 1 — Registro básico (datos mínimos del proyecto)
                v2.0: la entidad formuladora se hereda del perfil del municipio
                logueado. No se pide tipo de proyecto (todos son infraestructura)
-               ni descripción breve (eso vive en los docs). Solo lo esencial. -->
+               ni descripción breve (eso vive en los docs). Solo lo esencial.
+               Doug 17/05/2026 (rev): primer campo es selector de convocatoria,
+               reemplaza el banner azul "Postulando a CONV-XXX" que era estático. -->
           <div class="ai-step-panel" data-panel="1">
-            <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
-  <div class="naowee-message__header">
-    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="naowee-message__title">Postulando a ${conv.id}</span>
-  </div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">Año ${conv.anio || conv.bienio || ''} · Tope por proyecto: <strong>${formatoMoneda(conv.montoMaximoProyecto)}</strong> · Entidad: <strong>${perfilMun?.entidad || ''}</strong> (${perfilMun?.municipio || perfilMun?.departamento || ''})</p>
-  </div>
-</div>
+            <div class="ai-section-title">Convocatoria asociada</div>
+            ${dropdown({
+              label: 'Selecciona la convocatoria a la que asociarás este proyecto',
+              name: 'convocatoriaId',
+              required: true,
+              options: convsPostulables.map(c => ({ value: c.id, label: `${c.id} · ${c.nombre}` })),
+              value: conv.id
+            })}
+            <p class="pm-conv-helper" data-conv-helper>Año <strong>${conv.anio || conv.bienio || ''}</strong> · Cierra <strong>${formatoFecha(conv.cierre)}</strong> · Tope por proyecto <strong data-conv-tope>${formatoMoneda(conv.montoMaximoProyecto)}</strong></p>
 
-            <div class="ai-section-title">Identificación del proyecto</div>
+            <div class="ai-section-title" style="margin-top:18px">Identificación del proyecto</div>
             ${textfield({ label: 'Nombre del proyecto', name: 'nombre', required: true, placeholder: 'Ej: Construcción Coliseo Cubierto Quibdó', maxlength: 200 })}
             <div class="ai-grid-2">
               ${dropdown({ label: 'Fase', name: 'fase', required: true, options: faseOptions })}
@@ -664,6 +678,32 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   bindFileUploads(form);
   /* Máscara numérica (miles/millones) en campos con data-mask="money" */
   bindMasksIn(form);
+
+  /* Doug 17/05/2026 (rev 3): cambio del dropdown de convocatoria refresca
+     el conv reference + sincroniza subtitle del modal, helper de tope y
+     helper de monto. El submit final usa fd.get('convocatoriaId') para
+     respetar el último valor seleccionado. */
+  const convInput = form.querySelector('input[name="convocatoriaId"]');
+  if (convInput) {
+    convInput.addEventListener('change', () => {
+      const newConv = todas.find(c => c.id === convInput.value);
+      if (!newConv) return;
+      conv = newConv;
+      /* Subtitle del modal header */
+      const subtitle = overlay.querySelector('.naowee-modal__subtitle');
+      if (subtitle) subtitle.textContent = `${conv.nombre} · Cierra ${formatoFecha(conv.cierre)}`;
+      /* Helper line bajo el dropdown (año / cierre / tope) */
+      const helper = overlay.querySelector('[data-conv-helper]');
+      if (helper) {
+        helper.innerHTML = `Año <strong>${conv.anio || conv.bienio || ''}</strong> · Cierra <strong>${formatoFecha(conv.cierre)}</strong> · Tope por proyecto <strong>${formatoMoneda(conv.montoMaximoProyecto)}</strong>`;
+      }
+      /* Tope del monto solicitado — buscar el textfield por name=monto y
+         actualizar el span del helper. */
+      const montoField = overlay.querySelector('input[name="monto"]')?.closest('.naowee-textfield');
+      const montoHelper = montoField?.querySelector('.naowee-helper__text span, .naowee-helper__text');
+      if (montoHelper) montoHelper.textContent = `Tope: ${formatoMoneda(conv.montoMaximoProyecto)}`;
+    });
+  }
 
   /* v1.1 — Actualizar contador "X/N cargados" en cada área de anexos.
      Se llama cuando un file uploader del área cambia de estado. */

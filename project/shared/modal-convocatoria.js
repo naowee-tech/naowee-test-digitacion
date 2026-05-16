@@ -1133,7 +1133,11 @@ function modalStyles() {
     .naowee-file-uploader__file-tag--error svg { color: #b42318; }
 
     /* Multi-file v2 (Doug 14/05): chips inline en row dentro del input-wrap.
-       Cuando hay overflow, último chip → "+N más" en lugar de wrap a otra línea. */
+       Cuando hay overflow, último chip → "+N más" en lugar de wrap a otra línea.
+       Doug 17/05/2026 (rev): chips refinados al DS Naowee — antes era verde
+       saturado que no pertenecía al lenguaje del DS. Ahora pattern neutro
+       elegante: surface blanca + border sutil + icon PDF rojo mini circular
+       (consistente con .convo-doc-chip en municipio). Color text-primary. */
     .naowee-file-uploader--multiple .naowee-file-uploader__input-wrap {
       flex-wrap: nowrap; overflow: hidden;
     }
@@ -1144,41 +1148,63 @@ function modalStyles() {
     }
     .naowee-file-uploader__chip {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 4px 4px 8px;
-      background: var(--green-bg, #e6f4e7);
-      border: 1px solid var(--green-border, #b7dfb9);
-      color: var(--green, #1f8923);
+      padding: 3px 3px 3px 3px;
+      background: var(--surface, #fff);
+      border: 1px solid var(--border-dark, #d0d4e6);
+      color: var(--text-primary, #282834);
       border-radius: 999px;
       font-size: 12px; font-weight: 600;
-      max-width: 180px;
+      max-width: 200px;
       flex-shrink: 0;
       white-space: nowrap;
+      transition: border-color .15s, background .12s;
     }
+    .naowee-file-uploader__chip:hover {
+      border-color: var(--accent, #d74009);
+      background: #fff8f4;
+    }
+    /* Icono circular rojo tipo PDF — mismo pattern que .convo-doc-chip__icon */
     .naowee-file-uploader__chip > svg {
-      width: 14px; height: 14px; flex-shrink: 0;
+      width: 22px; height: 22px;
+      padding: 5px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e63946 0%, #c41e3a 100%);
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(196, 30, 58, .2);
+      box-sizing: border-box;
     }
     .naowee-file-uploader__chip-name {
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      max-width: 130px;
+      max-width: 140px;
+      padding-right: 2px;
     }
     .naowee-file-uploader__chip-x {
       background: transparent; border: 0;
-      width: 18px; height: 18px; border-radius: 50%;
-      color: var(--green, #1f8923); cursor: pointer;
+      width: 20px; height: 20px; border-radius: 50%;
+      color: var(--text-secondary, #646587); cursor: pointer;
       display: inline-flex; align-items: center; justify-content: center;
-      transition: background .12s;
+      transition: background .12s, color .12s;
       flex-shrink: 0;
+      margin-right: 2px;
     }
     .naowee-file-uploader__chip-x:hover {
-      background: rgba(31, 137, 35, .15);
+      background: var(--bg, #f5f6fa);
+      color: #b42318;
     }
     .naowee-file-uploader__chip-x > svg { width: 11px; height: 11px; }
+    /* Variante overflow "+N más" — DS subtle, no compite con los chips */
     .naowee-file-uploader__chip--overflow {
-      background: var(--orange-bg, #fff3e6);
-      border-color: var(--orange-border, #ffbf75);
-      color: var(--accent, #d74009);
+      background: var(--bg, #f5f6fa);
+      border-color: var(--border-dark, #d0d4e6);
+      color: var(--text-secondary, #646587);
       cursor: help;
       padding: 4px 10px;
+      font-weight: 700;
+    }
+    .naowee-file-uploader__chip--overflow:hover {
+      background: var(--bg, #f5f6fa);
+      border-color: var(--border-dark, #d0d4e6);
     }
 
     /* ═══ Naowee message — overrides mínimos sobre DS oficial v1.8.0 ═══

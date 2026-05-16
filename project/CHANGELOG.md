@@ -25,6 +25,8 @@
   - Meta `dl` (cards): muestra "Sin definir" en lugar de "— · 08:00 a.m." cuando la fecha falta.
   - Columna Cierre (list): muestra `<em>Sin definir</em>` cuando inválida.
   - **`shared/modal-convocatoria.js`** (defensive): el admin ya no persiste `''` para fechas vacías — ahora pasa por `(fd.get(x) || '').trim() || null`, dejando null explícito.
+- **`municipio/convocatorias.html`** · list view: badge "Cerró hoy" estaba en `caution` (amarillo) en list y `negative` (rojo) en cards. Inconsistencia fija — list ahora también usa `negative` para "Cerró hoy" y agrega `negative` para `dias < 7` (consistente con el `countdownVariant` de cards).
+- **`shared/modal-convocatoria.js`** · chips del file uploader multi-file (admin wizard): los chips verdes saturados (`green-bg + green-border + green text`) no pertenecían al lenguaje del DS Naowee. Refinados al pattern canónico — surface blanca + border-dark sutil + icon PDF rojo mini circular (consistente con `.convo-doc-chip` en municipio) + text-primary + close button neutral con hover red. Variante overflow `+N más` también refinada (neutral en lugar de naranja).
 
 ### Removed
 - **Panel "Notificaciones para ti"** del dashboard del revisor (`revisor/dashboard.html`) — feedback de Doug: no aplica para todos los revisores. Se removieron HTML render, JS click handler, fetch de `allNotifs/misNotifs/misNotifsRecientes/misNotifsNoLeidas`, y todo el bloque CSS `.rev-notif-panel` (~120 líneas) en `pages.css`. La data de notificaciones per-revisor sigue persistiendo en `localStorage` (con `revisorId`) por si más adelante se reintroduce otra vista.
@@ -40,7 +42,7 @@
 ### Changed
 - **Gate de postulación por ventana de fechas** en `municipio/convocatorias.html` (feedback Juanma): aun si `estado === 'abierta'`, el municipio NO puede postular si la fecha actual está fuera del rango `apertura..cierre`. CTA "Postular" queda en estado disabled (DS Naowee) con tooltip explicativo (`Postulaciones abren el dd MMM` o `Postulaciones cerraron el dd MMM`). Nueva función `isPostulable(c)` + `razonNoPostulable(c)` en el render. Aplica a vista cards y lista.
 
-cache: `pages.css` → `20260517j`
+cache: `pages.css` → `20260517k` · `modal-convocatoria.js` → `20260517k`
 
 ---
 

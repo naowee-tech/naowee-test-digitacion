@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517j">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517k">
 </head>
 <body>
 <div class="shell">
@@ -190,15 +190,16 @@
     const isOpen = c.estado === 'abierta';
     const postulable = isPostulable(c);
     const noPostulableMsg = razonNoPostulable(c);
+    /* Doug 17/05/2026: consistente con cards — "Cerró hoy" usa variant
+       negative (rojo) para señalar que ya no es postulable, no caution. */
     let badgeVariant, badgeLabel;
     if (isOpen) {
       if (dias === null) {
-        /* Fecha inválida — Doug 17/05/2026 */
-        badgeVariant = 'caution'; badgeLabel = 'Cerró hoy';
+        badgeVariant = 'negative'; badgeLabel = 'Cerró hoy';
       } else if (dias > 0) {
-        badgeVariant = dias < 15 ? 'caution' : 'positive';
+        badgeVariant = dias < 7 ? 'negative' : dias < 15 ? 'caution' : 'positive';
         badgeLabel = dias < 15 ? `${dias} día${dias === 1 ? '' : 's'} restantes` : 'Abierta';
-      } else { badgeVariant = 'caution'; badgeLabel = 'Cerró hoy'; }
+      } else { badgeVariant = 'negative'; badgeLabel = 'Cerró hoy'; }
     } else {
       badgeVariant = 'neutral'; badgeLabel = 'Cerrada';
     }

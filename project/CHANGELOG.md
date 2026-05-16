@@ -53,6 +53,7 @@
 ### Fixed (cont.)
 - **Download icon button → ghost button DS Naowee** transversal en `revisor/doc-general.html` (`.dg-item__download`) y `revisor/revisar-area.html` (`.ra-doc-pill__download`). Antes: outline con border + bg blanco + color text-secondary. Ahora: pattern ghost canónico DS — `border: 0`, `background: transparent`, `color: var(--accent)` (naranja), hover `background: var(--orange-bg)` sutil. Icon-only, sin transición de border ni color.
 - **Alineación de badges** en `revisor/doc-general.html` — el download icon se desplazaba horizontalmente cuando cambiaba el ancho del badge (Cumple/N/A/No cumple/Sin verificar). Fix: nuevo `.dg-item__pill-slot` con `width: 140px + justify-content: flex-start`, envuelve la pill (modo read-only) o el toggle group (modo editable). Resultado: download icon en posición estable independiente del estado del badge; los pills siempre left-aligned dentro de su slot fijo.
+- **Tooltip clipped en sidebar de docs** (`revisor/revisar-area.html`) — el tooltip DS canónico del botón download quedaba enmascarado dentro del card por dos `overflow: hidden` en cadena (`.ra-docs-card` y `.ra-docs-card__list`). El `overflow-y: auto` de la lista además clipea implícitamente el eje X (CSS quirk: cuando un eje es non-visible, el otro tampoco puede serlo). Fix: ambos contenedores migrados a `overflow: visible`. El crecimiento del listado se contiene con el patrón "Ver más" existente (no se necesita scroll interno).
 
 cache: `pages.css` → `20260517l` · `modal-postular.js` → `20260517n`
 

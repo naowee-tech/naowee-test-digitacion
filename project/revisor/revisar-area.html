@@ -154,12 +154,14 @@
     padding: 18px 20px;
     position: sticky;
     top: 16px;
-    max-height: calc(100vh - 96px);
     display: flex; flex-direction: column;
-    overflow: hidden;
+    /* Doug 17/05/2026: overflow visible + sin max-height para que el
+       tooltip DS canónico del download icon escape del card. El control
+       de docs largos lo hace el patrón "Ver más" (no scroll interno). */
+    overflow: visible;
   }
   @media (max-width: 1024px) {
-    .ra-docs-card { position: static; max-height: none; }
+    .ra-docs-card { position: static; }
   }
   .ra-docs-card__head {
     display: flex; align-items: flex-start; justify-content: space-between;
@@ -181,8 +183,11 @@
   }
   .ra-docs-card__list {
     display: flex; flex-direction: column; gap: 0;
-    overflow-y: auto;
-    flex: 1; min-height: 0;
+    /* Doug 17/05/2026: overflow visible (era overflow-y:auto, que
+       implícitamente clipea overflow-x y mataba al tooltip DS del
+       botón download). El crecimiento del listado se contiene con el
+       patrón "Ver más" en el footer del card. */
+    overflow: visible;
   }
   /* Doc pill (compact row) — pattern del DS file uploader.
      Doug 16/05/2026: sin dividers entre rows (visual cleaner). */

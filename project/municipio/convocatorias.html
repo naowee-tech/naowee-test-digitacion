@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517g">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517h">
 </head>
 <body>
 <div class="shell">
@@ -25,6 +25,7 @@
   import { mountShell } from '../shared/shell.js?v=20260516b';
   import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   import { openPostularModal } from '../shared/modal-postular.js?v=20260516v';
+  import { toast } from '../shared/toast.js';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'convocatorias' });
 
@@ -43,10 +44,72 @@
     return Math.ceil(ms / (1000 * 60 * 60 * 24));
   }
 
+  /* Doug 17/05/2026 (feedback Juanma): postulación habilitada solo si
+     estado='abierta' Y la fecha actual está dentro de la ventana
+     apertura..cierre. Aun si el admin no actualizó el estado a 'cerrada',
+     un municipio NO debe poder postular fuera de fechas. */
+  function isPostulable(c) {
+    if (c.estado !== 'abierta') return false;
+    const now = new Date();
+    return now >= new Date(c.apertura) && now <= new Date(c.cierre);
+  }
+  function razonNoPostulable(c) {
+    if (c.estado !== 'abierta') return 'Convocatoria cerrada';
+    const now = new Date();
+    if (now < new Date(c.apertura)) return `Postulaciones abren el ${fechaCorta(c.apertura)}`;
+    if (now > new Date(c.cierre)) return `Postulaciones cerraron el ${fechaCorta(c.cierre)}`;
+    return '';
+  }
+
+  /* Formatea bytes en KB/MB para mostrar peso del archivo */
+  function formatBytes(b) {
+    if (!b) return '';
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+    return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  /* Lista canónica de docs de la convocatoria (acto + términos + anexos).
+     Devuelve un array con label + file objeto {name, size}. */
+  function getDocsConvocatoria(c) {
+    const docs = c.documentos || {};
+    const out = [];
+    if (docs.actoAdmin?.name) out.push({ label: 'Acto administrativo', file: docs.actoAdmin });
+    if (docs.terminosRef?.name) out.push({ label: 'Términos de referencia', file: docs.terminosRef });
+    (docs.plantillas || []).forEach((p, i) => {
+      if (!p?.name) return;
+      const total = (docs.plantillas || []).length;
+      out.push({ label: total > 1 ? `Anexo ${i + 1}` : 'Anexo', file: p });
+    });
+    return out;
+  }
+
+  /* Doug 17/05/2026: pill compacto para descargar doc de la convocatoria.
+     Icono PDF rojo + label + tamaño + icono download. Click muestra
+     snackbar "Descargando..." (no hay backend de archivos reales). */
+  function renderDocPill(d) {
+    return `
+      <a href="#" class="convo-doc-pill" data-doc-name="${d.file.name}" title="Descargar ${d.label} (${d.file.name})">
+        <span class="convo-doc-pill__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </span>
+        <span class="convo-doc-pill__main">
+          <span class="convo-doc-pill__lbl">${d.label}</span>
+          <span class="convo-doc-pill__meta">PDF · ${formatBytes(d.file.size)}</span>
+        </span>
+        <span class="convo-doc-pill__action" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </span>
+      </a>
+    `;
+  }
+
   /* ─────────── Render card (vista grilla) ─────────── */
   function renderCard(c) {
     const dias = diasRestantes(c.cierre);
     const isOpen = c.estado === 'abierta';
+    const postulable = isPostulable(c);
+    const noPostulableMsg = razonNoPostulable(c);
     const countdownVariant = !isOpen ? null
       : dias <= 0 ? 'negative'
       : dias < 7 ? 'negative'
@@ -55,6 +118,7 @@
     const countdownLabel = !isOpen ? null
       : dias <= 0 ? 'Cerró hoy'
       : `${dias} día${dias === 1 ? '' : 's'} para cerrar`;
+    const docs = getDocsConvocatoria(c);
     return `
       <article class="convo-card" data-estado="${c.estado}" data-search="${(c.id + ' ' + c.nombre).toLowerCase()}">
         <header class="convo-card__head">
@@ -69,6 +133,7 @@
         <div class="convo-card__body">
           <p class="convo-card__desc">${c.descripcion || ''}</p>
           <dl class="convo-card__meta">
+            <div><dt>Apertura</dt><dd>${fechaCorta(c.apertura)} · 08:00 a.m.</dd></div>
             <div><dt>Cierre</dt><dd>${fechaCorta(c.cierre)} · 05:00 p.m.</dd></div>
             <div><dt>Tope por proyecto</dt><dd class="convo-card__money">${formatoMoneda(c.montoMaximoProyecto)}</dd></div>
           </dl>
@@ -77,14 +142,27 @@
               ${c.fuentes.slice(0, 4).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${f}</span>`).join('')}
             </div>
           ` : ''}
+          ${docs.length ? `
+            <div class="convo-card__docs">
+              <div class="convo-card__docs-head">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Documentos publicados por el Ministerio</span>
+              </div>
+              <div class="convo-card__docs-list">
+                ${docs.map(renderDocPill).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
         <footer class="convo-card__foot">
           <div class="convo-card__foot-info">
             ${countdownLabel ? `<span class="naowee-badge naowee-badge--${countdownVariant} naowee-badge--quiet">${countdownLabel}</span>` : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">No disponible</span>'}
           </div>
-          ${isOpen
+          ${postulable
             ? `<button type="button" class="naowee-btn naowee-btn--loud" data-postular-conv="${c.id}">Postular proyecto →</button>`
-            : `<a href="convocatoria-detalle.html?id=${c.id}" class="naowee-btn naowee-btn--mute">Ver detalle →</a>`}
+            : (isOpen
+              ? `<button type="button" class="naowee-btn naowee-btn--loud has-tooltip" disabled data-tooltip="${noPostulableMsg}">Postular proyecto →</button>`
+              : `<a href="convocatoria-detalle.html?id=${c.id}" class="naowee-btn naowee-btn--mute">Ver detalle →</a>`)}
         </footer>
       </article>`;
   }
@@ -93,6 +171,8 @@
   function renderRow(c) {
     const dias = diasRestantes(c.cierre);
     const isOpen = c.estado === 'abierta';
+    const postulable = isPostulable(c);
+    const noPostulableMsg = razonNoPostulable(c);
     let badgeVariant, badgeLabel;
     if (isOpen) {
       if (dias > 0) {
@@ -102,6 +182,7 @@
     } else {
       badgeVariant = 'neutral'; badgeLabel = 'Cerrada';
     }
+    const docs = getDocsConvocatoria(c);
     return `
       <tr data-estado="${c.estado}" data-search="${(c.id + ' ' + c.nombre).toLowerCase()}">
         <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap">${c.id}</td>
@@ -110,11 +191,25 @@
         </td>
         <td class="naowee-table__cell-muted" style="white-space:nowrap">${fechaCorta(c.cierre)}</td>
         <td class="numeric" style="font-weight:600;color:var(--green);white-space:nowrap">${formatoMoneda(c.montoMaximoProyecto)}</td>
+        <td>
+          ${docs.length ? `
+            <div class="convo-row-docs" data-conv-id="${c.id}">
+              ${docs.slice(0, 3).map(d => `
+                <button type="button" class="convo-row-docs__icon has-tooltip" data-doc-name="${d.file.name}" data-tooltip="${d.label} · ${formatBytes(d.file.size)}" aria-label="Descargar ${d.label}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </button>
+              `).join('')}
+              ${docs.length > 3 ? `<span class="convo-row-docs__more">+${docs.length - 3}</span>` : ''}
+            </div>
+          ` : '<span class="naowee-table__cell-muted" style="font-size:11.5px">—</span>'}
+        </td>
         <td><span class="naowee-badge naowee-badge--${badgeVariant} naowee-badge--quiet">${badgeLabel}</span></td>
         <td style="text-align:right">
-          ${isOpen
+          ${postulable
             ? `<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-postular-conv="${c.id}">Postular →</button>`
-            : `<a href="convocatoria-detalle.html?id=${c.id}" class="naowee-btn naowee-btn--mute naowee-btn--small">Detalle →</a>`}
+            : (isOpen
+              ? `<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small has-tooltip" disabled data-tooltip="${noPostulableMsg}">Postular →</button>`
+              : `<a href="convocatoria-detalle.html?id=${c.id}" class="naowee-btn naowee-btn--mute naowee-btn--small">Detalle →</a>`)}
         </td>
       </tr>`;
   }
@@ -214,6 +309,7 @@
                 <th>Convocatoria</th>
                 <th>Cierre</th>
                 <th class="numeric">Tope por proyecto</th>
+                <th>Documentos</th>
                 <th>Estado</th>
                 <th style="text-align:right">Acción</th>
               </tr>
@@ -375,6 +471,22 @@
     });
   }
   bindPostularButtons();
+
+  /* Doug 17/05/2026 (feedback Juanma): descargar documentos publicados
+     por el Ministerio. Como no hay backend, solo simulamos con snackbar.
+     Si en el futuro hay archivos reales, reemplazar por window.location o
+     blob download. Usa event delegation para sobrevivir re-renders. */
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-doc-name]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    toast({
+      variant: 'informative',
+      title: 'Descargando documento',
+      message: el.dataset.docName
+    });
+  });
 </script>
 </body>
 </html>

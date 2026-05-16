@@ -21,7 +21,18 @@
 ### Removed
 - **Panel "Notificaciones para ti"** del dashboard del revisor (`revisor/dashboard.html`) — feedback de Doug: no aplica para todos los revisores. Se removieron HTML render, JS click handler, fetch de `allNotifs/misNotifs/misNotifsRecientes/misNotifsNoLeidas`, y todo el bloque CSS `.rev-notif-panel` (~120 líneas) en `pages.css`. La data de notificaciones per-revisor sigue persistiendo en `localStorage` (con `revisorId`) por si más adelante se reintroduce otra vista.
 
-cache: `pages.css` → `20260517g`
+### Added
+- **Descarga de documentos de convocatoria** en `municipio/convocatorias.html` — feedback Juanma: el municipio (ente departamental o municipal) debe poder ver y descargar los documentos que el Ministerio subió al crear la convocatoria (Acto administrativo, Términos de referencia, Anexos). Implementado:
+  - Seed `CONV-2026-001` (única convocatoria abierta) ahora incluye `documentos: { actoAdmin, terminosRef, plantillas[] }` para que la demo muestre los descargables.
+  - Cards (vista grilla): bloque "Documentos publicados por el Ministerio" con pill por doc (icono PDF rojo + label + meta `PDF · XX KB` + icono download), hover accent naranja.
+  - Lista (vista tabla): nueva columna "Documentos" con iconos compactos de PDF (rojo) por doc + tooltip DS canónico, `+N` cuando hay >3.
+  - Click en cualquier doc → snackbar `informative` con el nombre del archivo (no hay backend de archivos reales en la demo).
+- **Columna "Apertura"** agregada a la tabla `dl` de la card de convocatoria — antes solo se mostraba "Cierre", ahora también la fecha de apertura para que el municipio vea la ventana completa.
+
+### Changed
+- **Gate de postulación por ventana de fechas** en `municipio/convocatorias.html` (feedback Juanma): aun si `estado === 'abierta'`, el municipio NO puede postular si la fecha actual está fuera del rango `apertura..cierre`. CTA "Postular" queda en estado disabled (DS Naowee) con tooltip explicativo (`Postulaciones abren el dd MMM` o `Postulaciones cerraron el dd MMM`). Nueva función `isPostulable(c)` + `razonNoPostulable(c)` en el render. Aplica a vista cards y lista.
+
+cache: `pages.css` → `20260517h`
 
 ---
 

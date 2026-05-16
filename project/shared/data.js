@@ -188,7 +188,18 @@ const SEED_FREE = {
       permiteSegunda: true,
       estado: 'abierta',
       creadaPor: 'admin',
-      creadaEn: '2026-03-25T10:30:00'
+      creadaEn: '2026-03-25T10:30:00',
+      /* Doug 17/05/2026 (feedback Juanma): documentos que el Ministerio sube
+         al crear la convocatoria. Deben ser visibles + descargables por el
+         municipio en la lista de convocatorias y en el detalle. */
+      documentos: {
+        actoAdmin:   { name: 'Resolucion-933-2024-apertura-CONV-2026-001.pdf', size: 412800 },
+        terminosRef: { name: 'Terminos-de-referencia-CONV-2026-001.pdf', size: 1843200 },
+        plantillas: [
+          { name: 'Anexo-1-Carta-de-intencion.pdf', size: 124928 },
+          { name: 'Anexo-2-Certificacion-predial.pdf', size: 215040 }
+        ]
+      }
     },
     {
       id: 'CONV-2025-002',

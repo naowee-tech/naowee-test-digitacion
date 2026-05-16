@@ -967,6 +967,112 @@
   padding-top: 14px;
   border-top: 1px dashed var(--border);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   .convo-card__docs — Documentos publicados por el Ministerio
+   (Doug 17/05/2026, feedback Juanma)
+   ═══════════════════════════════════════════════════════════════════
+   Pills compactos con icono PDF, label + meta y action download.
+   Visible en la card de convocatoria (municipio/convocatorias.html). */
+.convo-card__docs {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.convo-card__docs-head {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .4px;
+  color: var(--text-secondary, #646587);
+  margin-bottom: 10px;
+}
+.convo-card__docs-head svg { flex-shrink: 0; opacity: .7; }
+.convo-card__docs-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.convo-doc-pill {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e7e9f3);
+  border-radius: var(--radius-md, 8px);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color .15s, background .12s, transform .12s;
+}
+.convo-doc-pill:hover {
+  border-color: var(--accent, #d74009);
+  background: #fff8f4;
+  transform: translateY(-1px);
+}
+.convo-doc-pill:active { transform: translateY(0); }
+.convo-doc-pill__icon {
+  width: 28px; height: 32px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #e63946 0%, #c41e3a 100%);
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(196, 30, 58, .2);
+}
+.convo-doc-pill__icon svg { width: 14px; height: 14px; }
+.convo-doc-pill__main {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.convo-doc-pill__lbl {
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text-primary, #282834);
+  line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.convo-doc-pill__meta {
+  font-size: 10.5px; color: var(--text-secondary, #646587);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.convo-doc-pill__action {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-sm, 6px);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--text-secondary, #646587);
+  flex-shrink: 0;
+  transition: background .12s, color .12s;
+}
+.convo-doc-pill:hover .convo-doc-pill__action {
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+}
+.convo-doc-pill__action svg { width: 13px; height: 13px; }
+
+/* ─── List view: docs como iconos compactos en una celda ─── */
+.convo-row-docs {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.convo-row-docs__icon {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border, #e7e9f3);
+  background: #fff;
+  color: #c41e3a;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color .12s, background .12s, transform .12s;
+  flex-shrink: 0;
+}
+.convo-row-docs__icon:hover {
+  border-color: #c41e3a;
+  background: #fff5ee;
+  transform: translateY(-1px);
+}
+.convo-row-docs__icon:active { transform: translateY(0); }
+.convo-row-docs__icon svg { width: 13px; height: 13px; }
+.convo-row-docs__more {
+  font-size: 10.5px; font-weight: 700;
+  color: var(--text-secondary, #646587);
+  margin-left: 2px;
+  letter-spacing: .2px;
+}
 .convo-card__foot {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 20px;

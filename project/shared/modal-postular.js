@@ -199,11 +199,10 @@ function openConvocatoriaPickerModal({ onPick, onCancel }) {
     if (typeof onCancel === 'function') onCancel();
     return;
   }
-  /* Si solo hay una, saltamos el picker y vamos directo al wizard */
-  if (postulables.length === 1) {
-    onPick(postulables[0].id);
-    return;
-  }
+  /* Doug 17/05/2026 (rev): el picker SIEMPRE aparece como confirmación
+     explícita, incluso si solo hay 1 postulable. Antes se auto-saltaba,
+     pero Doug quiere que el municipio siempre vea la convocatoria a la
+     que va a asociar el proyecto antes de empezar a llenar el wizard. */
 
   const overlay = document.createElement('div');
   overlay.className = 'naowee-modal-overlay';

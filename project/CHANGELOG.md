@@ -49,7 +49,7 @@
   - Footer: Cancelar (mute) · Continuar (loud) — disabled hasta que haya selección (primera card pre-seleccionada por default).
   - Click fuera + Esc + Cancelar cierran sin error.
 
-cache: `pages.css` → `20260517l` · `modal-postular.js` → `20260517l`
+cache: `pages.css` → `20260517l` · `modal-postular.js` → `20260517m`
 
 ---
 

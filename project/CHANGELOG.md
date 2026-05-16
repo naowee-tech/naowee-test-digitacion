@@ -42,7 +42,14 @@
 ### Changed
 - **Gate de postulación por ventana de fechas** en `municipio/convocatorias.html` (feedback Juanma): aun si `estado === 'abierta'`, el municipio NO puede postular si la fecha actual está fuera del rango `apertura..cierre`. CTA "Postular" queda en estado disabled (DS Naowee) con tooltip explicativo (`Postulaciones abren el dd MMM` o `Postulaciones cerraron el dd MMM`). Nueva función `isPostulable(c)` + `razonNoPostulable(c)` en el render. Aplica a vista cards y lista.
 
-cache: `pages.css` → `20260517k` · `modal-convocatoria.js` → `20260517k`
+### Added (cont.)
+- **Convocatoria picker en wizard de postulación** (`shared/modal-postular.js`) — feedback Doug: cuando se abre el wizard desde `municipio/postular.html` (sidebar "Postular proyecto") sin convocatoria pre-seleccionada, ahora aparece un picker modal primero que lista las convocatorias postulables (abiertas + dentro de ventana). El municipio elige a cuál asociar su proyecto y luego sigue el wizard de 5 pasos normal. Si solo hay una convocatoria postulable o si se entra desde `convocatorias.html` (con `convocatoriaId` ya determinado), el picker se salta automáticamente.
+  - Picker modal: 560px width, radio cards apilados con código + nombre + cierre + monto + badge urgencia (`dias < 7 → negative`, `< 15 → caution`, `else positive`).
+  - Card seleccionada: border accent + bg `#fff8f4` + box-shadow accent halo.
+  - Footer: Cancelar (mute) · Continuar (loud) — disabled hasta que haya selección (primera card pre-seleccionada por default).
+  - Click fuera + Esc + Cancelar cierran sin error.
+
+cache: `pages.css` → `20260517l` · `modal-postular.js` → `20260517l`
 
 ---
 

@@ -173,9 +173,211 @@ function renderStepperOficial() {
   `;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   Convocatoria picker — Doug 17/05/2026 (feedback feedback).
+   Cuando el municipio abre el wizard desde "Postular proyecto" del
+   sidebar (sin convocatoriaId pre-seleccionada), aparece este picker
+   primero para que elija a qué convocatoria asociar el proyecto.
+   Filtra convocatorias postulables (estado='abierta' + dentro de
+   ventana apertura..cierre).
+   ═══════════════════════════════════════════════════════════════════ */
+function isPostulableConv(c) {
+  if (c.estado !== 'abierta') return false;
+  if (!c.apertura || !c.cierre) return false;
+  const ap = new Date(c.apertura);
+  const ci = new Date(c.cierre);
+  if (isNaN(ap.getTime()) || isNaN(ci.getTime())) return false;
+  const now = new Date();
+  return now >= ap && now <= ci;
+}
+
+function openConvocatoriaPickerModal({ onPick, onCancel }) {
+  const todas = ProjectData.getConvocatorias();
+  const postulables = todas.filter(isPostulableConv);
+  if (postulables.length === 0) {
+    alert('No hay convocatorias abiertas para postular en este momento.');
+    if (typeof onCancel === 'function') onCancel();
+    return;
+  }
+  /* Si solo hay una, saltamos el picker y vamos directo al wizard */
+  if (postulables.length === 1) {
+    onPick(postulables[0].id);
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'naowee-modal-overlay';
+  overlay.id = 'convPickerOverlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.innerHTML = `
+    <div class="naowee-modal naowee-modal--fixed-header naowee-modal--fixed-footer" style="width:560px;max-width:95vw;max-height:85vh">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title">Selecciona la convocatoria</h2>
+          <p class="naowee-modal__subtitle">Tu proyecto se asociará a la convocatoria que elijas. Solo se muestran las que están abiertas hoy.</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" data-cancel aria-label="Cerrar">${closeIcon}</button>
+      </div>
+      <div class="naowee-modal__body">
+        <ul class="conv-picker__list" role="radiogroup" aria-label="Convocatorias disponibles">
+          ${postulables.map((c, i) => {
+            const dias = Math.ceil((new Date(c.cierre) - new Date()) / 86400000);
+            const urgencyVariant = dias < 7 ? 'negative' : dias < 15 ? 'caution' : 'positive';
+            const urgencyLabel = dias === 0 ? 'Cierra hoy' : `${dias} día${dias === 1 ? '' : 's'} para cerrar`;
+            return `
+              <li>
+                <label class="conv-picker__card${i === 0 ? ' is-selected' : ''}">
+                  <input type="radio" name="picker-conv" value="${c.id}" class="conv-picker__radio" ${i === 0 ? 'checked' : ''}/>
+                  <span class="conv-picker__radio-dot" aria-hidden="true"></span>
+                  <div class="conv-picker__main">
+                    <div class="conv-picker__row">
+                      <span class="conv-picker__id">${c.id}</span>
+                      <span class="naowee-badge naowee-badge--${urgencyVariant} naowee-badge--quiet naowee-badge--small">${urgencyLabel}</span>
+                    </div>
+                    <div class="conv-picker__title">${c.nombre}</div>
+                    <div class="conv-picker__meta">
+                      <span>Cierra ${formatoFecha(c.cierre)}</span>
+                      <span>·</span>
+                      <span>Tope ${formatoMoneda(c.montoMaximoProyecto)}</span>
+                    </div>
+                  </div>
+                </label>
+              </li>
+            `;
+          }).join('')}
+        </ul>
+      </div>
+      <div class="naowee-modal__footer">
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" data-cancel style="margin-right:auto">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" data-continue>Continuar ${arrowRightIcon}</button>
+      </div>
+    </div>
+  `;
+  /* Inject CSS único para el picker */
+  if (!document.getElementById('convPickerStyle')) {
+    const style = document.createElement('style');
+    style.id = 'convPickerStyle';
+    style.textContent = `
+      .conv-picker__list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+      .conv-picker__card {
+        display: flex; align-items: flex-start; gap: 14px;
+        padding: 14px 16px;
+        background: var(--surface, #fff);
+        border: 1.5px solid var(--border, #e7e9f3);
+        border-radius: var(--radius-lg, 12px);
+        cursor: pointer;
+        transition: border-color .15s, background .12s, box-shadow .15s;
+      }
+      .conv-picker__card:hover {
+        border-color: var(--border-dark, #d0d4e6);
+        background: #fafbfd;
+      }
+      .conv-picker__card.is-selected {
+        border-color: var(--accent, #d74009);
+        background: #fff8f4;
+        box-shadow: 0 0 0 3px rgba(215, 64, 9, .08);
+      }
+      .conv-picker__radio { position: absolute; opacity: 0; pointer-events: none; }
+      .conv-picker__radio-dot {
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--border-dark, #d0d4e6);
+        background: #fff;
+        flex-shrink: 0;
+        margin-top: 2px;
+        position: relative;
+        transition: border-color .15s;
+      }
+      .conv-picker__card.is-selected .conv-picker__radio-dot {
+        border-color: var(--accent, #d74009);
+      }
+      .conv-picker__card.is-selected .conv-picker__radio-dot::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        background: var(--accent, #d74009);
+        border-radius: 50%;
+      }
+      .conv-picker__main { flex: 1; min-width: 0; }
+      .conv-picker__row {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+      }
+      .conv-picker__id {
+        font-size: 11px; font-weight: 700; letter-spacing: .3px;
+        color: var(--text-secondary, #646587);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+      .conv-picker__title {
+        font-size: 14px; font-weight: 700;
+        color: var(--text-primary, #282834);
+        line-height: 1.3;
+        margin-bottom: 4px;
+      }
+      .conv-picker__meta {
+        display: inline-flex; gap: 6px;
+        font-size: 12px; color: var(--text-secondary, #646587);
+        font-variant-numeric: tabular-nums;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.classList.add('is-open'), 10);
+
+  /* Radio behavior + visual sync */
+  overlay.querySelectorAll('.conv-picker__card').forEach(card => {
+    card.addEventListener('click', () => {
+      overlay.querySelectorAll('.conv-picker__card').forEach(c => c.classList.remove('is-selected'));
+      card.classList.add('is-selected');
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    });
+  });
+
+  /* Continue → fire onPick with selected id */
+  overlay.querySelector('[data-continue]').addEventListener('click', () => {
+    const selected = overlay.querySelector('input[name="picker-conv"]:checked');
+    if (!selected) return;
+    const id = selected.value;
+    closePickerOverlay();
+    onPick(id);
+  });
+
+  function closePickerOverlay() {
+    overlay.classList.remove('is-open');
+    setTimeout(() => overlay.remove(), 240);
+    document.removeEventListener('keydown', escListener);
+  }
+  function escListener(e) { if (e.key === 'Escape') { closePickerOverlay(); if (typeof onCancel === 'function') onCancel(); } }
+  overlay.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', () => {
+    closePickerOverlay();
+    if (typeof onCancel === 'function') onCancel();
+  }));
+  setTimeout(() => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) {
+        closePickerOverlay();
+        if (typeof onCancel === 'function') onCancel();
+      }
+    });
+  }, 50);
+  document.addEventListener('keydown', escListener);
+}
+
 export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   const todas = ProjectData.getConvocatorias();
-  const conv = (convocatoriaId && todas.find(c => c.id === convocatoriaId)) ||
+  /* Doug 17/05/2026: si no se pre-seleccionó convocatoria, lanzar picker
+     primero para que el municipio elija a cuál asociar el proyecto. */
+  if (!convocatoriaId) {
+    openConvocatoriaPickerModal({
+      onPick: (pickedId) => openPostularModal({ convocatoriaId: pickedId, onPostulado })
+    });
+    return;
+  }
+  const conv = todas.find(c => c.id === convocatoriaId) ||
                todas.find(c => c.estado === 'abierta');
   if (!conv) {
     alert('No hay convocatorias abiertas en este momento.');

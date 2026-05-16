@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517i">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517j">
 </head>
 <body>
 <div class="shell">
@@ -39,7 +39,16 @@
       return { ...c, postulaciones: conteoReal || c.postulaciones || 0 };
     });
 
+  /* Helpers de fecha: devuelven null/false cuando la fecha es inválida
+     (caso de convocatorias creadas sin datepickers diligenciados).
+     Doug 17/05/2026: evita "NaN días para cerrar" en cards demo. */
+  function isValidDate(d) {
+    if (!d) return false;
+    const dt = new Date(d);
+    return !isNaN(dt.getTime());
+  }
   function diasRestantes(cierre) {
+    if (!isValidDate(cierre)) return null;
     const ms = new Date(cierre) - new Date();
     return Math.ceil(ms / (1000 * 60 * 60 * 24));
   }
@@ -47,14 +56,18 @@
   /* Doug 17/05/2026 (feedback Juanma): postulación habilitada solo si
      estado='abierta' Y la fecha actual está dentro de la ventana
      apertura..cierre. Aun si el admin no actualizó el estado a 'cerrada',
-     un municipio NO debe poder postular fuera de fechas. */
+     un municipio NO debe poder postular fuera de fechas.
+     Doug 17/05/2026 (rev): si las fechas son inválidas (Invalid Date),
+     no es postulable — el admin debe completar la info primero. */
   function isPostulable(c) {
     if (c.estado !== 'abierta') return false;
+    if (!isValidDate(c.apertura) || !isValidDate(c.cierre)) return false;
     const now = new Date();
     return now >= new Date(c.apertura) && now <= new Date(c.cierre);
   }
   function razonNoPostulable(c) {
     if (c.estado !== 'abierta') return 'Convocatoria cerrada';
+    if (!isValidDate(c.apertura) || !isValidDate(c.cierre)) return 'Fechas de la convocatoria no definidas — contacta al Ministerio';
     const now = new Date();
     if (now < new Date(c.apertura)) return `Postulaciones abren el ${fechaCorta(c.apertura)}`;
     if (now > new Date(c.cierre)) return `Postulaciones cerraron el ${fechaCorta(c.cierre)}`;
@@ -106,14 +119,21 @@
     const isOpen = c.estado === 'abierta';
     const postulable = isPostulable(c);
     const noPostulableMsg = razonNoPostulable(c);
+    /* Doug 17/05/2026: si fecha cierre inválida → muestra "Cerró hoy" + variant
+       negative (CTA disabled). Si dias <=0 también. */
     const countdownVariant = !isOpen ? null
+      : (dias === null) ? 'negative'
       : dias <= 0 ? 'negative'
       : dias < 7 ? 'negative'
       : dias < 15 ? 'caution'
       : 'informative';
     const countdownLabel = !isOpen ? null
+      : (dias === null) ? 'Cerró hoy'
       : dias <= 0 ? 'Cerró hoy'
       : `${dias} día${dias === 1 ? '' : 's'} para cerrar`;
+    /* Helper para meta de fechas con fallback elegante */
+    const aperturaTxt = isValidDate(c.apertura) ? `${fechaCorta(c.apertura)} · 08:00 a.m.` : 'Sin definir';
+    const cierreTxt = isValidDate(c.cierre) ? `${fechaCorta(c.cierre)} · 05:00 p.m.` : 'Sin definir';
     const docs = getDocsConvocatoria(c);
     return `
       <article class="convo-card" data-estado="${c.estado}" data-search="${(c.id + ' ' + c.nombre).toLowerCase()}">
@@ -129,8 +149,8 @@
         <div class="convo-card__body">
           <p class="convo-card__desc">${c.descripcion || ''}</p>
           <dl class="convo-card__meta">
-            <div><dt>Apertura</dt><dd>${fechaCorta(c.apertura)} · 08:00 a.m.</dd></div>
-            <div><dt>Cierre</dt><dd>${fechaCorta(c.cierre)} · 05:00 p.m.</dd></div>
+            <div><dt>Apertura</dt><dd>${aperturaTxt}</dd></div>
+            <div><dt>Cierre</dt><dd>${cierreTxt}</dd></div>
             <div><dt>Tope por proyecto</dt><dd class="convo-card__money">${formatoMoneda(c.montoMaximoProyecto)}</dd></div>
           </dl>
           ${(c.fuentes && c.fuentes.length) ? `
@@ -172,7 +192,10 @@
     const noPostulableMsg = razonNoPostulable(c);
     let badgeVariant, badgeLabel;
     if (isOpen) {
-      if (dias > 0) {
+      if (dias === null) {
+        /* Fecha inválida — Doug 17/05/2026 */
+        badgeVariant = 'caution'; badgeLabel = 'Cerró hoy';
+      } else if (dias > 0) {
         badgeVariant = dias < 15 ? 'caution' : 'positive';
         badgeLabel = dias < 15 ? `${dias} día${dias === 1 ? '' : 's'} restantes` : 'Abierta';
       } else { badgeVariant = 'caution'; badgeLabel = 'Cerró hoy'; }
@@ -186,7 +209,7 @@
         <td class="naowee-table__cell-name proj-name-cell">
           <div class="proj-name-cell__title" title="${c.nombre}">${c.nombre}</div>
         </td>
-        <td class="naowee-table__cell-muted" style="white-space:nowrap">${fechaCorta(c.cierre)}</td>
+        <td class="naowee-table__cell-muted" style="white-space:nowrap">${isValidDate(c.cierre) ? fechaCorta(c.cierre) : '<em style="opacity:.6">Sin definir</em>'}</td>
         <td class="numeric" style="font-weight:600;color:var(--green);white-space:nowrap">${formatoMoneda(c.montoMaximoProyecto)}</td>
         <td>
           ${docs.length ? `

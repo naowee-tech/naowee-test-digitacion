@@ -17,6 +17,14 @@
 
 ### Fixed
 - **`municipio/proyecto-perfil.html`** · layout del certificado: el card del certificado tenía 2 `</div>` faltantes (`__main` y `__top` quedaban abiertos), por lo que el `proj-tabs-card` se renderizaba como hermano de `__main` dentro de `__top` (flex container) y quedaba side-by-side con el certificado en lugar de debajo. Cierre estructural correcto: el certificado ahora ocupa el ancho completo del contenedor en el medio del layout, con la card de tabs (Datos / Historial / Conversación) apilada debajo.
+- **`municipio/convocatorias.html`** · "NaN días para cerrar" cuando la convocatoria fue creada sin fechas válidas (admin saltó los datepickers en el wizard). Fix triple:
+  - Nueva función `isValidDate()` que detecta Invalid Date (`!isNaN(dt.getTime())`).
+  - `diasRestantes()` devuelve `null` cuando la fecha es inválida en vez de NaN.
+  - `countdownLabel` muestra "Cerró hoy" + variant negative cuando `dias === null` (igual que cuando es <=0). Tanto en cards como en list.
+  - `isPostulable()` retorna false cuando `apertura` o `cierre` son inválidas — CTA queda disabled con tooltip "Fechas de la convocatoria no definidas — contacta al Ministerio".
+  - Meta `dl` (cards): muestra "Sin definir" en lugar de "— · 08:00 a.m." cuando la fecha falta.
+  - Columna Cierre (list): muestra `<em>Sin definir</em>` cuando inválida.
+  - **`shared/modal-convocatoria.js`** (defensive): el admin ya no persiste `''` para fechas vacías — ahora pasa por `(fd.get(x) || '').trim() || null`, dejando null explícito.
 
 ### Removed
 - **Panel "Notificaciones para ti"** del dashboard del revisor (`revisor/dashboard.html`) — feedback de Doug: no aplica para todos los revisores. Se removieron HTML render, JS click handler, fetch de `allNotifs/misNotifs/misNotifsRecientes/misNotifsNoLeidas`, y todo el bloque CSS `.rev-notif-panel` (~120 líneas) en `pages.css`. La data de notificaciones per-revisor sigue persistiendo en `localStorage` (con `revisorId`) por si más adelante se reintroduce otra vista.
@@ -32,7 +40,7 @@
 ### Changed
 - **Gate de postulación por ventana de fechas** en `municipio/convocatorias.html` (feedback Juanma): aun si `estado === 'abierta'`, el municipio NO puede postular si la fecha actual está fuera del rango `apertura..cierre`. CTA "Postular" queda en estado disabled (DS Naowee) con tooltip explicativo (`Postulaciones abren el dd MMM` o `Postulaciones cerraron el dd MMM`). Nueva función `isPostulable(c)` + `razonNoPostulable(c)` en el render. Aplica a vista cards y lista.
 
-cache: `pages.css` → `20260517i`
+cache: `pages.css` → `20260517j`
 
 ---
 

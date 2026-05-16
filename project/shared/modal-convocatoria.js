@@ -2888,8 +2888,12 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       descripcion: fd.get('descripcion'),
       anio: fd.get('anio'),
       bienio: fd.get('anio'), /* backward-compat: alias para código que aún lee `bienio` */
-      apertura: fd.get('apertura'),
-      cierre: fd.get('cierre'),
+      /* Doug 17/05/2026: normaliza fechas — si el datepicker quedó vacío
+         o con string blanco, persistir null en lugar de '' para que el
+         render del municipio detecte "Sin definir" en vez de mostrar
+         "NaN días para cerrar". */
+      apertura: (fd.get('apertura') || '').toString().trim() || null,
+      cierre: (fd.get('cierre') || '').toString().trim() || null,
       emisionConcepto: fd.get('emisionConcepto') || null,
       cobertura,
       /* especificaTipo solo aplica si cobertura === 'Específica'. XOR municipios|departamentos */

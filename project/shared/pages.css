@@ -2066,6 +2066,27 @@
   cursor: not-allowed !important;
   pointer-events: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Ghost button hover unificado transversal (Doug 17/05/2026)
+   ═══════════════════════════════════════════════════════════════════
+   En toda la webapp había 2 estilos de hover para botones ghost:
+     a) cream-pill (var(--orange-bg) bg + accent color) — ✓ correcto
+        (back-btn / mute / mis custom .dg-item__download etc)
+     b) text-only / underline — ✗ inconsistente con (a)
+   Esta regla unifica el hover de TODOS los .naowee-btn--link al
+   patrón cream-pill, igualando "Volver a la bandeja" en todas las
+   pantallas y modales. */
+.naowee-btn--link:hover:not(:disabled):not([disabled]) {
+  background: var(--orange-bg, #fff3e6) !important;
+  color: var(--accent, #d74009) !important;
+  text-decoration: none !important;
+  border-radius: var(--radius-md, 8px);
+}
+.naowee-btn--link:hover:not(:disabled):not([disabled]) svg {
+  color: var(--accent, #d74009) !important;
+  stroke: var(--accent, #d74009) !important;
+}
 .naowee-btn--link:disabled svg, .naowee-btn--link[disabled] svg,
 .naowee-btn--mute:disabled svg, .naowee-btn--mute[disabled] svg {
   color: var(--naowee-color-icon-disabled, #9C9EBF) !important;

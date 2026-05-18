@@ -10,13 +10,16 @@
 <link rel="stylesheet" href="../shared/pages.css?v=20260517l">
 <style>
   /* ─── Tabs canónicos DS (Doug 15/05/2026): mismo patrón que usuarios.html
-     con naowee-tabs--animated + indicator. Divider edge-to-edge. ─── */
+     con naowee-tabs--animated + indicator. Divider edge-to-edge.
+     Doug 17/05/2026: padding-top en el card para que los tabs respiren
+     del borde superior; tabla SIN escape edge-to-edge (queda inset por el
+     padding del panel para que el header gris no toque los bordes). ─── */
   .prorroga-card {
-    padding: 0 !important;
+    padding: 12px 0 0 !important;
     overflow: hidden;
   }
   .prorroga-card .naowee-tabs {
-    padding: 0 18px; margin: 0;
+    padding: 0 22px; margin: 0;
     border-bottom: 1px solid var(--border);
   }
   .prorroga-panel { display: none; animation: tabFadeIn .25s ease both; padding: 22px; }
@@ -25,16 +28,21 @@
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  /* Tabla edge-to-edge dentro del panel (escapar el padding del panel) */
+  /* Tabla con border-radius sutil + sombreo del thead inset al panel
+     (era edge-to-edge con margin negativo, lo cual hacía que el header
+     gris tocara los bordes laterales del card). */
   .prorroga-panel .naowee-table-card__table-wrap {
-    margin-left: -22px;
-    margin-right: -22px;
-    width: calc(100% + 44px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
   }
   .prorroga-panel .naowee-table--in-card th:first-child,
-  .prorroga-panel .naowee-table--in-card td:first-child { padding-left: 22px; }
+  .prorroga-panel .naowee-table--in-card td:first-child { padding-left: 16px; }
   .prorroga-panel .naowee-table--in-card th:last-child,
-  .prorroga-panel .naowee-table--in-card td:last-child { padding-right: 22px; }
+  .prorroga-panel .naowee-table--in-card td:last-child { padding-right: 16px; }
+  /* Title "ACCIONES" alineado a la derecha (consistente con flex-end de las
+     celdas — antes quedaba left-aligned mientras los botones estaban right) */
+  .prorroga-panel .naowee-table--in-card th:last-child { text-align: right; }
 
   /* Celdas de tabla específicas */
   .pr-cell-proyecto { min-width: 220px; }
@@ -79,8 +87,10 @@
   }
   .pr-action-btn--approve { background: var(--green); color: #fff; }
   .pr-action-btn--approve:hover { background: #166f30; }
+  /* Doug 17/05/2026: Rechazar sin border stroke — solo text + bg hover sutil.
+     Mismo principio que ghost buttons del DS Naowee. */
   .pr-action-btn--reject {
-    background: transparent; color: #b42318; border: 1px solid #ffc4bb;
+    background: transparent; color: #b42318; border: 0;
   }
   .pr-action-btn--reject:hover { background: #fff0ee; }
 

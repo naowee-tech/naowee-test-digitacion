@@ -235,7 +235,8 @@
   .rp-prio-toggle.is-active .rp-prio-switch { background: var(--accent); }
   .rp-prio-toggle.is-active .rp-prio-switch::after { transform: translateX(16px); }
 
-  /* Prórroga link compacto al final del panel */
+  /* Prórroga link compacto al final del panel (legacy — ya no se usa
+     desde Doug 17/05/2026, el CTA se movió al toolbar top). */
   .rp-prorroga-link {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     width: 100%;
@@ -255,6 +256,27 @@
     color: var(--accent);
   }
   .rp-prorroga-link svg { width: 14px; height: 14px; }
+
+  /* Doug 17/05/2026: toolbar top que aloja back-btn + CTA prórroga
+     en la misma línea (libera el panel de decisión de un 4to CTA). */
+  .rp-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .rp-prorroga-top {
+    /* Naowee link button hereda colores DS — overrides mínimos:
+       icono accent, gap consistente, ghost. */
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md, 8px);
+    color: var(--accent, #d74009);
+    transition: background .12s;
+  }
+  .rp-prorroga-top:hover {
+    background: var(--orange-bg, #fff3e6);
+  }
+  .rp-prorroga-top svg { color: var(--accent, #d74009); }
 
   /* Ribbon-pop animation cuando el proyecto se marca como enfoque */
   @keyframes ribbonPop {
@@ -419,9 +441,25 @@
     function renderPage() {
       const events = (p.historial || []).slice().reverse();
 
+      /* Doug 17/05/2026: prórroga CTA al top junto al back button —
+         libera espacio del panel de decisión que tenía 4 acciones apiladas
+         (Aprobar / Devolver / Rechazar / Solicitar prórroga). El CTA solo
+         aparece cuando NO existe prórroga activa todavía. */
+      const prExistente = (ProjectData.getProyecto(p.idUnico) || p).prorrogaRBI;
+      const showProrrogaTop = !prExistente;
+
       pageContent.innerHTML = `
         <div class="page-fade-in">
-          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}" style="margin-bottom:14px">${ICONS.back}${backLabel}</a>
+          <div class="rp-toolbar">
+            <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">${ICONS.back}${backLabel}</a>
+            ${showProrrogaTop ? `
+              <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small rp-prorroga-top" id="btnSolicitarProrrogaTop"
+                      title="Puedes solicitar al admin 15 días hábiles extra una sola vez">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                Solicitar prórroga (15 días extra)
+              </button>
+            ` : ''}
+          </div>
 
           <!-- ══════ Hero del proyecto (canónico project-hero) ══════ -->
           <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
@@ -708,14 +746,11 @@
         if (!widget) return;
         const pr = (ProjectData.getProyecto(p.idUnico) || p).prorrogaRBI;
         if (!pr) {
-          widget.innerHTML = `
-            <button type="button" class="rp-prorroga-link" id="btnSolicitarProrroga"
-                    title="Puedes solicitar al admin 15 días hábiles extra una sola vez">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-              Solicitar prórroga (15 días extra)
-            </button>
-          `;
-          document.getElementById('btnSolicitarProrroga').addEventListener('click', openProrrogaDialog);
+          /* Doug 17/05/2026: el CTA "Solicitar prórroga" se movió al
+             top junto al back button (rp-toolbar). Cuando no hay pr,
+             el widget queda vacío para no apilar acción extra en el
+             panel de decisión. */
+          widget.innerHTML = '';
           return;
         }
         const variant = pr.estado === 'aprobada' ? 'positive'
@@ -733,19 +768,14 @@
             : `Resuelta el ${new Date(pr.resueltaEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}`;
         widget.innerHTML = `
           <div class="naowee-message naowee-message--${variant}" role="status">
-  <div class="naowee-message__header">
-    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="naowee-message__title">${titleMap[pr.estado]}</span>
-  </div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">${detail}</p>
-  </div>
-</div></div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">${detail}</p>
-  </div>
-</div>
-
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+              <span class="naowee-message__title">${titleMap[pr.estado]}</span>
+            </div>
+            <div class="naowee-message__content">
+              <p class="naowee-message__text">${detail}</p>
+            </div>
+          </div>
         `;
       }
 
@@ -821,6 +851,10 @@
       }
 
       renderProrrogaWidget();
+
+      /* Doug 17/05/2026: wire del CTA prórroga del toolbar top
+         (visible solo cuando no hay pr activa todavía). */
+      document.getElementById('btnSolicitarProrrogaTop')?.addEventListener('click', openProrrogaDialog);
 
       /* Doug 15/05/2026: toggle compacto de "Proyecto de enfoque" con
          persistencia inmediata + animación del ribbon en el hero + snackbar

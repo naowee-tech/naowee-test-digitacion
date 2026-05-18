@@ -265,28 +265,48 @@ function injectSuidStyles() {
   const style = document.createElement('style');
   style.id = 'suidModalStyle';
   style.textContent = `
-    /* Modal width */
+    /* Modal width — paridad con referencia escenarios (680px) */
     #suidOverlay .naowee-modal {
-      width: 920px !important;
-      max-width: 95vw !important;
-      max-height: 92vh;
-    }
-    #suidOverlay .naowee-modal--narrow {
-      width: 580px !important;
+      width: 720px !important;
+      max-width: calc(100vw - 48px) !important;
+      max-height: calc(100vh - 48px) !important;
+      border-radius: 16px;
     }
 
-    /* Spacing */
-    #suidOverlay .ai-step-panel > * + * { margin-top: 18px; }
-    #suidOverlay .ai-step-panel { padding-top: 4px; }
-    #suidOverlay .suid-section-block + .suid-section-block { margin-top: 26px; }
+    /* Body con flex column gap (patrón de referencia escenarios) —
+       garantiza spacing entre todas las secciones/campos automáticamente.
+       Reemplaza al margin-between hack que estaba pegando los inputs. */
+    #suidOverlay .naowee-modal__body {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 16px !important;
+      padding: 20px 24px !important;
+      scroll-behavior: smooth;
+    }
+    /* Sections internas también con flex column gap 16px */
+    #suidOverlay .suid-section-block {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    #suidOverlay .suid-section-block + .suid-section-block {
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border, #e7e9f3);
+    }
+    /* Cuando hay step panels, también flex column gap */
+    #suidOverlay .ai-step-panel {
+      display: flex; flex-direction: column; gap: 16px;
+      padding-top: 4px;
+    }
 
+    /* Section title — uppercase eyebrow pattern */
     #suidOverlay .ai-section-title {
       font-size: 11px; font-weight: 700;
-      letter-spacing: .5px; text-transform: uppercase;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
+      letter-spacing: .4px; text-transform: uppercase;
+      color: var(--text-secondary, #9ca0b8);
+      margin: 0;
     }
 
+    /* Grids con gap consistente */
     #suidOverlay .ai-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     #suidOverlay .ai-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     #suidOverlay .ai-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -296,47 +316,80 @@ function injectSuidStyles() {
       #suidOverlay .ai-grid-4 { grid-template-columns: 1fr; }
     }
 
-    /* Sub-stepper de 3 pasos (Modal 2) */
+    /* Footer — botones flex:1 height:48px (patrón referencia) */
+    #suidOverlay .naowee-modal__footer {
+      padding: 16px 24px !important;
+      display: flex !important; gap: 12px !important;
+      border-top: 1px solid var(--border-dark, #d0d4e6);
+    }
+    #suidOverlay .naowee-modal__footer .naowee-btn {
+      flex: 1; height: 48px; border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+    }
+    /* Botón link (Guardar borrador) no se expande */
+    #suidOverlay .naowee-modal__footer .naowee-btn--link {
+      flex: 0 0 auto;
+      height: 48px;
+    }
+
+    /* Sub-stepper de 3 pasos con pulse animation en active */
+    @keyframes suidStepperPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(215, 64, 9, 0.45); }
+      50% { box-shadow: 0 0 0 8px rgba(215, 64, 9, 0); }
+    }
     .suid-substepper {
       display: flex; align-items: center;
       gap: 8px;
-      padding: 14px 0 20px;
-      margin-bottom: 4px;
+      padding: 8px 0 20px;
+      margin: 0;
       border-bottom: 1px solid var(--border, #e7e9f3);
     }
     .suid-substepper__step {
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; gap: 10px;
       cursor: pointer;
+      transition: opacity .15s;
+    }
+    .suid-substepper__step:not(.is-active):not(.is-done):hover {
+      opacity: .75;
     }
     .suid-substepper__num {
       width: 28px; height: 28px; border-radius: 50%;
       background: var(--bg, #f5f6fa);
       color: var(--text-secondary, #646587);
       display: inline-flex; align-items: center; justify-content: center;
-      font-size: 12.5px; font-weight: 700;
-      transition: background .15s, color .15s;
+      font-size: 13px; font-weight: 700;
+      transition: background .2s, color .2s, box-shadow .2s;
+      flex-shrink: 0;
     }
     .suid-substepper__step.is-active .suid-substepper__num {
       background: var(--accent, #d74009);
       color: #fff;
+      animation: suidStepperPulse 2s ease-in-out infinite;
     }
     .suid-substepper__step.is-done .suid-substepper__num {
       background: var(--green, #15803d);
       color: #fff;
     }
     .suid-substepper__label {
-      font-size: 13px; font-weight: 600;
+      font-size: 13px; font-weight: 500;
       color: var(--text-secondary, #646587);
+      transition: color .2s, font-weight .2s;
+      white-space: nowrap;
     }
-    .suid-substepper__step.is-active .suid-substepper__label,
+    .suid-substepper__step.is-active .suid-substepper__label {
+      color: var(--text-primary, #282834);
+      font-weight: 700;
+    }
     .suid-substepper__step.is-done .suid-substepper__label {
       color: var(--text-primary, #282834);
+      font-weight: 600;
     }
     .suid-substepper__connector {
       flex: 1; height: 2px;
       background: var(--border, #e7e9f3);
-      max-width: 120px;
-      transition: background .2s;
+      min-width: 12px;
+      margin: 0 4px;
+      transition: background .5s cubic-bezier(.4,0,.2,1);
     }
     .suid-substepper__connector.is-done {
       background: var(--green, #15803d);

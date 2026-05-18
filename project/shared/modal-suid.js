@@ -259,6 +259,109 @@ function timeField({ label, name, value = '', required = false }) {
   `;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   inferFromProyecto — autopopulate transversal (Doug 17/05/2026)
+   ═══════════════════════════════════════════════════════════════════
+   Cuando el admin activa la inversión y abre el registro SUID, el
+   formulario debe llegar con la mayor cantidad de datos posible ya
+   heredados del proyecto. Cada campo prefiere reg.X (lo que ya está
+   guardado en borrador) y cae al valor inferido desde p.* solo cuando
+   reg.X está vacío.
+
+   Inferencias derivadas:
+     - tipoInfra: heurística por tipologia (Estadio/Velódromo/Olímpica
+       → 'Alta competencia'; el resto → 'Recreativa')
+     - tipoInfraGeneral: match exacto o por keyword con TIPO_INFRA_GENERAL
+     - tipoEscenario: match exacto o keyword con TIPOS_ESCENARIO
+     - disciplinas: intersección de p.modalidades con catálogo DISCIPLINAS
+     - presupuestoOperativo: 10% del montoAprobado (regla típica del sector)
+     - entidadPropietaria: formuladora.nombre o "Alcaldía Municipal de X"
+     - cantidadSubespacios: docsTecnica.areas.length cuando aplica
+   ─────────────────────────────────────────────────────────────────── */
+function inferFromProyecto(p, reg = {}) {
+  const tipologia = (p.tipologia || '').trim();
+
+  /* tipoInfra heurística */
+  let tipoInfraDefault = 'Recreativa';
+  if (/velódromo|patinódromo|centro de alto|pista atlética|piscina olímpica|estadio de fútbol/i.test(tipologia)) {
+    tipoInfraDefault = 'Alta competencia';
+  }
+
+  /* tipoInfraGeneral — match al catálogo */
+  let tipoInfraGeneralInferido = '';
+  if (TIPO_INFRA_GENERAL.includes(tipologia)) {
+    tipoInfraGeneralInferido = tipologia;
+  } else if (/coliseo/i.test(tipologia)) tipoInfraGeneralInferido = 'Coliseo';
+  else if (/polideportivo/i.test(tipologia)) tipoInfraGeneralInferido = 'Polideportivo';
+  else if (/estadio/i.test(tipologia)) tipoInfraGeneralInferido = 'Estadio';
+  else if (/cancha/i.test(tipologia)) tipoInfraGeneralInferido = 'Cancha múltiple';
+  else if (/piscina/i.test(tipologia)) tipoInfraGeneralInferido = 'Piscina';
+  else if (/pista|atlética/i.test(tipologia)) tipoInfraGeneralInferido = 'Pista atlética';
+  else if (/gimnasio/i.test(tipologia)) tipoInfraGeneralInferido = 'Gimnasio';
+  else if (/centro de alto|car\b/i.test(tipologia)) tipoInfraGeneralInferido = 'Centro de Alto Rendimiento';
+
+  /* tipoEscenario — primero exact match, después subtipologia, después keyword */
+  let tipoEscenarioInferido = '';
+  if (TIPOS_ESCENARIO.includes(tipologia)) tipoEscenarioInferido = tipologia;
+  else if (p.subtipologia && TIPOS_ESCENARIO.includes(p.subtipologia)) tipoEscenarioInferido = p.subtipologia;
+  else if (/coliseo cubierto/i.test(tipologia)) tipoEscenarioInferido = 'Coliseo cubierto';
+  else if (/coliseo/i.test(tipologia)) tipoEscenarioInferido = 'Coliseo descubierto';
+  else if (/polideportivo/i.test(tipologia)) tipoEscenarioInferido = 'Polideportivo';
+  else if (/cancha múltiple|múltiple/i.test(tipologia)) tipoEscenarioInferido = 'Cancha múltiple';
+
+  /* disciplinas — solo las que existen en el catálogo nacional */
+  const disciplinasInferidas = (p.modalidades || []).filter(m => DISCIPLINAS.includes(m));
+
+  /* presupuesto operativo sugerido — 10% del monto aprobado */
+  const presupuestoOperativoSugerido = p.inversion?.montoAprobado
+    ? Math.round(p.inversion.montoAprobado * 0.10)
+    : null;
+
+  /* entidad propietaria — formuladora o alcaldía X */
+  const entidadPropietariaDefault =
+    p.formuladora?.nombre
+    || (p.municipio ? `Alcaldía Municipal de ${p.municipio}` : '');
+
+  /* cantidad de sub-espacios — si el proyecto tiene áreas técnicas, lo
+     interpretamos como escenario complejo (ej. polideportivo con varias
+     canchas + piscina) */
+  const cantidadSubespaciosInferido = p.docsTecnica?.areas?.length || 1;
+
+  return {
+    /* Pre-validación */
+    nombreEscenario:      reg.nombreEscenario      || p.nombre || '',
+    departamento:         reg.departamento         || p.departamento || '',
+    municipio:            reg.municipio            || p.municipio || '',
+    lat:                  reg.lat                  || p.coordenadas?.lat || '',
+    lng:                  reg.lng                  || p.coordenadas?.lng || '',
+    direccion:            reg.direccion            || p.direccionPredio || '',
+    catastral:            reg.catastral            || '',
+    zona:                 reg.zona                 || '',
+    barrio:               reg.barrio               || '',
+    /* Datos administrativos */
+    entidadPropietaria:   reg.entidadPropietaria   || entidadPropietariaDefault,
+    responsable:          reg.responsable          || p.representante?.nombre || '',
+    telefonoResponsable:  reg.telefonoResponsable  || p.representante?.contacto || '',
+    emailResponsable:     reg.emailResponsable     || p.representante?.email || '',
+    esInversion:          reg.esInversion !== undefined ? reg.esInversion : !!p.inversion,
+    /* Identificación deportiva */
+    esCar:                reg.esCar || 'No',
+    tipoInfra:            reg.tipoInfra            || tipoInfraDefault,
+    tipoInfraGeneral:     reg.tipoInfraGeneral     || tipoInfraGeneralInferido,
+    tipoEscenario:        reg.tipoEscenario        || tipoEscenarioInferido,
+    /* Documentación */
+    disciplinas:          (reg.disciplinas && reg.disciplinas.length) ? reg.disciplinas : disciplinasInferidas,
+    descripcion:          reg.descripcion          || p.descripcionBreve || '',
+    presupuestoOperativo: reg.presupuestoOperativo || presupuestoOperativoSugerido,
+    cantidadSubespacios:  reg.cantidadSubespacios  || cantidadSubespaciosInferido,
+    /* Conteo de campos heredados (para el message informativo) */
+    __inferenciasCount: [
+      entidadPropietariaDefault, tipoInfraGeneralInferido, tipoEscenarioInferido,
+      disciplinasInferidas.length, p.representante?.email, presupuestoOperativoSugerido
+    ].filter(Boolean).length
+  };
+}
+
 /* ═══ Inyección CSS one-time ═══ */
 function injectSuidStyles() {
   if (document.getElementById('suidModalStyle')) return;
@@ -761,6 +864,10 @@ function openPrevalidacionModal({ p, onCompleto }) {
     || p.registroSuid?.codigo
     || `SUID-${(p.departamento || 'COL').slice(0, 3).toUpperCase()}-${(p.idUnico || '').replace(/[^0-9]/g, '').slice(0, 6)}`;
   const reg = p.registroSuid || {};
+  const infer = inferFromProyecto(p, reg);
+  const heredadosTxt = infer.__inferenciasCount > 0
+    ? `${infer.__inferenciasCount} campos vienen heredados del proyecto · puedes editarlos`
+    : '';
 
   const overlay = document.createElement('div');
   overlay.className = 'naowee-modal-overlay';
@@ -780,20 +887,29 @@ function openPrevalidacionModal({ p, onCompleto }) {
       <div class="naowee-modal__body">
         <form id="suidFormA" novalidate>
 
+          ${heredadosTxt ? `
+            <div class="naowee-message naowee-message--informative" role="status">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__title">${heredadosTxt}</span>
+              </div>
+            </div>
+          ` : ''}
+
           <!-- DATOS BÁSICOS -->
           <div class="suid-section-block">
             <div class="ai-section-title">Datos básicos</div>
 
-            ${textfield({ label: 'Nombre del escenario', name: 'nombreEscenario', required: true, placeholder: 'Centro deportivo …', value: reg.nombreEscenario || p.nombre || '' })}
+            ${textfield({ label: 'Nombre del escenario', name: 'nombreEscenario', required: true, placeholder: 'Centro deportivo …', value: infer.nombreEscenario })}
 
             <div class="ai-grid-2">
-              ${dropdown({ label: 'Departamento', name: 'departamento', required: true, options: DEPARTAMENTOS, value: reg.departamento || p.departamento || '' })}
-              ${textfield({ label: 'Municipio', name: 'municipio', required: true, placeholder: 'Selecciona municipio', value: reg.municipio || p.municipio || '' })}
+              ${dropdown({ label: 'Departamento', name: 'departamento', required: true, options: DEPARTAMENTOS, value: infer.departamento })}
+              ${textfield({ label: 'Municipio', name: 'municipio', required: true, placeholder: 'Selecciona municipio', value: infer.municipio })}
             </div>
 
             <div class="ai-grid-2">
-              ${textfield({ label: 'Número de registro catastral', name: 'catastral', required: true, placeholder: '760010100000-001-000-0001', value: reg.catastral || '', helper: 'Código catastral oficial · 19-22 dígitos' })}
-              ${dropdown({ label: 'Zona', name: 'zona', required: true, options: ZONAS, value: reg.zona || '' })}
+              ${textfield({ label: 'Número de registro catastral', name: 'catastral', required: true, placeholder: '760010100000-001-000-0001', value: infer.catastral, helper: 'Código catastral oficial · 19-22 dígitos' })}
+              ${dropdown({ label: 'Zona', name: 'zona', required: true, options: ZONAS, value: infer.zona })}
             </div>
           </div>
 
@@ -804,13 +920,13 @@ function openPrevalidacionModal({ p, onCompleto }) {
             ${mapPlaceholder()}
 
             <div class="ai-grid-2">
-              ${textfield({ label: 'Latitud (decimal)', name: 'lat', required: true, placeholder: '4.7110', value: reg.lat || p.coordenadas?.lat || '', helper: 'Rango Colombia: −4.23 a 12.53' })}
-              ${textfield({ label: 'Longitud (decimal)', name: 'lng', required: true, placeholder: '-74.0721', value: reg.lng || p.coordenadas?.lng || '', helper: 'Rango Colombia: −81.73 a −66.87' })}
+              ${textfield({ label: 'Latitud (decimal)', name: 'lat', required: true, placeholder: '4.7110', value: infer.lat, helper: 'Rango Colombia: −4.23 a 12.53' })}
+              ${textfield({ label: 'Longitud (decimal)', name: 'lng', required: true, placeholder: '-74.0721', value: infer.lng, helper: 'Rango Colombia: −81.73 a −66.87' })}
             </div>
 
             <div class="ai-grid-2">
-              ${textfield({ label: 'Dirección del escenario', name: 'direccion', required: true, placeholder: 'Cra 30 # 45-12', value: reg.direccion || p.direccionPredio || '' })}
-              ${textfield({ label: 'Corregimiento / Vereda / Barrio', name: 'barrio', placeholder: 'Opcional', value: reg.barrio || '' })}
+              ${textfield({ label: 'Dirección del escenario', name: 'direccion', required: true, placeholder: 'Cra 30 # 45-12', value: infer.direccion })}
+              ${textfield({ label: 'Corregimiento / Vereda / Barrio', name: 'barrio', placeholder: 'Opcional', value: infer.barrio })}
             </div>
 
             <div class="naowee-message naowee-message--informative" role="status" style="margin-top:8px">
@@ -960,6 +1076,10 @@ function openPrevalidacionModal({ p, onCompleto }) {
 function openEscenarioModal({ p, onCompleto }) {
   const suidCode = p.registroSuid?.codigo || `SUID-${(p.departamento || 'COL').slice(0, 3).toUpperCase()}-${(p.idUnico || '').replace(/[^0-9]/g, '').slice(0, 6)}`;
   const reg = p.registroSuid || {};
+  const infer = inferFromProyecto(p, reg);
+  const heredadosTxt = infer.__inferenciasCount > 0
+    ? `${infer.__inferenciasCount} campos vienen prellenados desde el proyecto · revísalos antes de continuar`
+    : '';
 
   const SUBSTEPS = [
     { id: 1, label: 'Información general' },
@@ -997,25 +1117,34 @@ function openEscenarioModal({ p, onCompleto }) {
 
         <form id="suidFormB" novalidate>
 
+          ${heredadosTxt ? `
+            <div class="naowee-message naowee-message--informative" role="status">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__title">${heredadosTxt}</span>
+              </div>
+            </div>
+          ` : ''}
+
           <!-- ═══ PASO 1 · Información general ═══ -->
           <div class="ai-step-panel" data-panel="1">
 
             <div class="suid-section-block">
               <div class="ai-section-title">Datos de propiedad</div>
               <div class="ai-grid-2">
-                ${textfield({ label: 'Nombre de la entidad propietaria', name: 'entidadPropietaria', required: true, placeholder: 'Escriba el nombre', value: reg.entidadPropietaria || '' })}
+                ${textfield({ label: 'Nombre de la entidad propietaria', name: 'entidadPropietaria', required: true, placeholder: 'Escriba el nombre', value: infer.entidadPropietaria })}
                 ${dropdown({ label: 'Tipo de propietario', name: 'tipoPropietario', required: true, options: TIPOS_PROPIETARIO, value: reg.tipoPropietario || '' })}
               </div>
               <div class="ai-grid-2">
                 ${textfield({ label: 'Entidad administradora', name: 'entidadAdministradora', placeholder: 'Escriba el nombre', value: reg.entidadAdministradora || '' })}
                 ${dropdown({ label: 'Tipo de tenencia', name: 'tipoTenencia', required: true, options: TIPOS_TENENCIA, value: reg.tipoTenencia || '' })}
               </div>
-              ${textfield({ label: 'Nombre del responsable del escenario', name: 'responsable', required: true, placeholder: 'Escriba el nombre del responsable', value: reg.responsable || p.representante?.nombre || '' })}
+              ${textfield({ label: 'Nombre del responsable del escenario', name: 'responsable', required: true, placeholder: 'Escriba el nombre del responsable', value: infer.responsable })}
               <div class="ai-grid-2">
-                ${textfield({ label: 'Teléfono del responsable', name: 'telefonoResponsable', required: true, placeholder: '311 234 5678', value: reg.telefonoResponsable || p.representante?.contacto || '' })}
-                ${textfield({ label: 'Correo del responsable', name: 'emailResponsable', placeholder: 'correo@municipio.gov.co', value: reg.emailResponsable || '' })}
+                ${textfield({ label: 'Teléfono del responsable', name: 'telefonoResponsable', required: true, placeholder: '311 234 5678', value: infer.telefonoResponsable })}
+                ${textfield({ label: 'Correo del responsable', name: 'emailResponsable', placeholder: 'correo@municipio.gov.co', value: infer.emailResponsable })}
               </div>
-              ${toggleSwitch({ label: '¿Es un proyecto de inversión?', name: 'esInversion', value: reg.esInversion === true || reg.esInversion === 'true' || !!p.inversion, helper: 'Marca si el escenario es financiado por la convocatoria del Ministerio' })}
+              ${toggleSwitch({ label: '¿Es un proyecto de inversión?', name: 'esInversion', value: infer.esInversion, helper: 'Marca si el escenario es financiado por la convocatoria del Ministerio' })}
             </div>
 
             <div class="suid-section-block">
@@ -1041,11 +1170,11 @@ function openEscenarioModal({ p, onCompleto }) {
 
             <div class="suid-section-block">
               <div class="ai-section-title">Identificación</div>
-              ${toggleSwitch({ label: '¿La sede es un Centro de Alto Rendimiento (CAR)?', name: 'esCar', value: reg.esCar === 'Sí' || reg.esCar === true, required: true })}
-              ${segmentControl({ label: 'Tipo de infraestructura', name: 'tipoInfra', options: TIPO_INFRA, value: reg.tipoInfra || 'Recreativa', required: true })}
+              ${toggleSwitch({ label: '¿La sede es un Centro de Alto Rendimiento (CAR)?', name: 'esCar', value: infer.esCar === 'Sí', required: true })}
+              ${segmentControl({ label: 'Tipo de infraestructura', name: 'tipoInfra', options: TIPO_INFRA, value: infer.tipoInfra, required: true })}
               <div class="ai-grid-2">
-                ${dropdown({ label: 'Tipo de infraestructura general', name: 'tipoInfraGeneral', required: true, options: TIPO_INFRA_GENERAL, value: reg.tipoInfraGeneral || '' })}
-                ${dropdown({ label: 'Tipo de escenario', name: 'tipoEscenario', required: true, options: TIPOS_ESCENARIO, value: reg.tipoEscenario || '' })}
+                ${dropdown({ label: 'Tipo de infraestructura general', name: 'tipoInfraGeneral', required: true, options: TIPO_INFRA_GENERAL, value: infer.tipoInfraGeneral })}
+                ${dropdown({ label: 'Tipo de escenario', name: 'tipoEscenario', required: true, options: TIPOS_ESCENARIO, value: infer.tipoEscenario })}
               </div>
             </div>
 
@@ -1065,7 +1194,7 @@ function openEscenarioModal({ p, onCompleto }) {
               </div>
               <div class="ai-grid-2">
                 ${dropdown({ label: 'Estado de conservación', name: 'estadoConservacion', required: true, options: ESTADO_CONSERVACION, value: reg.estadoConservacion || '' })}
-                ${textfield({ label: 'Sub-espacios / canchas', name: 'cantidadSubespacios', placeholder: '1', value: reg.cantidadSubespacios || '1' })}
+                ${textfield({ label: 'Sub-espacios / canchas', name: 'cantidadSubespacios', placeholder: '1', value: String(infer.cantidadSubespacios) })}
               </div>
             </div>
           </div>
@@ -1079,8 +1208,8 @@ function openEscenarioModal({ p, onCompleto }) {
                 label: 'Selecciona todas las disciplinas que se practican en el escenario',
                 name: 'disciplinas',
                 options: DISCIPLINAS,
-                value: reg.disciplinas || [],
-                helper: `${DISCIPLINAS.length} disciplinas disponibles · mínimo 1`
+                value: infer.disciplinas,
+                helper: `${DISCIPLINAS.length} disciplinas disponibles · mínimo 1${infer.disciplinas.length > 0 ? ` · ${infer.disciplinas.length} prellenadas del proyecto` : ''}`
               })}
             </div>
 
@@ -1105,7 +1234,7 @@ function openEscenarioModal({ p, onCompleto }) {
 
             <div class="suid-section-block">
               <div class="ai-section-title">Programas y uso</div>
-              ${textarea({ label: 'Descripción del escenario', name: 'descripcion', placeholder: 'Contexto, particularidades técnicas, programas que aloja...', rows: 3, value: reg.descripcion || '' })}
+              ${textarea({ label: 'Descripción del escenario', name: 'descripcion', placeholder: 'Contexto, particularidades técnicas, programas que aloja...', rows: 3, value: infer.descripcion })}
               ${multiselect({ name: 'programasMindeporte', label: 'Programas del Ministerio que se ejecutan', options: PROGRAMAS_MINDEPORTE, placeholder: 'Selecciona uno o más programas', helper: '6 programas disponibles' })}
               <div class="ai-grid-2">
                 ${textfield({ label: 'Población mensual atendida', name: 'poblacionMensual', placeholder: '1.500', mask: 'money', value: reg.poblacionMensual ? String(reg.poblacionMensual) : '' })}

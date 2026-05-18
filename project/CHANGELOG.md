@@ -56,6 +56,17 @@
 - **Tooltip clipped en sidebar de docs** (`revisor/revisar-area.html`) — el tooltip DS canónico del botón download quedaba enmascarado dentro del card por dos `overflow: hidden` en cadena (`.ra-docs-card` y `.ra-docs-card__list`). El `overflow-y: auto` de la lista además clipea implícitamente el eje X (CSS quirk: cuando un eje es non-visible, el otro tampoco puede serlo). Fix: ambos contenedores migrados a `overflow: visible`. El crecimiento del listado se contiene con el patrón "Ver más" existente (no se necesita scroll interno).
 
 ### Refactored
+- **Registro SUID rev2 — arquitectura 2 fases** (`shared/modal-suid.js`, Doug 17/05/2026): el wizard de 8 pasos plano se reemplazó por la arquitectura 2-fases del módulo de escenarios oficial:
+  - **Fase A · Pre-validación** — 1 pantalla con datos básicos (nombre, depto, municipio, catastral, zona) + georreferenciación (mapa placeholder con grid + 2 CTAs cream "Marcar mi ubicación actual" / "Ubicarme en el mapa" + lat/lng + dirección). CTA `Validar y continuar` → inline success state (check verde + bullets) → "Continuar registro" abre Fase B
+  - **Fase B · Datos del escenario** — sub-stepper de 3 pasos:
+    1. *Información general* — propiedad/administración (entidad, tipo propietario/tenencia, responsable, contacto, `toggleSwitch` "¿Es proyecto de inversión?") + datos administrativos (`segmentControl` horario preset + `daySelector` L/M/M/J/V/S/D + `toggleSwitch` 24h + `timeField` apertura/cierre)
+    2. *Escenario físico* — identificación (`toggleSwitch` CAR + `segmentControl` tipo infra + dropdowns) + dimensiones (áreas, aforo, cubierta, años, estado conservación)
+    3. *Documentación* — disciplinas (`chipMulti`) + dotación + acceso + accesibilidad + programas + fotos (`datepicker` + 6 photo slots) + `fileUpload` soportes admin
+  - **Nuevos helpers DS-aligned:** `toggleSwitch` (iOS-like switch con hidden input true/false), `segmentControl` (radio segmented), `chipMulti` (multi-toggle con check), `daySelector` (chips L/M/M/J/V/S/D), `mapPlaceholder` (grid SVG + pin + 2 CTAs cream), `timeField` (input type=time DS-wrapped)
+  - **Routing inteligente:** `openSuidModal` lee `reg.prevalidacionEn` — si existe, salta directo a Fase B; si no, arranca por Fase A
+  - **Persistencia preservada:** mismo `p.registroSuid` data shape + nuevos campos (entidadPropietaria, horarioPreset, esInversion, etc) + push notif admin + historial
+
+### Refactored (legado)
 - **Registro SUID del escenario deportivo (Res. 933 Art. 10)** — el formulario inline de 9 secciones (`admin/registro-suid.html`, 963 líneas) usaba componentes hardcoded (segments custom, chips custom, photo slots, textarea sin DS, type=date nativo, messages custom, sin stepper). Refactor completo replicando el patrón del wizard de escenarios oficial ([naowee-test-escenarios/escenario-08-dashboard.html](https://naowee-tech.github.io/naowee-test-escenarios/escenario-08-dashboard.html?mode=single)) con DS Naowee canonical:
   - **Nuevo `shared/modal-suid.js`** — modal wizard de 8 pasos:
     1. **Datos básicos** — catastral + zona (con `naowee-message --informative` de pre-validación y `--positive` cuando el catastral es único)

@@ -35,7 +35,7 @@
    */
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260516b';
-  import { openSuidModal } from '../shared/modal-suid.js?v=20260517a';
+  import { openSuidModal } from '../shared/modal-suid.js?v=20260517b';
 
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'inversion' });
@@ -77,7 +77,7 @@
           <div class="naowee-empty-state__msg" style="color:var(--text-secondary);margin-bottom:8px"><strong>${p.nombre}</strong> · ${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</div>
           <div class="naowee-empty-state__msg" style="color:var(--text-secondary);margin-bottom:18px">
             <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${yaCompleto ? 'var(--green,#15803d)' : 'var(--accent,#d74009)'}">${suidCode}</span>
-            · ${yaCompleto ? 'Ya inventariado · puedes editar' : 'Pendiente · 8 pasos de diligenciamiento'}
+            · ${yaCompleto ? 'Ya inventariado · puedes editar' : 'Pendiente · pre-validación + 3 pasos del escenario'}
           </div>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
             <button type="button" class="naowee-btn naowee-btn--loud" id="btnAbrirSuid">

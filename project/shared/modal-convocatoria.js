@@ -2984,4 +2984,187 @@ export function openConvocatoriaModal({ onCreated } = {}) {
   });
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   openEditarConvocatoriaQuick — Quick-edit modal (Doug 17/05/2026)
+   ═══════════════════════════════════════════════════════════════════
+   Modal lightweight para corregir errores comunes después de crear
+   una convocatoria (typos, fechas, presupuestos). No pretende
+   reemplazar al wizard completo — solo edita los campos high-level
+   que el admin típicamente necesita ajustar:
+     - nombre, descripción
+     - apertura, cierre (datepickers DS)
+     - presupuesto total, monto máximo por proyecto (money mask)
+     - estado (abierta / cerrada)
+   ═══════════════════════════════════════════════════════════════════ */
+export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) {
+  const conv = ProjectData.getConvocatorias().find(c => c.id === convocatoriaId);
+  if (!conv) {
+    alert('Convocatoria no encontrada.');
+    return;
+  }
+
+  /* CSS one-time */
+  if (!document.getElementById('editConvQuickStyle')) {
+    const st = document.createElement('style');
+    st.id = 'editConvQuickStyle';
+    st.textContent = `
+      #editConvQuickOverlay .naowee-modal { width: 600px !important; max-width: calc(100vw - 48px) !important; border-radius: 16px; }
+      #editConvQuickOverlay .naowee-modal__body { display: flex !important; flex-direction: column !important; gap: 16px !important; padding: 20px 24px !important; }
+      #editConvQuickOverlay .naowee-modal__footer { padding: 16px 24px !important; gap: 12px !important; display: flex !important; }
+      #editConvQuickOverlay .naowee-modal__footer .naowee-btn { flex: 1; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; }
+      #editConvQuickOverlay .naowee-modal__footer .naowee-btn--mute { flex: 0 0 auto; padding: 0 20px; }
+      #editConvQuickOverlay .ai-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      #editConvQuickOverlay .ai-section-title { font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-secondary, #9ca0b8); margin: 0; }
+      /* Estado segment */
+      .editq-segment { display: inline-flex; padding: 3px; gap: 3px; border: 1px solid var(--border-dark); border-radius: 8px; background: #fff; width: fit-content; }
+      .editq-segment__opt { padding: 7px 16px; background: transparent; border: 0; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
+      .editq-segment__opt.is-selected { background: var(--orange-bg, #fff3e6); color: var(--accent); border: 1px solid var(--accent); padding: 6px 15px; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  const closeIconLocal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'naowee-modal-overlay';
+  overlay.id = 'editConvQuickOverlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.innerHTML = `
+    <div class="naowee-modal naowee-modal--fixed-header naowee-modal--fixed-footer">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title">Editar convocatoria</h2>
+          <p class="naowee-modal__subtitle"><strong>${conv.id}</strong> · Bienio ${conv.bienio || ''}</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" data-close aria-label="Cerrar">${closeIconLocal}</button>
+      </div>
+
+      <div class="naowee-modal__body">
+        <form id="editConvForm" novalidate>
+
+          <div class="ai-section-title">Identificación</div>
+          ${textfield({ label: 'Nombre de la convocatoria', name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
+          ${textarea({ label: 'Descripción', name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
+
+          <div class="ai-section-title">Ventana de postulación</div>
+          <div class="ai-grid-2">
+            ${datepicker({ label: 'Apertura', name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
+            ${datepicker({ label: 'Cierre', name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
+          </div>
+
+          <div class="ai-section-title">Presupuesto</div>
+          <div class="ai-grid-2">
+            ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
+            ${textfield({ label: 'Tope por proyecto (COP)', name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
+          </div>
+
+          <div class="ai-section-title">Estado</div>
+          <div class="editq-segment" role="radiogroup" aria-label="Estado">
+            <button type="button" class="editq-segment__opt ${conv.estado === 'abierta' ? 'is-selected' : ''}" data-estado="abierta">Abierta</button>
+            <button type="button" class="editq-segment__opt ${conv.estado === 'cerrada' ? 'is-selected' : ''}" data-estado="cerrada">Cerrada</button>
+          </div>
+          <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
+
+        </form>
+      </div>
+
+      <div class="naowee-modal__footer">
+        <button type="button" class="naowee-btn naowee-btn--mute" data-close>Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" data-save>Guardar cambios</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.classList.add('is-open'), 10);
+
+  const form = overlay.querySelector('#editConvForm');
+  bindDropdowns(form);
+  bindDatepickers(form);
+
+  /* Pre-fill datepickers (necesitan trigger manual porque su helper interno
+     no acepta value en su constructor) */
+  setTimeout(() => {
+    const aperturaField = form.querySelector('.naowee-datepicker-field[data-name="apertura"]');
+    const cierreField = form.querySelector('.naowee-datepicker-field[data-name="cierre"]');
+    [
+      { field: aperturaField, val: conv.apertura },
+      { field: cierreField,   val: conv.cierre }
+    ].forEach(({ field, val }) => {
+      if (!field || !val) return;
+      const dt = new Date(val);
+      if (isNaN(dt.getTime())) return;
+      const hidden = field.querySelector('input[type="hidden"]');
+      const valueEl = field.querySelector('.naowee-datepicker-field__value');
+      const iso = dt.toISOString().split('T')[0];
+      if (hidden) hidden.value = iso;
+      if (valueEl) {
+        const fmt = dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+        valueEl.textContent = fmt;
+        valueEl.style.color = 'var(--text-primary)';
+      }
+    });
+  }, 50);
+
+  /* Segment estado */
+  const estadoHidden = form.querySelector('input[name="estado"]');
+  overlay.querySelectorAll('.editq-segment__opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      overlay.querySelectorAll('.editq-segment__opt').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      if (estadoHidden) estadoHidden.value = btn.dataset.estado;
+    });
+  });
+
+  /* Bind masks */
+  if (typeof bindMasksInLocal === 'function') bindMasksInLocal(form);
+
+  /* Save */
+  overlay.querySelector('[data-save]').addEventListener('click', () => {
+    const fd = new FormData(form);
+    const nombre = (fd.get('nombre') || '').toString().trim();
+    const apertura = (fd.get('apertura') || '').toString().trim();
+    const cierre = (fd.get('cierre') || '').toString().trim();
+
+    if (!nombre) { alert('El nombre es obligatorio.'); return; }
+    if (!apertura || !cierre) { alert('Las fechas de apertura y cierre son obligatorias.'); return; }
+
+    const presupuestoTotal = parseInt((fd.get('presupuestoTotal') || '').toString().replace(/\D/g, '')) || 0;
+    const montoMaximoProyecto = parseInt((fd.get('montoMaximoProyecto') || '').toString().replace(/\D/g, '')) || 0;
+
+    ProjectData.setConvocatoria(convocatoriaId, c => ({
+      ...c,
+      nombre,
+      descripcion: (fd.get('descripcion') || '').toString().trim(),
+      apertura,
+      cierre,
+      presupuestoTotal,
+      montoMaximoProyecto,
+      estado: fd.get('estado') || 'abierta',
+      actualizadaEn: new Date().toISOString()
+    }));
+
+    close();
+    if (typeof onUpdated === 'function') onUpdated(ProjectData.getConvocatorias().find(c => c.id === convocatoriaId));
+  });
+
+  /* Close handlers */
+  function close() {
+    overlay.classList.remove('is-open');
+    setTimeout(() => overlay.remove(), 240);
+    document.removeEventListener('keydown', escListener);
+  }
+  function escListener(e) { if (e.key === 'Escape') close(); }
+  overlay.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', close));
+  setTimeout(() => {
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  }, 50);
+  document.addEventListener('keydown', escListener);
+}
+
+/* Re-export el binder de masks de wizard-page (para que el quick-edit
+   modal lo encuentre — bindMasksIn vive en masks.js pero lo importa
+   wizard-page). Workaround para evitar import circular. */
+import { bindMasksIn as bindMasksInLocal } from './masks.js';
+
 export { textfield, textarea, dropdown, checkbox, bindDropdowns, fileUpload, bindFileUpload, datepicker, bindDatepickers };

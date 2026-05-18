@@ -22,7 +22,7 @@ import ProjectData from './data.js';
 import {
   textfield, textarea, dropdown, fileUpload,
   bindDropdowns, datepicker, bindDatepickers
-} from './modal-convocatoria.js?v=20260517k';
+} from './modal-convocatoria.js?v=20260517l';
 import { multiselect, bindMultiselects, bindFileUploads, runConfetti } from './wizard-page.js?v=20260516b';
 import { bindMasksIn, unmask } from './masks.js';
 import { toast } from './toast.js';

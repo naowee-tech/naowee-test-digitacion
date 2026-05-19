@@ -215,13 +215,10 @@
     });
   });
 
-  /* Doug 19/05/2026: render inicial del viewSlot según currentView
-     (de localStorage). renderView() también llama bindEditButtons()
-     internamente — solo cuando hay convocatorias (el empty state no
-     tiene buttons que rebindar). */
-  if (convocatorias.length > 0) {
-    renderView();
-  }
+  /* Render inicial movido al final del script (después de declarar
+     todas las consts que applyFilters/renderView usan — activeFilters,
+     searchTerm, etc. — para evitar TDZ ReferenceError que crashea
+     silenciosamente el script). Doug 19/05/2026. */
 
   /* Doug 17/05/2026 rev2: edit button bind DIRECTO post-render.
      El document-level delegation no funcionaba porque la fila tiene
@@ -429,6 +426,14 @@
       renderView();
     });
   });
+
+  /* Render inicial del viewSlot según currentView (de localStorage).
+     LLAMADO AL FINAL del script: todas las consts que usa renderView
+     (vía applyFilters: activeFilters, searchTerm) ya están declaradas.
+     renderView() llama bindEditButtons() internamente. */
+  if (convocatorias.length > 0) {
+    renderView();
+  }
 </script>
 </body>
 </html>

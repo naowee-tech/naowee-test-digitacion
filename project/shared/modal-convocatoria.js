@@ -3053,46 +3053,115 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     st.id = 'editConvQuickStyle';
     st.textContent = `
       #editConvQuickOverlay .naowee-modal { width: 620px !important; max-width: calc(100vw - 48px) !important; border-radius: 16px; }
-      #editConvQuickOverlay .naowee-modal__body { display: flex !important; flex-direction: column !important; gap: 16px !important; padding: 20px 24px !important; }
-      #editConvQuickOverlay .naowee-modal__footer { padding: 16px 24px !important; gap: 12px !important; display: flex !important; }
-      #editConvQuickOverlay .naowee-modal__footer .naowee-btn { flex: 1; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; }
-      #editConvQuickOverlay .naowee-modal__footer .naowee-btn--mute { flex: 0 0 auto; padding: 0 20px; }
+
+      /* Doug 19/05/2026 rev3: body con más respiración entre campos
+         (gap 22px), section titles con gris claro #9ca0b8 + spacing
+         superior para separar del bloque anterior. */
+      #editConvQuickOverlay .naowee-modal__body {
+        display: flex !important; flex-direction: column !important;
+        gap: 22px !important;
+        padding: 22px 24px !important;
+      }
+      #editConvQuickOverlay .ai-section-title {
+        font-size: 11px; font-weight: 700;
+        letter-spacing: .5px; text-transform: uppercase;
+        color: #9ca0b8;
+        margin: 0;
+      }
       #editConvQuickOverlay .ai-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      #editConvQuickOverlay .ai-section-title { font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-secondary, #9ca0b8); margin: 0; }
-      /* Estado segment */
-      .editq-segment { display: inline-flex; padding: 3px; gap: 3px; border: 1px solid var(--border-dark); border-radius: 8px; background: #fff; width: fit-content; }
-      .editq-segment__opt { padding: 7px 16px; background: transparent; border: 0; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
-      .editq-segment__opt.is-selected { background: var(--orange-bg, #fff3e6); color: var(--accent); border: 1px solid var(--accent); padding: 6px 15px; }
-      .editq-segment__opt:disabled { opacity: .5; cursor: not-allowed; }
-      /* Locked field — gris + lock icon + helper rojo sutil */
+
+      /* Footer: CTAs en lados opuestos con ancho según label (no flex:1) */
+      #editConvQuickOverlay .naowee-modal__footer {
+        padding: 16px 24px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+      }
+      #editConvQuickOverlay .naowee-modal__footer .naowee-btn {
+        flex: 0 0 auto;
+        height: 44px;
+        padding: 0 24px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      /* Estado segment — pattern DS canónico (mismo que .suid-segment
+         de modal-suid.js): outline container con padding 3px, opt
+         transparente, selected con orange-bg + accent SIN cambiar
+         padding/border para no provocar shift visual. */
+      .editq-segment {
+        display: inline-flex; align-items: stretch;
+        border: 1px solid var(--border-dark, #d0d4e6);
+        border-radius: var(--radius-md, 8px);
+        background: var(--surface, #fff);
+        padding: 3px;
+        gap: 3px;
+        width: fit-content;
+      }
+      .editq-segment__opt {
+        padding: 7px 16px;
+        background: transparent;
+        border: 0;
+        font-family: inherit;
+        font-size: 13px; font-weight: 600;
+        color: var(--text-secondary, #646587);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background .12s, color .12s;
+        letter-spacing: 0;
+      }
+      .editq-segment__opt:hover:not(.is-selected):not(:disabled) {
+        background: var(--bg, #f5f6fa);
+        color: var(--text-primary, #282834);
+      }
+      .editq-segment__opt.is-selected {
+        background: var(--orange-bg, #fff3e6);
+        color: var(--accent, #d74009);
+      }
+      .editq-segment__opt:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+      }
+
+      /* Locked field — DS Naowee disabled state (sin emoji 🔒) */
       .editq-field-wrap { position: relative; }
       .editq-field-wrap.is-locked .naowee-textfield__input,
       .editq-field-wrap.is-locked .naowee-textfield__input-wrap,
       .editq-field-wrap.is-locked .naowee-dropdown__trigger,
       .editq-field-wrap.is-locked .naowee-datepicker-field__input,
       .editq-field-wrap.is-locked textarea {
-        background: var(--bg, #f5f6fa) !important;
-        color: var(--text-secondary, #9c9ebf) !important;
+        background: var(--naowee-color-bg-disabled, #f0f1f7) !important;
+        color: var(--naowee-color-text-disabled, #9c9ebf) !important;
+        border-color: var(--naowee-color-border-disabled, #e7e9f3) !important;
         cursor: not-allowed !important;
         pointer-events: none;
       }
-      .editq-field-wrap.is-locked .naowee-textfield__label::after {
-        content: ' 🔒';
-        font-size: 11px;
-        margin-left: 4px;
+      .editq-field-wrap.is-locked .naowee-textfield__input::placeholder,
+      .editq-field-wrap.is-locked textarea::placeholder {
+        color: var(--naowee-color-text-disabled, #9c9ebf) !important;
       }
-      .editq-field-wrap__lock-reason {
-        display: flex; align-items: flex-start; gap: 6px;
-        margin-top: 6px;
-        padding: 6px 10px;
-        background: #fff8f4;
-        border-left: 2px solid var(--accent, #d74009);
-        border-radius: 4px;
-        font-size: 11.5px;
-        color: var(--text-secondary, #646587);
-        line-height: 1.4;
+      /* Lock icon: ? circular naranja al final del label con tooltip DS */
+      .editq-lock-icon {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 16px; height: 16px;
+        margin-left: 6px;
+        border-radius: 50%;
+        background: transparent;
+        border: 1.5px solid var(--accent, #d74009);
+        color: var(--accent, #d74009);
+        font-size: 11px; font-weight: 700; line-height: 1;
+        cursor: help;
+        vertical-align: middle;
+        transition: background .12s;
       }
-      .editq-field-wrap__lock-reason strong { color: var(--accent, #d74009); }
+      .editq-lock-icon:hover,
+      .editq-lock-icon:focus-visible {
+        background: var(--orange-bg, #fff3e6);
+        outline: none;
+      }
+
+      /* Hint azul info para restricciones (no lock — ej: extender plazo) */
       .editq-field-hint {
         display: flex; align-items: flex-start; gap: 6px;
         margin-top: 6px;
@@ -3108,6 +3177,13 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     `;
     document.head.appendChild(st);
   }
+
+  /* Helper local: renderiza el icono `?` con tooltip DS al final del label.
+     Se concatena al string del label que recibe textfield/dropdown/datepicker
+     (esos helpers no escapan HTML, así que el span se inyecta limpio). */
+  const lockIcon = (reason) => reason
+    ? ` <span class="editq-lock-icon has-tooltip" data-tooltip="Bloqueado: ${reason}" tabindex="0" aria-label="Campo bloqueado: ${reason}">?</span>`
+    : '';
 
   const closeIconLocal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
@@ -3160,45 +3236,42 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
 
           <div class="ai-section-title">Identificación</div>
           <div class="editq-field-wrap ${policy.fields.nombre.editable ? '' : 'is-locked'}">
-            ${textfield({ label: 'Nombre de la convocatoria', name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
-            ${policy.fields.nombre.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.nombre.lockReason}</div>` : ''}
+            ${textfield({ label: 'Nombre de la convocatoria' + lockIcon(policy.fields.nombre.lockReason), name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
           </div>
           <div class="editq-field-wrap ${policy.fields.descripcion.editable ? '' : 'is-locked'}">
-            ${textarea({ label: 'Descripción', name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
+            ${textarea({ label: 'Descripción' + lockIcon(policy.fields.descripcion.lockReason), name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
           </div>
 
           <div class="ai-section-title">Ventana de postulación</div>
           <div class="ai-grid-2">
             <div class="editq-field-wrap ${policy.fields.apertura.editable ? '' : 'is-locked'}">
-              ${datepicker({ label: 'Apertura', name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
-              ${policy.fields.apertura.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.apertura.lockReason}</div>` : ''}
+              ${datepicker({ label: 'Apertura' + lockIcon(policy.fields.apertura.lockReason), name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
             </div>
             <div class="editq-field-wrap ${policy.fields.cierre.editable ? '' : 'is-locked'}">
-              ${datepicker({ label: 'Cierre', name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
-              ${policy.fields.cierre.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.cierre.lockReason}</div>` : (policy.fields.cierre.minDateNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.cierre.minDateNote}</span></div>` : '')}
+              ${datepicker({ label: 'Cierre' + lockIcon(policy.fields.cierre.lockReason), name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
+              ${!policy.fields.cierre.lockReason && policy.fields.cierre.minDateNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.cierre.minDateNote}</span></div>` : ''}
             </div>
           </div>
 
           <div class="ai-section-title">Presupuesto</div>
           <div class="ai-grid-2">
             <div class="editq-field-wrap ${policy.fields.presupuestoTotal.editable ? '' : 'is-locked'}">
-              ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
-              ${policy.fields.presupuestoTotal.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.presupuestoTotal.lockReason}</div>` : (policy.fields.presupuestoTotal.minValueNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.presupuestoTotal.minValueNote}</span></div>` : '')}
+              ${textfield({ label: 'Presupuesto total (COP)' + lockIcon(policy.fields.presupuestoTotal.lockReason), name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
+              ${!policy.fields.presupuestoTotal.lockReason && policy.fields.presupuestoTotal.minValueNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.presupuestoTotal.minValueNote}</span></div>` : ''}
             </div>
             <div class="editq-field-wrap ${policy.fields.montoMaximoProyecto.editable ? '' : 'is-locked'}">
-              ${textfield({ label: 'Tope por proyecto (COP)', name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
-              ${policy.fields.montoMaximoProyecto.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.montoMaximoProyecto.lockReason}</div>` : ''}
+              ${textfield({ label: 'Tope por proyecto (COP)' + lockIcon(policy.fields.montoMaximoProyecto.lockReason), name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
             </div>
           </div>
 
-          <div class="ai-section-title">Estado</div>
+          <div class="ai-section-title">Estado${lockIcon(policy.fields.estado.lockReason)}</div>
           <div class="editq-field-wrap ${policy.fields.estado.editable ? '' : 'is-locked'}">
             <div class="editq-segment" role="radiogroup" aria-label="Estado">
               <button type="button" class="editq-segment__opt ${conv.estado === 'abierta' ? 'is-selected' : ''}" data-estado="abierta" ${policy.fields.estado.editable ? '' : 'disabled'}>Abierta</button>
               <button type="button" class="editq-segment__opt ${conv.estado === 'cerrada' ? 'is-selected' : ''}" data-estado="cerrada" ${policy.fields.estado.editable ? '' : 'disabled'}>Cerrada</button>
             </div>
             <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
-            ${policy.fields.estado.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.estado.lockReason}</div>` : (policy.fields.estado.canCloseManually ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.</span></div>` : '')}
+            ${!policy.fields.estado.lockReason && policy.fields.estado.canCloseManually ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.</span></div>` : ''}
           </div>
 
         </form>

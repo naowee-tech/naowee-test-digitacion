@@ -133,29 +133,36 @@
     background: transparent; border: 0; padding: 0;
     transition: opacity .18s ease;
   }
+  /* Doug 19/05/2026 rev2: icon-only sin stroke ni rectangle.
+     Idle  → icono en su color semántico (green/red/blue), sin bg ni border
+     Hover → bg sutil del color semántico (orange-bg style)
+     Active→ icono en color oscuro + bg fill del color semántico
+     Tooltips DS: "Cumple" / "No cumple" / "No aplica" (directos) */
   .dg-toggle__btn {
-    width: 34px; height: 34px;
+    width: 32px; height: 32px;
     padding: 0; min-width: 0;
     font-family: inherit;
-    background: #fff; color: var(--text-secondary);
-    border: 1px solid var(--border-dark);
+    background: transparent;
+    border: 0;
     border-radius: var(--radius-md);
     cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center;
-    transition: background .12s, color .12s, border-color .12s, transform .12s, opacity .12s;
+    transition: background .12s, color .12s, transform .12s, opacity .12s;
     flex-shrink: 0;
     /* Hidden by default cuando hay selección activa en la fila */
     opacity: 0; pointer-events: none;
   }
-  .dg-toggle__btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .dg-toggle__btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .dg-toggle__btn[data-r="cumple"]   { color: var(--green, #1f8923); }
+  .dg-toggle__btn[data-r="nocumple"] { color: #c01818; }
+  .dg-toggle__btn[data-r="na"]       { color: var(--blue-info, #1f78d1); }
 
   /* Hover de la fila → muestra todos los toggle buttons */
   .dg-item:hover .dg-toggle__btn,
   .dg-item:focus-within .dg-toggle__btn {
     opacity: 1; pointer-events: auto;
   }
-  /* Cuando NO hay selección en el item → toggle buttons siempre visibles
-     (el revisor necesita ver la opción para actuar) */
+  /* Cuando NO hay selección en el item → toggle buttons siempre visibles */
   .dg-item:not(.is-cumple):not(.is-nocumple):not(.is-na) .dg-toggle__btn {
     opacity: 1; pointer-events: auto;
   }
@@ -166,30 +173,26 @@
     opacity: 1; pointer-events: auto;
   }
 
-  /* Hover por color semántico (preview del color al pasar el mouse) */
-  .dg-toggle__btn[data-r="cumple"]:hover {
-    background: var(--green-bg); color: var(--green); border-color: var(--green);
-  }
-  .dg-toggle__btn[data-r="nocumple"]:hover {
-    background: var(--red-bg); color: #c01818; border-color: #c01818;
-  }
-  .dg-toggle__btn[data-r="na"]:hover {
-    background: var(--blue-bg); color: var(--blue-info); border-color: var(--blue-info);
-  }
+  /* Hover por color semántico: bg subtle del color del icon */
+  .dg-toggle__btn[data-r="cumple"]:hover    { background: var(--green-bg, #e6f4e7); }
+  .dg-toggle__btn[data-r="nocumple"]:hover  { background: var(--red-bg, #fff0ee); }
+  .dg-toggle__btn[data-r="na"]:hover        { background: var(--blue-bg, #eef5ff); }
   .dg-toggle__btn:active { transform: scale(.94); }
 
-  /* Estados activos: fill sólido del color semántico */
+  /* Estados activos: bg sutil semántico + icono en variant OSCURO
+     (verde oscuro / rojo oscuro / azul) — comunica seleccion sin
+     gritar como el filled solido anterior. */
   .dg-toggle__btn.is-active--cumple {
-    background: var(--green); color: #fff; border-color: var(--green);
-    box-shadow: 0 1px 4px rgba(31,137,35,.25);
+    background: var(--green-bg, #e6f4e7);
+    color: #156d18; /* darker green */
   }
   .dg-toggle__btn.is-active--nocumple {
-    background: #c01818; color: #fff; border-color: #c01818;
-    box-shadow: 0 1px 4px rgba(192,24,24,.25);
+    background: var(--red-bg, #fff0ee);
+    color: #8a1212; /* darker red */
   }
   .dg-toggle__btn.is-active--na {
-    background: var(--blue-info); color: #fff; border-color: var(--blue-info);
-    box-shadow: 0 1px 4px rgba(31,120,209,.25);
+    background: var(--blue-bg, #eef5ff);
+    color: #145b9c; /* darker blue */
   }
 
   /* ═══ DS tooltip canónico (dark, arrow, fade-in) ═══
@@ -771,8 +774,8 @@
                         ${downloadBtn}
                         <span class="dg-item__pill-slot">
                           <div class="dg-toggle" role="group" aria-label="Verificar cumplimiento">
-                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple" data-tooltip="Marcar como cumple" aria-label="Cumple">${ICONS.check}</button>
-                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple" data-tooltip="Marcar como no cumple" aria-label="No cumple">${ICONS.x}</button>
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple" data-tooltip="Cumple" aria-label="Cumple">${ICONS.check}</button>
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple" data-tooltip="No cumple" aria-label="No cumple">${ICONS.x}</button>
                             <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'na' ? 'is-active--na' : ''}" data-r="na" data-tooltip="No aplica" aria-label="N/A">${ICONS.dash || '<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg>'}</button>
                           </div>
                         </span>

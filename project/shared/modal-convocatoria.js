@@ -13,6 +13,7 @@
 
 import ProjectData from './data.js';
 import { validateRequired, bindValidationReset } from './wizard-page.js';
+import { toast } from './toast.js';
 
 const FUENTES = [
   'SGP','OCAD-Paz','Recursos Propios Mindeporte','Recursos Propios Municipio',
@@ -1718,6 +1719,9 @@ function setDatepickerValue(field, iso, dateObj) {
     if (hiddenInput) hiddenInput.value = '';
     if (clearBtn) clearBtn.hidden = true;
   }
+  /* Disparar input event para que dirty-tracking de forms padre detecte
+     el cambio (el set programático del value no dispara input nativo). */
+  if (hiddenInput) hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 /* Formato largo "16 de Junio de 2025" — patrón DS oficial */
@@ -3026,22 +3030,22 @@ function getEditPolicy(conv) {
   return {
     aperturaPasada, cierrePasado, hasPostulaciones, isCerrada, postulacionesCount,
     fields: {
-      nombre:               { editable: !isCerrada, lockReason: isCerrada ? 'Convocatoria cerrada' : null },
-      descripcion:          { editable: !isCerrada, lockReason: isCerrada ? 'Convocatoria cerrada' : null },
+      nombre:               { editable: !isCerrada, lockReason: isCerrada ? 'La convocatoria ya cerró.' : null },
+      descripcion:          { editable: !isCerrada, lockReason: isCerrada ? 'La convocatoria ya cerró.' : null },
       apertura:             { editable: !aperturaPasada && !isCerrada,
-                              lockReason: aperturaPasada ? 'La fecha de apertura ya pasó — no se puede reescribir' : isCerrada ? 'Convocatoria cerrada' : null },
+                              lockReason: aperturaPasada ? 'La fecha de apertura ya pasó, no se puede reescribir.' : isCerrada ? 'La convocatoria ya cerró.' : null },
       cierre:               { editable: !isCerrada,
-                              lockReason: isCerrada ? 'Convocatoria cerrada' : null,
+                              lockReason: isCerrada ? 'La convocatoria ya cerró.' : null,
                               minDate: now.toISOString().split('T')[0],
-                              minDateNote: 'Solo puedes extender el plazo (no acortar al pasado)' },
+                              minDateNote: 'Solo puedes extender el plazo, no acortar al pasado.' },
       presupuestoTotal:     { editable: !isCerrada,
-                              lockReason: isCerrada ? 'Convocatoria cerrada' : null,
+                              lockReason: isCerrada ? 'La convocatoria ya cerró.' : null,
                               minValue: hasPostulaciones ? conv.presupuestoTotal : 0,
-                              minValueNote: hasPostulaciones ? `Solo aumentar — ya hay ${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicadas` : null },
+                              minValueNote: hasPostulaciones ? `Solo puedes aumentar el presupuesto, ya hay ${postulacionesCount} postulación${postulacionesCount === 1 ? ' aplicada' : 'es aplicadas'}.` : null },
       montoMaximoProyecto:  { editable: !hasPostulaciones && !isCerrada,
-                              lockReason: hasPostulaciones ? `${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicaron con esta regla — el tope no se puede modificar` : isCerrada ? 'Convocatoria cerrada' : null },
+                              lockReason: hasPostulaciones ? `${postulacionesCount} postulación${postulacionesCount === 1 ? ' aplicada' : 'es aplicadas'} con esta regla, el tope ya no se puede modificar.` : isCerrada ? 'La convocatoria ya cerró.' : null },
       estado:               { editable: !isCerrada,
-                              lockReason: isCerrada ? 'Una convocatoria cerrada no se puede reabrir' : null,
+                              lockReason: isCerrada ? 'Una convocatoria cerrada no se puede reabrir.' : null,
                               canCloseManually: !isCerrada }
     }
   };
@@ -3183,7 +3187,10 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
   const helpIcon = (text, prefix = '', ariaPrefix = '') => text
     ? ` <span class="editq-help-icon has-tooltip" data-tooltip="${prefix}${text}" tabindex="0" aria-label="${ariaPrefix}${text}" role="img">${HELP_ICON_SVG}</span>`
     : '';
-  const lockIcon = (reason) => helpIcon(reason, 'Bloqueado: ', 'Campo bloqueado: ');
+  /* Doug 19/05 rev7: tooltip de lock SIN prefijo "Bloqueado:" —
+     la lockReason ya describe la situación de forma autónoma y el
+     icono ⓘ naranja comunica el carácter restrictivo del campo. */
+  const lockIcon = (reason) => helpIcon(reason, '', 'Campo bloqueado: ');
   const infoIcon = (text) => helpIcon(text, '', 'Restricción: ');
 
   const closeIconLocal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -3210,7 +3217,7 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
             <div class="naowee-message naowee-message--caution" role="status">
               <div class="naowee-message__header">
                 <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/></svg></span>
-                <span class="naowee-message__title">Convocatoria cerrada — modo solo lectura</span>
+                <span class="naowee-message__title">Convocatoria cerrada, modo solo lectura</span>
               </div>
               <div class="naowee-message__content">
                 <p class="naowee-message__text">Esta convocatoria ya cerró${policy.cierrePasado ? ' (fecha de cierre pasada)' : ''}. No se permiten ediciones para preservar la integridad histórica.</p>
@@ -3220,7 +3227,7 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
             <div class="naowee-message naowee-message--informative" role="status">
               <div class="naowee-message__header">
                 <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-                <span class="naowee-message__title">${policy.postulacionesCount} postulación${policy.postulacionesCount === 1 ? '' : 'es'} aplicada${policy.postulacionesCount === 1 ? '' : 's'} — algunos campos bloqueados</span>
+                <span class="naowee-message__title">${policy.postulacionesCount} postulación${policy.postulacionesCount === 1 ? '' : 'es'} aplicada${policy.postulacionesCount === 1 ? '' : 's'}, algunos campos bloqueados</span>
               </div>
               <div class="naowee-message__content">
                 <p class="naowee-message__text">Para proteger las reglas del juego de los municipios que ya postularon: el <strong>tope por proyecto</strong> queda fijo${policy.aperturaPasada ? ', la <strong>fecha de apertura</strong> no puede reescribirse' : ''} y el <strong>presupuesto total</strong> solo puede aumentar.</p>
@@ -3230,7 +3237,7 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
             <div class="naowee-message naowee-message--informative" role="status">
               <div class="naowee-message__header">
                 <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-                <span class="naowee-message__title">Convocatoria ya activada — la fecha de apertura queda bloqueada</span>
+                <span class="naowee-message__title">Convocatoria ya activada, la fecha de apertura queda bloqueada</span>
               </div>
             </div>
           ` : ''}
@@ -3359,7 +3366,11 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
       });
       btn.classList.add('naowee-segment__item--active');
       btn.setAttribute('aria-checked', 'true');
-      if (estadoHidden) estadoHidden.value = btn.dataset.estado;
+      if (estadoHidden) {
+        estadoHidden.value = btn.dataset.estado;
+        /* Trigger input event para dirty tracking */
+        estadoHidden.dispatchEvent(new Event('input', { bubbles: true }));
+      }
       positionPill();
     });
   });
@@ -3367,8 +3378,41 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
   /* Bind masks */
   if (typeof bindMasksInLocal === 'function') bindMasksInLocal(form);
 
+  /* ─── Dirty tracking ─────────────────────────────────────────────
+     Doug 19/05/2026: el botón Guardar cambios debe arrancar disabled
+     y solo activarse cuando el user introduce cambios reales vs el
+     estado inicial. Snapshot del form en JSON tras los pre-fills,
+     comparación en cada input event (incluye los sintéticos disparados
+     por segment y datepicker setDatepickerValue). */
+  const snapshotForm = () => {
+    const fd = new FormData(form);
+    return JSON.stringify({
+      nombre: (fd.get('nombre') || '').toString().trim(),
+      descripcion: (fd.get('descripcion') || '').toString().trim(),
+      apertura: (fd.get('apertura') || '').toString().trim(),
+      cierre: (fd.get('cierre') || '').toString().trim(),
+      presupuestoTotal: (fd.get('presupuestoTotal') || '').toString().replace(/\D/g, ''),
+      montoMaximoProyecto: (fd.get('montoMaximoProyecto') || '').toString().replace(/\D/g, ''),
+      estado: fd.get('estado') || 'abierta'
+    });
+  };
+
   /* Save — solo si hay save button (no en modo read-only) */
   const saveBtn = overlay.querySelector('[data-save]');
+  let baseline = null;
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    /* Capturar baseline post-prefill (datepickers se llenan en setTimeout 50,
+       segments en 80) — usamos 150 para garantizar todos los valores estables. */
+    setTimeout(() => { baseline = snapshotForm(); }, 150);
+    const checkDirty = () => {
+      if (baseline === null) return;
+      saveBtn.disabled = (snapshotForm() === baseline);
+    };
+    form.addEventListener('input', checkDirty);
+    form.addEventListener('change', checkDirty);
+  }
+
   if (saveBtn) saveBtn.addEventListener('click', () => {
     const fd = new FormData(form);
     const nombre = (fd.get('nombre') || '').toString().trim();
@@ -3412,7 +3456,7 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
 
     /* 4. Presupuesto total no puede reducirse si hay postulaciones */
     if (policy.fields.presupuestoTotal.minValue && presupuestoTotal < policy.fields.presupuestoTotal.minValue) {
-      alert(`El presupuesto total no puede reducirse — hay ${policy.postulacionesCount} postulación${policy.postulacionesCount === 1 ? '' : 'es'} comprometidas con el monto actual.`);
+      alert(`El presupuesto total no puede reducirse. Hay ${policy.postulacionesCount} postulación${policy.postulacionesCount === 1 ? '' : 'es'} comprometida${policy.postulacionesCount === 1 ? '' : 's'} con el monto actual.`);
       return;
     }
 
@@ -3429,7 +3473,8 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     if (estadoFinal !== conv.estado) cambios.push(`estado→${estadoFinal}`);
 
     if (cambios.length === 0) {
-      alert('No hay cambios para guardar.');
+      /* Defensive: el dirty-tracking ya debería tener el botón disabled,
+         pero por si acaso (cambios cosméticos que el snapshot ignora). */
       return;
     }
 
@@ -3448,12 +3493,22 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
         {
           ts: new Date().toISOString(),
           actor: 'admin',
-          evento: `Editada — ${cambios.join(', ')}${policy.hasPostulaciones ? ` · ${policy.postulacionesCount} postulación(es) afectada(s)` : ''}`
+          evento: `Editada (${cambios.join(', ')})${policy.hasPostulaciones ? ` · ${policy.postulacionesCount} postulación(es) afectada(s)` : ''}`
         }
       ]
     }));
 
     close();
+    /* Toast de éxito en esquina inferior derecha */
+    const cambiosLabel = cambios.length === 1
+      ? `Se actualizó: ${cambios[0]}.`
+      : `Se actualizaron ${cambios.length} campos: ${cambios.join(', ')}.`;
+    toast({
+      variant: 'positive',
+      title: 'Cambios guardados',
+      message: cambiosLabel,
+      duration: 4200
+    });
     if (typeof onUpdated === 'function') onUpdated(ProjectData.getConvocatorias().find(c => c.id === convocatoriaId));
   });
 

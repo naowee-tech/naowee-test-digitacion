@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519d">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519e">
 </head>
 <body>
 <div class="shell">
@@ -38,6 +38,12 @@
       const conteoReal = todosLosProyectos.filter(p => p.convocatoriaId === c.id).length;
       return { ...c, postulaciones: conteoReal || c.postulaciones || 0 };
     });
+
+  /* Doug 19/05/2026: persistir preferencia de vista (cards/list) en
+     localStorage — sticky entre refreshes y entre visitas al módulo.
+     Default cards para usuarios primerizos. */
+  const VIEW_KEY = 'naowee-project-convocatorias-view';
+  let currentView = localStorage.getItem(VIEW_KEY) || 'cards';
 
   function diasRestantes(cierre) {
     const ms = new Date(cierre) - new Date();
@@ -178,10 +184,10 @@
             <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" id="filterClear" disabled>Limpiar filtros <span id="filterClearCount"></span></button>
           </div>
           <div class="view-toggle" role="group" aria-label="Cambiar vista">
-            <button type="button" class="view-toggle__btn is-active" data-view="cards" aria-pressed="true" aria-label="Vista de tarjetas">
+            <button type="button" class="view-toggle__btn ${currentView === 'cards' ? 'is-active' : ''}" data-view="cards" aria-pressed="${currentView === 'cards'}" aria-label="Vista de tarjetas">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
             </button>
-            <button type="button" class="view-toggle__btn" data-view="list" aria-pressed="false" aria-label="Vista de lista">
+            <button type="button" class="view-toggle__btn ${currentView === 'list' ? 'is-active' : ''}" data-view="list" aria-pressed="${currentView === 'list'}" aria-label="Vista de lista">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             </button>
           </div>
@@ -193,7 +199,8 @@
               <div class="table-empty__title">Sin convocatorias publicadas</div>
               <div class="table-empty__msg">Crea la primera convocatoria desde el botón "Nueva convocatoria". Los municipios la verán y podrán postular sus proyectos.</div>
             </div>
-          ` : `<div id="cardsView" class="convo-grid">${convocatorias.map(renderCard).join('')}</div>`}
+          ` : ''}
+          <!-- viewSlot se rellena por renderView() según currentView (cards | list). -->
         </div>
       </div>
     </div>
@@ -208,12 +215,13 @@
     });
   });
 
-  /* Doug 19/05/2026: bindEditButtons en el INITIAL render. Antes solo
-     se invocaba desde renderView() (cuando el user togglea vistas),
-     pero el cards view se renderiza inline en pageContent.innerHTML
-     arriba — sin bind los <button> heredaban el onclick="fadeAndGo()"
-     del <article> padre al bubblear (el modal nunca abría). */
-  bindEditButtons();
+  /* Doug 19/05/2026: render inicial del viewSlot según currentView
+     (de localStorage). renderView() también llama bindEditButtons()
+     internamente — solo cuando hay convocatorias (el empty state no
+     tiene buttons que rebindar). */
+  if (convocatorias.length > 0) {
+    renderView();
+  }
 
   /* Doug 17/05/2026 rev2: edit button bind DIRECTO post-render.
      El document-level delegation no funcionaba porque la fila tiene
@@ -243,7 +251,6 @@
   const FILTER_LABELS = { estado: 'Estado' };
   const activeFilters = {};
   let searchTerm = '';
-  let currentView = 'cards';
 
   function renderView() {
     const slot = document.getElementById('viewSlot');
@@ -406,12 +413,14 @@
   /* Clear filters — usa la función global clearAllFilters */
   document.getElementById('filterClear').addEventListener('click', clearAllFilters);
 
-  /* View toggle */
+  /* View toggle — persiste el cambio en localStorage para que la
+     preferencia sea sticky entre refreshes y entre sesiones. */
   document.querySelectorAll('.view-toggle__btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const view = btn.dataset.view;
       if (view === currentView) return;
       currentView = view;
+      try { localStorage.setItem(VIEW_KEY, view); } catch (e) { /* storage disabled / full */ }
       document.querySelectorAll('.view-toggle__btn').forEach(b => {
         const active = b.dataset.view === view;
         b.classList.toggle('is-active', active);

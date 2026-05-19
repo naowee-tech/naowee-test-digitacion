@@ -3054,12 +3054,11 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     st.textContent = `
       #editConvQuickOverlay .naowee-modal { width: 620px !important; max-width: calc(100vw - 48px) !important; border-radius: 16px; }
 
-      /* Doug 19/05/2026 rev3: body con más respiración entre campos
-         (gap 22px), section titles con gris claro #9ca0b8 + spacing
-         superior para separar del bloque anterior. */
+      /* Doug 19/05/2026 rev4: body con gap 20px (separación clara entre
+         campos sin sobre-respirar), section titles gris claro #9ca0b8. */
       #editConvQuickOverlay .naowee-modal__body {
         display: flex !important; flex-direction: column !important;
-        gap: 22px !important;
+        gap: 20px !important;
         padding: 22px 24px !important;
       }
       #editConvQuickOverlay .ai-section-title {
@@ -3086,44 +3085,6 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
         font-weight: 600;
       }
 
-      /* Estado segment — pattern DS canónico (mismo que .suid-segment
-         de modal-suid.js): outline container con padding 3px, opt
-         transparente, selected con orange-bg + accent SIN cambiar
-         padding/border para no provocar shift visual. */
-      .editq-segment {
-        display: inline-flex; align-items: stretch;
-        border: 1px solid var(--border-dark, #d0d4e6);
-        border-radius: var(--radius-md, 8px);
-        background: var(--surface, #fff);
-        padding: 3px;
-        gap: 3px;
-        width: fit-content;
-      }
-      .editq-segment__opt {
-        padding: 7px 16px;
-        background: transparent;
-        border: 0;
-        font-family: inherit;
-        font-size: 13px; font-weight: 600;
-        color: var(--text-secondary, #646587);
-        cursor: pointer;
-        border-radius: 6px;
-        transition: background .12s, color .12s;
-        letter-spacing: 0;
-      }
-      .editq-segment__opt:hover:not(.is-selected):not(:disabled) {
-        background: var(--bg, #f5f6fa);
-        color: var(--text-primary, #282834);
-      }
-      .editq-segment__opt.is-selected {
-        background: var(--orange-bg, #fff3e6);
-        color: var(--accent, #d74009);
-      }
-      .editq-segment__opt:disabled {
-        opacity: .45;
-        cursor: not-allowed;
-      }
-
       /* Locked field — DS Naowee disabled state (sin emoji 🔒) */
       .editq-field-wrap { position: relative; }
       .editq-field-wrap.is-locked .naowee-textfield__input,
@@ -3141,8 +3102,21 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
       .editq-field-wrap.is-locked textarea::placeholder {
         color: var(--naowee-color-text-disabled, #9c9ebf) !important;
       }
-      /* Lock icon: ? circular naranja al final del label con tooltip DS */
-      .editq-lock-icon {
+      /* Doug 19/05 rev4: en datepickers locked, ocultar los controles
+         (clear × + chevron ⌄) — no tiene sentido mostrar acciones si
+         el campo es read-only por business rule. */
+      .editq-field-wrap.is-locked .naowee-datepicker-field__controls,
+      .editq-field-wrap.is-locked .naowee-datepicker-field__clear,
+      .editq-field-wrap.is-locked .naowee-datepicker-field__chevron {
+        display: none !important;
+      }
+
+      /* Help icon (lock + info): ? circular naranja al final del label
+         con tooltip DS. Usado para:
+           - lockIcon(reason)  -> tooltip "Bloqueado: <reason>"
+           - infoIcon(text)    -> tooltip "<text>" (restricciones no-lock,
+             ej. "Solo puedes extender el plazo") */
+      .editq-help-icon {
         display: inline-flex; align-items: center; justify-content: center;
         width: 16px; height: 16px;
         margin-left: 6px;
@@ -3155,35 +3129,27 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
         vertical-align: middle;
         transition: background .12s;
       }
-      .editq-lock-icon:hover,
-      .editq-lock-icon:focus-visible {
+      .editq-help-icon:hover,
+      .editq-help-icon:focus-visible {
         background: var(--orange-bg, #fff3e6);
         outline: none;
-      }
-
-      /* Hint azul info para restricciones (no lock — ej: extender plazo) */
-      .editq-field-hint {
-        display: flex; align-items: flex-start; gap: 6px;
-        margin-top: 6px;
-        font-size: 11.5px;
-        color: var(--text-secondary, #646587);
-        line-height: 1.4;
-      }
-      .editq-field-hint__icon {
-        color: var(--blue-info, #1f78d1);
-        flex-shrink: 0;
-        margin-top: 1px;
       }
     `;
     document.head.appendChild(st);
   }
 
-  /* Helper local: renderiza el icono `?` con tooltip DS al final del label.
-     Se concatena al string del label que recibe textfield/dropdown/datepicker
-     (esos helpers no escapan HTML, así que el span se inyecta limpio). */
-  const lockIcon = (reason) => reason
-    ? ` <span class="editq-lock-icon has-tooltip" data-tooltip="Bloqueado: ${reason}" tabindex="0" aria-label="Campo bloqueado: ${reason}">?</span>`
+  /* Helpers locales: renderizan icono `?` circular naranja con tooltip DS
+     al final del label. Se concatenan al string del label que recibe
+     textfield/dropdown/datepicker (esos helpers no escapan HTML, así que
+     el span se inyecta limpio).
+       - lockIcon(reason): tooltip "Bloqueado: <reason>" — campo read-only
+       - infoIcon(text):   tooltip "<text>" — restricción no-lock
+         (ej. cierre: "Solo puedes extender el plazo (no acortar al pasado)") */
+  const helpIcon = (text, prefix = '', ariaPrefix = '') => text
+    ? ` <span class="editq-help-icon has-tooltip" data-tooltip="${prefix}${text}" tabindex="0" aria-label="${ariaPrefix}${text}">?</span>`
     : '';
+  const lockIcon = (reason) => helpIcon(reason, 'Bloqueado: ', 'Campo bloqueado: ');
+  const infoIcon = (text) => helpIcon(text, '', 'Restricción: ');
 
   const closeIconLocal = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
@@ -3248,30 +3214,28 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
               ${datepicker({ label: 'Apertura' + lockIcon(policy.fields.apertura.lockReason), name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
             </div>
             <div class="editq-field-wrap ${policy.fields.cierre.editable ? '' : 'is-locked'}">
-              ${datepicker({ label: 'Cierre' + lockIcon(policy.fields.cierre.lockReason), name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
-              ${!policy.fields.cierre.lockReason && policy.fields.cierre.minDateNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.cierre.minDateNote}</span></div>` : ''}
+              ${datepicker({ label: 'Cierre' + lockIcon(policy.fields.cierre.lockReason) + (!policy.fields.cierre.lockReason ? infoIcon(policy.fields.cierre.minDateNote) : ''), name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
             </div>
           </div>
 
           <div class="ai-section-title">Presupuesto</div>
           <div class="ai-grid-2">
             <div class="editq-field-wrap ${policy.fields.presupuestoTotal.editable ? '' : 'is-locked'}">
-              ${textfield({ label: 'Presupuesto total (COP)' + lockIcon(policy.fields.presupuestoTotal.lockReason), name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
-              ${!policy.fields.presupuestoTotal.lockReason && policy.fields.presupuestoTotal.minValueNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.presupuestoTotal.minValueNote}</span></div>` : ''}
+              ${textfield({ label: 'Presupuesto total (COP)' + lockIcon(policy.fields.presupuestoTotal.lockReason) + (!policy.fields.presupuestoTotal.lockReason ? infoIcon(policy.fields.presupuestoTotal.minValueNote) : ''), name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
             </div>
             <div class="editq-field-wrap ${policy.fields.montoMaximoProyecto.editable ? '' : 'is-locked'}">
               ${textfield({ label: 'Tope por proyecto (COP)' + lockIcon(policy.fields.montoMaximoProyecto.lockReason), name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
             </div>
           </div>
 
-          <div class="ai-section-title">Estado${lockIcon(policy.fields.estado.lockReason)}</div>
+          <div class="ai-section-title">Estado${lockIcon(policy.fields.estado.lockReason)}${!policy.fields.estado.lockReason && policy.fields.estado.canCloseManually ? infoIcon('Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.') : ''}</div>
           <div class="editq-field-wrap ${policy.fields.estado.editable ? '' : 'is-locked'}">
-            <div class="editq-segment" role="radiogroup" aria-label="Estado">
-              <button type="button" class="editq-segment__opt ${conv.estado === 'abierta' ? 'is-selected' : ''}" data-estado="abierta" ${policy.fields.estado.editable ? '' : 'disabled'}>Abierta</button>
-              <button type="button" class="editq-segment__opt ${conv.estado === 'cerrada' ? 'is-selected' : ''}" data-estado="cerrada" ${policy.fields.estado.editable ? '' : 'disabled'}>Cerrada</button>
+            <div class="naowee-segment naowee-segment--small" role="radiogroup" aria-label="Estado" data-segment="estado">
+              <div class="naowee-segment__pill" aria-hidden="true"></div>
+              <button type="button" class="naowee-segment__item ${conv.estado === 'abierta' ? 'naowee-segment__item--active' : ''} ${policy.fields.estado.editable ? '' : 'naowee-segment__item--disabled'}" data-estado="abierta" role="radio" aria-checked="${conv.estado === 'abierta'}">Abierta</button>
+              <button type="button" class="naowee-segment__item ${conv.estado === 'cerrada' ? 'naowee-segment__item--active' : ''} ${policy.fields.estado.editable ? '' : 'naowee-segment__item--disabled'}" data-estado="cerrada" role="radio" aria-checked="${conv.estado === 'cerrada'}">Cerrada</button>
             </div>
             <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
-            ${!policy.fields.estado.lockReason && policy.fields.estado.canCloseManually ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.</span></div>` : ''}
           </div>
 
         </form>
@@ -3314,14 +3278,46 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     });
   }, 50);
 
-  /* Segment estado — respeta disabled */
+  /* Segment estado — canonical .naowee-segment con sliding pill.
+     El pill (.naowee-segment__pill) se posiciona vía transform translate3d
+     usando la CSS var --segment-pill-x (offsetLeft del item activo) y
+     width (offsetWidth). Hay que recalcular en init + en cada click. */
   const estadoHidden = form.querySelector('input[name="estado"]');
-  overlay.querySelectorAll('.editq-segment__opt').forEach(btn => {
+  const segment = overlay.querySelector('[data-segment="estado"]');
+  const segmentPill = segment?.querySelector('.naowee-segment__pill');
+
+  const positionPill = (animate = true) => {
+    if (!segment || !segmentPill) return;
+    const active = segment.querySelector('.naowee-segment__item--active');
+    if (!active) {
+      segmentPill.style.width = '0px';
+      return;
+    }
+    if (!animate) segmentPill.classList.add('naowee-segment__pill--no-anim');
+    segmentPill.style.setProperty('--segment-pill-x', active.offsetLeft + 'px');
+    segmentPill.style.width = active.offsetWidth + 'px';
+    if (!animate) {
+      /* Force reflow + remove no-anim en next frame */
+      requestAnimationFrame(() => requestAnimationFrame(() =>
+        segmentPill.classList.remove('naowee-segment__pill--no-anim')));
+    }
+  };
+
+  /* Init position después de que el modal complete su transición de
+     apertura (offsetLeft/Width necesitan el modal renderizado). */
+  setTimeout(() => positionPill(false), 80);
+
+  overlay.querySelectorAll('.naowee-segment__item').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      overlay.querySelectorAll('.editq-segment__opt').forEach(b => b.classList.remove('is-selected'));
-      btn.classList.add('is-selected');
+      if (btn.classList.contains('naowee-segment__item--disabled')) return;
+      overlay.querySelectorAll('.naowee-segment__item').forEach(b => {
+        b.classList.remove('naowee-segment__item--active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('naowee-segment__item--active');
+      btn.setAttribute('aria-checked', 'true');
       if (estadoHidden) estadoHidden.value = btn.dataset.estado;
+      positionPill();
     });
   });
 

@@ -244,7 +244,7 @@
             ${(() => {
               const events = (p.historial || []).slice().reverse();
               if (events.length === 0) {
-                return '<div class="naowee-empty-state"><div class="naowee-empty-state__msg">Sin eventos registrados.</div></div>';
+                return '<div class="table-empty"><div class="table-empty__title">Sin eventos en el historial</div><div class="table-empty__msg">Aparecerán aquí cuando se registren acciones del proyecto (radicación, devoluciones, subsanaciones, aprobaciones).</div></div>';
               }
               const dotColor = (h) => h.actor === 'sistema' ? 'gray'
                 : h.actor === 'revisor' ? 'orange'

@@ -267,8 +267,9 @@
             <!-- Tab: Historial — patrón timeline de proyecto-detalle -->
             <div class="proj-tab-panel" data-panel="historial" hidden>
               ${timeline.length === 0 ? `
-                <div class="naowee-empty-state">
-                  <div class="naowee-empty-state__msg">Sin eventos registrados aún. Aparecerán aquí cuando guardes cambios o realices el primer envío.</div>
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin eventos en el historial</div>
+                  <div class="table-empty__msg">Aparecerán aquí cuando guardes cambios o realices el primer envío de notificación.</div>
                 </div>
               ` : `
                 <div class="hist-summary">

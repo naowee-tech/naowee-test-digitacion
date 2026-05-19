@@ -625,8 +625,9 @@
             <!-- Tab: Documentos -->
             <div class="proj-tab-panel" data-panel="documentos" hidden>
               ${(p.documentos || []).length === 0 ? `
-                <div class="naowee-empty-state">
-                  <div class="naowee-empty-state__msg">Esta postulación no tiene documentos adjuntos.</div>
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin documentos adjuntos</div>
+                  <div class="table-empty__msg">Esta postulación no incluye documentos en su radicación. El municipio podrá adjuntarlos en la etapa documental tras aprobar el concepto favorable.</div>
                 </div>
               ` : `
                 <div class="rp-docs-grid">
@@ -647,8 +648,9 @@
             <!-- Tab: Historial -->
             <div class="proj-tab-panel" data-panel="historial" hidden>
               ${events.length === 0 ? `
-                <div class="naowee-empty-state">
-                  <div class="naowee-empty-state__msg">Sin eventos registrados aún.</div>
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin eventos en el historial</div>
+                  <div class="table-empty__msg">Aparecerán aquí cuando se registren acciones del proyecto (radicación, devoluciones, subsanaciones, aprobaciones).</div>
                 </div>
               ` : `
                 <div class="hist-summary">

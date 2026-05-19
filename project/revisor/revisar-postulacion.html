@@ -346,17 +346,96 @@
   .rp-confirm-modal__title { font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
   .rp-confirm-modal__sub { font-size: 13px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
   .rp-confirm-modal__body {
-    padding: 18px 28px; display: flex; flex-direction: column; gap: 10px;
+    padding: 20px 28px 24px;
   }
-  .rp-confirm-modal__row {
-    display: grid; grid-template-columns: 120px 1fr; gap: 12px;
-    font-size: 12.5px; align-items: center;
+  /* Doug 19/05/2026 — rediseño del data display del modal:
+     Antes 3 rows planas (Proyecto/Radicado/Municipio) sin jerarquía.
+     Ahora summary card con:
+     · Hero: nombre del proyecto como heading + radicado como badge
+       mono + municipio con icon pin (contexto de identidad)
+     · Stats split: representante (avatar canónico) + monto solicitado
+       (peso financiero de la decisión) — los dos datos accionables
+       para que el revisor confirme con contexto. */
+  .rp-confirm-summary {
+    background: linear-gradient(180deg, #fafbfd 0%, #fff 100%);
+    border: 1px solid var(--border, #e7e9f3);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
   }
-  .rp-confirm-modal__row dt {
-    font-size: 10.5px; font-weight: 700; letter-spacing: .35px;
+  .rp-confirm-summary__header {
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--border, #e7e9f3);
+  }
+  .rp-confirm-summary__name {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .rp-confirm-summary__meta {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+  .rp-confirm-summary__rad {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11.5px; font-weight: 600;
+    color: var(--text-primary);
+    background: #fff;
+    border: 1px solid var(--border-dark, #d0d4e6);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm, 6px);
+  }
+  .rp-confirm-summary__muni {
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .rp-confirm-summary__muni svg {
+    width: 13px; height: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .rp-confirm-summary__stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    /* divider sutil vertical entre las dos stats */
+    background-image: linear-gradient(to bottom, transparent 18%, var(--border, #e7e9f3) 18% 82%, transparent 82%);
+    background-size: 1px 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .rp-confirm-stat {
+    padding: 14px 18px;
+    display: flex; flex-direction: column; gap: 6px;
+    min-width: 0;
+  }
+  .rp-confirm-stat__label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
     color: var(--text-secondary); text-transform: uppercase;
   }
-  .rp-confirm-modal__row dd { color: var(--text-primary); font-weight: 600; margin: 0; }
+  .rp-confirm-stat__value--rep {
+    display: flex; align-items: center; gap: 8px;
+    min-width: 0;
+  }
+  .rp-confirm-stat__rep-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .rp-confirm-stat__rep-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0;
+  }
+  .rp-confirm-stat__value--money {
+    font-size: 17px; font-weight: 700;
+    color: var(--green, #1f8923);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
+  }
   .rp-confirm-modal__footer {
     padding: 16px 28px; border-top: 1px solid var(--border);
     display: flex; justify-content: flex-end; gap: 10px;
@@ -384,9 +463,31 @@
       <div class="rp-confirm-modal__sub" id="rpConfirmSub">El proyecto pasará a revisión documental. La asignación de las 8 áreas técnicas + documentación general se hará automáticamente por especialidad. Esta acción se registra como <strong>Aprobado en RBI</strong>.</div>
     </div>
     <div class="rp-confirm-modal__body">
-      <dl class="rp-confirm-modal__row"><dt>Proyecto</dt><dd id="rpConfirmProj">—</dd></dl>
-      <dl class="rp-confirm-modal__row"><dt>Radicado</dt><dd id="rpConfirmRad">—</dd></dl>
-      <dl class="rp-confirm-modal__row"><dt>Municipio</dt><dd id="rpConfirmMuni">—</dd></dl>
+      <div class="rp-confirm-summary">
+        <div class="rp-confirm-summary__header">
+          <h4 class="rp-confirm-summary__name" id="rpConfirmProj">—</h4>
+          <div class="rp-confirm-summary__meta">
+            <span class="rp-confirm-summary__rad" id="rpConfirmRad">—</span>
+            <span class="rp-confirm-summary__muni">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="rpConfirmMuni">—</span>
+            </span>
+          </div>
+        </div>
+        <div class="rp-confirm-summary__stats">
+          <div class="rp-confirm-stat">
+            <span class="rp-confirm-stat__label">Representante</span>
+            <div class="rp-confirm-stat__value rp-confirm-stat__value--rep">
+              <div class="rp-confirm-stat__rep-avatar" id="rpConfirmRepAvatar" aria-hidden="true">—</div>
+              <span class="rp-confirm-stat__rep-name" id="rpConfirmRepName">—</span>
+            </div>
+          </div>
+          <div class="rp-confirm-stat">
+            <span class="rp-confirm-stat__label">Monto solicitado</span>
+            <div class="rp-confirm-stat__value rp-confirm-stat__value--money" id="rpConfirmMonto">—</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="rp-confirm-modal__footer">
       <button type="button" class="naowee-btn naowee-btn--mute" id="rpConfirmCancel">Cancelar</button>
@@ -949,10 +1050,26 @@
       const confirmOverlay = document.getElementById('rpConfirmOverlay');
       function confirmFavorableModal() {
         return new Promise(resolve => {
-          /* Pre-llenar datos del proyecto en el modal */
+          /* Pre-llenar datos del proyecto en el modal — summary card
+             rediseñada con jerarquía: nombre + radicado + muni + stats
+             (representante con avatar + monto solicitado). */
           document.getElementById('rpConfirmProj').textContent = p.nombre || '—';
           document.getElementById('rpConfirmRad').textContent = (p.radicado || '—').split('-CONV-')[0];
           document.getElementById('rpConfirmMuni').textContent = `${p.municipio || ''}${p.departamento ? `, ${p.departamento}` : ''}`;
+          /* Representante legal con avatar canónico (color perfil municipio) */
+          const perfilMuni = ProjectData.getPerfilData?.('municipio');
+          const repColor = perfilMuni?.color || '#1f78d1';
+          const repName = p.representante?.nombre || '—';
+          const repInitials = repName !== '—'
+            ? repName.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—'
+            : '—';
+          const repAv = document.getElementById('rpConfirmRepAvatar');
+          repAv.textContent = repInitials;
+          repAv.style.background = `${repColor}22`;
+          repAv.style.color = repColor;
+          document.getElementById('rpConfirmRepName').textContent = repName;
+          /* Monto solicitado — peso financiero de la decisión */
+          document.getElementById('rpConfirmMonto').textContent = formatoMoneda(p.montoSolicitado || 0);
           confirmOverlay.hidden = false;
           requestAnimationFrame(() => confirmOverlay.classList.add('is-open'));
           const close = (val) => {

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519i">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519j">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
@@ -55,8 +55,27 @@
       backLabel = 'Volver a proyectos';
     }
 
+    /* Doug 19/05/2026: cuando la revisión esta completada (concepto
+       favorable emitido o inversion activada), el mensaje vive como
+       cenefa edge-to-edge pegada al header, no dentro del stepper card.
+       Mismo pattern .convo-status-cenefa--top que convocatoria-detalle
+       y proyecto-perfil. */
+    const isCompleted = ['concepto_favorable', 'en_inversion'].includes(p.estado);
+    const conceptoFecha = p.conceptoFavorabilidad?.ts ? formatoFecha(p.conceptoFavorabilidad.ts) : null;
+
     document.getElementById('pageContent').innerHTML = `
       <div class="page-fade-in">
+        ${isCompleted ? `
+          <div class="convo-status-cenefa convo-status-cenefa--positive convo-status-cenefa--top" role="status">
+            <span class="convo-status-cenefa__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div class="convo-status-cenefa__body">
+              <div class="convo-status-cenefa__title">Revisión completada · concepto favorable emitido</div>
+              <p class="convo-status-cenefa__msg">Todas las áreas técnicas + documentación general fueron aprobadas${conceptoFecha ? ` el <strong>${conceptoFecha}</strong>` : ''}. El proyecto queda listo para activar la inversión.</p>
+            </div>
+          </div>
+        ` : ''}
         <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           ${backLabel}
@@ -189,24 +208,27 @@
               `).join('')}
             </div>
 
-            <!-- Mensaje contextual según el estado del proyecto (DS naowee-message canónico) -->
-            <div class="naowee-message naowee-message--${equipoActivo ? 'positive' : 'caution'}" role="status" style="margin-bottom:18px">
-  <div class="naowee-message__header">
-    <span class="naowee-message__icon">
-                  ${equipoActivo
-                    ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-                    : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>'}
-                </span>
-    <span class="naowee-message__title">${titleFlujo}</span>
-  </div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">${mensajeFlujo}</p>
-  </div>
-</div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">${mensajeFlujo}</p>
-  </div>
-</div>
+            <!-- Mensaje contextual según el estado del proyecto.
+                 Doug 19/05/2026: cuando isCompleted, el mensaje vive
+                 como cenefa edge-to-edge arriba (no se duplica aqui).
+                 También se limpio un bug previo donde habia un
+                 naowee-message__content + </div> orfanos (mensaje
+                 aparecia 2 veces). */
+            ${isCompleted ? '' : `
+              <div class="naowee-message naowee-message--${equipoActivo ? 'positive' : 'caution'}" role="status" style="margin-bottom:18px">
+                <div class="naowee-message__header">
+                  <span class="naowee-message__icon">
+                    ${equipoActivo
+                      ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                      : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>'}
+                  </span>
+                  <span class="naowee-message__title">${titleFlujo}</span>
+                </div>
+                <div class="naowee-message__content">
+                  <p class="naowee-message__text">${mensajeFlujo}</p>
+                </div>
+              </div>
+            `}
 
 
             <div class="equipo-revisor__head">

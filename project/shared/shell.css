@@ -547,31 +547,40 @@ a{color:inherit;text-decoration:none}
   font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:#b5b9d4;padding:6px 12px 8px;flex-shrink:0;
 }
-.demo-role-switcher__list{
+/* Doug 19/05/2026: scroll UNIFICADO al nivel de panel.
+   Antes cada .demo-role-switcher__list tenía su propio overflow:auto,
+   asi que cada seccion (Cambiar perfil + RBI + General + Tecnico)
+   scrolleaba aisladamente y se cortaba mostrando media linea en
+   pantallas chicas. Ahora un solo __scroll envuelve a todo el
+   contenido scrollable; el footer queda sticky abajo. */
+.demo-role-switcher__scroll{
+  flex:1 1 auto;
   overflow-y:auto;
+  min-height:0; /* permite que flex shrink real funcione */
   scrollbar-width:thin;scrollbar-color:var(--border-dark) transparent;
 }
-.demo-role-switcher__list::-webkit-scrollbar{width:6px}
-.demo-role-switcher__list::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:3px}
+.demo-role-switcher__scroll::-webkit-scrollbar{width:6px}
+.demo-role-switcher__scroll::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:3px}
+.demo-role-switcher__list{
+  /* Cada list ya NO scrollea por si solo — su altura es la del contenido */
+}
 
-/* Footer del panel con botón "Reiniciar demo" */
+/* Footer del panel con botón "Reiniciar demo" — sticky abajo del scroll */
 .demo-role-switcher__panel-footer{
   border-top:1px solid var(--border);
   padding:10px 12px;
-  margin-top:8px;
+  flex-shrink:0;
 }
-.demo-reset-btn{
-  display:flex;align-items:center;gap:8px;
-  width:100%;padding:8px 10px;
-  font-family:inherit;font-size:12px;font-weight:600;
-  color:var(--text-secondary);background:transparent;
-  border:1px solid var(--border);border-radius:8px;
-  cursor:pointer;transition:background .15s,color .15s,border-color .15s;
+/* Doug 19/05/2026: el botón "Reiniciar demo" usa .naowee-btn--mute --small
+   (DS canonical) con esta clase auxiliar solo para layout: full-width +
+   gap consistente con el icono SVG. */
+.demo-reset-btn-canonical{
+  display:flex !important;
+  width:100%;
+  justify-content:center;
+  gap:8px;
 }
-.demo-reset-btn:hover{
-  color:var(--accent);background:var(--orange-bg);border-color:var(--orange-border);
-}
-.demo-reset-btn svg{flex-shrink:0;}
+.demo-reset-btn-canonical svg{flex-shrink:0;}
 
 .demo-role-switcher__item{
   display:flex;align-items:center;gap:10px;

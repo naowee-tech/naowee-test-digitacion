@@ -6,8 +6,8 @@
 <title>Crear convocatoria · Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-<link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519e">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519f">
 </head>
 <body>
 <div class="shell">
@@ -24,7 +24,7 @@
      monta el shell y abre el modal de "+ Nueva convocatoria" automáticamente.
      Crear convocatoria ahora es modal, no página dedicada. */
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260519c';
+  import { mountShell } from '../shared/shell.js?v=20260519d';
   import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260519g';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });

@@ -1885,6 +1885,42 @@ body.has-tooltip-portal-active .has-tooltip::before {
   border-top-color: #282834;
 }
 
+/* ═══ Datepicker fixes transversales — Doug 19/05/2026 ═══
+   El DS v1.8.0 deja dos detalles afuera del CSS que se manifiestan en
+   cualquier datepicker del módulo:
+
+   1) .naowee-datepicker__month-selector es un <button> sin background
+      ni border explícitos -> en navegadores modernos hereda el
+      default UA (gris claro), apareciendo como un rectángulo gris
+      detrás del título "Mayo 2026". Reset a transparent + hover sutil
+      naranja consistente con el resto del datepicker.
+
+   2) .naowee-datepicker-field__clear tiene `display:flex` explícito en
+      el DS, lo cual SOBRESCRIBE el `display:none` que aporta el
+      atributo `hidden` (quirk de HTML5: explicit display gana sobre
+      hidden). Resultado: el botón × se ve siempre, incluso cuando el
+      campo está en idle (placeholder "dd mmm aaaa") y no hay valor
+      que limpiar. Fix: forzar display:none cuando [hidden]. */
+.naowee-datepicker__month-selector {
+  background: transparent !important;
+  border: none !important;
+  padding: 4px 8px;
+  border-radius: var(--radius-md, 8px);
+  font-family: inherit;
+  transition: background .12s;
+}
+.naowee-datepicker__month-selector:hover {
+  background: var(--orange-bg, #fff3e6) !important;
+}
+.naowee-datepicker__month-selector:focus-visible {
+  outline: none;
+  background: var(--orange-bg, #fff3e6) !important;
+}
+
+.naowee-datepicker-field__clear[hidden] {
+  display: none !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    .naowee-sla — Pill transversal de SLA / cuenta regresiva
    ═══════════════════════════════════════════════════════════════════

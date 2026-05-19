@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519f">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519g">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -603,23 +603,34 @@
 
             <!-- Tab: Datos -->
             <div class="proj-tab-panel" data-panel="datos">
-              <dl class="proj-data">
-                <div><dt>Tipo de solicitud</dt><dd>${p.tipoSolicitud || '—'}</dd></div>
-                <div><dt>Fase del proyecto</dt><dd>${p.fase || '—'}</dd></div>
-                <div><dt>Monto solicitado</dt><dd style="color:var(--green);font-weight:700">${formatoMoneda(p.montoSolicitado)}</dd></div>
-                <div><dt>Contrapartida</dt><dd style="font-weight:600">${formatoMoneda(p.contrapartida)}</dd></div>
-                <div><dt>Cofinanciación</dt><dd>${(p.cofinanciacion || []).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
-                <div><dt>Convocatoria</dt><dd style="font-weight:600">${p.convocatoriaId || '—'}</dd></div>
-                <div style="grid-column:1/-1"><dt>Dirección del predio</dt><dd>${p.direccionPredio || '—'}</dd></div>
-                <div style="grid-column:1/-1">
-                  <dt>Representante legal</dt>
-                  <dd>
-                    <strong>${p.representante?.nombre || '—'}</strong>
-                    ${p.representante?.documento ? `<div style="color:var(--text-secondary);font-size:12px;font-weight:400;margin-top:2px">${p.representante.documento} · ${p.representante.cargo || ''}</div>` : ''}
-                  </dd>
-                </div>
-              </dl>
-
+              ${(() => {
+                const perfilMuni = ProjectData.getPerfilData?.('municipio');
+                const repColor = perfilMuni?.color || '#1f78d1';
+                const repName = p.representante?.nombre || '';
+                const initials = repName
+                  ? repName.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—'
+                  : '—';
+                return `
+                  <dl class="proj-data">
+                    <div><dt>Tipo de solicitud</dt><dd>${p.tipoSolicitud || '—'}</dd></div>
+                    <div><dt>Convocatoria</dt><dd style="font-weight:600">${p.convocatoriaId || '—'}</dd></div>
+                    <div><dt>Monto solicitado</dt><dd style="color:var(--green);font-weight:700">${formatoMoneda(p.montoSolicitado)}</dd></div>
+                    <div><dt>Contrapartida</dt><dd style="font-weight:600">${formatoMoneda(p.contrapartida)}</dd></div>
+                    <div><dt>Cofinanciación</dt><dd>${(p.cofinanciacion || []).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
+                    <div style="grid-column:1/-1"><dt>Dirección del predio</dt><dd>${p.direccionPredio || '—'}</dd></div>
+                    <div style="grid-column:1/-1">
+                      <dt>Representante legal</dt>
+                      <dd class="proj-data__rep">
+                        <div class="proj-data__rep-avatar" style="background:${repColor}22;color:${repColor}" aria-hidden="true">${initials}</div>
+                        <div class="proj-data__rep-meta">
+                          <span class="proj-data__rep-name">${repName || '—'}</span>
+                          ${p.representante?.cargo ? `<span class="proj-data__rep-cargo">${p.representante.cargo}</span>` : ''}
+                        </div>
+                      </dd>
+                    </div>
+                  </dl>
+                `;
+              })()}
             </div>
 
             <!-- Tab: Documentos -->

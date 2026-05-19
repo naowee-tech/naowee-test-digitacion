@@ -641,19 +641,54 @@
   flex-shrink: 0;
 }
 
+/* Doug 19/05/2026: spacing más respirable.
+   - row gap 18px → 24px (separación clara entre filas de datos)
+   - dt → dd: margin-bottom 4px → 6px (label respira del value)
+   - dd font 13.5px → 14px (más legible) */
 .proj-data {
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 18px 32px; margin: 0;
+  gap: 24px 36px; margin: 0;
 }
 .proj-data > div { min-width: 0; }
 .proj-data dt {
   font-size: 11px; font-weight: 700; letter-spacing: .3px;
   color: var(--text-secondary); text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .proj-data dd {
-  font-size: 13.5px; font-weight: 500; color: var(--text-primary);
+  font-size: 14px; font-weight: 500; color: var(--text-primary);
   margin: 0;
+  line-height: 1.4;
+}
+
+/* Representante legal — avatar + meta (Doug 19/05/2026)
+   Reemplaza el texto "Nombre + documento·cargo" por avatar circular
+   con la inicial + color asignado al rol/perfil + label de nombre +
+   cargo en secondary. Transversal: usado en municipio/proyecto-perfil,
+   admin/proyecto-detalle, revisor/revisar-postulacion. */
+.proj-data__rep {
+  display: flex; align-items: center; gap: 10px;
+}
+.proj-data__rep-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.proj-data__rep-meta {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
+}
+.proj-data__rep-name {
+  font-size: 14px; font-weight: 600; color: var(--text-primary);
+  line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.proj-data__rep-cargo {
+  font-size: 12px; font-weight: 400; color: var(--text-secondary);
+  line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 /* ═══ Star de priorizado (al lado del radicado) ═══ */

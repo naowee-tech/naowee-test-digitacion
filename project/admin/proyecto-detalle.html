@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519f">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519g">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
@@ -78,7 +78,7 @@
                 <span>${p.municipio}, ${p.departamento || ''}</span>
                 <span>${p.formuladora?.nombre || ''}</span>
                 <span>Postulado: ${formatoFecha(p.fechaPostulacion)}</span>
-                <span>${p.tipoSolicitud || ''} · ${p.fase || ''}</span>
+                <span>${p.tipoSolicitud || ''}${p.fase ? ` · ${p.fase}` : ''}</span>
               </div>
               <div class="project-hero__badges">
                 <span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${est.label}</span>
@@ -273,14 +273,32 @@
 
           <!-- Tab: Datos -->
           <div class="proj-tab-panel" data-panel="datos">
-            <dl class="proj-data">
-              <div><dt>Dirección</dt><dd>${p.direccionPredio || '—'}</dd></div>
-              <div><dt>Cofinanciación</dt><dd>${(p.cofinanciacion||[]).map(f=>`<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
-              <div><dt>Representante legal</dt><dd><strong>${p.representante?.nombre || '—'}</strong><div style="color:var(--text-secondary);font-size:12px;font-weight:400">${p.representante?.documento || ''} · ${p.representante?.cargo || ''}</div></dd></div>
-              <div><dt>Convocatoria</dt><dd style="font-weight:600">${p.convocatoriaId}</dd></div>
-              <div><dt>Tipo</dt><dd>${p.tipoSolicitud || '—'}</dd></div>
-              <div><dt>Fase</dt><dd>${p.fase || '—'}</dd></div>
-            </dl>
+            ${(() => {
+              const perfilMuni = ProjectData.getPerfilData?.('municipio');
+              const repColor = perfilMuni?.color || '#1f78d1';
+              const repName = p.representante?.nombre || '';
+              const initials = repName
+                ? repName.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—'
+                : '—';
+              return `
+                <dl class="proj-data">
+                  <div><dt>Dirección</dt><dd>${p.direccionPredio || '—'}</dd></div>
+                  <div><dt>Cofinanciación</dt><dd>${(p.cofinanciacion||[]).map(f=>`<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
+                  <div><dt>Convocatoria</dt><dd style="font-weight:600">${p.convocatoriaId}</dd></div>
+                  <div><dt>Tipo</dt><dd>${p.tipoSolicitud || '—'}</dd></div>
+                  <div>
+                    <dt>Representante legal</dt>
+                    <dd class="proj-data__rep">
+                      <div class="proj-data__rep-avatar" style="background:${repColor}22;color:${repColor}" aria-hidden="true">${initials}</div>
+                      <div class="proj-data__rep-meta">
+                        <span class="proj-data__rep-name">${repName || '—'}</span>
+                        ${p.representante?.cargo ? `<span class="proj-data__rep-cargo">${p.representante.cargo}</span>` : ''}
+                      </div>
+                    </dd>
+                  </div>
+                </dl>
+              `;
+            })()}
           </div>
 
           <!-- Tab: Historial (timeline patrón escenario-09) -->

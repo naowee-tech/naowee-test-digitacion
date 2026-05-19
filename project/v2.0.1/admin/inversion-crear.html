@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Crear proyecto de inversión · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+<style>
+  /* Tabla de fuentes de financiación — formato 11 sección 3 */
+  .fuentes-table {
+    width: 100%; border-collapse: collapse; margin-top: 8px;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .fuentes-table th {
+    text-align: left; padding: 10px 14px;
+    background: var(--grey-bg, #f5f6fa);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .4px; text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+  .fuentes-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    font-size: 13px;
+  }
+  .fuentes-table tr:last-child td { border-bottom: 0; }
+  .fuentes-table input, .fuentes-table select {
+    width: 100%; padding: 6px 10px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-md);
+    font-family: inherit; font-size: 13px;
+    background: #fff;
+  }
+  .fuentes-table input:focus, .fuentes-table select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(215, 64, 9, .12);
+  }
+  .fuentes-table tfoot td {
+    background: var(--grey-bg, #f5f6fa);
+    font-weight: 700; color: var(--text-primary);
+  }
+  .fuentes-table__remove {
+    background: transparent; border: none;
+    color: var(--text-secondary); cursor: pointer;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+  }
+  .fuentes-table__remove:hover { background: var(--red-bg); color: #b42318; }
+  .fuentes-table__add {
+    margin-top: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 600; color: var(--accent);
+    background: transparent; border: 1.5px dashed var(--orange-border);
+    border-radius: var(--radius-md);
+    padding: 8px 14px; cursor: pointer;
+    transition: background .15s;
+  }
+  .fuentes-table__add:hover { background: var(--orange-bg); }
+  .fuentes-suma {
+    font-size: 12.5px; color: var(--text-secondary);
+    margin-top: 6px;
+    display: flex; justify-content: space-between;
+  }
+  .fuentes-suma.is-match { color: var(--green, #15803d); font-weight: 600; }
+  .fuentes-suma.is-mismatch { color: #b42318; font-weight: 600; }
+
+  /* Hero compacto con datos heredados (paso 1) */
+  .ic-hero-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    background: var(--grey-bg, #f5f6fa);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+  }
+  .ic-hero-grid__field { display: flex; flex-direction: column; gap: 4px; }
+  .ic-hero-grid__label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
+    text-transform: uppercase; color: var(--text-secondary);
+  }
+  .ic-hero-grid__value {
+    font-size: 13.5px; font-weight: 600; color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .ic-hero-grid__value--mono {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519a';
+  import { formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+  import {
+    renderStepper, renderFooter, mountWizard,
+    renderReview, renderSuccess,
+    textfield, textarea, dropdown, checkbox,
+    fileUpload, bindFileUploads, mountCheckboxes,
+    bindDropdowns
+  } from '../shared/wizard-page.js?v=20260513d';
+
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'inversion' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const p = ProjectData.getProyecto(id);
+  const pageContent = document.getElementById('pageContent');
+
+  /* Solo proyectos en_inversion con concepto favorable pueden tener
+     un proyecto de inversión formal (Form 11) */
+  if (!p || !['en_inversion', 'concepto_favorable'].includes(p.estado)) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Proyecto no disponible para crear inversión</div>`;
+  } else {
+    const isInfra = p.tipo === 'infraestructura';
+    const yaExiste = !!p.proyectoInversion;
+
+    /* ═══ Catálogos del Formulario 11 (xlsx hoja 11) ═══ */
+    const tipoInversionOpts = [
+      'Nuevo escenario',
+      'Ampliación de escenario existente',
+      'Adecuación / Mejoramiento',
+      'Reconstrucción',
+      'Dotación deportiva',
+      'Estudios y diseños'
+    ];
+    const origenOpts = [
+      'Postulación en convocatoria',
+      'Creación directa por administrador',
+      'Escalado desde gestión territorial'
+    ];
+    const rubroOpts = [
+      'C-3401 · Recursos Propios Mindeporte',
+      'C-3402 · SGP — Propósito General',
+      'C-3403 · OCAD — Sistema General de Regalías',
+      'C-3404 · OCAD-Paz · Fondos PDET',
+      'C-3405 · Cofinanciación territorial',
+      'C-3406 · Crédito BID — Programa Inversión Deportiva'
+    ];
+    const vigenciaOpts = [
+      'Vigencia actual (2026)',
+      'Vigencia futura (2027)',
+      'Multivigencia 2026-2027',
+      'Vigencias futuras excepcionales'
+    ];
+    const prioridadOpts = ['Alta', 'Media', 'Baja'];
+    const modalidadContratacionOpts = [
+      'Licitación pública',
+      'Selección abreviada',
+      'Contratación directa',
+      'Mínima cuantía',
+      'Concurso de méritos'
+    ];
+    const asociacionSuidOpts = ['Asociar a escenario existente', 'Crear nuevo escenario'];
+
+    const STEPS = [
+      { label: 'Identificación' },
+      { label: 'Tipo de inversión' },
+      { label: 'Presupuesto y fuentes' },
+      { label: 'Cronograma · SUID · Contratación' },
+      { label: 'Revisar' }
+    ];
+
+    /* Smart back */
+    const ref = document.referrer;
+    const backHref = ref.includes('proyecto-detalle.html') ? `proyecto-detalle.html?id=${p.idUnico}` : 'inversion.html';
+    const backLabel = ref.includes('proyecto-detalle.html') ? 'Volver al proyecto' : 'Volver a inversión';
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in wz-page">
+        <div class="wz-page__header">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>${backLabel}</a>
+          <h1 class="wz-page__title">${yaExiste ? 'Editar' : 'Crear'} proyecto de inversión</h1>
+          <p class="wz-page__subtitle">${p.nombre} · ${p.municipio} · Resolución 933 Art. 11</p>
+        </div>
+
+        ${yaExiste ? `
+          <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__title">Ya existe un proyecto de inversión asociado</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Este proyecto se creó el ${formatoFecha(p.proyectoInversion?.creadoEn)}. Los cambios quedarán en el historial de modificaciones.</p>
+  </div>
+</div>
+
+        ` : ''}
+
+        <form id="formIC" class="wz-card" novalidate>
+          <div class="wz-stepper-wrap">${renderStepper(STEPS)}</div>
+
+          <div class="wz-body" data-wz-body>
+
+            <!-- ═══ PASO 1: Identificación heredada (read-only) ═══ -->
+            <div class="wz-step-panel is-active" data-panel="1">
+              <div class="wz-section">Identificación heredada</div>
+              <p style="font-size:13px;color:var(--text-secondary);margin:-4px 0 14px">Datos automáticos del proyecto postulado · solo lectura.</p>
+              <div class="ic-hero-grid">
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Radicado</span>
+                  <span class="ic-hero-grid__value ic-hero-grid__value--mono">${p.radicado || '—'}</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Código BPIN</span>
+                  <span class="ic-hero-grid__value ic-hero-grid__value--mono">${p.inversion?.bpin || '<em style=\"color:var(--text-secondary)\">Pendiente activación</em>'}</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Entidad formuladora</span>
+                  <span class="ic-hero-grid__value">${p.formuladora?.nombre || '—'}</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">NIT</span>
+                  <span class="ic-hero-grid__value ic-hero-grid__value--mono">${p.formuladora?.nit || '—'}</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Departamento / Municipio</span>
+                  <span class="ic-hero-grid__value">${p.departamento || '—'} · ${p.municipio}</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Valor solicitado</span>
+                  <span class="ic-hero-grid__value">${formatoMoneda(p.montoSolicitado)}</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Concepto de favorabilidad</span>
+                  <span class="naowee-badge naowee-badge--positive naowee-badge--quiet" style="align-self:flex-start"><span class="naowee-badge__dot"></span>FAVORABLE</span>
+                </div>
+                <div class="ic-hero-grid__field">
+                  <span class="ic-hero-grid__label">Tipología</span>
+                  <span class="ic-hero-grid__value">${p.tipologia || '—'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ PASO 2: Tipo de proyecto de inversión ═══ -->
+            <div class="wz-step-panel" data-panel="2">
+              <div class="wz-section">Tipo de proyecto de inversión</div>
+              <p style="font-size:13px;color:var(--text-secondary);margin:-4px 0 14px">Clasificación administrativa que orienta el rubro presupuestal y los soportes.</p>
+              ${dropdown({ label: 'Tipo de proyecto de inversión', name: 'tipoInversion', required: true, options: tipoInversionOpts, value: p.proyectoInversion?.tipoInversion || '' })}
+              ${dropdown({ label: 'Origen del proyecto', name: 'origen', required: true, options: origenOpts, value: p.proyectoInversion?.origen || 'Postulación en convocatoria' })}
+
+              <div class="wz-section" style="margin-top:18px">Confirmación de infraestructura</div>
+              <p style="font-size:12.5px;color:var(--text-secondary);margin:-6px 0 12px">Marca si el proyecto es de infraestructura — habilitará el formulario SUID en el paso 4.</p>
+              <div class="pm-checkbox-grid">
+                ${checkbox({ name: 'esInfraestructura', value: 'true', label: '¿Es proyecto de infraestructura?', checked: isInfra })}
+              </div>
+            </div>
+
+            <!-- ═══ PASO 3: Presupuesto y fuentes ═══ -->
+            <div class="wz-step-panel" data-panel="3">
+              <div class="wz-section">Presupuesto aprobado</div>
+              <div class="ai-grid-2">
+                ${textfield({ label: 'Valor del presupuesto aprobado (COP)', name: 'presupuestoAprobado', type: 'text', required: true, value: String(p.inversion?.montoAprobado || p.montoSolicitado || 0), helper: `Sugerido: ${formatoMoneda(p.inversion?.montoAprobado || p.montoSolicitado)}` })}
+                ${textfield({ label: 'Centro de costos', name: 'centroCosto', required: true, value: p.inversion?.centroCosto || `CC-MIN-${(p.departamento || 'XXX').substring(0,3).toUpperCase()}-2026-${String(p.idUnico).slice(-3)}`, maxlength: 100, helper: 'Integración con módulo financiero' })}
+              </div>
+              <div class="ai-grid-2">
+                ${dropdown({ label: 'Rubro presupuestal', name: 'rubro', required: true, options: rubroOpts })}
+                ${dropdown({ label: 'Vigencia presupuestal', name: 'vigencia', required: true, options: vigenciaOpts, value: 'Vigencia actual (2026)' })}
+              </div>
+
+              <div class="wz-section" style="margin-top:18px">Certificado de Disponibilidad Presupuestal (CDP)</div>
+              <p style="font-size:12.5px;color:var(--text-secondary);margin:-6px 0 12px">Soporte financiero del Ministerio · PDF firmado · dispara la reserva en el módulo financiero.</p>
+              ${fileUpload({ name: 'cdp', label: 'CDP', required: true, accept: '.pdf', maxSize: 10 })}
+
+              <div class="wz-section" style="margin-top:18px">Fuentes de financiación aplicadas</div>
+              <p style="font-size:12.5px;color:var(--text-secondary);margin:-6px 0 8px">La suma de las fuentes debe igualar el valor del presupuesto aprobado.</p>
+              <table class="fuentes-table" id="fuentesTable">
+                <thead>
+                  <tr>
+                    <th style="width:40%">Fuente</th>
+                    <th style="width:30%">Valor (COP)</th>
+                    <th style="width:25%">Vigencia</th>
+                    <th style="width:5%"></th>
+                  </tr>
+                </thead>
+                <tbody id="fuentesBody">
+                  ${(p.cofinanciacion || ['SGP']).map((f, i) => `
+                    <tr data-row="${i}">
+                      <td><select name="fuenteNombre_${i}">${['SGP', 'OCAD', 'OCAD-Paz', 'Recursos Propios Mindeporte', 'Recursos Propios Municipio', 'Cofinanciación territorial', 'Crédito BID'].map(o => `<option ${o.startsWith(f) || f.startsWith(o) ? 'selected' : ''}>${o}</option>`).join('')}</select></td>
+                      <td><input type="text" name="fuenteValor_${i}" placeholder="0" data-suma value="${i === 0 ? String(p.inversion?.montoAprobado || p.montoSolicitado || 0) : ''}"/></td>
+                      <td><select name="fuenteVigencia_${i}">${['2026', '2027', '2026-2027'].map(v => `<option>${v}</option>`).join('')}</select></td>
+                      <td><button type="button" class="fuentes-table__remove" data-remove="${i}" aria-label="Quitar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td>Total fuentes</td>
+                    <td colspan="3" id="fuentesTotal" style="font-variant-numeric:tabular-nums">$ 0</td>
+                  </tr>
+                </tfoot>
+              </table>
+              <button type="button" class="fuentes-table__add" id="fuentesAdd">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                Agregar otra fuente
+              </button>
+              <div class="fuentes-suma" id="fuentesSuma"><span>Diferencia con presupuesto:</span><span id="fuentesDiff">$ 0</span></div>
+            </div>
+
+            <!-- ═══ PASO 4: Cronograma + SUID + Contratación ═══ -->
+            <div class="wz-step-panel" data-panel="4">
+              <div class="wz-section">Priorización y cronograma</div>
+              <div class="ai-grid-2">
+                ${dropdown({ label: 'Prioridad de ejecución', name: 'prioridad', required: true, options: prioridadOpts, value: 'Media' })}
+                ${textfield({ label: 'Duración estimada (meses)', name: 'duracionMeses', type: 'text', placeholder: '12', helper: 'Calculado entre fecha inicio y fin' })}
+              </div>
+              <div class="ai-grid-2">
+                ${textfield({ label: 'Fecha estimada de inicio', name: 'fechaInicio', type: 'date', required: true, value: '2026-07-01' })}
+                ${textfield({ label: 'Fecha estimada de finalización', name: 'fechaFin', type: 'date', required: true, value: '2027-06-30' })}
+              </div>
+
+              ${isInfra ? `
+                <div class="wz-section" style="margin-top:18px">Asociación con escenario deportivo</div>
+                <p style="font-size:12.5px;color:var(--text-secondary);margin:-6px 0 12px">Como proyecto de infraestructura, debe asociarse al inventario SUID nacional.</p>
+                <div class="ai-grid-2">
+                  ${dropdown({ label: 'Tipo de asociación', name: 'tipoAsociacionSuid', required: true, options: asociacionSuidOpts, value: p.inversion?.suidEscenario ? 'Asociar a escenario existente' : 'Crear nuevo escenario' })}
+                  ${textfield({ label: 'Código SUID (si existente)', name: 'suidExistente', value: p.inversion?.suidEscenario || '', placeholder: 'SUID-CHO-XXX-001', helper: 'Buscar en inventario SUID' })}
+                </div>
+              ` : ''}
+
+              <div class="wz-section" style="margin-top:18px">Contratación e interventoría</div>
+              <div class="ai-grid-2">
+                ${dropdown({ label: 'Modalidad de contratación prevista', name: 'modalidadContratacion', options: modalidadContratacionOpts, value: 'Licitación pública' })}
+                ${textfield({ label: 'Valor estimado de interventoría (COP)', name: 'valorInterventoria', type: 'text', placeholder: 'Opcional' })}
+              </div>
+              <div class="pm-checkbox-grid" style="margin-top:8px">
+                ${checkbox({ name: 'requiereInterventoria', value: 'true', label: '¿Requiere interventoría externa?' })}
+              </div>
+            </div>
+
+            <!-- ═══ PASO 5: Revisar ═══ -->
+            <div class="wz-step-panel" data-panel="5">
+              <div class="wz-section">Revisar antes de crear</div>
+              <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 18px">Verifica que toda la información esté correcta. Al confirmar, el proyecto entra a la Lista de proyectos de inversión y se registra en el audit trail.</p>
+              <div id="reviewBox"></div>
+            </div>
+
+          </div>
+
+          ${renderFooter({
+            cancelHref: backHref,
+            saveDraft: true,
+            publishLabel: yaExiste ? 'Actualizar proyecto' : 'Crear proyecto de inversión',
+            publishIconHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>'
+          })}
+        </form>
+      </div>
+    `;
+
+    const form = document.getElementById('formIC');
+    bindDropdowns(form);
+    mountCheckboxes(form);
+    bindFileUploads(form);
+
+    /* ═══ Tabla de fuentes — add/remove rows + suma automática ═══ */
+    function recalcFuentes() {
+      const inputs = form.querySelectorAll('input[data-suma]');
+      let total = 0;
+      inputs.forEach(i => total += parseInt(i.value) || 0);
+      const presup = parseInt(form.querySelector('input[name="presupuestoAprobado"]')?.value) || 0;
+      const diff = total - presup;
+      document.getElementById('fuentesTotal').textContent = formatoMoneda(total);
+      const diffEl = document.getElementById('fuentesDiff');
+      const sumaWrap = document.getElementById('fuentesSuma');
+      diffEl.textContent = diff === 0 ? formatoMoneda(0) : (diff > 0 ? '+' : '') + formatoMoneda(diff);
+      sumaWrap.classList.toggle('is-match', diff === 0 && total > 0);
+      sumaWrap.classList.toggle('is-mismatch', diff !== 0);
+    }
+    let fuenteSeq = (p.cofinanciacion || ['']).length;
+    document.getElementById('fuentesAdd').addEventListener('click', () => {
+      const tbody = document.getElementById('fuentesBody');
+      const i = fuenteSeq++;
+      const tr = document.createElement('tr');
+      tr.dataset.row = String(i);
+      tr.innerHTML = `
+        <td><select name="fuenteNombre_${i}">${['SGP','OCAD','OCAD-Paz','Recursos Propios Mindeporte','Recursos Propios Municipio','Cofinanciación territorial','Crédito BID'].map(o => `<option>${o}</option>`).join('')}</select></td>
+        <td><input type="text" name="fuenteValor_${i}" placeholder="0" data-suma/></td>
+        <td><select name="fuenteVigencia_${i}">${['2026','2027','2026-2027'].map(v => `<option>${v}</option>`).join('')}</select></td>
+        <td><button type="button" class="fuentes-table__remove" data-remove="${i}" aria-label="Quitar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+      `;
+      tbody.appendChild(tr);
+      bindRemove();
+      recalcFuentes();
+    });
+    function bindRemove() {
+      form.querySelectorAll('.fuentes-table__remove').forEach(b => {
+        b.onclick = () => {
+          if (form.querySelectorAll('#fuentesBody tr').length <= 1) {
+            toast({ variant: 'caution', title: 'Mínimo 1 fuente', message: 'Debe haber al menos una fuente de financiación.' });
+            return;
+          }
+          b.closest('tr').remove();
+          recalcFuentes();
+        };
+      });
+    }
+    form.addEventListener('input', e => { if (e.target.matches('[data-suma], [name="presupuestoAprobado"]')) recalcFuentes(); });
+    bindRemove();
+    recalcFuentes();
+
+    /* ═══ Cálculo automático de duración (meses) entre inicio y fin ═══ */
+    function recalcDuracion() {
+      const inicio = form.querySelector('input[name="fechaInicio"]')?.value;
+      const fin = form.querySelector('input[name="fechaFin"]')?.value;
+      const dEl = form.querySelector('input[name="duracionMeses"]');
+      if (!inicio || !fin || !dEl) return;
+      const di = new Date(inicio), df = new Date(fin);
+      if (df < di) return;
+      const meses = Math.round((df - di) / (1000 * 60 * 60 * 24 * 30));
+      dEl.value = String(meses);
+    }
+    form.addEventListener('change', e => {
+      if (e.target.matches('input[name="fechaInicio"], input[name="fechaFin"]')) recalcDuracion();
+    });
+    recalcDuracion();
+
+    /* ═══ Build review (paso 5) ═══ */
+    function buildReview() {
+      const fd = new FormData(form);
+      const presupuesto = parseInt(fd.get('presupuestoAprobado')) || 0;
+      /* Recolectar fuentes */
+      const fuentes = [];
+      form.querySelectorAll('#fuentesBody tr').forEach(tr => {
+        const i = tr.dataset.row;
+        const nombre = form.querySelector(`select[name="fuenteNombre_${i}"]`)?.value;
+        const valor = parseInt(form.querySelector(`input[name="fuenteValor_${i}"]`)?.value) || 0;
+        const vigencia = form.querySelector(`select[name="fuenteVigencia_${i}"]`)?.value;
+        if (nombre) fuentes.push({ nombre, valor, vigencia });
+      });
+      const totalFuentes = fuentes.reduce((s, f) => s + f.valor, 0);
+      const cdpFile = fd.get('cdp');
+
+      const groups = [
+        {
+          title: 'Tipo de proyecto',
+          rows: [
+            ['Tipo de inversión', fd.get('tipoInversion') || '—'],
+            ['Origen', fd.get('origen') || '—'],
+            ['Es infraestructura', fd.get('esInfraestructura') ? '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Sí</span>' : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">No</span>']
+          ]
+        },
+        {
+          title: 'Presupuesto y fuentes',
+          rows: [
+            ['Presupuesto aprobado', `<strong style="color:var(--accent)">${formatoMoneda(presupuesto)}</strong>`],
+            ['Centro de costos', fd.get('centroCosto') || '—'],
+            ['Rubro presupuestal', fd.get('rubro') || '—'],
+            ['Vigencia', fd.get('vigencia') || '—'],
+            ['CDP adjunto', cdpFile?.name ? `📎 ${cdpFile.name}` : '<span style="color:var(--text-secondary);font-style:italic">No adjunto</span>'],
+            ['Fuentes (' + fuentes.length + ')', fuentes.map(f => `<div style="display:inline-flex;align-items:center;gap:6px;margin-right:10px;font-size:12.5px"><span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${f.nombre}</span> ${formatoMoneda(f.valor)} · ${f.vigencia}</div>`).join('')],
+            ['Suma total fuentes', `${formatoMoneda(totalFuentes)} ${totalFuentes === presupuesto ? '<span style="color:var(--green)">✓ coincide</span>' : '<span style="color:#b42318">⚠ no coincide</span>'}`]
+          ]
+        },
+        {
+          title: 'Cronograma',
+          rows: [
+            ['Prioridad', `<span class="naowee-badge naowee-badge--${fd.get('prioridad') === 'Alta' ? 'caution' : fd.get('prioridad') === 'Media' ? 'informative' : 'neutral'} naowee-badge--quiet">${fd.get('prioridad') || '—'}</span>`],
+            ['Inicio estimado', fd.get('fechaInicio') ? formatoFecha(fd.get('fechaInicio')) : '—'],
+            ['Finalización estimada', fd.get('fechaFin') ? formatoFecha(fd.get('fechaFin')) : '—'],
+            ['Duración', fd.get('duracionMeses') ? `${fd.get('duracionMeses')} meses` : '—']
+          ]
+        },
+        ...(isInfra ? [{
+          title: 'Asociación SUID',
+          rows: [
+            ['Tipo de asociación', fd.get('tipoAsociacionSuid') || '—'],
+            ['Código SUID', fd.get('suidExistente') || '<span style="color:var(--text-secondary);font-style:italic">Se asignará al registrar escenario</span>']
+          ]
+        }] : []),
+        {
+          title: 'Contratación',
+          rows: [
+            ['Modalidad', fd.get('modalidadContratacion') || '—'],
+            ['Requiere interventoría', fd.get('requiereInterventoria') ? `Sí · ${fd.get('valorInterventoria') ? formatoMoneda(parseInt(fd.get('valorInterventoria'))) : 'valor pendiente'}` : 'No']
+          ]
+        }
+      ];
+      document.getElementById('reviewBox').innerHTML = renderReview(groups);
+    }
+
+    /* ═══ Wizard mount + persistencia en proyecto.proyectoInversion ═══ */
+    mountWizard({
+      scope: form,
+      totalSteps: STEPS.length,
+      validateStep: (panel, step) => {
+        if (step === 4) setTimeout(buildReview, 50);
+        /* Validación blanda en paso 3: la suma debe coincidir con presupuesto */
+        if (step === 3) {
+          const presup = parseInt(form.querySelector('input[name="presupuestoAprobado"]')?.value) || 0;
+          let total = 0;
+          form.querySelectorAll('input[data-suma]').forEach(i => total += parseInt(i.value) || 0);
+          if (Math.abs(total - presup) > 0.01 && presup > 0) {
+            toast({ variant: 'caution', title: 'Verifica las fuentes', message: `La suma (${formatoMoneda(total)}) no coincide con el presupuesto aprobado (${formatoMoneda(presup)}). Puedes continuar pero quedará marcado en el review.` });
+          }
+        }
+        return true;
+      },
+      onPublish: () => {
+        const fd = new FormData(form);
+        const ahora = new Date().toISOString();
+        const fuentes = [];
+        form.querySelectorAll('#fuentesBody tr').forEach(tr => {
+          const i = tr.dataset.row;
+          fuentes.push({
+            nombre: form.querySelector(`select[name="fuenteNombre_${i}"]`)?.value,
+            valor: parseInt(form.querySelector(`input[name="fuenteValor_${i}"]`)?.value) || 0,
+            vigencia: form.querySelector(`select[name="fuenteVigencia_${i}"]`)?.value
+          });
+        });
+        const cdpFile = fd.get('cdp');
+        const presupuestoAprobado = parseInt(fd.get('presupuestoAprobado')) || 0;
+
+        ProjectData.setProyecto(p.idUnico, x => {
+          x.proyectoInversion = {
+            tipoInversion: fd.get('tipoInversion'),
+            origen: fd.get('origen'),
+            esInfraestructura: !!fd.get('esInfraestructura'),
+            presupuestoAprobado,
+            centroCosto: fd.get('centroCosto'),
+            rubro: fd.get('rubro'),
+            vigencia: fd.get('vigencia'),
+            cdp: cdpFile?.name ? { name: cdpFile.name, size: cdpFile.size } : null,
+            fuentes,
+            prioridad: fd.get('prioridad'),
+            fechaInicio: fd.get('fechaInicio'),
+            fechaFin: fd.get('fechaFin'),
+            duracionMeses: parseInt(fd.get('duracionMeses')) || null,
+            asociacionSuid: fd.get('tipoAsociacionSuid'),
+            suidExistente: fd.get('suidExistente'),
+            modalidadContratacion: fd.get('modalidadContratacion'),
+            requiereInterventoria: !!fd.get('requiereInterventoria'),
+            valorInterventoria: parseInt(fd.get('valorInterventoria')) || null,
+            estadoEnLista: 'Activo',
+            creadoEn: yaExiste ? p.proyectoInversion.creadoEn : ahora,
+            actualizadoEn: ahora,
+            creadoPor: 'admin'
+          };
+          /* Mantener consistencia con la sección de inversión base */
+          x.inversion = x.inversion || {};
+          x.inversion.montoAprobado = presupuestoAprobado;
+          x.inversion.centroCosto = fd.get('centroCosto');
+          x.historial = x.historial || [];
+          x.historial.push({
+            ts: ahora, actor: 'admin',
+            evento: yaExiste
+              ? `Proyecto de inversión actualizado · ${fd.get('tipoInversion')}`
+              : `Proyecto de inversión creado · ${fd.get('tipoInversion')} · ${formatoMoneda(presupuestoAprobado)}`,
+            estado: x.estado
+          });
+          return x;
+        });
+
+        renderSuccess(form, {
+          title: yaExiste ? '¡Proyecto actualizado!' : '¡Proyecto de inversión creado!',
+          message: yaExiste
+            ? 'Los cambios quedaron registrados en el audit trail. La Lista de proyectos de inversión refleja los nuevos valores.'
+            : `Se agregó a la Lista de proyectos de inversión bajo el rubro ${fd.get('rubro')}. Se reservó el CDP en el módulo financiero y se notificó al ejecutor.`,
+          stamp: `${p.idUnico} · ${formatoMoneda(presupuestoAprobado)}`,
+          ctaLabel: 'Ver Tabla de inversión',
+          onContinue: () => { window.location.href = 'inversion.html'; }
+        });
+      }
+    });
+  }
+</script>
+</body>
+</html>

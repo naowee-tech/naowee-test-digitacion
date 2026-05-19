@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Usuarios y áreas · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+<style>
+  /* ─── Tabs DS dentro del .naowee-table-card ───
+     Doug 15/05: el DS ya provee el patrón edge-to-edge con negative margin
+     (.naowee-table-card .naowee-tabs { margin: 0 -20px; padding: 0 20px; }).
+     No overrideamos margin/padding — sólo permitimos que el card no recorte. */
+  .usuarios-panel { display: none; animation: tabFadeIn .25s ease both; }
+  .usuarios-panel.is-active { display: block; }
+  @keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* La toolbar del table-card va sin top-border (el divider lo da el tab) */
+  .usuarios-card .naowee-table-card__toolbar {
+    border-top: 0;
+    padding: 18px 18px 14px;
+  }
+  /* Doug 14/05: el header gris (thead) estaba pegado al searchbox y al CTA.
+     Agregamos respiro entre toolbar → thead, y entre thead → primera fila. */
+  .usuarios-card .naowee-table-card__table-wrap {
+    padding-top: 6px;
+    /* Doug 15/05: extender table-wrap a los bordes del card para que los
+       dividers entre filas sean edge-to-edge (escapar el padding 32px del card). */
+    margin-left: -32px;
+    margin-right: -32px;
+    width: calc(100% + 64px);
+  }
+  /* Reagregar padding interno solo a los cells del extremo para que el
+     contenido respete el respiro del card pero los dividers vayan al borde. */
+  .usuarios-card .naowee-table-card__table-wrap th:first-child,
+  .usuarios-card .naowee-table-card__table-wrap td:first-child {
+    padding-left: 32px;
+  }
+  .usuarios-card .naowee-table-card__table-wrap th:last-child,
+  .usuarios-card .naowee-table-card__table-wrap td:last-child {
+    padding-right: 32px;
+  }
+  .usuarios-card thead th {
+    padding-top: 14px !important; padding-bottom: 14px !important;
+    background: #fafbfd;
+  }
+
+  /* ─── Áreas técnicas: cards horizontales ─── */
+  .areas-list {
+    display: grid; gap: 10px;
+    grid-template-columns: 1fr 1fr;
+  }
+  @media (max-width: 900px) { .areas-list { grid-template-columns: 1fr; } }
+  .area-mgmt-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 14px 16px;
+    display: grid; grid-template-columns: 40px 1fr auto;
+    gap: 12px; align-items: center;
+  }
+  .area-mgmt-card__icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .area-mgmt-card__icon svg { width: 22px; height: 22px; }
+  /* Color por área: cada especialidad un tono distinto para diferenciación
+     visual rápida. Doug 14/05/2026. */
+  .area-mgmt-card__icon--rbi            { background: #e8f0ff; color: #2c5fd9; }
+  .area-mgmt-card__icon--general        { background: #fff3e6; color: #d74009; }
+  .area-mgmt-card__icon--topografico    { background: #fef3c7; color: #b45309; }
+  .area-mgmt-card__icon--suelos         { background: #f3e8d0; color: #8a6d3b; }
+  .area-mgmt-card__icon--arquitectonico { background: #e6f4e7; color: #166f30; }
+  .area-mgmt-card__icon--estructural    { background: #e7e9f3; color: #4b4f7a; }
+  .area-mgmt-card__icon--hidrosanitario { background: #e0f2fe; color: #0369a1; }
+  .area-mgmt-card__icon--electrico      { background: #fef3c7; color: #ca8a04; }
+  /* Multi-revisor: stack de thumbnails apilados + nombre del principal.
+     Doug 15/05: cuando varios revisores cubren una misma especialidad,
+     mostramos los avatares apilados (overlap -8px) con borde blanco para
+     separar — patrón GitHub/Figma — y al lado el nombre del principal
+     (el de menor cargaActiva) con un sufijo "+N" si hay más.
+     El "principal" es solo un display hint — el sistema asigna al de
+     menor carga en runtime, no es un flag manual. */
+  .area-mgmt-card__revs {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 8px; margin-top: 8px;
+  }
+  .area-mgmt-card__main { min-width: 0; }
+  .area-mgmt-card__title {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+  }
+  .area-mgmt-card__ref {
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;
+    font-weight: 500; letter-spacing: 0;
+  }
+  /* Stack: thumbnails con overlap, anillo blanco. */
+  .rev-stack {
+    display: inline-flex; align-items: center;
+  }
+  .rev-stack .naowee-thumbnail,
+  .rev-stack__more {
+    box-shadow: 0 0 0 2px var(--surface, #fff);
+    flex-shrink: 0;
+  }
+  .rev-stack > * + * { margin-left: -8px; }
+  .rev-stack__more {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--border); color: var(--text-secondary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .area-mgmt-card__rev-name {
+    font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .area-mgmt-card__rev-count {
+    font-size: 11.5px; color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .area-mgmt-card__rev--missing {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #b42318; font-size: 12px; font-weight: 500;
+  }
+  .area-mgmt-card__rev--missing::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; display: inline-block;
+  }
+  /* Doug 15/05: el botón "Asignar revisores" usa el DS quiet (ghost) directamente,
+     no necesita estilos custom — sólo overrideamos el alineamiento dentro del card. */
+  .area-mgmt-card .naowee-btn { flex-shrink: 0; }
+
+  /* ─── Modal de edición de usuario ─── */
+  .um-modal-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .um-modal-overlay[hidden] { display: none; }
+  .um-modal-overlay.is-open { animation: umOverlayIn .22s ease forwards; }
+  .um-modal-overlay.is-closing { animation: umOverlayOut .2s ease forwards; }
+  @keyframes umOverlayIn  { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes umOverlayOut { from { opacity: 1 } to { opacity: 0 } }
+  .um-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 580px; max-height: 92vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15,17,35,.35), 0 0 0 1px var(--border);
+    overflow: hidden;
+  }
+  .um-modal-overlay.is-open .um-modal {
+    animation: umModalIn .26s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes umModalIn {
+    from { opacity: 0; transform: translateY(16px) scale(.97) }
+    to   { opacity: 1; transform: translateY(0) scale(1) }
+  }
+  .um-modal__hero {
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .um-modal__title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+  .um-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; line-height: 1.45; }
+  .um-modal__body {
+    padding: 22px 26px;
+    overflow-y: auto; flex: 1;
+  }
+  .um-modal__body #umForm,
+  .um-modal__body #umFormBody {
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .um-modal__grid {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px;
+  }
+  @media (max-width: 600px) { .um-modal__grid { grid-template-columns: 1fr; } }
+  /* Doug 15/05: los inputs dentro del grid se desbordaban porque los
+     dropdowns y textfields no constraían su width. minmax(0, 1fr) en el grid
+     + width:100% en los wrappers garantiza que respeten su columna. */
+  .um-modal__grid > .naowee-textfield,
+  .um-modal__grid > .naowee-dropdown {
+    min-width: 0; max-width: 100%;
+  }
+  .um-modal__grid input,
+  .um-modal__grid .naowee-dropdown__trigger {
+    width: 100%; box-sizing: border-box;
+  }
+  .um-modal__flags {
+    display: flex; gap: 22px; flex-wrap: wrap;
+    padding: 14px 16px; background: #fafbfd;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    margin-top: 8px;
+  }
+  .um-modal__footer {
+    padding: 16px 26px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; gap: 10px;
+  }
+  .um-modal__delete {
+    background: transparent; border: 0; color: #c01818;
+    font: inherit; font-size: 12.5px; font-weight: 600;
+    cursor: pointer;
+  }
+  .um-modal__delete:hover { text-decoration: underline; }
+
+  /* Pill genérico para marcadores en la tabla */
+  .um-flag-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 7px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700;
+    background: var(--orange-bg); color: var(--accent);
+    margin-right: 3px;
+  }
+  .um-flag-pill--pdet { background: #f3edff; color: #7c3aed; }
+  .um-flag-pill--ebi  { background: #eef5ff; color: #1f78d1; }
+
+  /* Tipo: texto label gris (sin badge) */
+  .um-tipo-label {
+    font-size: 12.5px; font-weight: 500; color: var(--text-secondary);
+  }
+
+  /* ─── Multi-select de revisores (modal Asignar revisores) ─── */
+  .area-multi-list {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .area-multi-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .area-multi-row:hover { border-color: var(--border-dark); }
+  .area-multi-row.is-selected {
+    border-color: var(--accent);
+    background: #fff7f3;
+  }
+  .area-multi-row__main { flex: 1; min-width: 0; }
+  .area-multi-row__name {
+    font-weight: 700; font-size: 13px; color: var(--text-primary);
+  }
+  .area-multi-row__meta {
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;
+  }
+
+  /* ─── Modal "ancho" para asignación de revisores con búsqueda (Doug 15/05) ─── */
+  .um-modal--wide { max-width: 720px; }
+
+  /* Toolbar (search + invitar) en la cabecera del body del modal · usa DS searchbox + btn loud */
+  .area-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .area-toolbar__search { flex: 1; min-width: 0; }
+  .area-toolbar__invite { flex-shrink: 0; }
+
+  /* Sección "Asignados" / "Disponibles" dentro del modal */
+  .area-sect { margin-bottom: 18px; }
+  .area-sect:last-child { margin-bottom: 0; }
+  .area-sect-head {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 0 4px 6px;
+    margin-bottom: 8px;
+  }
+  .area-sect-head__title {
+    font-size: 12px; font-weight: 700;
+    color: var(--text-primary); letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .area-sect-head__count {
+    font-size: 11.5px; font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--border); padding: 2px 8px; border-radius: 999px;
+  }
+  .area-sect-head__hint {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-left: auto;
+  }
+  .area-empty {
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12.5px; color: var(--text-secondary);
+    border: 1px dashed var(--border-dark);
+    border-radius: var(--radius-md);
+    background: #fafbfd;
+  }
+
+  /* Sobrescritura del thumbnail dentro de la fila — sin sombra */
+  .area-multi-row .naowee-thumbnail { box-shadow: none; flex-shrink: 0; }
+
+  /* Badge "Invitado" para revisores recién creados (estado: 'invitado') */
+  .area-multi-row__name-wrap {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .area-pill-invited {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
+    background: #eef5ff; color: var(--blue-info);
+  }
+  .area-pill-load {
+    display: inline-flex; align-items: center;
+    padding: 1px 7px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700;
+    background: var(--border); color: var(--text-secondary);
+  }
+  .area-pill-load--high { background: #fff0ee; color: #c01818; }
+  .area-pill-load--mid  { background: var(--orange-bg); color: var(--accent); }
+  .area-pill-load--low  { background: var(--green-bg); color: var(--green); }
+
+  /* Botón "Invitar nuevo" en la toolbar */
+  .area-toolbar__invite {
+    flex-shrink: 0;
+  }
+
+  /* Sub-modal Invitar: lista de especialidades */
+  .invite-specs-list {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    max-height: 260px; overflow-y: auto;
+    padding: 6px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: #fafbfd;
+  }
+  @media (max-width: 600px) { .invite-specs-list { grid-template-columns: 1fr; } }
+  .invite-spec {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .invite-spec:hover { border-color: var(--border-dark); }
+  .invite-spec.is-selected { border-color: var(--accent); background: #fff7f3; }
+  .invite-spec__main { flex: 1; min-width: 0; }
+  .invite-spec__title {
+    font-weight: 700; font-size: 12.5px; color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .invite-spec__ref {
+    font-size: 10.5px; color: var(--text-secondary); margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<!-- Modal crear/editar usuario municipal -->
+<div class="um-modal-overlay" id="umOverlay" role="dialog" aria-modal="true" hidden>
+  <div class="um-modal">
+    <div class="um-modal__hero">
+      <div class="um-modal__title" id="umTitle">Crear usuario</div>
+      <div class="um-modal__sub">Usuario que recibe notificaciones de las convocatorias del Ministerio.</div>
+    </div>
+    <div class="um-modal__body">
+      <form id="umForm" novalidate>
+        <input type="hidden" name="id" id="umId">
+        <div id="umFormBody"></div>
+      </form>
+    </div>
+    <div class="um-modal__footer">
+      <button type="button" class="um-modal__delete" id="umDelete" hidden>Eliminar usuario</button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="umCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="umSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Asignar revisores · search + secciones + invitar nuevo (Doug 15/05) -->
+<div class="um-modal-overlay" id="areaOverlay" role="dialog" aria-modal="true" hidden>
+  <div class="um-modal um-modal--wide">
+    <div class="um-modal__hero">
+      <div class="um-modal__title" id="areaTitle">Asignar revisores</div>
+      <div class="um-modal__sub" id="areaSub">Marca los revisores que pueden cubrir esta especialidad. Si no encuentras a la persona, invítala con su correo institucional.</div>
+    </div>
+    <div class="um-modal__body" id="areaBody"></div>
+    <div class="um-modal__footer" id="areaFooter" style="justify-content:flex-end;gap:10px">
+      <button type="button" class="naowee-btn naowee-btn--mute" id="areaCancel">Cancelar</button>
+      <button type="button" class="naowee-btn naowee-btn--loud" id="areaSave">Guardar asignación</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sub-modal · Invitar nuevo revisor al pool -->
+<div class="um-modal-overlay" id="inviteOverlay" role="dialog" aria-modal="true" hidden>
+  <div class="um-modal">
+    <div class="um-modal__hero">
+      <div class="um-modal__title">Invitar nuevo revisor</div>
+      <div class="um-modal__sub">Se le creará una cuenta en el sistema y recibirá un correo con el acceso. Quedará disponible inmediatamente para asignación.</div>
+    </div>
+    <div class="um-modal__body">
+      <form id="inviteForm" novalidate style="display:flex;flex-direction:column;gap:18px">
+        <div>
+          <label class="naowee-textfield__label naowee-textfield__label--required" for="inviteNombre">Nombre completo</label>
+          <div class="naowee-textfield"><div class="naowee-textfield__input-wrap">
+            <input class="naowee-textfield__input" id="inviteNombre" name="nombre" type="text" placeholder="Carlos Martínez" required>
+          </div></div>
+        </div>
+        <div>
+          <label class="naowee-textfield__label naowee-textfield__label--required" for="inviteEmail">Correo institucional</label>
+          <div class="naowee-textfield"><div class="naowee-textfield__input-wrap">
+            <input class="naowee-textfield__input" id="inviteEmail" name="email" type="email" placeholder="correo@mindeporte.gov.co" required>
+          </div></div>
+        </div>
+        <div>
+          <label class="naowee-textfield__label naowee-textfield__label--required">Especialidades</label>
+          <div class="naowee-helper" style="margin-bottom:8px">Marca las áreas que el revisor podrá cubrir. La especialidad de esta asignación ya viene pre-seleccionada.</div>
+          <div id="inviteSpecsList" class="invite-specs-list"></div>
+        </div>
+      </form>
+    </div>
+    <div class="um-modal__footer" style="justify-content:flex-end;gap:10px">
+      <button type="button" class="naowee-btn naowee-btn--mute" id="inviteCancel">Cancelar</button>
+      <button type="button" class="naowee-btn naowee-btn--loud" id="inviteSave">Invitar y asignar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519a';
+  import { toast } from '../shared/toast.js';
+  import { textfield, dropdown, checkbox, bindDropdowns, mountCheckboxes } from '../shared/wizard-page.js?v=20260513k';
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'usuarios' });
+
+  const pageContent = document.getElementById('pageContent');
+
+  /* v2.0 — Catálogo ampliado con los 3 roles de revisor (Danna 14/05/2026):
+     - RBI dedicado (revisa bloque 1)
+     - Doc General dedicado (revisa bloque 2)
+     - 6 áreas técnicas (cubren bloque 3) — alineadas con Res. 933 Art. 3
+     Cada área tiene un icono propio para diferenciación visual (Doug 14/05). */
+  const AREA_ICONS = {
+    rbi:            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+    general:        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
+    topografico:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-12 4 8 5-10 3 14z"/><circle cx="9" cy="8" r="1.4" fill="currentColor"/></svg>',
+    suelos:         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16h18"/><path d="M3 20h18"/><path d="M5 16V8a4 4 0 014-4h6a4 4 0 014 4v8"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>',
+    arquitectonico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M10 21v-6h4v6"/></svg>',
+    estructural:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>',
+    hidrosanitario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5C12 2.5 6 9 6 14a6 6 0 1012 0c0-5-6-11.5-6-11.5z"/></svg>',
+    electrico:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+  };
+  const AREAS_CATALOGO = [
+    { id: 'rbi',            label: 'Requisitos Básicos Indispensables',     ref: 'Res. 933 Sec. 1 (RBI)', especialidad: 'rbi', tipo: 'rbi' },
+    { id: 'general',        label: 'Documentación general del proyecto',    ref: 'Res. 933 Sec. 2',       especialidad: 'general', tipo: 'general' },
+    { id: 'topografico',    label: 'Levantamiento topográfico',             ref: 'Res. 933 Art. 3.1',     especialidad: 'topografico', tipo: 'tecnico' },
+    { id: 'suelos',         label: 'Estudio de suelos',                     ref: 'Res. 933 Art. 3.2',     especialidad: 'suelos', tipo: 'tecnico' },
+    { id: 'arquitectonico', label: 'Diseño arquitectónico',                 ref: 'Res. 933 Art. 3.3',     especialidad: 'arquitectonico', tipo: 'tecnico' },
+    { id: 'estructural',    label: 'Diseño estructural',                    ref: 'Res. 933 Art. 3.4',     especialidad: 'estructural', tipo: 'tecnico' },
+    { id: 'hidrosanitario', label: 'Diseño hidráulico, sanitario y pluvial', ref: 'Res. 933 Art. 3.5',    especialidad: 'hidrosanitario', tipo: 'tecnico' },
+    { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',      ref: 'Res. 933 Art. 3.6',     especialidad: 'electrico', tipo: 'tecnico' }
+  ];
+
+  const TIPOS_ENTIDAD = [
+    'Alcaldía Municipal',
+    'Distrito Especial',
+    'Gobernación Departamental',
+    'Resguardo Indígena',
+    'Consejo Comunitario'
+  ];
+  const SIN_NIT = new Set(['Resguardo Indígena', 'Consejo Comunitario']);
+
+  /* 33 departamentos de Colombia (incluye Bogotá D.C.). Doug 14/05/2026. */
+  const DEPARTAMENTOS_COL = [
+    'Amazonas','Antioquia','Arauca','Atlántico','Bogotá D.C.','Bolívar','Boyacá','Caldas','Caquetá','Casanare','Cauca',
+    'Cesar','Chocó','Córdoba','Cundinamarca','Guainía','Guaviare','Huila','La Guajira','Magdalena','Meta',
+    'Nariño','Norte de Santander','Putumayo','Quindío','Risaralda','San Andrés y Providencia','Santander','Sucre','Tolima',
+    'Valle del Cauca','Vaupés','Vichada'
+  ];
+
+  /* Mapa departamento → municipios (sample curado para la demo, foco en zonas
+     priorizadas: Chocó, Cauca, Antioquia, Valle del Cauca, Bolívar, etc.). */
+  const MUNICIPIOS_BY_DEPTO = {
+    'Amazonas': ['Leticia', 'Puerto Nariño'],
+    'Antioquia': ['Medellín', 'Apartadó', 'Turbo', 'Necoclí', 'Carepa', 'Chigorodó', 'Bello', 'Rionegro', 'Caucasia'],
+    'Arauca': ['Arauca', 'Saravena', 'Tame'],
+    'Atlántico': ['Barranquilla', 'Soledad', 'Malambo', 'Sabanagrande'],
+    'Bogotá D.C.': ['Bogotá D.C.'],
+    'Bolívar': ['Cartagena', 'Magangué', 'El Carmen de Bolívar', 'Turbaco', 'San Pablo'],
+    'Boyacá': ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá'],
+    'Caldas': ['Manizales', 'La Dorada', 'Riosucio', 'Chinchiná'],
+    'Caquetá': ['Florencia', 'San Vicente del Caguán', 'Cartagena del Chairá'],
+    'Casanare': ['Yopal', 'Aguazul', 'Tauramena'],
+    'Cauca': ['Popayán', 'Santander de Quilichao', 'Patía', 'Inzá', 'Toribío', 'Caloto', 'Jambaló'],
+    'Cesar': ['Valledupar', 'Aguachica', 'La Paz'],
+    'Chocó': ['Quibdó', 'Riosucio', 'Bahía Solano', 'Istmina', 'Acandí', 'Carmen del Darién', 'Bajo Baudó'],
+    'Córdoba': ['Montería', 'Lorica', 'Tierralta', 'Montelíbano'],
+    'Cundinamarca': ['Soacha', 'Girardot', 'Zipaquirá', 'Facatativá'],
+    'Guainía': ['Inírida'],
+    'Guaviare': ['San José del Guaviare', 'Calamar'],
+    'Huila': ['Neiva', 'Pitalito', 'Garzón'],
+    'La Guajira': ['Riohacha', 'Maicao', 'Uribia', 'Manaure'],
+    'Magdalena': ['Santa Marta', 'Ciénaga', 'Fundación'],
+    'Meta': ['Villavicencio', 'Acacías', 'Granada'],
+    'Nariño': ['Pasto', 'Tumaco', 'Ipiales', 'Túquerres'],
+    'Norte de Santander': ['Cúcuta', 'Ocaña', 'Tibú', 'Pamplona'],
+    'Putumayo': ['Mocoa', 'Puerto Asís', 'Orito'],
+    'Quindío': ['Armenia', 'Calarcá', 'Montenegro'],
+    'Risaralda': ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal'],
+    'San Andrés y Providencia': ['San Andrés', 'Providencia'],
+    'Santander': ['Bucaramanga', 'Floridablanca', 'Girón', 'Barrancabermeja'],
+    'Sucre': ['Sincelejo', 'Corozal', 'San Marcos'],
+    'Tolima': ['Ibagué', 'Espinal', 'Honda', 'Líbano'],
+    'Valle del Cauca': ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Cartago', 'Buga'],
+    'Vaupés': ['Mitú'],
+    'Vichada': ['Puerto Carreño', 'La Primavera']
+  };
+
+  function render() {
+    const usuarios = ProjectData.getUsuariosMunicipales();
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+        <div class="naowee-page-header">
+          <div class="naowee-page-header__main">
+            <h1>Usuarios y áreas</h1>
+            <p>Gestiona los usuarios municipales que reciben notificaciones de las convocatorias y los responsables de cada área técnica del Ministerio.</p>
+          </div>
+        </div>
+
+        <div class="naowee-table-card usuarios-card">
+          <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+            <button class="naowee-tab naowee-tab--selected" data-panel="usuarios" role="tab" type="button">
+              Entidades territoriales <span class="tab-count">${usuarios.length}</span>
+            </button>
+            <button class="naowee-tab" data-panel="areas" role="tab" type="button">
+              Áreas técnicas <span class="tab-count">${AREAS_CATALOGO.length}</span>
+            </button>
+            <span class="naowee-tabs__indicator"></span>
+          </div>
+
+          <div class="usuarios-panel is-active" data-panel="usuarios">
+            <div class="naowee-table-card__toolbar">
+              <div class="naowee-table-card__toolbar-left">
+                <div class="naowee-searchbox naowee-searchbox--medium" style="width:340px">
+                  <div class="naowee-searchbox__input-wrap">
+                    <span class="naowee-searchbox__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+                    <input type="text" class="naowee-searchbox__input" id="umSearch" placeholder="Buscar por municipio, nombre o correo">
+                  </div>
+                </div>
+              </div>
+              <div class="naowee-table-card__toolbar-right">
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="umNew">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                  Crear usuario
+                </button>
+              </div>
+            </div>
+            <div class="naowee-table-card__table-wrap">
+              <table class="naowee-table--in-card">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Ámbito</th>
+                    <th>Contacto</th>
+                    <th>Correo institucional</th>
+                    <th>NIT</th>
+                    <th>Marcadores</th>
+                    <th class="row-clickable__chev-th" aria-hidden="true"></th>
+                  </tr>
+                </thead>
+                <tbody id="umTbody">
+                  ${usuarios.map(u => `
+                    <tr class="row-clickable" data-id="${u.id}" data-search="${(u.municipio + ' ' + u.departamento + ' ' + u.nombre + ' ' + u.email).toLowerCase()}">
+                      <td><span class="um-tipo-label">${u.tipoEntidad}</span></td>
+                      <td>
+                        <div style="font-weight:600;font-size:13px">${u.municipio || u.departamento}</div>
+                        ${u.municipio ? `<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${u.departamento}</div>` : '<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">Departamental</div>'}
+                      </td>
+                      <td>
+                        <div style="font-weight:600;font-size:13px">${u.nombre}</div>
+                        <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">${u.cargo}</div>
+                      </td>
+                      <td style="font-size:12.5px;color:var(--text-primary)">${u.email}</td>
+                      <td style="font-size:12.5px;color:var(--text-primary)">${u.nit || '—'}</td>
+                      <td>
+                        ${u.marcadores?.zomac ? '<span class="um-flag-pill">ZOMAC</span>' : ''}
+                        ${u.marcadores?.pdet ? '<span class="um-flag-pill um-flag-pill--pdet">PDET</span>' : ''}
+                        ${u.marcadores?.ebiPnd ? '<span class="um-flag-pill um-flag-pill--ebi">EBI/PND</span>' : ''}
+                        ${(!u.marcadores?.zomac && !u.marcadores?.pdet && !u.marcadores?.ebiPnd) ? '<span style="color:var(--text-secondary);font-size:11px">—</span>' : ''}
+                      </td>
+                      <td class="row-clickable__chev" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="usuarios-panel" data-panel="areas" style="padding:18px">
+            <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__body">Cada área técnica tiene un responsable del pool de revisores. Cuando un proyecto entra a etapa documental, la asignación es automática por especialidad.</span>
+              </div>
+            </div>
+            <div class="areas-list">
+              ${AREAS_CATALOGO.map(a => {
+                /* Multi-revisor: lista TODOS los revisores con la especialidad/tipo. */
+                const allRevs = ProjectData.getRevisores();
+                const revisores = a.tipo === 'rbi'      ? allRevs.filter(r => r.tipo === 'rbi')
+                                : a.tipo === 'general'  ? allRevs.filter(r => r.tipo === 'general' || (r.especialidades||[]).includes('general'))
+                                : allRevs.filter(r => (r.especialidades || []).includes(a.especialidad));
+                return `
+                  <div class="area-mgmt-card">
+                    <div class="area-mgmt-card__icon area-mgmt-card__icon--${a.id}">
+                      ${AREA_ICONS[a.id] || AREA_ICONS.general}
+                    </div>
+                    <div class="area-mgmt-card__main">
+                      <div class="area-mgmt-card__title">${a.label}</div>
+                      <div class="area-mgmt-card__ref">${a.ref}</div>
+                      ${revisores.length ? (() => {
+                        /* Principal = el de menor cargaActiva (a quien el sistema asignará primero).
+                           Mostramos hasta 3 thumbnails apilados; el resto en "+N". El nombre
+                           visible es siempre el del principal, con sufijo "+N" sólo si hay otros. */
+                        const sorted = [...revisores].sort((a, b) => (a.cargaActiva ?? 0) - (b.cargaActiva ?? 0));
+                        const MAX_STACK = 3;
+                        const visibles = sorted.slice(0, MAX_STACK);
+                        const restantes = sorted.length - visibles.length;
+                        const principal = sorted[0];
+                        const otros = sorted.length - 1;
+                        return `
+                          <div class="area-mgmt-card__revs">
+                            <span class="rev-stack" aria-label="${sorted.length} revisor${sorted.length === 1 ? '' : 'es'}">
+                              ${visibles.map(r => `
+                                <span class="naowee-thumbnail naowee-thumbnail--xsmall" style="background:color-mix(in srgb, ${r.color} 16%, #fff);color:${r.color}" title="${r.nombre}">
+                                  <span class="naowee-thumbnail__initials">${r.avatar}</span>
+                                </span>
+                              `).join('')}
+                              ${restantes > 0 ? `<span class="rev-stack__more" title="${sorted.slice(MAX_STACK).map(r => r.nombre).join(', ')}">+${restantes}</span>` : ''}
+                            </span>
+                            <span class="area-mgmt-card__rev-name">${principal.nombre}</span>
+                            ${otros > 0 ? `<span class="area-mgmt-card__rev-count">y ${otros} más</span>` : ''}
+                          </div>
+                        `;
+                      })() : `
+                        <span class="area-mgmt-card__rev--missing">Sin responsable</span>
+                      `}
+                    </div>
+                    <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small area-mgmt-card__change" data-area-especialidad="${a.especialidad}" data-area-tipo="${a.tipo}" data-area-label="${a.label}">Asignar revisores</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bindTabs();
+    bindUsuarios();
+    bindAreas();
+  }
+
+  function bindTabs() {
+    const tabsEl = document.querySelector('.usuarios-card .naowee-tabs');
+    if (!tabsEl) return;
+    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+    const tabs = tabsEl.querySelectorAll('.naowee-tab');
+    const panels = document.querySelectorAll('.usuarios-panel');
+
+    const positionIndicator = (tab) => {
+      const r = tab.getBoundingClientRect();
+      const parent = tabsEl.getBoundingClientRect();
+      indicator.style.width = r.width + 'px';
+      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+    };
+    const initial = tabsEl.querySelector('.naowee-tab--selected');
+    if (initial) requestAnimationFrame(() => positionIndicator(initial));
+
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        const key = t.dataset.panel;
+        tabs.forEach(x => x.classList.toggle('naowee-tab--selected', x === t));
+        panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
+        positionIndicator(t);
+      });
+    });
+  }
+
+  function bindUsuarios() {
+    document.getElementById('umNew').addEventListener('click', () => openUserModal(null));
+    document.querySelectorAll('#umTbody tr').forEach(tr => {
+      tr.addEventListener('click', () => openUserModal(tr.dataset.id));
+    });
+    const search = document.getElementById('umSearch');
+    search?.addEventListener('input', () => {
+      const term = search.value.trim().toLowerCase();
+      document.querySelectorAll('#umTbody tr').forEach(tr => {
+        tr.style.display = !term || tr.dataset.search.includes(term) ? '' : 'none';
+      });
+    });
+  }
+
+  function bindAreas() {
+    document.querySelectorAll('.area-mgmt-card__change').forEach(btn => {
+      btn.addEventListener('click', () => openAreaModal(btn.dataset.areaEspecialidad, btn.dataset.areaLabel, btn.dataset.areaTipo));
+    });
+  }
+
+  /* ─── Modal usuario (DS canónico) ─── */
+  const userOverlay = document.getElementById('umOverlay');
+  const userForm = document.getElementById('umForm');
+  const userFormBody = document.getElementById('umFormBody');
+
+  function renderUserFormBody(u) {
+    const v = u || {};
+    const tipo = v.tipoEntidad || 'Alcaldía Municipal';
+    const nitRequired = !SIN_NIT.has(tipo);
+    userFormBody.innerHTML = `
+      <div class="um-modal__grid">
+        ${dropdown({ label: 'Tipo de entidad', name: 'tipoEntidad', required: true, options: TIPOS_ENTIDAD, value: tipo })}
+        ${textfield({ label: 'NIT', name: 'nit', required: nitRequired, placeholder: '891.680.014', helper: nitRequired ? 'NIT sin dígito de verificación' : 'No requerido para esta entidad', value: v.nit || '' })}
+      </div>
+      <div class="um-modal__grid">
+        ${dropdown({ label: 'Departamento', name: 'departamento', required: true, options: DEPARTAMENTOS_COL, placeholder: 'Seleccionar departamento…', value: v.departamento || '' })}
+        ${dropdown({ label: 'Municipio', name: 'municipio', options: v.departamento ? (MUNICIPIOS_BY_DEPTO[v.departamento] || []) : [], placeholder: v.departamento ? 'Seleccionar municipio…' : 'Selecciona un departamento primero', value: v.municipio || '' })}
+      </div>
+      <div class="um-modal__grid">
+        ${textfield({ label: 'Persona contacto', name: 'nombre', required: true, placeholder: 'Carlos Mosquera', value: v.nombre || '' })}
+        ${textfield({ label: 'Cargo', name: 'cargo', required: true, placeholder: 'Secretario de Planeación', value: v.cargo || '' })}
+      </div>
+      ${textfield({ label: 'Correo institucional', name: 'email', type: 'email', required: true, placeholder: 'planeacion@municipio.gov.co', value: v.email || '' })}
+      <div>
+        <label class="naowee-textfield__label" style="display:block;margin-bottom:8px">Marcadores territoriales</label>
+        <div class="um-modal__flags">
+          ${checkbox({ name: 'zomac',  value: 'on', label: 'ZOMAC',   checked: !!v.marcadores?.zomac })}
+          ${checkbox({ name: 'pdet',   value: 'on', label: 'PDET',    checked: !!v.marcadores?.pdet })}
+          ${checkbox({ name: 'ebiPnd', value: 'on', label: 'EBI/PND', checked: !!v.marcadores?.ebiPnd })}
+        </div>
+      </div>
+    `;
+    bindDropdowns(userForm);
+    mountCheckboxes(userForm);
+    syncNitFromTipo();
+    syncMuniFromDepto();
+  }
+
+  /* Repobla el dropdown de municipios según el departamento seleccionado.
+     bindDropdowns mueve los menus al body (portal), así que NO podemos solo
+     editar el innerHTML del menu inside-DD. Reemplazamos el wrapper entero
+     con un dropdown nuevo desde la helper y re-bindeamos. */
+  function syncMuniFromDepto() {
+    const deptoHidden = userForm.querySelector('.naowee-dropdown[data-name="departamento"] input[type="hidden"]');
+    const muniWrap = userForm.querySelector('.naowee-dropdown[data-name="municipio"]');
+    if (!deptoHidden || !muniWrap) return;
+    const depto = deptoHidden.value;
+    const munis = depto ? (MUNICIPIOS_BY_DEPTO[depto] || []) : [];
+    const currentMuni = muniWrap.querySelector('input[type="hidden"]').value;
+    const keepMuni = depto && munis.includes(currentMuni) ? currentMuni : '';
+
+    /* Renderizar el dropdown nuevo */
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = dropdown({
+      label: 'Municipio',
+      name: 'municipio',
+      options: munis,
+      placeholder: depto ? 'Seleccionar municipio…' : 'Selecciona un departamento primero',
+      value: keepMuni
+    }).trim();
+    const fresh = wrapper.firstChild;
+    /* Si no hay depto, deshabilitar el trigger del nuevo dropdown */
+    if (!depto) {
+      fresh.classList.add('naowee-dropdown--disabled');
+      fresh.querySelector('.naowee-dropdown__trigger').disabled = true;
+    }
+    /* Si el muniWrap viejo había sido bindeado, su menu vive en body — lo removemos */
+    if (muniWrap._menu) {
+      muniWrap._menu.remove();
+    } else {
+      /* Limpieza por opciones: si hay menu en body cuyo primer option no está
+         en DEPARTAMENTOS_COL ni TIPOS_ENTIDAD, asumimos que es el viejo de muni */
+      document.querySelectorAll('body > .naowee-dropdown__menu').forEach(m => {
+        const firstOpt = m.querySelector('.naowee-dropdown__option')?.textContent.trim();
+        const isDepto = DEPARTAMENTOS_COL.includes(firstOpt);
+        const isTipo = TIPOS_ENTIDAD.includes(firstOpt);
+        if (!isDepto && !isTipo && firstOpt) m.remove();
+      });
+    }
+    /* Wrappear `fresh` en un contenedor temporal para que bindDropdowns lo
+       encuentre vía querySelectorAll en scope. Solo el nuevo dd se bindea —
+       los otros (tipo, depto) ya tienen su menu en body y serían rebindeados
+       erróneamente (menu=null → appendChild crash). */
+    muniWrap.replaceWith(fresh);
+    const tempScope = document.createElement('div');
+    tempScope.appendChild(fresh);
+    bindDropdowns(tempScope);
+    /* fresh ahora tiene _showMenu y su menu vivió en body. Reinsertar fresh
+       en el form en la posición donde estaba (después del depto wrap). */
+    const deptoWrap = userForm.querySelector('.naowee-dropdown[data-name="departamento"]');
+    deptoWrap.parentNode.appendChild(fresh);
+    /* Anotar la referencia del menu para próxima limpieza */
+    const portMenu = Array.from(document.querySelectorAll('body > .naowee-dropdown__menu')).find(m => {
+      const opt = m.querySelector('.naowee-dropdown__option')?.textContent.trim();
+      return munis.includes(opt);
+    });
+    if (portMenu) fresh._menu = portMenu;
+  }
+
+  function syncNitFromTipo() {
+    const tipoHidden = userForm.querySelector('.naowee-dropdown[data-name="tipoEntidad"] input[type="hidden"]');
+    const nitField = userForm.querySelector('.naowee-textfield[data-name="nit"]');
+    if (!tipoHidden || !nitField) return;
+    const tipo = tipoHidden.value;
+    const sinNit = SIN_NIT.has(tipo);
+    const nitInput = nitField.querySelector('input[name="nit"]');
+    const helper = nitField.querySelector('.naowee-helper');
+    const labelEl = nitField.querySelector('.naowee-textfield__label');
+    if (sinNit) {
+      nitInput.removeAttribute('required');
+      labelEl?.classList.remove('naowee-textfield__label--required');
+      if (helper) { helper.textContent = 'No requerido para esta entidad'; helper.style.color = 'var(--green)'; }
+    } else {
+      nitInput.setAttribute('required', '');
+      labelEl?.classList.add('naowee-textfield__label--required');
+      if (helper) { helper.textContent = 'NIT sin dígito de verificación'; helper.style.color = ''; }
+    }
+  }
+
+  /* Re-syncea NIT helper cuando cambia el dropdown de tipoEntidad y muni cuando
+     cambia el depto. bindDropdowns dispara `change` en el hidden input. */
+  userForm.addEventListener('change', e => {
+    if (e.target.name === 'tipoEntidad') syncNitFromTipo();
+    if (e.target.name === 'departamento') syncMuniFromDepto();
+  });
+
+  function openUserModal(id) {
+    const u = id ? ProjectData.getUsuarioMunicipal(id) : null;
+    document.getElementById('umTitle').textContent = u ? 'Editar usuario' : 'Crear usuario';
+    document.getElementById('umDelete').hidden = !u;
+    document.getElementById('umId').value = u?.id || '';
+    renderUserFormBody(u);
+    userOverlay.hidden = false;
+    userOverlay.classList.add('is-open');
+  }
+  function closeUserModal() {
+    userOverlay.classList.add('is-closing');
+    setTimeout(() => {
+      userOverlay.classList.remove('is-open', 'is-closing');
+      userOverlay.hidden = true;
+    }, 200);
+  }
+  document.getElementById('umCancel').addEventListener('click', closeUserModal);
+  userOverlay.addEventListener('click', e => { if (e.target === userOverlay) closeUserModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !userOverlay.hidden) closeUserModal(); });
+
+  document.getElementById('umSave').addEventListener('click', () => {
+    const fd = new FormData(userForm);
+    const tipoEntidad = fd.get('tipoEntidad');
+    const sinNit = SIN_NIT.has(tipoEntidad);
+    const data = {
+      tipoEntidad,
+      nit: sinNit ? null : (fd.get('nit') || '').trim() || null,
+      departamento: (fd.get('departamento') || '').trim(),
+      municipio: (fd.get('municipio') || '').trim() || null,
+      nombre: (fd.get('nombre') || '').trim(),
+      cargo: (fd.get('cargo') || '').trim(),
+      email: (fd.get('email') || '').trim(),
+      marcadores: {
+        zomac: fd.get('zomac') === 'on',
+        pdet: fd.get('pdet') === 'on',
+        ebiPnd: fd.get('ebiPnd') === 'on'
+      }
+    };
+    if (!data.departamento || !data.nombre || !data.cargo || !data.email) {
+      toast({ variant: 'caution', title: 'Campos requeridos', message: 'Completa Departamento, Contacto, Cargo y Correo.' });
+      return;
+    }
+    const id = document.getElementById('umId').value;
+    if (id) {
+      ProjectData.setUsuarioMunicipal(id, u => Object.assign(u, data));
+      toast({ variant: 'positive', title: 'Usuario actualizado', message: `${data.nombre} fue editado correctamente.` });
+    } else {
+      ProjectData.addUsuarioMunicipal(data);
+      toast({ variant: 'positive', title: 'Usuario creado', message: `${data.nombre} fue agregado a la lista de notificaciones.` });
+    }
+    closeUserModal();
+    render();
+  });
+  document.getElementById('umDelete').addEventListener('click', () => {
+    const id = document.getElementById('umId').value;
+    if (!id) return;
+    if (!confirm('¿Eliminar este usuario? Dejará de recibir notificaciones de convocatorias.')) return;
+    ProjectData.removeUsuarioMunicipal(id);
+    toast({ variant: 'informative', title: 'Usuario eliminado', message: 'El usuario fue removido de la lista.' });
+    closeUserModal();
+    render();
+  });
+
+  /* ─── Modal asignar revisores · search + secciones + invitar (Doug 15/05) ───
+     UX:
+       1. Searchbox arriba filtra por nombre / email / especialidades del revisor.
+       2. Sección "Asignados" lista a los marcados ahora (orden de selección).
+       3. Sección "Disponibles" lista al resto, ordenados por carga ascendente
+          para que el admin pueda asignar al que tenga menos trabajo.
+       4. Botón "Invitar nuevo" arriba a la derecha abre un sub-modal que crea
+          un revisor en el pool y lo auto-selecciona en el modal padre.
+       5. Cierre con Esc / overlay click / Cancelar.                            */
+  const areaOverlay = document.getElementById('areaOverlay');
+  const inviteOverlay = document.getElementById('inviteOverlay');
+  let _currentArea = null;        /* { especialidad, label, tipo } */
+  let _selectedRevs = new Set();  /* ids actualmente marcados — fuente de verdad del modal */
+  let _searchTerm = '';
+
+  function _yaTiene(r, especialidad, tipo) {
+    if (tipo === 'rbi') return r.tipo === 'rbi';
+    if (tipo === 'general') return r.tipo === 'general' || (r.especialidades || []).includes('general');
+    return (r.especialidades || []).includes(especialidad);
+  }
+  /* Umbrales de carga (Doug 15/05):
+       ≤6  → verde (capacidad disponible)
+       7-9 → naranja (ocupado pero disponible)
+       ≥10 → rojo (sobrecargado)                                          */
+  function _loadBucket(n) {
+    if (n >= 10) return { cls: 'area-pill-load--high', label: `${n} activos` };
+    if (n >= 7)  return { cls: 'area-pill-load--mid',  label: `${n} activos` };
+    return { cls: 'area-pill-load--low', label: `${n} activos` };
+  }
+  /* Normaliza para que la búsqueda no falle con tildes ("maria" ≡ "María") */
+  function _norm(s) {
+    return (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+  function _matchesSearch(r, term) {
+    if (!term) return true;
+    const t = _norm(term);
+    const haystack = _norm([
+      r.nombre || '',
+      r.email || '',
+      r.especialidad || '',
+      (r.especialidades || []).join(' '),
+      r.tipo || ''
+    ].join(' '));
+    return haystack.includes(t);
+  }
+  function _revRow(r, isSelected) {
+    const cbId = `cb-rev-${r.id}`;
+    const load = _loadBucket(r.cargaActiva ?? 0);
+    const meta = (r.especialidades && r.especialidades.length)
+      ? r.especialidades.join(' · ')
+      : (r.tipo === 'rbi' ? 'Revisor RBI' : r.tipo === 'general' ? 'Doc. General' : 'Técnico');
+    const subline = r.email ? `${meta} · ${r.email}` : meta;
+    return `
+      <label class="area-multi-row ${isSelected ? 'is-selected' : ''}" for="${cbId}">
+        <label class="naowee-checkbox ${isSelected ? 'naowee-checkbox--checked' : ''}">
+          <input type="checkbox" id="${cbId}" data-rev="${r.id}" ${isSelected ? 'checked' : ''}/>
+          <span class="naowee-checkbox__box">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+            </svg>
+          </span>
+        </label>
+        <div class="naowee-thumbnail naowee-thumbnail--small" style="background:${r.color}22;color:${r.color}">
+          <span class="naowee-thumbnail__initials">${r.avatar}</span>
+        </div>
+        <div class="area-multi-row__main">
+          <div class="area-multi-row__name-wrap">
+            <span class="area-multi-row__name">${r.nombre}</span>
+            ${r.estado === 'invitado' ? '<span class="area-pill-invited">Invitado</span>' : ''}
+            <span class="area-pill-load ${load.cls}">${load.label}</span>
+          </div>
+          <div class="area-multi-row__meta">${subline}</div>
+        </div>
+      </label>
+    `;
+  }
+
+  function renderAreaModalBody() {
+    if (!_currentArea) return;
+    const { especialidad, tipo } = _currentArea;
+    const body = document.getElementById('areaBody');
+    const allRevs = ProjectData.getRevisores();
+    const filtered = allRevs.filter(r => _matchesSearch(r, _searchTerm));
+    const asignados   = filtered.filter(r => _selectedRevs.has(r.id));
+    const disponibles = filtered
+      .filter(r => !_selectedRevs.has(r.id))
+      .sort((a, b) => (a.cargaActiva ?? 0) - (b.cargaActiva ?? 0));
+
+    /* Preserve scroll position across re-renders */
+    const prevScroll = body.scrollTop;
+
+    body.innerHTML = `
+      <div class="area-toolbar">
+        <div class="naowee-searchbox area-toolbar__search">
+          <div class="naowee-searchbox__input-wrap">
+            <span class="naowee-searchbox__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </span>
+            <input type="text" class="naowee-searchbox__input" id="areaSearch" placeholder="Buscar por nombre, correo o especialidad…" value="${_searchTerm.replace(/"/g, '&quot;')}" autocomplete="off">
+          </div>
+        </div>
+        <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large area-toolbar__invite" id="areaInviteBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Invitar nuevo
+        </button>
+      </div>
+
+      <div class="area-sect">
+        <div class="area-sect-head">
+          <span class="area-sect-head__title">Asignados</span>
+          <span class="area-sect-head__count">${asignados.length}</span>
+          ${asignados.length ? '<span class="area-sect-head__hint">Cubren esta especialidad</span>' : ''}
+        </div>
+        ${asignados.length
+          ? `<div class="area-multi-list">${asignados.map(r => _revRow(r, true)).join('')}</div>`
+          : `<div class="area-empty">Aún no hay revisores asignados a esta especialidad.</div>`
+        }
+      </div>
+
+      <div class="area-sect">
+        <div class="area-sect-head">
+          <span class="area-sect-head__title">Disponibles</span>
+          <span class="area-sect-head__count">${disponibles.length}</span>
+          ${disponibles.length ? '<span class="area-sect-head__hint">Ordenados por menor carga</span>' : ''}
+        </div>
+        ${disponibles.length
+          ? `<div class="area-multi-list">${disponibles.map(r => _revRow(r, false)).join('')}</div>`
+          : (_searchTerm
+              ? `<div class="area-empty">No encontramos revisores que coincidan con "<strong>${_searchTerm}</strong>". ¿Quieres <button type="button" class="naowee-btn naowee-btn--link" id="areaInviteFromEmpty" style="padding:0">invitar uno nuevo</button>?</div>`
+              : `<div class="area-empty">Todos los revisores del pool ya están asignados.</div>`
+            )
+        }
+      </div>
+    `;
+
+    body.scrollTop = prevScroll;
+
+    /* ─ Wire interactions ─ */
+    const searchInput = document.getElementById('areaSearch');
+    searchInput.addEventListener('input', e => {
+      _searchTerm = e.target.value.trim();
+      renderAreaModalBody();
+      /* Re-focus the search input + restore caret since we rerendered */
+      const next = document.getElementById('areaSearch');
+      if (next) {
+        next.focus();
+        const v = next.value;
+        next.setSelectionRange(v.length, v.length);
+      }
+    });
+
+    body.querySelectorAll('input[type="checkbox"][data-rev]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const id = cb.dataset.rev;
+        if (cb.checked) _selectedRevs.add(id);
+        else _selectedRevs.delete(id);
+        renderAreaModalBody();
+      });
+    });
+
+    document.getElementById('areaInviteBtn').addEventListener('click', () => openInviteModal(_currentArea));
+    const fromEmpty = document.getElementById('areaInviteFromEmpty');
+    if (fromEmpty) fromEmpty.addEventListener('click', () => openInviteModal(_currentArea));
+  }
+
+  function bindAreaSaveButton() {
+    const saveBtn = document.getElementById('areaSave');
+    const fresh = saveBtn.cloneNode(true);
+    saveBtn.replaceWith(fresh);
+    fresh.addEventListener('click', () => {
+      if (!_currentArea) return;
+      const { especialidad, tipo, label } = _currentArea;
+      const isRBI = tipo === 'rbi';
+      const isGeneral = tipo === 'general';
+      const revs = ProjectData.getRevisores();
+      const selectedIds = _selectedRevs;
+
+      revs.forEach(r => {
+        if (selectedIds.has(r.id)) {
+          if (isRBI) {
+            ProjectData.setRevisor(r.id, x => ({ ...x, tipo: 'rbi' }));
+          } else if (isGeneral) {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: [...new Set([...(x.especialidades || []), 'general'])]
+            }));
+          } else if (!(r.especialidades || []).includes(especialidad)) {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: [...new Set([...(x.especialidades || []), especialidad])]
+            }));
+          }
+        } else {
+          if (isRBI && r.tipo === 'rbi') {
+            /* No degradamos tipo automáticamente — el admin lo hace explícito desde la edición */
+          } else if (!isRBI && !isGeneral && (r.especialidades || []).includes(especialidad)) {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: (x.especialidades || []).filter(e => e !== especialidad)
+            }));
+          } else if (isGeneral && (r.especialidades || []).includes('general') && r.tipo !== 'general') {
+            ProjectData.setRevisor(r.id, x => ({
+              ...x,
+              especialidades: (x.especialidades || []).filter(e => e !== 'general')
+            }));
+          }
+        }
+      });
+      const count = selectedIds.size;
+      toast({ variant: 'positive', title: 'Revisores asignados', message: `${count} ${count === 1 ? 'revisor cubre' : 'revisores cubren'} ahora "${label}".` });
+      closeAreaModal();
+      render();
+    });
+  }
+
+  function openAreaModal(especialidad, label, tipo) {
+    _currentArea = { especialidad, label, tipo };
+    _searchTerm = '';
+    /* Inicializar _selectedRevs con quienes ya tienen la especialidad */
+    _selectedRevs = new Set(
+      ProjectData.getRevisores().filter(r => _yaTiene(r, especialidad, tipo)).map(r => r.id)
+    );
+    document.getElementById('areaTitle').textContent = `Asignar revisores · ${label}`;
+    document.getElementById('areaSub').textContent = `Marca los revisores del equipo que pueden cubrir esta especialidad. Si no encuentras a la persona, invítala con su correo institucional y queda disponible al instante.`;
+    renderAreaModalBody();
+    bindAreaSaveButton();
+    areaOverlay.hidden = false;
+    areaOverlay.classList.add('is-open');
+  }
+  function closeAreaModal() {
+    areaOverlay.classList.add('is-closing');
+    setTimeout(() => {
+      areaOverlay.classList.remove('is-open', 'is-closing');
+      areaOverlay.hidden = true;
+      _currentArea = null;
+      _selectedRevs.clear();
+      _searchTerm = '';
+    }, 200);
+  }
+  document.getElementById('areaCancel').addEventListener('click', closeAreaModal);
+  areaOverlay.addEventListener('click', e => { if (e.target === areaOverlay) closeAreaModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    /* Cerrar invite primero si está arriba, luego el modal de área */
+    if (!inviteOverlay.hidden) closeInviteModal();
+    else if (!areaOverlay.hidden) closeAreaModal();
+  });
+
+  /* ─── Sub-modal · Invitar nuevo revisor (Doug 15/05) ───
+     Crea un revisor en el pool con estado: 'invitado' + lo auto-selecciona
+     en el modal padre para que el admin pueda guardar la asignación. */
+  function openInviteModal(area) {
+    document.getElementById('inviteNombre').value = '';
+    document.getElementById('inviteEmail').value = '';
+    /* Render multi-select de especialidades — pre-marca la del área actual */
+    const list = document.getElementById('inviteSpecsList');
+    const preSel = new Set();
+    if (area && area.especialidad) preSel.add(area.especialidad);
+    list.innerHTML = AREAS_CATALOGO.map(a => {
+      const isSel = preSel.has(a.especialidad);
+      const cbId = `inv-cb-${a.id}`;
+      return `
+        <label class="invite-spec ${isSel ? 'is-selected' : ''}" for="${cbId}">
+          <label class="naowee-checkbox ${isSel ? 'naowee-checkbox--checked' : ''}">
+            <input type="checkbox" id="${cbId}" data-spec="${a.especialidad}" data-tipo="${a.tipo}" ${isSel ? 'checked' : ''}/>
+            <span class="naowee-checkbox__box">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+              </svg>
+            </span>
+          </label>
+          <div class="invite-spec__main">
+            <div class="invite-spec__title">${a.label}</div>
+            <div class="invite-spec__ref">${a.ref}</div>
+          </div>
+        </label>
+      `;
+    }).join('');
+    /* Highlight on toggle */
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const wrap = cb.closest('.invite-spec');
+        const ds = cb.closest('.naowee-checkbox');
+        if (cb.checked) { wrap.classList.add('is-selected'); ds.classList.add('naowee-checkbox--checked'); }
+        else { wrap.classList.remove('is-selected'); ds.classList.remove('naowee-checkbox--checked'); }
+      });
+    });
+    /* Ocultar el modal de área detrás (visualmente) para no mostrar doble backdrop.
+       Conservamos su estado para restaurarlo al cerrar el invite. */
+    areaOverlay.style.display = 'none';
+    inviteOverlay.hidden = false;
+    inviteOverlay.classList.add('is-open');
+    setTimeout(() => document.getElementById('inviteNombre').focus(), 100);
+  }
+  function closeInviteModal() {
+    inviteOverlay.classList.add('is-closing');
+    setTimeout(() => {
+      inviteOverlay.classList.remove('is-open', 'is-closing');
+      inviteOverlay.hidden = true;
+      /* Restaurar el modal de área detrás si aún está activo */
+      if (_currentArea) areaOverlay.style.display = '';
+    }, 200);
+  }
+  document.getElementById('inviteCancel').addEventListener('click', closeInviteModal);
+  inviteOverlay.addEventListener('click', e => { if (e.target === inviteOverlay) closeInviteModal(); });
+
+  document.getElementById('inviteSave').addEventListener('click', () => {
+    const nombre = document.getElementById('inviteNombre').value.trim();
+    const email = document.getElementById('inviteEmail').value.trim();
+    const specs = Array.from(document.querySelectorAll('#inviteSpecsList input[type="checkbox"]:checked'))
+      .map(cb => ({ esp: cb.dataset.spec, tipo: cb.dataset.tipo }));
+
+    if (!nombre) { toast({ variant: 'negative', title: 'Falta el nombre', message: 'Ingresa el nombre completo del revisor.' }); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast({ variant: 'negative', title: 'Correo inválido', message: 'Ingresa un correo institucional válido.' }); return; }
+    if (!specs.length) { toast({ variant: 'negative', title: 'Selecciona al menos una especialidad', message: 'El revisor debe cubrir al menos un área.' }); return; }
+
+    /* Determinar tipo principal: si seleccionó RBI o General puros, usar ese; si no, técnico */
+    const hasRBI = specs.some(s => s.tipo === 'rbi');
+    const hasGen = specs.some(s => s.tipo === 'general');
+    const tipoPrincipal = hasRBI ? 'rbi' : (hasGen && specs.length === 1 ? 'general' : 'tecnico');
+    const especialidades = specs.filter(s => s.tipo !== 'rbi').map(s => s.esp);
+
+    const nuevo = ProjectData.addRevisor({
+      nombre, email,
+      tipo: tipoPrincipal,
+      especialidades,
+      estado: 'invitado'
+    });
+
+    /* Auto-seleccionar en el modal padre */
+    _selectedRevs.add(nuevo.id);
+    toast({ variant: 'positive', title: 'Revisor invitado', message: `${nombre} se agregó al pool y quedó asignado a esta área.` });
+    closeInviteModal();
+    renderAreaModalBody();
+  });
+
+  render();
+</script>
+</body>
+</html>

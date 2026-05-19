@@ -1,0 +1,3774 @@
+{
+  "registroBasico": [
+    {
+      "seccion": "CONVOCATORIA",
+      "SECCIÓN": "Convocatoria",
+      "CAMPO": "Convocatoria a la que se postula",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "El sistema muestra las convocatorias ACTIVAS según fecha vigente.",
+      "OBSERVACIÓN DE NEGOCIO": "Se toma de la convocatoria en la que el municipio está habilitado.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "CONVOCATORIA",
+      "SECCIÓN": "Convocatoria",
+      "CAMPO": "Bienio",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: 2023-2024, 2024-2025, 2025-2026.",
+      "OBSERVACIÓN DE NEGOCIO": "Se hereda de la convocatoria. No editable.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "CONVOCATORIA",
+      "SECCIÓN": "Convocatoria",
+      "CAMPO": "Fecha límite de postulación",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se toma de la fecha de cierre de la convocatoria.",
+      "OBSERVACIÓN DE NEGOCIO": "Al expirar, el estado pasa a «Postulación expirada».",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "Departamento",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Lista de departamentos de Colombia.",
+      "OBSERVACIÓN DE NEGOCIO": "Del catálogo de la Resolución 933 (hoja BASE DE DATOS).",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "Municipio",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Depende del departamento. Código DANE asociado automáticamente.",
+      "OBSERVACIÓN DE NEGOCIO": "Del catálogo DANE. Se guarda el código para integraciones.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "Tipo de entidad formuladora",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Alcaldía, Gobernación, Resguardo indígena, Consejo comunitario, Asociación de cabildos, Otro.",
+      "OBSERVACIÓN DE NEGOCIO": "Si es comunidad étnica, activa la exigencia de documentación diferencial (bloque 1).",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "Nombre oficial de la entidad",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 200 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Razón social de la entidad.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "NIT de la entidad",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "9 dígitos + dígito de verificación. Validación módulo 11.",
+      "OBSERVACIÓN DE NEGOCIO": "Usado para integraciones con SGR/MGA.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "Municipio ZOMAC",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No (catálogo Resolución 933).",
+      "OBSERVACIÓN DE NEGOCIO": "Habilita fuente de financiación de Obras por Impuestos.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENTIDAD FORMULADORA",
+      "SECCIÓN": "Entidad Formuladora",
+      "CAMPO": "Municipio PDET",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No (catálogo Resolución 933).",
+      "OBSERVACIÓN DE NEGOCIO": "Habilita fuentes SGR - Asignación para la Paz.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "REPRESENTANTE LEGAL",
+      "SECCIÓN": "Representante Legal",
+      "CAMPO": "Nombre completo",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Solo letras, espacios, tildes. Máx. 150 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Persona que suscribe la carta de intención.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "REPRESENTANTE LEGAL",
+      "SECCIÓN": "Representante Legal",
+      "CAMPO": "Tipo de documento",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Cédula de ciudadanía, Cédula de extranjería, Pasaporte.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "REPRESENTANTE LEGAL",
+      "SECCIÓN": "Representante Legal",
+      "CAMPO": "Número de documento",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "6 a 12 dígitos.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "REPRESENTANTE LEGAL",
+      "SECCIÓN": "Representante Legal",
+      "CAMPO": "Cargo",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 100 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Ej: Alcalde Municipal, Gobernador.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "REPRESENTANTE LEGAL",
+      "SECCIÓN": "Representante Legal",
+      "CAMPO": "Teléfono de contacto",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "10 dígitos (celular) o 7 dígitos (fijo).",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "REPRESENTANTE LEGAL",
+      "SECCIÓN": "Representante Legal",
+      "CAMPO": "Correo electrónico institucional",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato email RFC 5322 válido.",
+      "OBSERVACIÓN DE NEGOCIO": "Canal oficial de notificaciones.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Nombre del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mín. 10, máx. 250 caracteres. Único por municipio.",
+      "OBSERVACIÓN DE NEGOCIO": "Debe coincidir con el nombre registrado en la MGA.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Código BPIN",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "13 dígitos. Obligatorio si EBI = Sí.",
+      "OBSERVACIÓN DE NEGOCIO": "Obligatorio para proyectos de PGN.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Fase del proyecto",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: FASE I - Perfil, FASE II - Prefactibilidad, FASE III - Factibilidad.",
+      "OBSERVACIÓN DE NEGOCIO": "Catálogo LISTAS de la Resolución 933.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Tipo de solicitud",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "4 opciones del catálogo (PGN, FRPT, Distribución, Otras fuentes).",
+      "OBSERVACIÓN DE NEGOCIO": "Determina la ruta de revisión y la instancia de aprobación.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Sector de inversión",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo de sectores (Ministerio del Deporte por defecto).",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Instancia de aprobación",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Entidad Territorial / Ministerio del Deporte.",
+      "OBSERVACIÓN DE NEGOCIO": "Se deriva del tipo de solicitud y fuente.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Valor total del proyecto (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Valor mayor a 0.",
+      "OBSERVACIÓN DE NEGOCIO": "Incluye obra + interventoría + administración.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Valor solicitado al Ministerio (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mayor a 0 y menor o igual al valor total.",
+      "OBSERVACIÓN DE NEGOCIO": "Monto a cofinanciar por el Ministerio.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "Valor aporte entidad formuladora (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mayor o igual a 0. La suma con otras fuentes debe igualar el valor total.",
+      "OBSERVACIÓN DE NEGOCIO": "Recursos propios comprometidos.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "INFORMACIÓN BÁSICA DEL PROYECTO",
+      "SECCIÓN": "Información del Proyecto",
+      "CAMPO": "¿Aporta otras fuentes?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Si es Sí, se habilita la tabla de fuentes en la Etapa Documental.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "LOCALIZACIÓN DEL PROYECTO",
+      "SECCIÓN": "Localización",
+      "CAMPO": "Dirección del predio",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mín. 10, máx. 250 caracteres.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "LOCALIZACIÓN DEL PROYECTO",
+      "SECCIÓN": "Localización",
+      "CAMPO": "Zona",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Urbana, Rural, Centro Poblado.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "LOCALIZACIÓN DEL PROYECTO",
+      "SECCIÓN": "Localización",
+      "CAMPO": "Barrio / Corregimiento / Vereda",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Máx. 150 caracteres.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "LOCALIZACIÓN DEL PROYECTO",
+      "SECCIÓN": "Localización",
+      "CAMPO": "Latitud (decimal)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Rango -4.23 a 12.53. Seis decimales.",
+      "OBSERVACIÓN DE NEGOCIO": "Territorio colombiano.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "LOCALIZACIÓN DEL PROYECTO",
+      "SECCIÓN": "Localización",
+      "CAMPO": "Longitud (decimal)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Rango -81.73 a -66.87. Seis decimales.",
+      "OBSERVACIÓN DE NEGOCIO": "Territorio colombiano.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENFOQUE DIFERENCIAL",
+      "SECCIÓN": "Enfoque Diferencial",
+      "CAMPO": "¿Tiene enfoque diferencial?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Si es Sí, activa los campos siguientes.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENFOQUE DIFERENCIAL",
+      "SECCIÓN": "Enfoque Diferencial",
+      "CAMPO": "Tipo de enfoque",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si enfoque = Sí. Opciones: Territorial, Poblacional, Funcional.",
+      "OBSERVACIÓN DE NEGOCIO": "Del catálogo LISTAS.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENFOQUE DIFERENCIAL",
+      "SECCIÓN": "Enfoque Diferencial",
+      "CAMPO": "Población sujeto de enfoque",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si enfoque = Poblacional. Opciones: Indígena, Afrocolombiana, Negras, Raizales, Palenqueros, Rrom, Víctimas, Primera infancia, Tercera edad, Personas con discapacidad, Otro.",
+      "OBSERVACIÓN DE NEGOCIO": "Si es comunidad étnica, se exige la «Documentación de comunidad étnica» del Bloque 1 de documentos.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "ENFOQUE DIFERENCIAL",
+      "SECCIÓN": "Enfoque Diferencial",
+      "CAMPO": "EBI (Estadísticas Básicas de Inversión)",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Indica si el proyecto tiene ficha EBI en el Banco de Proyectos.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "CARTA DE INTENCIÓN (único anexo en esta etapa)",
+      "SECCIÓN": "Carta de Intención",
+      "CAMPO": "Archivo de carta de intención",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "PDF. Máx. 10MB. Firmada por el representante legal.",
+      "OBSERVACIÓN DE NEGOCIO": "Modelo publicado por MINDEPORTE. Único documento exigido para radicar la postulación.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "CARTA DE INTENCIÓN (único anexo en esta etapa)",
+      "SECCIÓN": "Carta de Intención",
+      "CAMPO": "Fecha de suscripción",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato DD/MM/AAAA. No mayor a 60 días anteriores a la radicación.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "TRAZABILIDAD DE LA POSTULACIÓN",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Número de radicado",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Generado al enviar. Formato: MDP-AAAA-NNNNN.",
+      "OBSERVACIÓN DE NEGOCIO": "Irrepetible. Se conserva si la postulación pasa a segunda convocatoria.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "TRAZABILIDAD DE LA POSTULACIÓN",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Fecha y hora de radicación",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se genera al hacer clic en «Enviar postulación».",
+      "OBSERVACIÓN DE NEGOCIO": "Inicia el conteo de los 15 días para revisión.",
+      "ETAPA DEL FLUJO": "A. Postulación"
+    },
+    {
+      "seccion": "TRAZABILIDAD DE LA POSTULACIÓN",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Estado de la postulación",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: Borrador, Presentado, En revisión, Favorable, Devuelto, Rechazado, Postulación expirada, Postulación no revisada.",
+      "OBSERVACIÓN DE NEGOCIO": "Ciclo definido en el flujo operativo V2.",
+      "ETAPA DEL FLUJO": "A / B. Postulación / Revisión"
+    },
+    {
+      "seccion": "TRAZABILIDAD DE LA POSTULACIÓN",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Fecha de concepto de favorabilidad",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se genera cuando el revisor emite concepto favorable.",
+      "OBSERVACIÓN DE NEGOCIO": "Abre la Etapa Documental.",
+      "ETAPA DEL FLUJO": "B. Revisión"
+    },
+    {
+      "seccion": "TRAZABILIDAD DE LA POSTULACIÓN",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Usuario revisor asignado",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se toma del perfil del revisor del Ministerio.",
+      "ETAPA DEL FLUJO": "B. Revisión"
+    }
+  ],
+  "formularioCompleto": [
+    {
+      "seccion": "A. CLASIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Clasificación",
+      "SUBSECCIÓN": "Tipología",
+      "CAMPO": "Tipología principal del escenario",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo Formato Censo (15 tipologías): Parque, Pista, Placa deportiva, Piscina, Estadio, Coliseo, Cubierta, Centros de recreación, Otras instalaciones, Cancha sintética, Unideportivo, Campos de juego, Centro de alto rendimiento, Villa deportiva, Polideportivo cubierto.",
+      "OBSERVACIÓN DE NEGOCIO": "Metadato principal de clasificación.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "A. CLASIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Clasificación",
+      "SUBSECCIÓN": "Subtipología",
+      "CAMPO": "Subtipología del escenario",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Depende de la tipología. Del catálogo del Formato Censo.",
+      "OBSERVACIÓN DE NEGOCIO": "Ej: Piscina → Olímpica / Semi Olímpica / Recreativa / Complejo Acuático.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "A. CLASIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Clasificación",
+      "SUBSECCIÓN": "Intervención",
+      "CAMPO": "Tipo(s) de intervención",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones (Formato Censo): Adecuación, Reparación, Recuperación, Remodelación, Reforzamiento, Mejoramiento, Restauración, Construcción nueva.",
+      "OBSERVACIÓN DE NEGOCIO": "Puede seleccionarse más de una.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "A. CLASIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Clasificación",
+      "SUBSECCIÓN": "Disciplinas",
+      "CAMPO": "Disciplinas deportivas que albergará",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo Formato Censo — 49 disciplinas.",
+      "OBSERVACIÓN DE NEGOCIO": "Para reportería de cobertura deportiva.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "A. CLASIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Clasificación",
+      "SUBSECCIÓN": "Resumen",
+      "CAMPO": "Resumen ejecutivo del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Máx. 2.000 caracteres. Texto plano.",
+      "OBSERVACIÓN DE NEGOCIO": "Resumen corto para consulta rápida del revisor. El contenido detallado vive en el Documento de Análisis (anexo).",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "B. PRODUCTOS MGA (metadato para reportería)",
+      "SECCIÓN": "Productos MGA",
+      "SUBSECCIÓN": "Producto",
+      "CAMPO": "Producto principal MGA",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo PRODUCTOS de la Resolución 933.",
+      "OBSERVACIÓN DE NEGOCIO": "Ej: «Canchas múltiples construidas y dotadas», «Coliseos mejorados».",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "B. PRODUCTOS MGA (metadato para reportería)",
+      "SECCIÓN": "Productos MGA",
+      "SUBSECCIÓN": "Producto",
+      "CAMPO": "Unidad de medida del producto",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Se hereda del catálogo de productos.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "B. PRODUCTOS MGA (metadato para reportería)",
+      "SECCIÓN": "Productos MGA",
+      "SUBSECCIÓN": "Producto",
+      "CAMPO": "Cantidad a entregar",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Valor entero mayor a 0.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "B. PRODUCTOS MGA (metadato para reportería)",
+      "SECCIÓN": "Productos MGA",
+      "SUBSECCIÓN": "Producto",
+      "CAMPO": "Productos secundarios",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Del mismo catálogo.",
+      "OBSERVACIÓN DE NEGOCIO": "Cuando el proyecto entrega más de un producto.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "C. FINANCIACIÓN",
+      "SECCIÓN": "Financiación",
+      "SUBSECCIÓN": "Fuentes",
+      "CAMPO": "Fuente principal de financiación",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo LISTAS de Fuentes de Cofinanciación (23 opciones).",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "C. FINANCIACIÓN",
+      "SECCIÓN": "Financiación",
+      "SUBSECCIÓN": "Fuentes",
+      "CAMPO": "Fuentes adicionales",
+      "TIPO DE DATO": "Tabla dinámica",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si «¿Aporta otras fuentes?» = Sí. Columnas: Fuente, Valor (COP), ¿Aporta / No aporta / N/A?.",
+      "OBSERVACIÓN DE NEGOCIO": "La suma debe igualar el valor total del proyecto.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "D. PREDIO",
+      "SECCIÓN": "Predio",
+      "SUBSECCIÓN": "Identificación",
+      "CAMPO": "Matrícula inmobiliaria",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato oficial de la Oficina de Instrumentos Públicos.",
+      "OBSERVACIÓN DE NEGOCIO": "Debe coincidir con el certificado de tradición y libertad.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "D. PREDIO",
+      "SECCIÓN": "Predio",
+      "SUBSECCIÓN": "Identificación",
+      "CAMPO": "Cédula catastral",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato catastral oficial.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "D. PREDIO",
+      "SECCIÓN": "Predio",
+      "SUBSECCIÓN": "Identificación",
+      "CAMPO": "Área del predio (m²)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mayor a 0.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "D. PREDIO",
+      "SECCIÓN": "Predio",
+      "SUBSECCIÓN": "Tenencia",
+      "CAMPO": "Tipo de tenencia",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Propiedad, Comodato, Arrendamiento, Concesión, Posesión (Ley 1551/2012), Territorio colectivo, Otro.",
+      "OBSERVACIÓN DE NEGOCIO": "Determina qué documentos del Bloque 1 se exigen.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "D. PREDIO",
+      "SECCIÓN": "Predio",
+      "SUBSECCIÓN": "Tenencia",
+      "CAMPO": "Fecha de vencimiento (si aplica)",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si tenencia = Comodato, Arrendamiento o Concesión.",
+      "OBSERVACIÓN DE NEGOCIO": "Alerta automática 90 días antes del vencimiento.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "E. SOCIALIZACIÓN (metadato)",
+      "SECCIÓN": "Socialización",
+      "SUBSECCIÓN": "Participación",
+      "CAMPO": "Fecha de socialización",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato DD/MM/AAAA. No mayor a 180 días anteriores a la radicación.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "E. SOCIALIZACIÓN (metadato)",
+      "SECCIÓN": "Socialización",
+      "SUBSECCIÓN": "Participación",
+      "CAMPO": "Lugar",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 150 caracteres.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "E. SOCIALIZACIÓN (metadato)",
+      "SECCIÓN": "Socialización",
+      "SUBSECCIÓN": "Participación",
+      "CAMPO": "Número de asistentes",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Entero mayor a 0.",
+      "OBSERVACIÓN DE NEGOCIO": "Los soportes (actas, fotos) van como anexo en Bloque 2.",
+      "ETAPA DEL FLUJO": "D. Etapa Documental"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Activación",
+      "CAMPO": "¿El proyecto es de inversión?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Del diamante «¿Inversión?» del flujo operativo.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Presupuesto",
+      "CAMPO": "Valor de presupuesto aprobado (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si inversión = Sí.",
+      "OBSERVACIÓN DE NEGOCIO": "Se hereda del valor total; editable por el administrador del Ministerio.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Presupuesto",
+      "CAMPO": "Centro de costos",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si inversión = Sí.",
+      "OBSERVACIÓN DE NEGOCIO": "Integración con módulo financiero.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Presupuesto",
+      "CAMPO": "Rubro presupuestal asignado",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si inversión = Sí. Catálogo interno del Ministerio.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Infraestructura",
+      "CAMPO": "¿Es proyecto de infraestructura?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si inversión = Sí.",
+      "OBSERVACIÓN DE NEGOCIO": "Si Sí, se habilita el Formulario de Registro de Escenario (SUID) como siguiente paso del flujo.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Infraestructura",
+      "CAMPO": "ID del escenario SUID",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si infraestructura = Sí. Generado al crear el escenario en SUID.",
+      "OBSERVACIÓN DE NEGOCIO": "Trazabilidad entre el proyecto y el inventario de escenarios.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Lista",
+      "CAMPO": "Estado en la lista de proyectos",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: En evaluación, Aprobado, Rechazado, En ejecución, Cerrado.",
+      "OBSERVACIÓN DE NEGOCIO": "Alimenta el Dashboard Táctico (HU Dashboard Nivel 2).",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    },
+    {
+      "seccion": "F. INVERSIÓN (último paso del flujo)",
+      "SECCIÓN": "Inversión",
+      "SUBSECCIÓN": "Ejecución",
+      "CAMPO": "Estado de ejecución contractual",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio cuando el proyecto pasa a ejecución. Opciones del catálogo SUID.",
+      "OBSERVACIÓN DE NEGOCIO": "Mismo catálogo que el Formulario SUID de Sedes y Escenarios.",
+      "ETAPA DEL FLUJO": "F. Inversión"
+    }
+  ],
+  "documentos": [
+    {
+      "BLOQUE": "BLOQUE 1 — REQUISITOS BÁSICOS INDISPENSABLES (Art. 1)"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "1",
+      "DOCUMENTO (paquete integral)": "Carta de intención",
+      "CONTENIDO / COMPONENTES": "Carta suscrita por el representante legal manifestando intención de realizar convenio interadministrativo (modelo MINDEPORTE). Ref. 1.1.1.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "A. Postulación"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "2",
+      "DOCUMENTO (paquete integral)": "Estudio de títulos del predio",
+      "CONTENIDO / COMPONENTES": "Estudio suscrito por la dependencia competente, con anexos + documentos del profesional responsable (cédula, tarjeta profesional, certificado de vigencia). Modelo MINDEPORTE. Ref. 1.2.1 + 1.2.1.1.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "3",
+      "DOCUMENTO (paquete integral)": "Título adquisitivo del inmueble",
+      "CONTENIDO / COMPONENTES": "Escritura pública de adquisición del inmueble o documento equivalente. Ref. 1.2.2.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "4",
+      "DOCUMENTO (paquete integral)": "Certificado de tradición y libertad",
+      "CONTENIDO / COMPONENTES": "Expedido dentro de los 30 días anteriores a la radicación. Ref. 1.2.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre (vigencia < 30 días).",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "5",
+      "DOCUMENTO (paquete integral)": "Plano catastral del predio",
+      "CONTENIDO / COMPONENTES": "Plano de Manzana Catastral actualizado. Si no hay georreferenciación, se acepta plano de localización con coordenadas, convenciones, medidas y linderos, firmado por profesional + cédula + tarjeta profesional + memorial de responsabilidad + certificado de vigencia. Ref. 1.2.4.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "6",
+      "DOCUMENTO (paquete integral)": "Certificado catastral del predio",
+      "CONTENIDO / COMPONENTES": "Certificado Catastral actualizado. Si no hay georreferenciación, se acepta certificado con información física y jurídica suscrito por representante legal y planeación (modelo MINDEPORTE). Ref. 1.2.5.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "7",
+      "DOCUMENTO (paquete integral)": "Certificado de intervención del bien",
+      "CONTENIDO / COMPONENTES": "Ref. 1.2.6.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el bien no es propiedad de la entidad formuladora.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "8",
+      "DOCUMENTO (paquete integral)": "Acto administrativo de posesión",
+      "CONTENIDO / COMPONENTES": "Acto que acredita la posesión del bien y su destinación al uso público. Ref. 1.2.7.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Municipios que invocan Art. 48 Ley 1551/2012.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "9",
+      "DOCUMENTO (paquete integral)": "Certificado de carencia de identidad registral",
+      "CONTENIDO / COMPONENTES": "Expedido por la oficina de instrumentos públicos. Ref. 1.2.8.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el predio no tiene matrícula inmobiliaria.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "10",
+      "DOCUMENTO (paquete integral)": "Documentación de comunidad étnica",
+      "CONTENIDO / COMPONENTES": "Paquete: (a) acto colectivo de la comunidad suscrito por la autoridad tradicional; (b) documento de titulación expedido por entidad competente; (c) certificado del secretario de planeación sobre concordancia del plan de vida/etnodesarrollo con el PND y plan territorial; (d) certificado de la autoridad étnica sobre acorde con plan de vida/etnodesarrollo. Ref. 1.2.9 a 1.2.12.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Proyectos en territorios colectivos de resguardos indígenas, cabildos, comunidades NARP o pueblo Rrom.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "11",
+      "DOCUMENTO (paquete integral)": "Registro fotográfico del sitio",
+      "CONTENIDO / COMPONENTES": "Fotografías a color del lugar de ejecución y de los escenarios e infraestructura existente (cuando aplique). Ref. 1.3.1.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / JPG / PNG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "A. Postulación"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "12",
+      "DOCUMENTO (paquete integral)": "Certificado de uso del suelo y riesgo",
+      "CONTENIDO / COMPONENTES": "Certificado del secretario de planeación: el predio no está en zona de alto riesgo no mitigable y está acorde con uso, categoría y tratamientos del suelo según POT. Ref. 1.4.1.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "13",
+      "DOCUMENTO (paquete integral)": "Plano de amenazas y riesgos naturales",
+      "CONTENIDO / COMPONENTES": "Plano de zonificación de amenazas y riesgos naturales del municipio, con la ubicación del predio. Ref. 1.4.2.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "14",
+      "DOCUMENTO (paquete integral)": "Plano de ordenamiento territorial por usos",
+      "CONTENIDO / COMPONENTES": "Plano del POT por usos, con la ubicación del predio. Ref. 1.4.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Básicos",
+      "N°": "15",
+      "DOCUMENTO (paquete integral)": "Plano de localización del predio",
+      "CONTENIDO / COMPONENTES": "Plano de localización exacta del predio donde se desarrollará la intervención. Ref. 1.4.4.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "BLOQUE 2 — DOCUMENTACIÓN GENERAL (Art. 2)"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "16",
+      "DOCUMENTO (paquete integral)": "Documento de análisis del proyecto",
+      "CONTENIDO / COMPONENTES": "Un solo documento suscrito por el representante legal que incluye: análisis de necesidad/déficit, registro de escenarios deportivos (o enlace), alcance del proyecto, cumplimiento de las características del Art. 10, plan de sostenibilidad y uso mínimo a 10 años, tipología general. Modelo MINDEPORTE. Ref. 2.1.1 a 2.1.7.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "17",
+      "DOCUMENTO (paquete integral)": "Certificación de no presentación a otras entidades",
+      "CONTENIDO / COMPONENTES": "Suscrita por el representante legal, con nombre y BPIN del proyecto (según MGA). Ref. 2.2.1.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "18",
+      "DOCUMENTO (paquete integral)": "Certificación de aceptación del presupuesto",
+      "CONTENIDO / COMPONENTES": "Aceptación del presupuesto elaborado por la entidad formuladora + compromiso de asumir mayores recursos para obra e interventoría. Ref. 2.2.2.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "19",
+      "DOCUMENTO (paquete integral)": "Certificación de dependencia para diseños hidrosanitarios",
+      "CONTENIDO / COMPONENTES": "Certificación que indica la dependencia pertinente en la entidad formuladora para recibir los diseños hidrosanitarios (hidráulico, sanitario, pluvial, ventilación, bombeo, riego, red contra incendios). Ref. 2.2.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "20",
+      "DOCUMENTO (paquete integral)": "Documentos del representante legal",
+      "CONTENIDO / COMPONENTES": "Paquete: cédula, acta de posesión, acuerdo de facultades para suscribir contratos/convenios. Incluye además (cuando apliquen): libreta militar, credencial electoral (Formulario E27), acta de nombramiento. Ref. 2.3.1 a 2.3.6.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre (el paquete).",
+      "ETAPA DE CARGUE": "A. Postulación"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "21",
+      "DOCUMENTO (paquete integral)": "Ficha MGA con código BPIN",
+      "CONTENIDO / COMPONENTES": "Última versión de la ficha MGA. Incluye (como secciones del mismo PDF): datos básicos, articulación con sector/planes/política pública, análisis del problema, participantes, población, objetivos, alternativa de solución, estudio de necesidades, cadena de valor, análisis de riesgos, análisis costo-beneficio, indicadores, focalización, regionalización. Ref. 2.4.1 (y componentes 2.4.1.1 a 2.4.1.14).",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "22",
+      "DOCUMENTO (paquete integral)": "Licencias urbanísticas / construcción",
+      "CONTENIDO / COMPONENTES": "Paquete con las licencias aplicables: urbanísticas (Dec. 1077/2015 y modificaciones), licencia de ocupación e intervención de espacio público, resolución de licencia de construcción con vigencia y anexos. Ref. 2.5.1 a 2.5.3.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando la intervención requiera alguna licencia.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "23",
+      "DOCUMENTO (paquete integral)": "Certificado de no aplicabilidad de licencias",
+      "CONTENIDO / COMPONENTES": "Certificado que acredita que el proyecto no requiere ninguna de las licencias de 2.5.1 a 2.5.3. Ref. 2.5.4.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando no requiera licencias del Decreto 1077/2015.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "24",
+      "DOCUMENTO (paquete integral)": "Soportes de socialización con la comunidad",
+      "CONTENIDO / COMPONENTES": "Paquete: documentos que soporten la socialización (actas, listados de asistencia) + registro fotográfico de la jornada. Ref. 2.6.1 + 2.6.2.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / JPG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. General",
+      "N°": "25",
+      "DOCUMENTO (paquete integral)": "Certificado de disponibilidad del servicio de gas",
+      "CONTENIDO / COMPONENTES": "Certificado del prestador del servicio o alternativa. Ref. 2.7.1.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario requiera suministro de gas.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "BLOQUE 3 — DOCUMENTACIÓN TÉCNICA (Art. 3)"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "26",
+      "DOCUMENTO (paquete integral)": "Levantamiento topográfico",
+      "CONTENIDO / COMPONENTES": "Paquete sellado y firmado por la entidad emisora de la licencia: informe de levantamiento topográfico/arquitectónico + planos de planimetría y altimetría + documentos del profesional responsable (cédula, tarjeta profesional, certificado de vigencia, memorial de responsabilidad). Ref. 3.1.1 a 3.1.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "27",
+      "DOCUMENTO (paquete integral)": "Estudio de suelos / geotécnico",
+      "CONTENIDO / COMPONENTES": "Paquete sellado y firmado: informe de caracterización o estudio geotécnico + resultados de pruebas, ensayos de campo y laboratorio + documentos del profesional responsable. Ref. 3.2.1 a 3.2.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "28",
+      "DOCUMENTO (paquete integral)": "Diseño arquitectónico",
+      "CONTENIDO / COMPONENTES": "Paquete sellado y firmado por la entidad emisora de la licencia: plano de localización exacta + memoria de diseño arquitectónico + planos (implantación, plantas, cortes, fachadas, detalles constructivos) + diseño de señalización/señalética (memoria, planos, detalles, especificaciones, cantidades) + diseños de zona de competencia cuando aplique (plantas por nivel, zonas complementarias como baños/camerinos/enfermería/anti-doping/bodegas/salas de prensa/photo finish, cortes, detalles, graderías e isóptica, zonas VIP/PMU, áreas de transmisión, parques/juegos infantiles/gimnasios al aire libre/ciclorrutas) + documentos del profesional responsable. Ref. 3.3.1 a 3.3.5 + 3.3.7.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre (con zona de competencia solo cuando aplique).",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "29",
+      "DOCUMENTO (paquete integral)": "Otros diseños arquitectónicos complementarios",
+      "CONTENIDO / COMPONENTES": "Diseños de ventilación mecánica y/o bioclimático (memorias, planos, especificaciones, cantidades, documentos del profesional). Ref. 3.3.8.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario lo requiera.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "30",
+      "DOCUMENTO (paquete integral)": "Diseño estructural",
+      "CONTENIDO / COMPONENTES": "Paquete sellado por la entidad emisora de la licencia: memoria de diseño estructural y/o de pavimentos/placas/pistas + planos estructurales (plantas, despieces, detalles) + documentos del profesional responsable + documentos del revisor externo cuando se requiera. Ref. 3.4.1 a 3.4.4.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "31",
+      "DOCUMENTO (paquete integral)": "Diseño hidrosanitario y red contra incendios",
+      "CONTENIDO / COMPONENTES": "Paquete: memorias y planos hidrosanitarios aprobados y sellados por el operador local (red de distribución y recolección hasta la medida) + carta de aprobación del diseño + certificado de disponibilidad del servicio de acueducto + certificado de disponibilidad del servicio de alcantarillado sanitario y/o pluvial + diseño interno de redes hidrosanitarias aprobado por la dependencia pertinente + diseño de red contra incendios con anexos + diseños de zona de competencia cuando aplique (memoria + planos de hidráulicas y pluviales) + documentos del profesional responsable. Ref. 3.5.1 a 3.5.5.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "32",
+      "DOCUMENTO (paquete integral)": "Diseño de redes de gas",
+      "CONTENIDO / COMPONENTES": "Diseño aprobado y sellado por el operador de servicio local, con memorias, planos, especificaciones, cantidades y documentos del profesional. Ref. 3.5.6.1.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario requiera red de gas.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "33",
+      "DOCUMENTO (paquete integral)": "Diseño de redes de vapor",
+      "CONTENIDO / COMPONENTES": "Diseño aprobado por la dependencia pertinente, con memorias, planos, especificaciones, cantidades y documentos del profesional. Ref. 3.5.6.2.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario requiera red de vapor.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "34",
+      "DOCUMENTO (paquete integral)": "Diseño eléctrico",
+      "CONTENIDO / COMPONENTES": "Paquete: planos eléctricos aprobados y sellados (QR) por el operador de red local (media tensión y subestación o baja tensión hasta la medida) + factibilidad del servicio + carta de aprobación del diseño + certificado de factibilidad del servicio de energía + memoria de instalaciones eléctricas (desde la medida hasta salidas de iluminación y fuerza) + diseño de iluminación de zona(s) de competencia, técnicas y de servicios + planos en planta, cortes verticales y diagramas unifilares + documentos del profesional (incluye certificación de conformidad con RETIE y RETILAP). Ref. 3.6.1 a 3.6.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / DWG",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "35",
+      "DOCUMENTO (paquete integral)": "Diseño de redes de voz y datos",
+      "CONTENIDO / COMPONENTES": "Memorias, planos, especificaciones, cantidades, documentos del profesional. Ref. 3.6.4.1.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario lo requiera.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "36",
+      "DOCUMENTO (paquete integral)": "Diseño de sistema de sonido",
+      "CONTENIDO / COMPONENTES": "Memorias, planos, especificaciones, cantidades, documentos del profesional. Ref. 3.6.4.2.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario lo requiera.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "37",
+      "DOCUMENTO (paquete integral)": "Diseño de redes de seguridad y control",
+      "CONTENIDO / COMPONENTES": "CCTV, control de acceso, etc. Memorias, planos, especificaciones, cantidades, documentos del profesional. Ref. 3.6.4.3.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el escenario lo requiera.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "38",
+      "DOCUMENTO (paquete integral)": "Plan de Manejo Ambiental y análisis de riesgos",
+      "CONTENIDO / COMPONENTES": "Paquete: PMA y/o Plan de Gestión Integral de Obra (PGIO) + análisis de riesgos acorde a complejidad del proyecto (Art. 38 Ley 1523/2012) + documentos del profesional responsable (cédula, tarjeta profesional, certificado de vigencia, memorial de responsabilidad). Ref. 3.7.1 + 3.7.2 + 3.7.3.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "39",
+      "DOCUMENTO (paquete integral)": "Informe de mitigación de riesgo",
+      "CONTENIDO / COMPONENTES": "Informe de cómo se mitigará el riesgo cuando el predio está en zona de alto riesgo mitigable. Ref. 3.7.4.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Predios en zona de alto riesgo mitigable.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "40",
+      "DOCUMENTO (paquete integral)": "Licencia ambiental",
+      "CONTENIDO / COMPONENTES": "Copia de la licencia ambiental del proyecto. Ref. 3.7.5.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el proyecto la requiera.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "41",
+      "DOCUMENTO (paquete integral)": "Certificado de no requerimiento de licencia ambiental",
+      "CONTENIDO / COMPONENTES": "Expedido por la autoridad ambiental competente. Ref. 3.7.6.",
+      "OBLIGATORIO": "Condicional",
+      "FORMATO": "PDF",
+      "CUÁNDO APLICA": "Cuando el proyecto no requiera licencia ambiental.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "Gen. Técnica",
+      "N°": "42",
+      "DOCUMENTO (paquete integral)": "Presupuesto integral del proyecto",
+      "CONTENIDO / COMPONENTES": "Un solo paquete de presupuesto: presupuesto detallado de obra + análisis de costos de administración + análisis de costos de interventoría + análisis de precios unitarios (APU) y/o estudio de mercado + lista de precios de la región + memoria de cantidades de obra + especificaciones técnicas + cronograma detallado y flujo de fondos + certificado de disponibilidad presupuestal (CDP). Ref. 3.8.1 a 3.8.9.",
+      "OBLIGATORIO": "Sí",
+      "FORMATO": "PDF / XLSX",
+      "CUÁNDO APLICA": "Siempre.",
+      "ETAPA DE CARGUE": "D. Etapa Documental"
+    },
+    {
+      "BLOQUE": "RESUMEN DE LA LISTA"
+    },
+    {
+      "BLOQUE": "• Total de documentos consolidados: 42"
+    },
+    {
+      "BLOQUE": "• Obligatorios siempre: 26"
+    },
+    {
+      "BLOQUE": "• Condicionales (aplican según características del proyecto): 16"
+    },
+    {
+      "BLOQUE": "• Bloque 1 (Básicos Indispensables): 15 documentos"
+    },
+    {
+      "BLOQUE": "• Bloque 2 (Documentación General): 10 documentos"
+    },
+    {
+      "BLOQUE": "• Bloque 3 (Documentación Técnica): 17 documentos"
+    }
+  ],
+  "catalogos": {
+    "4. CATÁLOGOS Y LISTAS DE VALORES": [
+      [
+        "Valores predefinidos para los campos de selección. Extraídos de la Resolución 933 de 2024 y del Formato Censo de Escenarios Deportivos del Ministerio del Deporte."
+      ]
+    ],
+    "Tipo de solicitud": [
+      [
+        "1",
+        "Solicitud de revisión y emisión de concepto sectorial para gestionar recursos de financiación y/o cofinanciación del Ministerio del Deporte"
+      ],
+      [
+        "2",
+        "Solicitud de revisión y emisión de concepto sectorial para gestionar recursos del Fondo Regional de Pactos Territoriales"
+      ],
+      [
+        "3",
+        "Solicitud de revisión y emisión de concepto sectorial para gestionar recursos de Distribución"
+      ],
+      [
+        "4",
+        "Solicitud de revisión y emisión de concepto sectorial para gestionar recursos de otras entidades, o fuentes diferentes a PGN"
+      ]
+    ],
+    "Fase del proyecto": [
+      [
+        "1",
+        "FASE I - Perfil"
+      ],
+      [
+        "2",
+        "FASE II - Prefactibilidad"
+      ],
+      [
+        "3",
+        "FASE III - Factibilidad"
+      ]
+    ],
+    "Fuentes de cofinanciación": [
+      [
+        "1",
+        "NA"
+      ],
+      [
+        "2",
+        "OTROS"
+      ],
+      [
+        "3",
+        "PROPIOS"
+      ],
+      [
+        "4",
+        "ESPECIE"
+      ],
+      [
+        "5",
+        "PGN"
+      ],
+      [
+        "6",
+        "PGN - DISTRIBUCIÓN"
+      ],
+      [
+        "7",
+        "PGN - FRPT"
+      ],
+      [
+        "8",
+        "SGP"
+      ],
+      [
+        "9",
+        "SGR - ASIGNACIONES DIRECTAS"
+      ],
+      [
+        "10",
+        "SGR - ASIGNACIONES DIRECTAS - PUEBLOS Y COMUNIDADES INDÍGENAS"
+      ],
+      [
+        "11",
+        "SGR - ASIGNACIONES DIRECTAS - COMUNIDADES NARP"
+      ],
+      [
+        "12",
+        "SGR - ASIGNACIONES DIRECTAS ANTICIPO 5%"
+      ],
+      [
+        "13",
+        "SGR - ASIGNACIÓN PARA LA PAZ"
+      ],
+      [
+        "14",
+        "SGR - ASIGNACIÓN PARA LA INVERSIÓN LOCAL (NBI / Cat. 4, 5 y 6)"
+      ],
+      [
+        "15",
+        "SGR - ASIGNACIÓN PARA LA INVERSIÓN LOCAL - PUEBLOS Y COMUNIDADES INDÍGENAS"
+      ],
+      [
+        "16",
+        "SGR - ASIGNACIÓN PARA LA INVERSIÓN LOCAL - COMUNIDADES NARP"
+      ],
+      [
+        "17",
+        "SGR - ASIGNACIÓN PARA LA INVERSIÓN LOCAL - PUEBLO RROM O GITANO"
+      ],
+      [
+        "18",
+        "SGR - ASIGNACIÓN PARA LA INVERSIÓN REGIONAL 40%"
+      ],
+      [
+        "19",
+        "SGR - ASIGNACIÓN PARA LA INVERSIÓN REGIONAL 60%"
+      ],
+      [
+        "20",
+        "SGR - INCENTIVO A LA PRODUCCIÓN 30% REND. FINANCIEROS"
+      ],
+      [
+        "21",
+        "SGR - INCENTIVO A LA PRODUCCIÓN - EXPLORACIÓN Y EXPLOTACIÓN"
+      ],
+      [
+        "22",
+        "SGR - EXCEDENTES FONPET"
+      ],
+      [
+        "23",
+        "OBRAS POR IMPUESTOS"
+      ]
+    ],
+    "Aporta / No aporta": [
+      [
+        "1",
+        "SI"
+      ],
+      [
+        "2",
+        "NO"
+      ],
+      [
+        "3",
+        "N/A"
+      ]
+    ],
+    "Instancia de aprobación": [
+      [
+        "1",
+        "Entidad Territorial"
+      ],
+      [
+        "2",
+        "Ministerio del Deporte"
+      ]
+    ],
+    "Resultado del concepto": [
+      [
+        "1",
+        "FAVORABLE"
+      ],
+      [
+        "2",
+        "CON OBSERVACIONES"
+      ],
+      [
+        "3",
+        "NO FAVORABLE"
+      ]
+    ],
+    "Nivel del resultado": [
+      [
+        "1",
+        "NIVEL BAJO"
+      ],
+      [
+        "2",
+        "NIVEL MEDIO"
+      ],
+      [
+        "3",
+        "NIVEL ALTO"
+      ]
+    ],
+    "Bienio": [
+      [
+        "1",
+        "2023-2024"
+      ],
+      [
+        "2",
+        "2024-2025"
+      ],
+      [
+        "3",
+        "2025-2026"
+      ]
+    ],
+    "Tipo de enfoque diferencial": [
+      [
+        "1",
+        "Territorial"
+      ],
+      [
+        "2",
+        "Poblacional"
+      ],
+      [
+        "3",
+        "Funcional"
+      ]
+    ],
+    "Población sujeto de enfoque": [
+      [
+        "1",
+        "Indígena"
+      ],
+      [
+        "2",
+        "Afrocolombiana"
+      ],
+      [
+        "3",
+        "Negras"
+      ],
+      [
+        "4",
+        "Raizales"
+      ],
+      [
+        "5",
+        "Palenqueros"
+      ],
+      [
+        "6",
+        "Rrom (gitano)"
+      ],
+      [
+        "7",
+        "Víctimas del conflicto"
+      ],
+      [
+        "8",
+        "Primera infancia"
+      ],
+      [
+        "9",
+        "Tercera edad"
+      ],
+      [
+        "10",
+        "Personas con discapacidad"
+      ],
+      [
+        "11",
+        "Otro"
+      ]
+    ],
+    "Municipio ZOMAC / PDET / EBI": [
+      [
+        "1",
+        "SI"
+      ],
+      [
+        "2",
+        "NO"
+      ]
+    ],
+    "Zona del predio": [
+      [
+        "1",
+        "Urbana"
+      ],
+      [
+        "2",
+        "Rural"
+      ],
+      [
+        "3",
+        "Centro Poblado"
+      ]
+    ],
+    "Tipo de tenencia del predio": [
+      [
+        "1",
+        "Propiedad"
+      ],
+      [
+        "2",
+        "Comodato"
+      ],
+      [
+        "3",
+        "Arrendamiento"
+      ],
+      [
+        "4",
+        "Concesión"
+      ],
+      [
+        "5",
+        "Posesión (Ley 1551/2012)"
+      ],
+      [
+        "6",
+        "Territorio colectivo étnico"
+      ],
+      [
+        "7",
+        "Otro"
+      ]
+    ],
+    "Estado de ejecución contractual": [
+      [
+        "1",
+        "Sin Iniciar"
+      ],
+      [
+        "2",
+        "En Ejecución"
+      ],
+      [
+        "3",
+        "Suspendido"
+      ],
+      [
+        "4",
+        "Terminado"
+      ],
+      [
+        "5",
+        "Terminado Anticipadamente"
+      ],
+      [
+        "6",
+        "Liquidado"
+      ],
+      [
+        "7",
+        "Liquidación Anticipada"
+      ],
+      [
+        "8",
+        "Liquidado Bilateralmente"
+      ],
+      [
+        "9",
+        "Incumplimiento"
+      ],
+      [
+        "10",
+        "Sin Liquidar"
+      ]
+    ],
+    "Estado del registro (postulación)": [
+      [
+        "1",
+        "Borrador"
+      ],
+      [
+        "2",
+        "Presentado"
+      ],
+      [
+        "3",
+        "En revisión"
+      ],
+      [
+        "4",
+        "Favorable"
+      ],
+      [
+        "5",
+        "Devuelto"
+      ],
+      [
+        "6",
+        "Rechazado"
+      ],
+      [
+        "7",
+        "Postulación expirada"
+      ],
+      [
+        "8",
+        "Postulación no revisada"
+      ]
+    ],
+    "Estado del proyecto (pipeline)": [
+      [
+        "1",
+        "En evaluación"
+      ],
+      [
+        "2",
+        "Aprobado"
+      ],
+      [
+        "3",
+        "Rechazado"
+      ],
+      [
+        "4",
+        "En ejecución"
+      ],
+      [
+        "5",
+        "Cerrado"
+      ]
+    ],
+    "Tipología del escenario (Censo)": [
+      [
+        "1",
+        "1. Parque"
+      ],
+      [
+        "2",
+        "2. Pista"
+      ],
+      [
+        "3",
+        "3. Placa deportiva"
+      ],
+      [
+        "4",
+        "4. Piscina"
+      ],
+      [
+        "5",
+        "5. Estadio"
+      ],
+      [
+        "6",
+        "6. Coliseo"
+      ],
+      [
+        "7",
+        "7. Cubierta"
+      ],
+      [
+        "8",
+        "8. Centros de recreación"
+      ],
+      [
+        "9",
+        "9. Otras instalaciones"
+      ],
+      [
+        "10",
+        "10. Cancha sintética"
+      ],
+      [
+        "11",
+        "11. Unideportivo"
+      ],
+      [
+        "12",
+        "12. Campos de juego (canchas)"
+      ],
+      [
+        "13",
+        "13. Centro de alto rendimiento"
+      ],
+      [
+        "14",
+        "14. Villa deportiva"
+      ],
+      [
+        "15",
+        "15. Polideportivo cubierto"
+      ]
+    ],
+    "Tipo de intervención (Censo)": [
+      [
+        "1",
+        "1. Adecuación"
+      ],
+      [
+        "2",
+        "2. Reparación"
+      ],
+      [
+        "3",
+        "3. Recuperación"
+      ],
+      [
+        "4",
+        "4. Remodelación"
+      ],
+      [
+        "5",
+        "5. Reforzamiento"
+      ],
+      [
+        "6",
+        "6. Mejoramiento"
+      ],
+      [
+        "7",
+        "7. Restauración"
+      ],
+      [
+        "8",
+        "8. Construcción nueva"
+      ]
+    ]
+  },
+  "crearConvocatoria": [
+    {
+      "seccion": "IDENTIFICACIÓN DE LA CONVOCATORIA",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Código de convocatoria",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Generado por el sistema. Formato: CONV-AAAA-NNN.",
+      "OBSERVACIÓN DE NEGOCIO": "Irrepetible.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DE LA CONVOCATORIA",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Nombre de la convocatoria",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mín. 10, máx. 200 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Ej: «Convocatoria Nacional de Infraestructura Deportiva 2026 I».",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DE LA CONVOCATORIA",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Descripción de la convocatoria",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 5.000 caracteres. Editor de texto enriquecido.",
+      "OBSERVACIÓN DE NEGOCIO": "Alcance, objetivos, entidades elegibles, criterios generales.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DE LA CONVOCATORIA",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Bienio asociado",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: 2023-2024, 2024-2025, 2025-2026.",
+      "OBSERVACIÓN DE NEGOCIO": "Del catálogo LISTAS de la Resolución 933.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "FECHAS DE LA CONVOCATORIA",
+      "SECCIÓN": "Fechas",
+      "CAMPO": "Fecha de apertura",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato DD/MM/AAAA HH:MM. No puede ser anterior a la fecha de creación.",
+      "OBSERVACIÓN DE NEGOCIO": "Define el inicio de la convocatoria.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "FECHAS DE LA CONVOCATORIA",
+      "SECCIÓN": "Fechas",
+      "CAMPO": "Fecha de cierre de postulaciones",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Debe ser posterior a la fecha de apertura.",
+      "OBSERVACIÓN DE NEGOCIO": "Después de esta fecha las postulaciones pasan a estado «expirada».",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "FECHAS DE LA CONVOCATORIA",
+      "SECCIÓN": "Fechas",
+      "CAMPO": "Fecha estimada de emisión de conceptos",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Debe ser posterior a la fecha de cierre + 15 días.",
+      "OBSERVACIÓN DE NEGOCIO": "Informativo para el municipio.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "ALCANCE TERRITORIAL",
+      "SECCIÓN": "Alcance",
+      "CAMPO": "Cobertura territorial",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Nacional, Departamental, Regional, Específica.",
+      "OBSERVACIÓN DE NEGOCIO": "Define qué municipios reciben la notificación.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "ALCANCE TERRITORIAL",
+      "SECCIÓN": "Alcance",
+      "CAMPO": "Departamentos incluidos",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si cobertura ≠ Nacional. Catálogo de 33 departamentos.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "ALCANCE TERRITORIAL",
+      "SECCIÓN": "Alcance",
+      "CAMPO": "Municipios específicos",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si cobertura = Específica.",
+      "OBSERVACIÓN DE NEGOCIO": "Útil para convocatorias focalizadas (ZOMAC, PDET, municipios priorizados).",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "ALCANCE TERRITORIAL",
+      "SECCIÓN": "Alcance",
+      "CAMPO": "¿Solo municipios ZOMAC?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Filtro adicional sobre la cobertura territorial.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "ALCANCE TERRITORIAL",
+      "SECCIÓN": "Alcance",
+      "CAMPO": "¿Solo municipios PDET?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Filtro adicional sobre la cobertura territorial.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONDICIONES DE PARTICIPACIÓN",
+      "SECCIÓN": "Condiciones",
+      "CAMPO": "Tipos de solicitud permitidos",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Del catálogo de tipos de solicitud (4 opciones).",
+      "OBSERVACIÓN DE NEGOCIO": "Define qué tipos de proyecto se pueden radicar en esta convocatoria.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONDICIONES DE PARTICIPACIÓN",
+      "SECCIÓN": "Condiciones",
+      "CAMPO": "Fases del proyecto permitidas",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: FASE I - Perfil, FASE II - Prefactibilidad, FASE III - Factibilidad.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONDICIONES DE PARTICIPACIÓN",
+      "SECCIÓN": "Condiciones",
+      "CAMPO": "Fuentes de financiación permitidas",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo LISTAS de fuentes de cofinanciación.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONDICIONES DE PARTICIPACIÓN",
+      "SECCIÓN": "Condiciones",
+      "CAMPO": "Presupuesto total disponible (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Mayor a 0 si se diligencia.",
+      "OBSERVACIÓN DE NEGOCIO": "Techo presupuestal de la convocatoria.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONDICIONES DE PARTICIPACIÓN",
+      "SECCIÓN": "Condiciones",
+      "CAMPO": "Monto máximo por proyecto (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Mayor a 0 si se diligencia.",
+      "OBSERVACIÓN DE NEGOCIO": "Tope de solicitud al Ministerio por proyecto postulado.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONDICIONES DE PARTICIPACIÓN",
+      "SECCIÓN": "Condiciones",
+      "CAMPO": "¿Permite segunda convocatoria?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Si Sí, las postulaciones que no resulten favorables conservan el radicado para una próxima convocatoria.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "DOCUMENTOS ADJUNTOS",
+      "SECCIÓN": "Adjuntos",
+      "CAMPO": "Acto administrativo de apertura",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "PDF. Máx. 20MB. Firmado.",
+      "OBSERVACIÓN DE NEGOCIO": "Resolución o acuerdo que formaliza la apertura de la convocatoria.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "DOCUMENTOS ADJUNTOS",
+      "SECCIÓN": "Adjuntos",
+      "CAMPO": "Términos de referencia",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "PDF. Máx. 20MB.",
+      "OBSERVACIÓN DE NEGOCIO": "Documento detallado con criterios de evaluación y cronograma.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "DOCUMENTOS ADJUNTOS",
+      "SECCIÓN": "Adjuntos",
+      "CAMPO": "Plantillas y anexos",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Archivo comprimido (ZIP) o múltiples archivos. Máx. 50MB.",
+      "OBSERVACIÓN DE NEGOCIO": "Formatos descargables (carta de intención, certificaciones, etc.).",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Usuario que crea la convocatoria",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Del perfil del administrador autenticado.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Fecha de creación",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se genera al guardar.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Estado de la convocatoria",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: Borrador, Programada, Abierta, Cerrada, Cancelada.",
+      "OBSERVACIÓN DE NEGOCIO": "Cambia automáticamente según las fechas y el ciclo de vida.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    }
+  ],
+  "notificacionMunicipios": [
+    {
+      "seccion": "CONVOCATORIA ORIGEN",
+      "SECCIÓN": "Origen",
+      "CAMPO": "Código de convocatoria",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda del formulario de creación de convocatoria.",
+      "OBSERVACIÓN DE NEGOCIO": "No editable.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CONVOCATORIA ORIGEN",
+      "SECCIÓN": "Origen",
+      "CAMPO": "Nombre de la convocatoria",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda del formulario de creación.",
+      "OBSERVACIÓN DE NEGOCIO": "No editable.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "DESTINATARIOS",
+      "SECCIÓN": "Destinatarios",
+      "CAMPO": "Lista de municipios destinatarios",
+      "TIPO DE DATO": "Lista generada",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se calcula a partir del alcance territorial de la convocatoria.",
+      "OBSERVACIÓN DE NEGOCIO": "El sistema muestra la previsualización (departamento + municipio + código DANE + correo oficial).",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "DESTINATARIOS",
+      "SECCIÓN": "Destinatarios",
+      "CAMPO": "Total de municipios",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Conteo de la lista.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "DESTINATARIOS",
+      "SECCIÓN": "Destinatarios",
+      "CAMPO": "Destinatarios adicionales",
+      "TIPO DE DATO": "Lista de correos",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Formato email separado por comas. Máx. 50 correos.",
+      "OBSERVACIÓN DE NEGOCIO": "Para copiar a gobernaciones, delegados o actores estratégicos.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "MENSAJE DE NOTIFICACIÓN",
+      "SECCIÓN": "Mensaje",
+      "CAMPO": "Asunto del mensaje",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 200 caracteres. Sugerido por defecto.",
+      "OBSERVACIÓN DE NEGOCIO": "Ej: «Apertura de Convocatoria — [Nombre convocatoria]».",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "MENSAJE DE NOTIFICACIÓN",
+      "SECCIÓN": "Mensaje",
+      "CAMPO": "Cuerpo del mensaje",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 5.000 caracteres. Editor enriquecido. Plantilla precargada editable.",
+      "OBSERVACIÓN DE NEGOCIO": "Incluye variables dinámicas: {nombre_municipio}, {fecha_cierre}, {enlace_plataforma}.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "MENSAJE DE NOTIFICACIÓN",
+      "SECCIÓN": "Mensaje",
+      "CAMPO": "Archivos adjuntos",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "PDF, DOCX. Máx. 20MB total.",
+      "OBSERVACIÓN DE NEGOCIO": "Típicamente se anexan los términos de referencia.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CANALES DE ENVÍO",
+      "SECCIÓN": "Canales",
+      "CAMPO": "Correo electrónico institucional",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Por defecto Sí.",
+      "OBSERVACIÓN DE NEGOCIO": "Al correo institucional registrado de cada municipio.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CANALES DE ENVÍO",
+      "SECCIÓN": "Canales",
+      "CAMPO": "Notificación dentro de la plataforma",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Por defecto Sí.",
+      "OBSERVACIÓN DE NEGOCIO": "Banner destacado en el dashboard del usuario municipal.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "CANALES DE ENVÍO",
+      "SECCIÓN": "Canales",
+      "CAMPO": "Mensaje de texto SMS",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Al número registrado del representante legal (si existe).",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "PROGRAMACIÓN",
+      "SECCIÓN": "Programación",
+      "CAMPO": "Tipo de envío",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Inmediato, Programado.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "PROGRAMACIÓN",
+      "SECCIÓN": "Programación",
+      "CAMPO": "Fecha y hora de envío programado",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si tipo = Programado. Debe ser futura.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD DEL ENVÍO",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Fecha y hora del envío efectivo",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se genera al completar el envío.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD DEL ENVÍO",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Estado del envío",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: Programado, Enviando, Completado, Con fallas.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD DEL ENVÍO",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Destinatarios exitosos / con falla",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Conteo por categoría.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    },
+    {
+      "seccion": "TRAZABILIDAD DEL ENVÍO",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Detalle de fallos",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Columnas: municipio, canal, motivo del fallo.",
+      "OBSERVACIÓN DE NEGOCIO": "Permite al administrador reintentar el envío.",
+      "ETAPA DEL FLUJO": "Creación de convocatorias"
+    }
+  ],
+  "revisionPostulacion": [
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda de la postulación.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Nombre del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda de la postulación.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Entidad formuladora",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda de la postulación.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha de radicación",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda de la postulación.",
+      "OBSERVACIÓN DE NEGOCIO": "Punto de inicio del plazo de 15 días.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha límite de revisión",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Fecha de radicación + 15 días calendario.",
+      "OBSERVACIÓN DE NEGOCIO": "Si expira sin decisión, la postulación pasa a «Postulación no revisada».",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "VERIFICACIÓN DE REQUISITOS MÍNIMOS",
+      "SECCIÓN": "Verificación",
+      "CAMPO": "¿Datos de la entidad formuladora completos y válidos?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "VERIFICACIÓN DE REQUISITOS MÍNIMOS",
+      "SECCIÓN": "Verificación",
+      "CAMPO": "¿Información básica del proyecto completa?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "VERIFICACIÓN DE REQUISITOS MÍNIMOS",
+      "SECCIÓN": "Verificación",
+      "CAMPO": "¿Localización y georreferenciación válidas?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Validar coordenadas dentro del territorio colombiano.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "VERIFICACIÓN DE REQUISITOS MÍNIMOS",
+      "SECCIÓN": "Verificación",
+      "CAMPO": "¿Carta de intención cargada y firmada?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Único documento exigido en postulación.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "VERIFICACIÓN DE REQUISITOS MÍNIMOS",
+      "SECCIÓN": "Verificación",
+      "CAMPO": "¿La convocatoria permite el tipo de solicitud declarado?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Validación contra las condiciones de la convocatoria.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "VERIFICACIÓN DE REQUISITOS MÍNIMOS",
+      "SECCIÓN": "Verificación",
+      "CAMPO": "¿Valores financieros coherentes?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Valor solicitado ≤ valor total; suma de aportes = valor total.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "CONCEPTO DEL REVISOR",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Resultado del concepto",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Favorable, Devuelto (con observaciones), Rechazado.",
+      "OBSERVACIÓN DE NEGOCIO": "Favorable abre la Etapa Documental. Devuelto activa 15 días de subsanación. Rechazado cierra el radicado.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "CONCEPTO DEL REVISOR",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Justificación del concepto",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 5.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Obligatorio en todos los casos. Es el sustento técnico del revisor.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "CONCEPTO DEL REVISOR",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Observaciones de subsanación",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Máx. 5.000 caracteres. Obligatorio si resultado = Devuelto.",
+      "OBSERVACIÓN DE NEGOCIO": "Lista puntual de lo que el municipio debe corregir.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "CONCEPTO DEL REVISOR",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Motivo del rechazo",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si resultado = Rechazado. Opciones: Incumplimiento de requisitos mínimos, Fuera de cobertura, Recurso agotado, Otro.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "CONCEPTO DEL REVISOR",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Descripción del rechazo",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Máx. 3.000 caracteres. Obligatorio si resultado = Rechazado.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Usuario revisor",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Del perfil del usuario autenticado.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Cargo del revisor",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Del perfil del usuario.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Fecha y hora del concepto",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Al emitir el concepto.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Firma digital del concepto",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "El sistema aplica firma digital automática al guardar.",
+      "ETAPA DEL FLUJO": "Revisión de postulación"
+    }
+  ],
+  "solicitudProrroga": [
+    {
+      "seccion": "IDENTIFICACIÓN DE LA SOLICITUD",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DE LA SOLICITUD",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Estado actual de la postulación",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Debe ser «Devuelto» para habilitar esta solicitud.",
+      "OBSERVACIÓN DE NEGOCIO": "Si no es Devuelto, el formulario se bloquea.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DE LA SOLICITUD",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha límite original de subsanación",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Fecha de concepto devuelto + 15 días calendario.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "SOLICITUD",
+      "SECCIÓN": "Solicitud",
+      "CAMPO": "Días de prórroga solicitados",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Entero mayor a 0. Sugerido: máx. 15 días.",
+      "OBSERVACIÓN DE NEGOCIO": "Si se aprueba, se suma a la fecha límite original.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "SOLICITUD",
+      "SECCIÓN": "Solicitud",
+      "CAMPO": "Justificación de la prórroga",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 3.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Razón técnica, administrativa o externa que impide cumplir el plazo original.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "SOLICITUD",
+      "SECCIÓN": "Solicitud",
+      "CAMPO": "Documentos pendientes por subsanar",
+      "TIPO DE DATO": "Selección múltiple",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Lista de documentos u observaciones del concepto devuelto.",
+      "OBSERVACIÓN DE NEGOCIO": "Marca los puntos de subsanación que aún no se han completado.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "SOLICITUD",
+      "SECCIÓN": "Solicitud",
+      "CAMPO": "Soportes de la solicitud",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "PDF. Máx. 20MB.",
+      "OBSERVACIÓN DE NEGOCIO": "Si hay evidencia externa que respalda la solicitud (ej: certificado de disponibilidad demorado).",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "FIRMA DEL SOLICITANTE",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Representante legal",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda de la postulación.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "FIRMA DEL SOLICITANTE",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Fecha y hora de la solicitud",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Al enviar.",
+      "OBSERVACIÓN DE NEGOCIO": "Debe ser anterior a la fecha límite original.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA DEL MINISTERIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Decisión sobre la prórroga",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: Pendiente, Aprobada, Rechazada.",
+      "OBSERVACIÓN DE NEGOCIO": "Pendiente al crear la solicitud. El revisor debe decidir antes de la fecha límite original.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA DEL MINISTERIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Días aprobados",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Entero mayor a 0. Obligatorio si decisión = Aprobada.",
+      "OBSERVACIÓN DE NEGOCIO": "Puede diferir de los días solicitados.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA DEL MINISTERIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Nueva fecha límite de subsanación",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Fecha original + días aprobados.",
+      "OBSERVACIÓN DE NEGOCIO": "Se recalcula al aprobar.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA DEL MINISTERIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Justificación de la respuesta",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 2.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Obligatoria en aprobación y rechazo.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA DEL MINISTERIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Usuario que responde",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Del perfil del revisor.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA DEL MINISTERIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Fecha y hora de la respuesta",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Al emitir la decisión.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    }
+  ],
+  "subsanarPostulacion": [
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha del concepto devuelto",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda del concepto de revisión.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha límite de subsanación",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Fecha concepto + 15 días (o prórroga aprobada).",
+      "OBSERVACIÓN DE NEGOCIO": "Después de esta fecha la postulación pasa a «expirada».",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "OBSERVACIONES DEL REVISOR A ATENDER",
+      "SECCIÓN": "Observaciones",
+      "CAMPO": "Lista de observaciones",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se heredan del concepto devuelto. Columnas: N°, observación, estado (pendiente/atendida).",
+      "OBSERVACIÓN DE NEGOCIO": "Cada observación debe marcarse como atendida antes de enviar la subsanación.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "RESPUESTA A OBSERVACIONES",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Respuesta por observación",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Por cada observación: texto de respuesta (máx. 2.000 caracteres) + archivo adjunto opcional (PDF, máx. 10MB).",
+      "OBSERVACIÓN DE NEGOCIO": "Obligatorio diligenciar todas las observaciones.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "CAMBIOS AL REGISTRO BÁSICO",
+      "SECCIÓN": "Cambios",
+      "CAMPO": "¿Se modifica algún campo del registro básico?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Si Sí, se habilita edición del formulario original conservando el radicado.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "CAMBIOS AL REGISTRO BÁSICO",
+      "SECCIÓN": "Cambios",
+      "CAMPO": "Campos modificados",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si hay cambios. Columnas: campo, valor anterior, valor nuevo.",
+      "OBSERVACIÓN DE NEGOCIO": "Para trazabilidad de cambios.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "CAMBIOS AL REGISTRO BÁSICO",
+      "SECCIÓN": "Cambios",
+      "CAMPO": "Justificación de los cambios",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Máx. 2.000 caracteres. Obligatorio si hay cambios.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "ENVÍO",
+      "SECCIÓN": "Envío",
+      "CAMPO": "Declaración de subsanación completa",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Checkbox de declaración.",
+      "OBSERVACIÓN DE NEGOCIO": "El representante legal declara que todas las observaciones han sido atendidas.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "ENVÍO",
+      "SECCIÓN": "Envío",
+      "CAMPO": "Representante legal firmante",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "ENVÍO",
+      "SECCIÓN": "Envío",
+      "CAMPO": "Fecha y hora del envío",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Al enviar.",
+      "OBSERVACIÓN DE NEGOCIO": "Debe ser anterior a la fecha límite de subsanación.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    },
+    {
+      "seccion": "CICLO DE REVISIÓN POST-SUBSANACIÓN",
+      "SECCIÓN": "Revisión",
+      "CAMPO": "Estado tras el envío",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: En revisión (tras subsanación), Favorable, Devuelto nuevamente, Rechazado.",
+      "OBSERVACIÓN DE NEGOCIO": "Si es «Devuelto nuevamente», el sistema permite una segunda subsanación según política definida.",
+      "ETAPA DEL FLUJO": "Subsanación"
+    }
+  ],
+  "revisionDocGeneral": [
+    {
+      "titulo": "ENCABEZADO DE LA REVISIÓN",
+      "items": [
+        {
+          "n": "1",
+          "item": "Los datos de la entidad formuladora coinciden con el radicado original.",
+          "ref": "Registro Básico"
+        },
+        {
+          "n": "2",
+          "item": "La información del representante legal está completa (nombre, documento, cargo, contacto).",
+          "ref": "Registro Básico"
+        }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 1 — REQUISITOS BÁSICOS INDISPENSABLES",
+      "items": [
+        {
+          "n": "3",
+          "item": "Carta de intención firmada por el representante legal y vigente.",
+          "ref": "Res. 933 Art. 1.1.1"
+        },
+        {
+          "n": "4",
+          "item": "Estudio de títulos del predio suscrito por dependencia competente, con soportes del profesional.",
+          "ref": "Res. 933 Art. 1.2.1"
+        },
+        {
+          "n": "5",
+          "item": "Título adquisitivo del inmueble (escritura pública o equivalente).",
+          "ref": "Res. 933 Art. 1.2.2"
+        },
+        {
+          "n": "6",
+          "item": "Certificado de tradición y libertad expedido dentro de los 30 días previos.",
+          "ref": "Res. 933 Art. 1.2.3"
+        },
+        {
+          "n": "7",
+          "item": "Plano catastral del predio (o plano de localización con coordenadas si no hay georreferenciación).",
+          "ref": "Res. 933 Art. 1.2.4"
+        },
+        {
+          "n": "8",
+          "item": "Certificado catastral del predio.",
+          "ref": "Res. 933 Art. 1.2.5"
+        },
+        {
+          "n": "9",
+          "item": "Certificado de intervención del bien, cuando no sea propiedad de la entidad.",
+          "ref": "Res. 933 Art. 1.2.6"
+        },
+        {
+          "n": "10",
+          "item": "Acto administrativo de posesión (si invoca Art. 48 Ley 1551/2012).",
+          "ref": "Res. 933 Art. 1.2.7"
+        },
+        {
+          "n": "11",
+          "item": "Certificado de carencia de identidad registral (si predio sin matrícula).",
+          "ref": "Res. 933 Art. 1.2.8"
+        },
+        {
+          "n": "12",
+          "item": "Documentación de comunidad étnica completa (acto colectivo + titulación + certificados).",
+          "ref": "Res. 933 Art. 1.2.9-12"
+        },
+        {
+          "n": "13",
+          "item": "Registro fotográfico a color del lugar de ejecución.",
+          "ref": "Res. 933 Art. 1.3.1"
+        },
+        {
+          "n": "14",
+          "item": "Certificado de uso del suelo y no localización en zona de alto riesgo no mitigable.",
+          "ref": "Res. 933 Art. 1.4.1"
+        },
+        {
+          "n": "15",
+          "item": "Plano de zonificación de amenazas y riesgos naturales, con ubicación del predio.",
+          "ref": "Res. 933 Art. 1.4.2"
+        },
+        {
+          "n": "16",
+          "item": "Plano del instrumento de ordenamiento territorial por usos.",
+          "ref": "Res. 933 Art. 1.4.3"
+        },
+        {
+          "n": "17",
+          "item": "Plano de localización exacta del predio.",
+          "ref": "Res. 933 Art. 1.4.4"
+        }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 2 — DOCUMENTACIÓN GENERAL",
+      "items": [
+        {
+          "n": "18",
+          "item": "Documento de análisis del proyecto suscrito por el representante legal (incluye necesidad, alcance, plan de sostenibilidad, tipología, cumplimiento Art. 10).",
+          "ref": "Res. 933 Art. 2.1"
+        },
+        {
+          "n": "19",
+          "item": "Certificación de no presentación a otras entidades (con nombre y BPIN del proyecto).",
+          "ref": "Res. 933 Art. 2.2.1"
+        },
+        {
+          "n": "20",
+          "item": "Certificación de aceptación del presupuesto y compromiso de mayores recursos.",
+          "ref": "Res. 933 Art. 2.2.2"
+        },
+        {
+          "n": "21",
+          "item": "Certificación de dependencia competente para recibir diseños hidrosanitarios.",
+          "ref": "Res. 933 Art. 2.2.3"
+        },
+        {
+          "n": "22",
+          "item": "Paquete completo de documentos del representante legal (cédula, posesión, facultades, etc.).",
+          "ref": "Res. 933 Art. 2.3"
+        },
+        {
+          "n": "23",
+          "item": "Ficha MGA con código BPIN, completa y en última versión.",
+          "ref": "Res. 933 Art. 2.4.1"
+        },
+        {
+          "n": "24",
+          "item": "Licencias urbanísticas requeridas (o certificado de no aplicabilidad).",
+          "ref": "Res. 933 Art. 2.5"
+        },
+        {
+          "n": "25",
+          "item": "Soportes de socialización con la comunidad (actas + registro fotográfico).",
+          "ref": "Res. 933 Art. 2.6"
+        },
+        {
+          "n": "26",
+          "item": "Certificado de disponibilidad del servicio de gas (si aplica).",
+          "ref": "Res. 933 Art. 2.7.1"
+        }
+      ]
+    },
+    {
+      "titulo": "VERIFICACIONES DE CONSISTENCIA",
+      "items": [
+        {
+          "n": "27",
+          "item": "Los datos del formulario coinciden con los documentos anexos (nombre del proyecto, BPIN, valores).",
+          "ref": "Control de calidad"
+        },
+        {
+          "n": "28",
+          "item": "La localización de los planos coincide con las coordenadas del formulario.",
+          "ref": "Control de calidad"
+        },
+        {
+          "n": "29",
+          "item": "Los documentos están firmados y vigentes en las fechas requeridas.",
+          "ref": "Control de calidad"
+        },
+        {
+          "n": "30",
+          "item": "Los archivos cargados son legibles y están en el formato exigido.",
+          "ref": "Control de calidad"
+        }
+      ]
+    },
+    {
+      "titulo": "RESULTADO DE LA REVISIÓN",
+      "items": [
+        {
+          "n": "",
+          "item": "Resultado global de la revisión documental general: APROBADO / DEVUELTO PARA SUBSANACIÓN / RECHAZADO. Se diligencia al final.",
+          "ref": "—"
+        },
+        {
+          "n": "",
+          "item": "Observaciones generales del revisor. Máx. 3.000 caracteres.",
+          "ref": "—"
+        },
+        {
+          "n": "",
+          "item": "Usuario revisor, fecha y hora. Firmado digitalmente.",
+          "ref": "—"
+        }
+      ]
+    }
+  ],
+  "revisionTecnica": [
+    {
+      "titulo": "ÁREA 1 — LEVANTAMIENTO TOPOGRÁFICO",
+      "items": [
+        {
+          "n": "1",
+          "item": "Informe de levantamiento topográfico/arquitectónico presente, sellado y firmado.",
+          "ref": "Res. 933 Art. 3.1.1"
+        },
+        {
+          "n": "2",
+          "item": "Planos de planimetría y altimetría firmados por la entidad emisora de la licencia.",
+          "ref": "Res. 933 Art. 3.1.2"
+        },
+        {
+          "n": "3",
+          "item": "Documentos del profesional responsable completos (cédula, tarjeta, vigencia, memorial).",
+          "ref": "Res. 933 Art. 3.1.3"
+        },
+        {
+          "n": "4",
+          "item": "El levantamiento refleja las condiciones reales del predio.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "5",
+          "item": "Las medidas y linderos coinciden con el plano catastral.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA TOPOGRÁFICO: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 2 — ESTUDIO DE SUELOS",
+      "items": [
+        {
+          "n": "6",
+          "item": "Informe de caracterización o estudio geotécnico presente.",
+          "ref": "Res. 933 Art. 3.2.1"
+        },
+        {
+          "n": "7",
+          "item": "Resultados de pruebas y ensayos de campo y laboratorio.",
+          "ref": "Res. 933 Art. 3.2.2"
+        },
+        {
+          "n": "8",
+          "item": "Documentos del profesional responsable completos.",
+          "ref": "Res. 933 Art. 3.2.3"
+        },
+        {
+          "n": "9",
+          "item": "La caracterización es consistente con la tipología del proyecto y el tipo de intervención.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "10",
+          "item": "Recomendaciones geotécnicas claras y aplicables al diseño estructural.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA SUELOS: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 3 — DISEÑO ARQUITECTÓNICO",
+      "items": [
+        {
+          "n": "11",
+          "item": "Plano de localización exacta del predio, sellado.",
+          "ref": "Res. 933 Art. 3.3.1"
+        },
+        {
+          "n": "12",
+          "item": "Memoria de diseño arquitectónico completa.",
+          "ref": "Res. 933 Art. 3.3.2"
+        },
+        {
+          "n": "13",
+          "item": "Planos arquitectónicos: implantación, plantas, cortes, fachadas, detalles constructivos.",
+          "ref": "Res. 933 Art. 3.3.3"
+        },
+        {
+          "n": "14",
+          "item": "Documentos del profesional responsable del diseño.",
+          "ref": "Res. 933 Art. 3.3.4"
+        },
+        {
+          "n": "15",
+          "item": "Diseño de señalización/señalética (memoria, planos, detalles, especificaciones, cantidades).",
+          "ref": "Res. 933 Art. 3.3.5"
+        },
+        {
+          "n": "16",
+          "item": "Diseño de zona de competencia (si aplica): plantas, cortes, detalles, graderías e isóptica.",
+          "ref": "Res. 933 Art. 3.3.7"
+        },
+        {
+          "n": "17",
+          "item": "Diseños complementarios (ventilación mecánica, bioclimático) si aplican.",
+          "ref": "Res. 933 Art. 3.3.8"
+        },
+        {
+          "n": "18",
+          "item": "El diseño cumple con las características del Art. 10 de la Resolución 933.",
+          "ref": "Res. 933 Art. 10"
+        },
+        {
+          "n": "19",
+          "item": "El diseño es coherente con la tipología y disciplinas deportivas declaradas.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "20",
+          "item": "Incluye accesibilidad para personas con movilidad reducida (PMR).",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA ARQUITECTÓNICO: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 4 — DISEÑO ESTRUCTURAL",
+      "items": [
+        {
+          "n": "21",
+          "item": "Memoria de diseño estructural y/o de pavimentos, placas o pistas presente y sellada.",
+          "ref": "Res. 933 Art. 3.4.1"
+        },
+        {
+          "n": "22",
+          "item": "Planos estructurales (plantas, despieces, detalles).",
+          "ref": "Res. 933 Art. 3.4.2"
+        },
+        {
+          "n": "23",
+          "item": "Documentos del profesional responsable completos.",
+          "ref": "Res. 933 Art. 3.4.3"
+        },
+        {
+          "n": "24",
+          "item": "Documentos del revisor estructural externo (cuando se requiera).",
+          "ref": "Res. 933 Art. 3.4.4"
+        },
+        {
+          "n": "25",
+          "item": "El diseño es consistente con el estudio de suelos.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "26",
+          "item": "Cumple con NSR-10 vigente.",
+          "ref": "Verificación técnica"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA ESTRUCTURAL: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 5 — DISEÑO HIDRÁULICO, SANITARIO Y PLUVIAL",
+      "items": [
+        {
+          "n": "27",
+          "item": "Memorias y planos hidrosanitarios aprobados y sellados por el operador local.",
+          "ref": "Res. 933 Art. 3.5.1"
+        },
+        {
+          "n": "28",
+          "item": "Certificado de disponibilidad del servicio de acueducto.",
+          "ref": "Res. 933 Art. 3.5.1.1"
+        },
+        {
+          "n": "29",
+          "item": "Certificado de disponibilidad del servicio de alcantarillado sanitario y/o pluvial.",
+          "ref": "Res. 933 Art. 3.5.1.2"
+        },
+        {
+          "n": "30",
+          "item": "Diseño interno de redes hidrosanitarias aprobado por la dependencia pertinente.",
+          "ref": "Res. 933 Art. 3.5.2"
+        },
+        {
+          "n": "31",
+          "item": "Diseño de red contra incendios con anexos.",
+          "ref": "Res. 933 Art. 3.5.3"
+        },
+        {
+          "n": "32",
+          "item": "Diseños de zona de competencia (si aplica).",
+          "ref": "Res. 933 Art. 3.5.4"
+        },
+        {
+          "n": "33",
+          "item": "Documentos del profesional responsable completos.",
+          "ref": "Res. 933 Art. 3.5.5"
+        },
+        {
+          "n": "34",
+          "item": "Diseño de redes de gas (si aplica) aprobado por el operador.",
+          "ref": "Res. 933 Art. 3.5.6.1"
+        },
+        {
+          "n": "35",
+          "item": "Diseño de redes de vapor (si aplica).",
+          "ref": "Res. 933 Art. 3.5.6.2"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA HIDROSANITARIO: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 6 — DISEÑO ELÉCTRICO",
+      "items": [
+        {
+          "n": "36",
+          "item": "Planos eléctricos aprobados y sellados (QR) por el operador de red local.",
+          "ref": "Res. 933 Art. 3.6.1"
+        },
+        {
+          "n": "37",
+          "item": "Certificado de factibilidad del servicio de energía.",
+          "ref": "Res. 933 Art. 3.6.1.1"
+        },
+        {
+          "n": "38",
+          "item": "Memoria de instalaciones eléctricas, diseño de iluminación, planos y diagramas unifilares.",
+          "ref": "Res. 933 Art. 3.6.2"
+        },
+        {
+          "n": "39",
+          "item": "Documentos del profesional responsable con certificación RETIE y RETILAP.",
+          "ref": "Res. 933 Art. 3.6.3"
+        },
+        {
+          "n": "40",
+          "item": "Diseño de redes de voz y datos (si aplica).",
+          "ref": "Res. 933 Art. 3.6.4.1"
+        },
+        {
+          "n": "41",
+          "item": "Diseño de sistema de sonido (si aplica).",
+          "ref": "Res. 933 Art. 3.6.4.2"
+        },
+        {
+          "n": "42",
+          "item": "Diseño de redes de seguridad y control (si aplica).",
+          "ref": "Res. 933 Art. 3.6.4.3"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA ELÉCTRICO: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 7 — PLANES DE MANEJO, RIESGOS Y AMBIENTAL",
+      "items": [
+        {
+          "n": "43",
+          "item": "Plan de Manejo Ambiental (PMA) y/o Plan de Gestión Integral de Obra (PGIO).",
+          "ref": "Res. 933 Art. 3.7.1"
+        },
+        {
+          "n": "44",
+          "item": "Documentos del profesional responsable del PMA/PGIO.",
+          "ref": "Res. 933 Art. 3.7.2"
+        },
+        {
+          "n": "45",
+          "item": "Análisis de riesgos según Art. 38 Ley 1523/2012.",
+          "ref": "Res. 933 Art. 3.7.3"
+        },
+        {
+          "n": "46",
+          "item": "Informe de mitigación (si el predio está en zona de alto riesgo mitigable).",
+          "ref": "Res. 933 Art. 3.7.4"
+        },
+        {
+          "n": "47",
+          "item": "Licencia ambiental del proyecto (si aplica).",
+          "ref": "Res. 933 Art. 3.7.5"
+        },
+        {
+          "n": "48",
+          "item": "Certificado de no requerimiento de licencia ambiental (si aplica).",
+          "ref": "Res. 933 Art. 3.7.6"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA AMBIENTAL: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "ÁREA 8 — PRESUPUESTO",
+      "items": [
+        {
+          "n": "49",
+          "item": "Presupuesto detallado de obra.",
+          "ref": "Res. 933 Art. 3.8.1"
+        },
+        {
+          "n": "50",
+          "item": "Análisis de costos de administración.",
+          "ref": "Res. 933 Art. 3.8.2"
+        },
+        {
+          "n": "51",
+          "item": "Análisis de costos de interventoría.",
+          "ref": "Res. 933 Art. 3.8.3"
+        },
+        {
+          "n": "52",
+          "item": "Análisis de precios unitarios (APU) y/o estudio de mercado.",
+          "ref": "Res. 933 Art. 3.8.4"
+        },
+        {
+          "n": "53",
+          "item": "Lista de precios de la región y/o estudio de mercado.",
+          "ref": "Res. 933 Art. 3.8.5"
+        },
+        {
+          "n": "54",
+          "item": "Memoria de cantidades de obra.",
+          "ref": "Res. 933 Art. 3.8.6"
+        },
+        {
+          "n": "55",
+          "item": "Especificaciones técnicas.",
+          "ref": "Res. 933 Art. 3.8.7"
+        },
+        {
+          "n": "56",
+          "item": "Cronograma detallado de obra y flujo de fondos.",
+          "ref": "Res. 933 Art. 3.8.8"
+        },
+        {
+          "n": "57",
+          "item": "Certificado de disponibilidad presupuestal (CDP).",
+          "ref": "Res. 933 Art. 3.8.9"
+        },
+        {
+          "n": "58",
+          "item": "El valor del presupuesto es consistente con el declarado en el formulario y la MGA.",
+          "ref": "Verificación cruzada"
+        },
+        {
+          "n": "59",
+          "item": "Las cantidades de obra son coherentes con los diseños aprobados.",
+          "ref": "Verificación cruzada"
+        },
+        {
+          "n": "",
+          "item": "RESULTADO ÁREA PRESUPUESTO: Aprobado / Devuelto / Rechazado. Observaciones + firma del revisor.",
+          "ref": "—"
+        }
+      ]
+    },
+    {
+      "titulo": "CONSOLIDADO DE LA REVISIÓN TÉCNICA",
+      "items": [
+        {
+          "n": "",
+          "item": "Las 8 áreas técnicas deben estar APROBADAS para avanzar al concepto de favorabilidad del proyecto. Si alguna está en DEVUELTO, se activa el ciclo de subsanación de documentos para esa área.",
+          "ref": "—"
+        },
+        {
+          "n": "",
+          "item": "Estado global consolidado: Aprobado / Parcialmente aprobado / Con observaciones críticas / Rechazado.",
+          "ref": "—"
+        },
+        {
+          "n": "",
+          "item": "Fecha de consolidación, usuario coordinador, firma digital.",
+          "ref": "—"
+        }
+      ]
+    }
+  ],
+  "subsanarDocumentos": [
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Área / Documento a subsanar",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Documentación general, Topografía, Suelos, Arquitectónico, Estructural, Hidrosanitario, Eléctrico, Ambiental, Presupuesto.",
+      "OBSERVACIÓN DE NEGOCIO": "Se pueden tener varios ciclos de subsanación abiertos en paralelo (uno por área).",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Ciclo de subsanación",
+      "TIPO DE DATO": "Número",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "1, 2, 3… según cuántas veces se haya devuelto el documento.",
+      "OBSERVACIÓN DE NEGOCIO": "Permite trazabilidad de iteraciones.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha del concepto devuelto",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda del checklist de revisión.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fecha límite de subsanación",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Calculada por política del Ministerio (típicamente 15 días).",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "OBSERVACIONES A ATENDER",
+      "SECCIÓN": "Observaciones",
+      "CAMPO": "Lista de ítems no cumplidos",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se heredan los ítems del checklist con estado «No cumple». Columnas: N° ítem, observación del revisor, referencia, estado.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "RESPUESTA DEL MUNICIPIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Respuesta por ítem",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Por ítem: texto de respuesta (máx. 2.000 caracteres) + documento corregido (archivo adjunto).",
+      "OBSERVACIÓN DE NEGOCIO": "Obligatorio diligenciar todos los ítems observados.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "RESPUESTA DEL MUNICIPIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Documento corregido consolidado",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Formato según el documento original (PDF, DWG, XLSX). Máx. 50MB por archivo.",
+      "OBSERVACIÓN DE NEGOCIO": "Reemplaza la versión anterior en el repositorio; el sistema mantiene el historial.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "RESPUESTA DEL MUNICIPIO",
+      "SECCIÓN": "Respuesta",
+      "CAMPO": "Resumen de cambios realizados",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 3.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Resume los cambios principales para facilitar la re-revisión.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "ENVÍO Y CICLO DE REVISIÓN",
+      "SECCIÓN": "Envío",
+      "CAMPO": "Declaración de subsanación completa",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No (checkbox).",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "ENVÍO Y CICLO DE REVISIÓN",
+      "SECCIÓN": "Envío",
+      "CAMPO": "Usuario del municipio que subsana",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "ENVÍO Y CICLO DE REVISIÓN",
+      "SECCIÓN": "Envío",
+      "CAMPO": "Fecha y hora del envío",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "OBSERVACIÓN DE NEGOCIO": "Debe ser anterior a la fecha límite.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    },
+    {
+      "seccion": "ENVÍO Y CICLO DE REVISIÓN",
+      "SECCIÓN": "Ciclo",
+      "CAMPO": "Estado tras el envío",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: En re-revisión, Aprobado, Devuelto nuevamente, Rechazado definitivo.",
+      "OBSERVACIÓN DE NEGOCIO": "Si es «Devuelto nuevamente» se abre un nuevo ciclo.",
+      "ETAPA DEL FLUJO": "Etapa Documental"
+    }
+  ],
+  "conceptoFavorabilidad": [
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Nombre del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Código BPIN",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Valor total del proyecto (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Fase del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "RESULTADO CONSOLIDADO DE LA REVISIÓN TÉCNICA",
+      "SECCIÓN": "Consolidado",
+      "CAMPO": "Tabla de resultados por área",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Columnas: Área, Estado (Aprobado/Devuelto), Revisor, Fecha de aprobación.",
+      "OBSERVACIÓN DE NEGOCIO": "Se hereda del checklist de revisión técnica.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "RESULTADO CONSOLIDADO DE LA REVISIÓN TÉCNICA",
+      "SECCIÓN": "Consolidado",
+      "CAMPO": "Resultado de la revisión documental general",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Aprobado / Con observaciones menores / No aprobado.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "CONCEPTO DEL PROYECTO",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Resultado final del concepto",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: FAVORABLE, CON OBSERVACIONES, NO FAVORABLE (del catálogo LISTAS).",
+      "OBSERVACIÓN DE NEGOCIO": "Favorable habilita el paso a Registro de favorabilidad. No Favorable cierra el proceso.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "CONCEPTO DEL PROYECTO",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Nivel del resultado",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: NIVEL BAJO, NIVEL MEDIO, NIVEL ALTO.",
+      "OBSERVACIÓN DE NEGOCIO": "Del catálogo LISTAS. Indica la calidad del proyecto formulado.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "CONCEPTO DEL PROYECTO",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Última decisión del proyecto",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Viabilización, Priorización, Aprobación.",
+      "OBSERVACIÓN DE NEGOCIO": "Del catálogo LISTAS.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "CONCEPTO DEL PROYECTO",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Justificación técnica del concepto",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 10.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Sustento consolidado del concepto, integrando las 8 áreas técnicas.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "CONCEPTO DEL PROYECTO",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Observaciones finales",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Máx. 5.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Recomendaciones para la ejecución, aspectos a considerar.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "CONCEPTO DEL PROYECTO",
+      "SECCIÓN": "Concepto",
+      "CAMPO": "Condiciones especiales",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Máx. 3.000 caracteres. Obligatorio si resultado = Con observaciones.",
+      "OBSERVACIÓN DE NEGOCIO": "Compromisos que debe cumplir el municipio antes/durante la ejecución.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "DOCUMENTOS GENERADOS",
+      "SECCIÓN": "Documentos",
+      "CAMPO": "Ficha del proyecto consolidada",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "PDF generado por el sistema con toda la información del proyecto.",
+      "OBSERVACIÓN DE NEGOCIO": "Se genera al emitir el concepto favorable.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "DOCUMENTOS GENERADOS",
+      "SECCIÓN": "Documentos",
+      "CAMPO": "Perfil del proyecto",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "PDF con el resumen ejecutivo del proyecto.",
+      "OBSERVACIÓN DE NEGOCIO": "Habilita el paso «Genera perfil del proyecto» del flujo V2.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "DOCUMENTOS GENERADOS",
+      "SECCIÓN": "Documentos",
+      "CAMPO": "Acto administrativo de concepto",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "PDF firmado. Obligatorio si resultado = Favorable.",
+      "OBSERVACIÓN DE NEGOCIO": "Resolución o certificación del Ministerio.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Coordinador del equipo revisor",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Director responsable",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Selección de usuarios con rol Director.",
+      "OBSERVACIÓN DE NEGOCIO": "Requerido para conceptos favorables.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Fecha y hora del concepto",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "Firma digital",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "El sistema aplica firma digital.",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    },
+    {
+      "seccion": "FIRMA Y TRAZABILIDAD",
+      "SECCIÓN": "Firma",
+      "CAMPO": "¿Habilitar paso a inversión?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Obligatorio si resultado = Favorable.",
+      "OBSERVACIÓN DE NEGOCIO": "Activa el formulario de activación de inversión (siguiente paso del flujo).",
+      "ETAPA DEL FLUJO": "Cierre Etapa Documental"
+    }
+  ],
+  "activarInversion": [
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Concepto de favorabilidad",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda. Debe ser «FAVORABLE» para activar inversión.",
+      "OBSERVACIÓN DE NEGOCIO": "Si no es Favorable, el formulario se bloquea.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN DEL PROYECTO",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Valor del proyecto avalado (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Se hereda.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "DECISIÓN DE INVERSIÓN",
+      "SECCIÓN": "Decisión",
+      "CAMPO": "¿Se activa como proyecto de inversión?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Si No → el flujo pasa directamente a «Registro de favorabilidad» y finaliza. Si Sí → se habilita el formulario 11.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "DECISIÓN DE INVERSIÓN",
+      "SECCIÓN": "Decisión",
+      "CAMPO": "Justificación",
+      "TIPO DE DATO": "Texto largo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 3.000 caracteres.",
+      "OBSERVACIÓN DE NEGOCIO": "Razón de la decisión (disponibilidad presupuestal, priorización, etc.).",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "DECISIÓN DE INVERSIÓN",
+      "SECCIÓN": "Decisión",
+      "CAMPO": "Fuente de inversión prevista",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si activa = Sí. Del catálogo de fuentes de cofinanciación.",
+      "OBSERVACIÓN DE NEGOCIO": "Orienta el centro de costos y rubro del formulario 11.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "USUARIO DECISOR",
+      "SECCIÓN": "Decisor",
+      "CAMPO": "Administrador de proyectos",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "USUARIO DECISOR",
+      "SECCIÓN": "Decisor",
+      "CAMPO": "Fecha y hora de la decisión",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "USUARIO DECISOR",
+      "SECCIÓN": "Decisor",
+      "CAMPO": "Firma digital",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    }
+  ],
+  "crearProyectoInversion": [
+    {
+      "seccion": "IDENTIFICACIÓN (heredada)",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Número de radicado",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN (heredada)",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Nombre del proyecto",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN (heredada)",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Código BPIN",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN (heredada)",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Entidad formuladora",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "IDENTIFICACIÓN (heredada)",
+      "SECCIÓN": "Identificación",
+      "CAMPO": "Departamento / Municipio",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TIPO DE PROYECTO DE INVERSIÓN",
+      "SECCIÓN": "Tipo",
+      "CAMPO": "Tipo de proyecto de inversión",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Nuevo escenario, Ampliación, Adecuación, Reconstrucción, Dotación, Estudios y diseños, Otro.",
+      "OBSERVACIÓN DE NEGOCIO": "Referencia histórica de usuario: «Creación de proyectos de infraestructura».",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TIPO DE PROYECTO DE INVERSIÓN",
+      "SECCIÓN": "Tipo",
+      "CAMPO": "¿Es proyecto de infraestructura?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Del diamante «¿Proyecto de infraestructura?» del flujo V2. Si Sí, habilita el registro del escenario.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TIPO DE PROYECTO DE INVERSIÓN",
+      "SECCIÓN": "Tipo",
+      "CAMPO": "Origen del proyecto",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Postulación en convocatoria, Creación directa por administrador, Escalamiento desde gestor de escenarios.",
+      "OBSERVACIÓN DE NEGOCIO": "«Creación directa» permite al administrador crear un proyecto sin pasar por convocatoria.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRESUPUESTO Y CENTRO DE COSTOS",
+      "SECCIÓN": "Presupuesto",
+      "CAMPO": "Valor del presupuesto aprobado (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Mayor a 0. Sugerido: valor avalado en el concepto de favorabilidad.",
+      "OBSERVACIÓN DE NEGOCIO": "Puede diferir del valor total si se aprueba parcialmente.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRESUPUESTO Y CENTRO DE COSTOS",
+      "SECCIÓN": "Presupuesto",
+      "CAMPO": "Centro de costos",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Máx. 100 caracteres. Campo abierto o selección.",
+      "OBSERVACIÓN DE NEGOCIO": "Integración con el módulo financiero.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRESUPUESTO Y CENTRO DE COSTOS",
+      "SECCIÓN": "Presupuesto",
+      "CAMPO": "Rubro presupuestal",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Catálogo interno de rubros del Ministerio.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRESUPUESTO Y CENTRO DE COSTOS",
+      "SECCIÓN": "Presupuesto",
+      "CAMPO": "Vigencia presupuestal",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Ej: Vigencia actual, Vigencia futura, Multivigencia.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRESUPUESTO Y CENTRO DE COSTOS",
+      "SECCIÓN": "Presupuesto",
+      "CAMPO": "Certificado de disponibilidad presupuestal (CDP)",
+      "TIPO DE DATO": "Archivo",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "PDF. Máx. 10MB.",
+      "OBSERVACIÓN DE NEGOCIO": "Dispara la reserva presupuestal en el módulo financiero.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRESUPUESTO Y CENTRO DE COSTOS",
+      "SECCIÓN": "Presupuesto",
+      "CAMPO": "Fuentes de financiación aplicadas",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Columnas: Fuente, Valor (COP), Vigencia.",
+      "OBSERVACIÓN DE NEGOCIO": "La suma debe igualar el valor del presupuesto aprobado.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRIORIZACIÓN",
+      "SECCIÓN": "Priorización",
+      "CAMPO": "Prioridad de ejecución",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Opciones: Alta, Media, Baja.",
+      "OBSERVACIÓN DE NEGOCIO": "Para reportería y priorización en el Dashboard Táctico.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRIORIZACIÓN",
+      "SECCIÓN": "Priorización",
+      "CAMPO": "Fecha estimada de inicio",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Posterior a la fecha de creación.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "PRIORIZACIÓN",
+      "SECCIÓN": "Priorización",
+      "CAMPO": "Fecha estimada de finalización",
+      "TIPO DE DATO": "Fecha",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Posterior a la fecha de inicio.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "ASOCIACIÓN CON ESCENARIO DEPORTIVO (si es infraestructura)",
+      "SECCIÓN": "Escenario",
+      "CAMPO": "¿Asociar a escenario existente o crear nuevo?",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si es proyecto de infraestructura. Opciones: Existente, Nuevo.",
+      "OBSERVACIÓN DE NEGOCIO": "Si «Existente», se busca en el inventario SUID. Si «Nuevo», se dispara el formulario de registro de escenario.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "ASOCIACIÓN CON ESCENARIO DEPORTIVO (si es infraestructura)",
+      "SECCIÓN": "Escenario",
+      "CAMPO": "ID del escenario SUID (existente)",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si asocia a existente. Buscador del inventario SUID.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "ASOCIACIÓN CON ESCENARIO DEPORTIVO (si es infraestructura)",
+      "SECCIÓN": "Escenario",
+      "CAMPO": "¿Habilitar formulario de registro de escenario?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Sí / No. Obligatorio si selección = Nuevo.",
+      "OBSERVACIÓN DE NEGOCIO": "Activa el formulario SUID como siguiente paso (flujo V2: «Habilitar formulario de registro de escenario»).",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "CONTRATACIÓN E INTERVENTORÍA",
+      "SECCIÓN": "Contratación",
+      "CAMPO": "Modalidad de contratación prevista",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Opciones: Licitación pública, Selección abreviada, Contratación directa, Mínima cuantía, Otra.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "CONTRATACIÓN E INTERVENTORÍA",
+      "SECCIÓN": "Contratación",
+      "CAMPO": "¿Requiere interventoría?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "Sí",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "CONTRATACIÓN E INTERVENTORÍA",
+      "SECCIÓN": "Contratación",
+      "CAMPO": "Valor estimado de interventoría (COP)",
+      "TIPO DE DATO": "Número decimal",
+      "OBLIGATORIO": "Condicional",
+      "VALIDACIÓN TÉCNICA": "Obligatorio si interventoría = Sí. Mayor a 0.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "BORRADOR Y GUARDADO",
+      "SECCIÓN": "Borrador",
+      "CAMPO": "¿Guardar como borrador?",
+      "TIPO DE DATO": "Booleano",
+      "OBLIGATORIO": "No",
+      "VALIDACIÓN TÉCNICA": "Sí / No.",
+      "OBSERVACIÓN DE NEGOCIO": "Permite guardar antes de agregar formalmente a la tabla de proyectos (referencia de HU).",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Usuario que crea el proyecto de inversión",
+      "TIPO DE DATO": "Texto",
+      "OBLIGATORIO": "Automático",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Fecha y hora de creación",
+      "TIPO DE DATO": "Fecha/Hora",
+      "OBLIGATORIO": "Automático",
+      "OBSERVACIÓN DE NEGOCIO": "Actualiza el total de inversión registrada en el sistema.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Historial de modificaciones",
+      "TIPO DE DATO": "Tabla",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Columnas: fecha, usuario, campo modificado, valor anterior, valor nuevo.",
+      "OBSERVACIÓN DE NEGOCIO": "Audit trail del proyecto de inversión.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    },
+    {
+      "seccion": "TRAZABILIDAD",
+      "SECCIÓN": "Trazabilidad",
+      "CAMPO": "Estado en la lista de proyectos",
+      "TIPO DE DATO": "Selección única",
+      "OBLIGATORIO": "Automático",
+      "VALIDACIÓN TÉCNICA": "Opciones: Borrador, Activo, En ejecución, Cerrado.",
+      "OBSERVACIÓN DE NEGOCIO": "Alimenta la «Lista de proyectos actualizada» del flujo V2.",
+      "ETAPA DEL FLUJO": "Proyectos de Inversión"
+    }
+  ]
+}

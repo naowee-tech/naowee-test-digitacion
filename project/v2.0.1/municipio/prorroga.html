@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Solicitar prórroga · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519a';
+  import { diasRestantes, formatoFecha } from '../shared/states.js';
+  import {
+    renderStepper, renderFooter, mountWizard,
+    fileDrop, mountFileDrops,
+    renderReview, renderSuccess,
+    textarea, dropdown, bindDropdowns
+  } from '../shared/wizard-page.js?v=20260513d';
+
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'mis-proyectos' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const p = ProjectData.getProyecto(id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!p) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
+  } else {
+    const dias = diasRestantes(p.fechaDevolucion);
+    const STEPS = [
+      { label: 'Detalles de la solicitud' },
+      { label: 'Revisar y enviar' }
+    ];
+    const diasOptions = [
+      { value: '5',  label: '5 días hábiles' },
+      { value: '10', label: '10 días hábiles' },
+      { value: '15', label: '15 días hábiles (máximo)' }
+    ];
+
+    /* Smart back: proyecto-perfil si vino de ahí, sino dashboard */
+    const ref = document.referrer;
+    const backHref = ref.includes('proyecto-perfil.html') ? `proyecto-perfil.html?id=${p.idUnico}`
+      : ref.includes('proyectos.html') ? 'proyectos.html'
+      : 'dashboard.html';
+    const backLabel = backHref.includes('proyecto-perfil') ? 'Volver al proyecto'
+      : backHref === 'proyectos.html' ? 'Volver a mis proyectos'
+      : 'Volver al panel';
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in wz-page">
+        <div class="wz-page__header">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>${backLabel}</a>
+          <h1 class="wz-page__title">Solicitar prórroga</h1>
+          <p class="wz-page__subtitle">${p.nombre}</p>
+        </div>
+
+        <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">${dias} día${dias === 1 ? '' : 's'} hábil${dias === 1 ? '' : 'es'} restante${dias === 1 ? '' : 's'}</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Si solicitas prórroga, el plazo se ampliará por hasta 15 días hábiles adicionales.</p>
+  </div>
+</div>
+
+
+        <form id="formProrroga" class="wz-card" novalidate>
+          <div class="wz-stepper-wrap">
+            ${renderStepper(STEPS)}
+          </div>
+
+          <div class="wz-body" data-wz-body>
+            <!-- PASO 1: Detalles -->
+            <div class="wz-step-panel is-active" data-panel="1">
+              <div class="wz-section">Solicitud de prórroga</div>
+              ${dropdown({ label: 'Días solicitados', name: 'dias', required: true, options: diasOptions, value: '15' })}
+              ${textarea({ label: 'Motivo de la solicitud', name: 'motivo', required: true, placeholder: 'Describe el motivo por el cual necesitas extender el plazo de subsanación…', helper: 'Mínimo 50 caracteres. Será revisado por el Ministerio.', maxlength: 1000, rows: 5 })}
+
+              <div class="wz-section">Soporte (opcional)</div>
+              ${fileDrop({ name: 'soporte', title: 'Adjuntar soporte', hint: 'PDF · opcional · cualquier evidencia que apoye la solicitud', accept: '.pdf' })}
+            </div>
+
+            <!-- PASO 2: Revisar -->
+            <div class="wz-step-panel" data-panel="2">
+              <p style="font-size:13.5px;color:var(--text-secondary);margin:0 0 18px">Confirma los detalles antes de enviar la solicitud al Ministerio.</p>
+              <div id="reviewBox"></div>
+            </div>
+          </div>
+
+          ${renderFooter({
+            cancelHref: `proyecto-perfil.html?id=${p.idUnico}`,
+            saveDraft: false,
+            publishLabel: 'Enviar solicitud'
+          })}
+        </form>
+      </div>
+    `;
+
+    const form = document.getElementById('formProrroga');
+    bindDropdowns(form);
+    mountFileDrops(form);
+
+    function buildReview() {
+      const fd = new FormData(form);
+      const soporte = fd.get('soporte');
+      const groups = [
+        {
+          title: 'Solicitud',
+          rows: [
+            ['Días solicitados', `${fd.get('dias') || '—'} días hábiles`],
+            ['Motivo', (fd.get('motivo') || '—').toString().slice(0, 400)],
+            ['Soporte', soporte?.name ? `📎 ${soporte.name} · ${(soporte.size/1024).toFixed(0)} KB` : '<span style="color:var(--text-secondary)">No adjunto</span>']
+          ]
+        },
+        {
+          title: 'Proyecto afectado',
+          rows: [
+            ['ID', p.idUnico],
+            ['Nombre', p.nombre],
+            ['Fecha devolución', p.fechaDevolucion ? formatoFecha(p.fechaDevolucion) : '—'],
+            ['Días restantes hoy', `${dias} hábil${dias === 1 ? '' : 'es'}`]
+          ]
+        }
+      ];
+      document.getElementById('reviewBox').innerHTML = renderReview(groups);
+    }
+
+    mountWizard({
+      scope: form,
+      totalSteps: STEPS.length,
+      validateStep: (panel, step) => {
+        if (step === 1) setTimeout(buildReview, 50);
+        return true;
+      },
+      onPublish: () => {
+        const fd = new FormData(form);
+        const diasSolicitados = parseInt(fd.get('dias')) || 15;
+        const ahora = new Date().toISOString();
+        ProjectData.setProyecto(p.idUnico, x => {
+          /* Conservar la fecha original (histórica) y extender la fecha base
+             del SLA. `diasRestantes(fechaDevolucion)` ahora reflejará el
+             plazo ampliado automáticamente en todas las pantallas. */
+          const baseFecha = new Date(x.fechaDevolucion || Date.now());
+          baseFecha.setDate(baseFecha.getDate() + diasSolicitados);
+          x.prorroga = {
+            ts: ahora, dias: diasSolicitados, motivo: fd.get('motivo'),
+            estado: 'aprobada_automatica',
+            fechaDevolucionOriginal: x.fechaDevolucion,
+            nuevaFechaDevolucion: baseFecha.toISOString()
+          };
+          x.fechaDevolucion = baseFecha.toISOString();
+          x.historial = x.historial || [];
+          x.historial.push({ ts: ahora, actor: 'municipio', evento: `Prórroga solicitada · +${diasSolicitados} días hábiles` });
+          x.historial.push({ ts: ahora, actor: 'sistema', evento: `Prórroga aprobada automáticamente · nuevo plazo ${baseFecha.toLocaleDateString('es-CO')}` });
+          return x;
+        });
+
+        renderSuccess(form, {
+          title: 'Prórroga aprobada',
+          message: `Tu plazo se amplió por ${diasSolicitados} días hábiles. Recibirás la confirmación en tu panel.`,
+          stamp: `+${diasSolicitados} días hábiles`,
+          ctaLabel: 'Volver al proyecto',
+          onContinue: () => { window.location.href = `proyecto-perfil.html?id=${p.idUnico}`; }
+        });
+      }
+    });
+  }
+</script>
+</body>
+</html>

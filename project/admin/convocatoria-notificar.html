@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 <style>
   /* ─── Modal de confirmación de envío (throttle + filtro no-postulantes) ─── */
   .send-confirm-overlay {
@@ -32,24 +32,16 @@
     from { opacity: 0; transform: translateY(16px) scale(.97) }
     to   { opacity: 1; transform: translateY(0) scale(1) }
   }
+  /* Doug 15/05: hero limpio, sin degradado naranja. */
   .send-confirm-modal__hero {
-    padding: 24px 26px 16px; text-align: center;
-    background: linear-gradient(180deg, var(--orange-bg) 0%, #fff 80%);
+    padding: 22px 26px 16px;
     border-bottom: 1px solid var(--border);
   }
-  .send-confirm-modal__icon {
-    width: 52px; height: 52px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: inline-flex; align-items: center; justify-content: center;
-    margin-bottom: 10px;
-    box-shadow: 0 8px 24px rgba(215,64,9,.3);
-  }
-  .send-confirm-modal__icon svg { width: 24px; height: 24px; }
   .send-confirm-modal__title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
   .send-confirm-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
   .send-confirm-modal__body {
     padding: 18px 26px;
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; flex-direction: column; gap: 14px;
   }
   .send-confirm-modal__row {
     display: grid; grid-template-columns: 140px 1fr; gap: 12px;
@@ -60,32 +52,14 @@
     color: var(--text-secondary); text-transform: uppercase;
   }
   .send-confirm-modal__row dd { margin: 0; color: var(--text-primary); }
+  /* Doug 15/05: checkbox toggles dentro del modal usan DS naowee-checkbox.
+     El label provee la fila completa; sin background ni borde (las opciones
+     no van dentro de un container amarillo/gris). */
   .send-confirm-modal__toggle {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 10px 12px;
-    background: #fafbfd; border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    font-size: 12.5px; cursor: pointer; margin-top: 6px;
+    display: flex; gap: 10px; align-items: center;
+    font-size: 13px; cursor: pointer; color: var(--text-primary);
   }
-  .send-confirm-modal__toggle input { margin-top: 2px; cursor: pointer; }
-  .send-confirm-modal__toggle--force {
-    background: #fff8ee; border-color: #ffbf75;
-    color: #7a4a00;
-  }
-  .send-confirm-modal__throttle {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 12px 14px;
-    background: #fff0ee; border: 1px solid #ffc4bb;
-    border-radius: var(--radius-md);
-    font-size: 12.5px; line-height: 1.5;
-    margin-top: 4px;
-  }
-  .send-confirm-modal__throttle-icon {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: #b42318; color: #fff;
-    display: inline-flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
+  .send-confirm-modal__toggle:hover { color: var(--text-primary); }
   .send-confirm-modal__footer {
     padding: 14px 26px; border-top: 1px solid var(--border);
     display: flex; justify-content: flex-end; gap: 10px;
@@ -104,7 +78,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { formatoFecha, formatoMoneda, fechaCorta } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
 
@@ -118,9 +92,7 @@
   if (!c) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>
-        <a class="naowee-btn naowee-btn--quiet" href="convocatorias.html">Volver al listado</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>`;
   } else {
     if (!c.notificacion) c.notificacion = ProjectData.defaultNotificacion(c);
 
@@ -295,8 +267,9 @@
             <!-- Tab: Historial — patrón timeline de proyecto-detalle -->
             <div class="proj-tab-panel" data-panel="historial" hidden>
               ${timeline.length === 0 ? `
-                <div class="naowee-empty-state">
-                  <div class="naowee-empty-state__msg">Sin eventos registrados aún. Aparecerán aquí cuando guardes cambios o realices el primer envío.</div>
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin eventos en el historial</div>
+                  <div class="table-empty__msg">Aparecerán aquí cuando guardes cambios o realices el primer envío de notificación.</div>
                 </div>
               ` : `
                 <div class="hist-summary">
@@ -412,9 +385,6 @@
         overlay.innerHTML = `
           <div class="send-confirm-modal">
             <div class="send-confirm-modal__hero">
-              <div class="send-confirm-modal__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </div>
               <div class="send-confirm-modal__title">${esReenvio ? '¿Reenviar notificación?' : '¿Enviar notificación?'}</div>
               <div class="send-confirm-modal__sub">${esReenvio
                 ? `Esta convocatoria ya tuvo un envío previo. Configura cómo reenviar.`
@@ -428,21 +398,39 @@
                 <dl class="send-confirm-modal__row"><dt>No postulantes</dt><dd><strong style="color:var(--accent)">${inspect.noPostulantesCount}</strong> municipios</dd></dl>
               ` : ''}
               ${esReenvio ? `
-                <label class="send-confirm-modal__toggle">
-                  <input type="checkbox" id="sendOnlyMissing" checked ${inspect.noPostulantesCount === 0 ? 'disabled' : ''}>
+                <label class="send-confirm-modal__toggle" for="sendOnlyMissing">
+                  <label class="naowee-checkbox ${inspect.noPostulantesCount === 0 ? '' : 'naowee-checkbox--checked'}" data-cb-wrap>
+                    <input type="checkbox" id="sendOnlyMissing" ${inspect.noPostulantesCount === 0 ? 'disabled' : 'checked'}>
+                    <span class="naowee-checkbox__box">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+                      </svg>
+                    </span>
+                  </label>
                   <span>Reenviar <strong>solo a municipios que aún no han postulado</strong> ${inspect.noPostulantesCount === 0 ? '(no aplica · todos postularon)' : ''}</span>
                 </label>
               ` : ''}
               ${esReenvio && !inspect.canSend ? `
-                <div class="send-confirm-modal__throttle">
-                  <span class="send-confirm-modal__throttle-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-                  <div>
-                    <div><strong>Throttle activo · Faltan ${inspect.hoursRemaining}h</strong></div>
-                    <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">Para evitar spam, el sistema bloquea reenvíos consecutivos en menos de ${ProjectData.NOTIF_THROTTLE_HOURS}h. Marca "Forzar reenvío" si es estrictamente necesario.</div>
-                  </div>
-                </div>
-                <label class="send-confirm-modal__toggle send-confirm-modal__toggle--force">
-                  <input type="checkbox" id="sendForce">
+                <div class="naowee-message naowee-message--caution">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                    </span>
+    <span class="naowee-message__title">Throttle activo · Faltan ${inspect.hoursRemaining}h</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Para evitar spam, el sistema bloquea reenvíos consecutivos en menos de ${ProjectData.NOTIF_THROTTLE_HOURS}h. Marca "Forzar reenvío" si es estrictamente necesario.</p>
+  </div>
+</div>
+                <label class="send-confirm-modal__toggle" for="sendForce">
+                  <label class="naowee-checkbox" data-cb-wrap>
+                    <input type="checkbox" id="sendForce">
+                    <span class="naowee-checkbox__box">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+                      </svg>
+                    </span>
+                  </label>
                   <span><strong>Forzar reenvío</strong> (ignorar throttle)</span>
                 </label>
               ` : ''}
@@ -456,6 +444,13 @@
           </div>
         `;
         document.body.appendChild(overlay);
+        /* Sync DS checkbox visual state con el input nativo. */
+        overlay.querySelectorAll('[data-cb-wrap] input[type="checkbox"]').forEach(cb => {
+          const wrap = cb.closest('[data-cb-wrap]');
+          const sync = () => wrap.classList.toggle('naowee-checkbox--checked', cb.checked);
+          cb.addEventListener('change', sync);
+          sync();
+        });
         const cleanup = () => {
           overlay.classList.add('is-closing');
           setTimeout(() => overlay.remove(), 200);

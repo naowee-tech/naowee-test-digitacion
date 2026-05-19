@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
 <link rel="stylesheet" href="../shared/wizard-page.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 </head>
 <body>
 <div class="shell">
@@ -22,10 +22,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260516b';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260517g';
   ProjectData.setPerfil('municipio');
   mountShell({ activeId: 'mis-proyectos' });
 
@@ -38,9 +38,7 @@
   if (!p) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no encontrado</div>
-        <a class="naowee-btn naowee-btn--quiet" href="proyectos.html">Volver</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
   } else {
     const est = ESTADOS_POSTULACION[p.estado];
     const dias = p.estado === 'en_revision' || p.estado === 'presentado'
@@ -48,11 +46,8 @@
       : p.estado === 'devuelta_subsanacion' ? diasRestantes(p.fechaDevolucion)
       : p.estado === 'etapa_documental' ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion, 20)
       : null;
-    const slaCls = dias === null ? ''
-      : dias <= 0 ? 'sla-chip--vencido'
-      : dias <= 3 ? 'sla-chip--urgent'
-      : dias <= 7 ? 'sla-chip--warning'
-      : 'sla-chip--ok';
+    /* Doug 16/05/2026: slaCls legacy removido — el badge ahora usa el utility
+       transversal .naowee-sla con slaVariant calculado inline en el render. */
     const slaLabel = p.estado === 'devuelta_subsanacion' ? 'para subsanar'
       : p.estado === 'etapa_documental' ? 'revisión documental'
       : 'respuesta Ministerio';
@@ -66,6 +61,32 @@
 
     pageContent.innerHTML = `
       <div class="page-fade-in">
+
+        ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? (() => {
+          /* Doug 16/05/2026: cenefa edge-to-edge top (mismo patrón que la
+             cenefa verde de "te fue asignada" en revisar-area y la azul de
+             "Convocatoria activa" en convocatoria-detalle). CTA Subsanar
+             en el lado derecho via __action wrapper, large size. */
+          const obsCount = p.observaciones.filter(o => o.autor === 'revisor').length;
+          return `
+            <div class="convo-status-cenefa convo-status-cenefa--caution convo-status-cenefa--top">
+              <span class="convo-status-cenefa__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="12" r="9"/></svg>
+              </span>
+              <div class="convo-status-cenefa__body">
+                <div class="convo-status-cenefa__title">Postulación devuelta — ${obsCount} observación${obsCount === 1 ? '' : 'es'} para subsanar</div>
+                <p class="convo-status-cenefa__msg">Tienes 15 días hábiles desde la devolución. Si necesitas más tiempo, puedes solicitar una prórroga.</p>
+              </div>
+              <div class="convo-status-cenefa__action">
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" data-subsanar="${p.idUnico}">
+                  Subsanar
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        })() : ''}
+
         <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           ${backLabel}
@@ -73,12 +94,14 @@
 
         ${isNuevo ? `
           <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:18px">
-            <div class="naowee-message__header">
-              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              <span class="naowee-message__title">¡Postulación enviada!</span>
-            </div>
-            <div class="naowee-message__text">Tu radicado es <strong>${p.radicado}</strong>. El revisor del Ministerio tiene 15 días hábiles para evaluar tu postulación.</div>
-          </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">¡Postulación enviada!</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Tu radicado es <strong>${p.radicado}</strong>. El revisor del Ministerio tiene 15 días hábiles para evaluar tu postulación.</p>
+  </div>
+</div>
         ` : ''}
 
         <!-- ═══ Hero del proyecto (refactor con patrón canónico) ═══ -->
@@ -110,25 +133,23 @@
               <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
               <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
               ${dias !== null ? (() => {
-                const cls = dias <= 0 ? 'hero-deadline--vencido'
-                  : dias <= 3 ? 'hero-deadline--urgent'
-                  : dias <= 7 ? 'hero-deadline--warning'
-                  : 'hero-deadline--ok';
+                /* Doug 16/05/2026: utility transversal .naowee-sla.
+                   Semántica: vencido (≤0) · warn (≤5) · ok (>5) */
+                const slaVariant = dias <= 0 ? 'vencido' : dias <= 5 ? 'warn' : 'ok';
+                const slaTime = dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`;
                 return `
-                  <div class="hero-deadline ${cls}" title="Plazo Resolución 933">
-                    <span class="hero-deadline__icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                  <div style="display:flex;justify-content:flex-end;margin-top:10px">
+                    <span class="naowee-sla naowee-sla--${slaVariant}" title="Plazo Resolución 933">
+                      <svg class="naowee-sla__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                      <strong class="naowee-sla__num">${slaTime}</strong>
+                      <span class="naowee-sla__label">${slaLabel}</span>
                     </span>
-                    <span class="hero-deadline__time">${dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`}</span>
-                    <span class="hero-deadline__sep"></span>
-                    <span class="hero-deadline__label">${slaLabel}</span>
                   </div>`;
               })() : ''}
-              ${p.estado === 'devuelta_subsanacion' ? `
-                <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
-                </div>
-              ` : ''}
+              <!-- Doug 16/05/2026: botón Subsanar removido del top — el banner
+                   contextual abajo y el badge "Devuelta a subsanación" en la lista
+                   de proyectos ya proveen el CTA. Evita duplicación. -->
+
             </div>
           </div>
         </div>
@@ -147,51 +168,38 @@
               </div>
               <div class="cert-favorabilidad__main">
                 <div class="cert-favorabilidad__eyebrow">Certificado emitido por el Ministerio del Deporte</div>
-                <h3 class="cert-favorabilidad__title">Concepto de favorabilidad</h3>
-                <p class="cert-favorabilidad__sub">Tu proyecto cumple con todos los requisitos de la Resolución 933 de 2024. Este certificado es el documento oficial que avala el cumplimiento normativo. ${p.estado === 'concepto_favorable' ? 'Quedas habilitado para gestionar la inversión con el Ministerio o con fuentes externas.' : 'El Ministerio ya activó la inversión correspondiente.'}</p>
-              </div>
-            </div>
-            <div class="cert-favorabilidad__grid">
-              <div class="cert-favorabilidad__field">
-                <span class="cert-favorabilidad__field-lbl">Emitido por</span>
-                <span class="cert-favorabilidad__field-val">${p.conceptoFavorabilidad.emitidoPor || 'Equipo Revisor del Ministerio'}</span>
-              </div>
-              <div class="cert-favorabilidad__field">
-                <span class="cert-favorabilidad__field-lbl">Fecha de emisión</span>
-                <span class="cert-favorabilidad__field-val">${formatoFecha(p.conceptoFavorabilidad.ts, true)}</span>
-              </div>
-              <div class="cert-favorabilidad__field">
-                <span class="cert-favorabilidad__field-lbl">Código</span>
-                <span class="cert-favorabilidad__field-val cert-favorabilidad__field-val--mono">${p.conceptoFavorabilidad.certificado || `CERT-FAV-${p.idUnico}.pdf`}</span>
-              </div>
-            </div>
-            ${p.conceptoFavorabilidad.observaciones ? `
-              <div class="cert-favorabilidad__obs">${p.conceptoFavorabilidad.observaciones}</div>
-            ` : ''}
-            <div class="cert-favorabilidad__actions">
-              <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnDescargarCert">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Descargar certificado (PDF)
-              </button>
-            </div>
-          </div>
+                <div class="cert-favorabilidad__grid">
+                  <div class="cert-favorabilidad__field">
+                    <span class="cert-favorabilidad__field-lbl">Emitido por</span>
+                    <span class="cert-favorabilidad__field-val">${p.conceptoFavorabilidad.emitidoPor || 'Equipo Revisor del Ministerio'}</span>
+                  </div>
+                  <div class="cert-favorabilidad__field">
+                    <span class="cert-favorabilidad__field-lbl">Fecha de emisión</span>
+                    <span class="cert-favorabilidad__field-val">${formatoFecha(p.conceptoFavorabilidad.ts, true)}</span>
+                  </div>
+                  <div class="cert-favorabilidad__field">
+                    <span class="cert-favorabilidad__field-lbl">Código</span>
+                    <span class="cert-favorabilidad__field-val cert-favorabilidad__field-val--mono">${p.conceptoFavorabilidad.certificado || `CERT-FAV-${p.idUnico}.pdf`}</span>
+                  </div>
+                </div>
+                ${p.conceptoFavorabilidad.observaciones ? `
+                  <div class="cert-favorabilidad__obs">${p.conceptoFavorabilidad.observaciones}</div>
+                ` : ''}
+                <div class="cert-favorabilidad__actions">
+                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnDescargarCert">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Descargar certificado (PDF)
+                  </button>
+                </div>
+              </div><!-- /.cert-favorabilidad__main -->
+            </div><!-- /.cert-favorabilidad__top -->
+          </div><!-- /.cert-favorabilidad -->
         ` : ''}
 
-        ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? `
-          <!-- Observaciones del revisor (solo si hay devolución) — Doug 15/05/2026:
-               CTA "Subsanar" inline para ir directo al modal sin scrollear al tab. -->
-          <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
-            <div class="naowee-message__header">
-              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
-              <span class="naowee-message__title">Postulación devuelta — ${p.observaciones.filter(o => o.autor === 'revisor').length} observación${p.observaciones.filter(o => o.autor === 'revisor').length === 1 ? '' : 'es'} para subsanar</span>
-            </div>
-            <div class="naowee-message__text">Tienes 15 días hábiles desde la devolución. Si necesitas más tiempo, puedes solicitar una prórroga.</div>
-            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" data-subsanar="${p.idUnico}">
-              Subsanar
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-        ` : ''}
+        <!-- Doug 16/05/2026: el banner caution "Postulación devuelta" se
+             movió a cenefa edge-to-edge top (mismo patrón DS que verde y azul).
+             CTA Subsanar large en el lado opuesto al texto. -->
+
 
         <!-- ═══ Card unificada con tabs DS Naowee ═══ -->
         <div class="naowee-card proj-tabs-card">
@@ -236,7 +244,7 @@
             ${(() => {
               const events = (p.historial || []).slice().reverse();
               if (events.length === 0) {
-                return '<div class="naowee-empty-state"><div class="naowee-empty-state__msg">Sin eventos registrados.</div></div>';
+                return '<div class="table-empty"><div class="table-empty__title">Sin eventos en el historial</div><div class="table-empty__msg">Aparecerán aquí cuando se registren acciones del proyecto (radicación, devoluciones, subsanaciones, aprobaciones).</div></div>';
               }
               const dotColor = (h) => h.actor === 'sistema' ? 'gray'
                 : h.actor === 'revisor' ? 'orange'
@@ -372,16 +380,19 @@
       });
     });
 
-    /* Triggers de subsanación → abren modal-subsanar.js (antes era una página dedicada) */
-    document.querySelectorAll('[data-subsanar]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        openSubsanarModal({
-          proyectoId: btn.dataset.subsanar,
-          onSubsanado: () => {
-            /* Cuando se completa el envío, recargar la página para reflejar el nuevo estado */
-            setTimeout(() => window.location.reload(), 1200);
-          }
-        });
+    /* Triggers de subsanación → abren modal-subsanar.js (antes era una página dedicada).
+       Doug 16/05/2026: event delegation en document para que funcione con
+       cualquier botón [data-subsanar] presente o agregado dinámicamente
+       (ej: cenefa edge-to-edge top + botón en tab Conversación). */
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-subsanar]');
+      if (!btn) return;
+      e.preventDefault();
+      openSubsanarModal({
+        proyectoId: btn.dataset.subsanar,
+        onSubsanado: () => {
+          setTimeout(() => window.location.reload(), 1200);
+        }
       });
     });
 

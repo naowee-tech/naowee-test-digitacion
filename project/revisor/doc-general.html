@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -19,7 +19,22 @@
     padding: 16px 22px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between; gap: 14px;
     background: linear-gradient(180deg, #fafbff 0%, var(--surface) 100%);
+    cursor: pointer; list-style: none;
+    transition: background .15s;
   }
+  .dg-bloque__head::-webkit-details-marker,
+  .dg-bloque__head::marker { display: none; }
+  .dg-bloque__head:hover { background: linear-gradient(180deg, #f5f6fa 0%, #fafbff 100%); }
+  /* Cuando está cerrado, el head no necesita borde inferior (no hay items debajo) */
+  .dg-bloque:not([open]) .dg-bloque__head { border-bottom: 0; }
+  .dg-bloque__chev {
+    width: 18px; height: 18px;
+    color: var(--text-secondary);
+    transition: transform .25s cubic-bezier(.32,.72,0,1);
+    flex-shrink: 0;
+  }
+  .dg-bloque[open] .dg-bloque__chev { transform: rotate(180deg); }
+  .dg-bloque__progress { margin-left: auto; }
   .dg-bloque__title {
     display: flex; align-items: center; gap: 10px;
     font-size: 14px; font-weight: 700; color: var(--text-primary);
@@ -52,6 +67,37 @@
     border-bottom: 1px solid var(--border);
     transition: background .15s;
   }
+  /* Acciones por item: download icon + toggle/pill agrupados.
+     Doug 17/05/2026: pill-slot con ancho fijo (140px) + left-aligned para
+     que el botón download mantenga posición estable aunque varíe el badge
+     (Cumple / N/A / No cumple / Sin verificar). */
+  .dg-item__actions {
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .dg-item__pill-slot {
+    width: 140px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+  }
+  /* Ghost button DS Naowee: icon-only naranja, hover orange-bg sutil
+     (sin border). Reemplaza la versión outline previa. */
+  .dg-item__download {
+    width: 34px; height: 34px;
+    border-radius: var(--radius-md, 8px);
+    border: 0;
+    background: transparent;
+    color: var(--accent, #d74009);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    transition: background .12s, transform .12s;
+  }
+  .dg-item__download:hover {
+    background: var(--orange-bg, #fff3e6);
+  }
+  .dg-item__download:active { transform: scale(.94); }
+  .dg-item__download svg { width: 16px; height: 16px; }
   .dg-item:last-child { border-bottom: 0; }
   .dg-item:hover { background: #fafbff; }
   .dg-item__num {
@@ -72,26 +118,130 @@
     font-family: 'JetBrains Mono', ui-monospace, monospace;
   }
 
-  /* Segmented toggle: Cumple / No cumple / N/A */
+  /* ═══ Toggle redesign: icon-only colored buttons, hover-reveal en la fila ═══
+     Patrón:
+     - Default + has selection: muestra solo el botón ACTIVO (compacto, persistente)
+     - Hover de la fila: muestra los 3 botones lado a lado para permitir cambio
+     - Default + sin selection: muestra los 3 botones (CTA visible para que el
+       revisor sepa que hay acción pendiente) en estado outline
+     Comunicación de estado persistente: el dg-item__num (círculo numerado a
+     la izquierda) cambia color según selección — sigue siendo el indicador
+     primario cuando no se hace hover. */
   .dg-toggle {
-    display: inline-flex; gap: 0;
-    border: 1px solid var(--border-dark); border-radius: var(--radius-md);
-    overflow: hidden; background: #fff;
+    display: inline-flex; align-items: center;
+    gap: 6px; height: 34px;
+    background: transparent; border: 0; padding: 0;
+    transition: opacity .18s ease;
   }
   .dg-toggle__btn {
-    padding: 7px 12px; min-width: 76px;
-    font-family: inherit; font-size: 12px; font-weight: 600;
+    width: 34px; height: 34px;
+    padding: 0; min-width: 0;
+    font-family: inherit;
     background: #fff; color: var(--text-secondary);
-    border: 0; border-right: 1px solid var(--border);
-    cursor: pointer; transition: all .12s;
-    display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background .12s, color .12s, border-color .12s, transform .12s, opacity .12s;
+    flex-shrink: 0;
+    /* Hidden by default cuando hay selección activa en la fila */
+    opacity: 0; pointer-events: none;
   }
-  .dg-toggle__btn:last-child { border-right: 0; }
-  .dg-toggle__btn:hover { background: var(--bg, #f5f6fa); color: var(--text-primary); }
-  .dg-toggle__btn.is-active--cumple { background: var(--green); color: #fff; border-color: var(--green); }
-  .dg-toggle__btn.is-active--nocumple { background: #c01818; color: #fff; border-color: #c01818; }
-  .dg-toggle__btn.is-active--na { background: var(--blue-info); color: #fff; border-color: var(--blue-info); }
-  .dg-toggle__btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .dg-toggle__btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* Hover de la fila → muestra todos los toggle buttons */
+  .dg-item:hover .dg-toggle__btn,
+  .dg-item:focus-within .dg-toggle__btn {
+    opacity: 1; pointer-events: auto;
+  }
+  /* Cuando NO hay selección en el item → toggle buttons siempre visibles
+     (el revisor necesita ver la opción para actuar) */
+  .dg-item:not(.is-cumple):not(.is-nocumple):not(.is-na) .dg-toggle__btn {
+    opacity: 1; pointer-events: auto;
+  }
+  /* Cuando HAY selección y NO hover → solo el botón activo se muestra */
+  .dg-item.is-cumple .dg-toggle__btn.is-active--cumple,
+  .dg-item.is-nocumple .dg-toggle__btn.is-active--nocumple,
+  .dg-item.is-na .dg-toggle__btn.is-active--na {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* Hover por color semántico (preview del color al pasar el mouse) */
+  .dg-toggle__btn[data-r="cumple"]:hover {
+    background: var(--green-bg); color: var(--green); border-color: var(--green);
+  }
+  .dg-toggle__btn[data-r="nocumple"]:hover {
+    background: var(--red-bg); color: #c01818; border-color: #c01818;
+  }
+  .dg-toggle__btn[data-r="na"]:hover {
+    background: var(--blue-bg); color: var(--blue-info); border-color: var(--blue-info);
+  }
+  .dg-toggle__btn:active { transform: scale(.94); }
+
+  /* Estados activos: fill sólido del color semántico */
+  .dg-toggle__btn.is-active--cumple {
+    background: var(--green); color: #fff; border-color: var(--green);
+    box-shadow: 0 1px 4px rgba(31,137,35,.25);
+  }
+  .dg-toggle__btn.is-active--nocumple {
+    background: #c01818; color: #fff; border-color: #c01818;
+    box-shadow: 0 1px 4px rgba(192,24,24,.25);
+  }
+  .dg-toggle__btn.is-active--na {
+    background: var(--blue-info); color: #fff; border-color: var(--blue-info);
+    box-shadow: 0 1px 4px rgba(31,120,209,.25);
+  }
+
+  /* ═══ DS tooltip canónico (dark, arrow, fade-in) ═══
+     Opt-in vía clase .has-tooltip + atributo data-tooltip.
+     IMPORTANTE: NO usar title="..." en el mismo elemento — el browser
+     muestra su propio tooltip nativo encima y rompe el diseño. Use
+     aria-label para accesibilidad. */
+  .has-tooltip {
+    position: relative;
+  }
+  .has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #282834;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: var(--radius-md, 8px);
+    font-size: 11.5px; font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(40,40,52,.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s cubic-bezier(.4,0,.2,1),
+                transform .15s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+  }
+  .has-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #282834;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+  }
+  .has-tooltip:hover::after,
+  .has-tooltip:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .has-tooltip:hover::before,
+  .has-tooltip:focus-visible::before {
+    opacity: 1;
+  }
 
   /* Sticky bottom summary */
   .dg-summary {
@@ -270,9 +420,9 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { formatoMoneda, fechaCorta } from '../shared/states.js';
-  import { toast } from '../shared/toast.js';
+  import { toast, snackbar } from '../shared/toast.js';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'doc-general' });
@@ -296,7 +446,10 @@
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
     x:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>'
+    flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    chev:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+    dash:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
   };
 
   /* Checklist Bloque 1+2 (Res. 933 de 2024) */
@@ -512,31 +665,37 @@
 
         ${aprobado ? `
           <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:18px">
-            <div class="naowee-message__header">
-              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              <span class="naowee-message__title">Documentación general aprobada</span>
-            </div>
-            <div class="naowee-message__text">Aprobada el ${fechaCorta(dg.aprobadoEn)}. El proyecto está listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</div>
-          </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">Documentación general aprobada</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Aprobada el ${fechaCorta(dg.aprobadoEn)}. El proyecto está listo para el cierre del concepto cuando todas las áreas técnicas también estén aprobadas.</p>
+  </div>
+</div>
+
         ` : !esRevisorGeneral ? `
           <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
-            <div class="naowee-message__header">
-              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="4" y="7" width="8" height="6" rx="1" stroke="#fff" stroke-width="1.4"/><path d="M6 7V5a2 2 0 0 1 4 0v2" stroke="#fff" stroke-width="1.4"/></svg></span>
-              <span class="naowee-message__title">Documentación general asignada a ${revisorGeneralPool?.nombre || 'el Revisor General'}</span>
-            </div>
-            <div class="naowee-message__text">
-              Solo el revisor de Documentación General puede aprobar o devolver este checklist.
-              ${revisorActivo ? `Estás logueado como <strong>${revisorActivo.nombre}</strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}
-            </div>
-          </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="4" y="7" width="8" height="6" rx="1" stroke="#fff" stroke-width="1.4"/><path d="M6 7V5a2 2 0 0 1 4 0v2" stroke="#fff" stroke-width="1.4"/></svg></span>
+    <span class="naowee-message__title">Documentación general asignada a ${revisorGeneralPool?.nombre || 'el Revisor General'}</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Solo el revisor de Documentación General puede aprobar o devolver este checklist.
+              ${revisorActivo ? `Estás logueado como <strong>${revisorActivo.nombre}</strong> (${revisorActivo.especialidad}) — puedes consultar el avance pero no decidir.` : ''}</p>
+  </div>
+</div>
+
         ` : ''}
 
         ${CHECKLIST.map((bloque, i) => {
           const done = bloque.items.filter(it => ['cumple','nocumple','na'].includes(checklist[it.n])).length;
           const pct = Math.round((done / bloque.items.length) * 100);
+          /* Bloque colapsable nativo con <details>/<summary>. Abierto por
+             default; el usuario puede plegar para reducir scroll vertical. */
           return `
-            <section class="dg-bloque">
-              <div class="dg-bloque__head">
+            <details class="dg-bloque" open>
+              <summary class="dg-bloque__head">
                 <div class="dg-bloque__title">
                   <span class="dg-bloque__num">${i + 1}</span>
                   <span>${bloque.titulo}</span>
@@ -545,11 +704,18 @@
                   <div class="dg-bloque__progress-bar"><span style="width:${pct}%"></span></div>
                   <span class="dg-bloque__progress-text">${done} de ${bloque.items.length} verificados</span>
                 </div>
-              </div>
+                <span class="dg-bloque__chev" aria-hidden="true">${ICONS.chev}</span>
+              </summary>
               <div>
                 ${bloque.items.map(it => {
                   const sel = checklist[it.n];
                   const itemClass = sel === 'cumple' ? 'is-cumple' : sel === 'nocumple' ? 'is-nocumple' : sel === 'na' ? 'is-na' : '';
+                  /* Botón download disponible en ambos modos (read-only y editable):
+                     el revisor o el supervisor pueden necesitar descargar el adjunto
+                     en cualquier estado del proyecto.
+                     DS tooltip vía .has-tooltip + data-tooltip (NO title=, evita
+                     el tooltip nativo del browser duplicado). */
+                  const downloadBtn = `<button type="button" class="dg-item__download has-tooltip" data-download="${it.n}" data-tooltip="Descargar documento adjunto" aria-label="Descargar adjunto del item ${it.n}">${ICONS.download}</button>`;
                   if (aprobado) {
                     /* Read-only: pill inline en lugar de toggle editable */
                     const pill = sel === 'cumple'   ? `<span class="dg-readonly-pill dg-readonly-pill--cumple">${ICONS.check} Cumple</span>`
@@ -563,7 +729,10 @@
                           <div class="dg-item__text">${it.item}</div>
                           <div class="dg-item__ref">${it.ref}</div>
                         </div>
-                        ${pill}
+                        <div class="dg-item__actions">
+                          ${downloadBtn}
+                          <span class="dg-item__pill-slot">${pill}</span>
+                        </div>
                       </div>`;
                   }
                   return `
@@ -573,15 +742,20 @@
                         <div class="dg-item__text">${it.item}</div>
                         <div class="dg-item__ref">${it.ref}</div>
                       </div>
-                      <div class="dg-toggle" role="group">
-                        <button type="button" class="dg-toggle__btn ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple">${ICONS.check} Cumple</button>
-                        <button type="button" class="dg-toggle__btn ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple">${ICONS.x} No cumple</button>
-                        <button type="button" class="dg-toggle__btn ${sel === 'na' ? 'is-active--na' : ''}" data-r="na">N/A</button>
+                      <div class="dg-item__actions">
+                        ${downloadBtn}
+                        <span class="dg-item__pill-slot">
+                          <div class="dg-toggle" role="group" aria-label="Verificar cumplimiento">
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple" data-tooltip="Marcar como cumple" aria-label="Cumple">${ICONS.check}</button>
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple" data-tooltip="Marcar como no cumple" aria-label="No cumple">${ICONS.x}</button>
+                            <button type="button" class="dg-toggle__btn has-tooltip ${sel === 'na' ? 'is-active--na' : ''}" data-r="na" data-tooltip="No aplica" aria-label="N/A">${ICONS.dash || '<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg>'}</button>
+                          </div>
+                        </span>
                       </div>
                     </div>`;
                 }).join('')}
               </div>
-            </section>
+            </details>
           `;
         }).join('')}
 
@@ -647,6 +821,22 @@
         bloqueEl.querySelector('.dg-bloque__progress-text').textContent = `${done} de ${bl.items.length} verificados`;
       });
     }
+
+    /* Click en download button — disponible en read-only y editable.
+       Mock: snackbar de confirmación. En producción: trigger fetch del adjunto
+       desde el storage del proyecto. */
+    document.querySelectorAll('.dg-item__download').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const n = btn.dataset.download;
+        const item = CHECKLIST.flatMap(b => b.items).find(it => String(it.n) === String(n));
+        const label = item ? item.item.replace(/\.$/, '').slice(0, 60) : `Adjunto ${n}`;
+        snackbar({
+          text: `Descargando: ${label}…`,
+          duration: 2500
+        });
+      });
+    });
 
     /* Click en cada toggle — solo en modo editable */
     if (!aprobado) document.querySelectorAll('.dg-item').forEach(itemEl => {

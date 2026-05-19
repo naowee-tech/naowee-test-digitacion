@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Notificación a municipios · Convocatoria · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+<style>
+  /* ─── Modal de confirmación de envío (throttle + filtro no-postulantes) ─── */
+  .send-confirm-overlay {
+    position: fixed; inset: 0; z-index: 1200;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    animation: sendConfirmOverlayIn .22s ease forwards;
+  }
+  .send-confirm-overlay.is-closing { animation: sendConfirmOverlayOut .2s ease forwards; }
+  @keyframes sendConfirmOverlayIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes sendConfirmOverlayOut { from { opacity: 1 } to { opacity: 0 } }
+  .send-confirm-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 480px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15,17,35,.35), 0 0 0 1px var(--border);
+    overflow: hidden;
+    animation: sendConfirmModalIn .26s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes sendConfirmModalIn {
+    from { opacity: 0; transform: translateY(16px) scale(.97) }
+    to   { opacity: 1; transform: translateY(0) scale(1) }
+  }
+  /* Doug 15/05: hero limpio, sin degradado naranja. */
+  .send-confirm-modal__hero {
+    padding: 22px 26px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .send-confirm-modal__title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+  .send-confirm-modal__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+  .send-confirm-modal__body {
+    padding: 18px 26px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .send-confirm-modal__row {
+    display: grid; grid-template-columns: 140px 1fr; gap: 12px;
+    font-size: 12.5px; margin: 0;
+  }
+  .send-confirm-modal__row dt {
+    font-size: 11px; font-weight: 700; letter-spacing: .3px;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .send-confirm-modal__row dd { margin: 0; color: var(--text-primary); }
+  /* Doug 15/05: checkbox toggles dentro del modal usan DS naowee-checkbox.
+     El label provee la fila completa; sin background ni borde (las opciones
+     no van dentro de un container amarillo/gris). */
+  .send-confirm-modal__toggle {
+    display: flex; gap: 10px; align-items: center;
+    font-size: 13px; cursor: pointer; color: var(--text-primary);
+  }
+  .send-confirm-modal__toggle:hover { color: var(--text-primary); }
+  .send-confirm-modal__footer {
+    padding: 14px 26px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519a';
+  import { formatoFecha, formatoMoneda, fechaCorta } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'convocatorias' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const c = ProjectData.getConvocatorias().find(x => x.id === id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!c) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>`;
+  } else {
+    if (!c.notificacion) c.notificacion = ProjectData.defaultNotificacion(c);
+
+    /* ════════ Iconos ════════ */
+    const ICONS = {
+      back:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+      edit:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+      send:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+      mail:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+      bell:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+      sms:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+      clock:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      empty:  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>'
+    };
+
+    /* ════════ Helpers de presentación ════════ */
+    function estadoBadge(estado) {
+      const map = {
+        pendiente:   { v: 'neutral',     l: 'Borrador' },
+        programada:  { v: 'informative', l: 'Programada' },
+        enviada:     { v: 'positive',    l: 'Enviada' },
+        con_fallas:  { v: 'caution',     l: 'Enviada con fallas' }
+      };
+      const s = map[estado] || map.pendiente;
+      return `<span class="naowee-badge naowee-badge--${s.v} naowee-badge--quiet">${s.l}</span>`;
+    }
+
+    function canalChip(label, icon, on) {
+      return `<span class="notif-chip ${on ? '' : 'notif-chip--off'}">${icon}${label}${on ? '' : ' · off'}</span>`;
+    }
+
+    function programacionTexto(p) {
+      if (p.tipo === 'inmediato') return 'Envío inmediato al confirmar';
+      if (p.fechaProgramada) return `Programado · ${formatoFecha(p.fechaProgramada, true)}`;
+      return 'Programado · sin fecha definida';
+    }
+
+    /* Construye el timeline de trazabilidad combinando estado + envío + edición */
+    function buildTimeline(n) {
+      const items = [];
+      items.push({
+        v: 'informative', icon: ICONS.edit,
+        title: 'Notificación creada (borrador)',
+        meta: 'Configuración inicial generada desde la convocatoria'
+      });
+      if (n.estado === 'programada' && n.programacion?.fechaProgramada) {
+        items.push({
+          v: 'informative', icon: ICONS.clock,
+          title: 'Envío programado',
+          meta: `Disparo automático: ${formatoFecha(n.programacion.fechaProgramada, true)}`
+        });
+      }
+      if (n.envio) {
+        items.push({
+          v: n.envio.conFalla > 0 ? 'caution' : 'positive',
+          icon: ICONS.send,
+          title: n.envio.conFalla > 0
+            ? `Envío realizado con ${n.envio.conFalla} falla${n.envio.conFalla === 1 ? '' : 's'}`
+            : 'Envío realizado exitosamente',
+          meta: `${formatoFecha(n.envio.ts, true)} · ${n.envio.exitosos} exitoso${n.envio.exitosos === 1 ? '' : 's'} · ${n.envio.conFalla} con falla`
+        });
+        n.envio.fallos?.forEach(f => {
+          items.push({
+            v: 'negative', icon: ICONS.empty,
+            title: `Falla en entrega · ${f.municipio}`,
+            meta: `Canal: ${f.canal} · ${f.motivo}`
+          });
+        });
+      }
+      return items;
+    }
+
+    /* ════════ Render: Página de detalle ════════ */
+    function renderDetail() {
+      const n = c.notificacion;
+      const totalDestinatarios = n.destinatarios.municipios.length + (n.destinatarios.adicionales?.length || 0);
+      const muestraMunis = n.destinatarios.municipios.slice(0, 6);
+      const restantes = n.destinatarios.municipios.length - muestraMunis.length;
+      const timeline = buildTimeline(n);
+
+      pageContent.innerHTML = `
+        <div class="page-fade-in">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="convocatoria-detalle.html?id=${c.id}" style="margin-bottom:14px">${ICONS.back}Volver a la convocatoria</a>
+          <div class="naowee-page-header naowee-page-header--centered">
+            <div class="naowee-page-header__main">
+              <h1>Notificación a municipios</h1>
+              <p>Revisa los destinatarios, el mensaje y la programación heredados de la convocatoria, y dispara el envío. El contenido se configura en el wizard de creación.</p>
+            </div>
+            <div class="naowee-page-header__actions">
+              <button type="button" class="naowee-btn naowee-btn--loud" id="btnEnviarAhora">${ICONS.send} Enviar ahora</button>
+            </div>
+          </div>
+
+          <div class="notif-cta-bar notif-cta-bar--meta-only">
+            <div class="notif-cta-bar__meta">
+              <div class="notif-cta-bar__title">Configuración actual ${estadoBadge(n.estado)}</div>
+              <div class="notif-cta-bar__sub">Última actualización ${n.envio ? formatoFecha(n.envio.ts) : 'no enviada aún'}</div>
+            </div>
+          </div>
+
+          <div class="naowee-card proj-tabs-card">
+            <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+              <button class="naowee-tab naowee-tab--selected" data-tab="detalles" role="tab" type="button">Detalles de la notificación</button>
+              <button class="naowee-tab" data-tab="destinatarios" role="tab" type="button">Destinatarios <span class="tab-count">${totalDestinatarios}</span></button>
+              <button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial${timeline.length ? ` <span class="tab-count">${timeline.length}</span>` : ''}</button>
+              <span class="naowee-tabs__indicator"></span>
+            </div>
+
+            <!-- Tab: Detalles -->
+            <div class="proj-tab-panel" data-panel="detalles">
+              <dl class="proj-data" style="grid-template-columns:1fr">
+                <div>
+                  <dt>Asunto</dt>
+                  <dd style="font-weight:600;font-size:14.5px">${n.asunto}</dd>
+                </div>
+                <div>
+                  <dt>Cuerpo del mensaje</dt>
+                  <dd><div class="notif-preview">${n.cuerpo}</div></dd>
+                </div>
+              </dl>
+
+              <dl class="proj-data" style="margin-top:24px">
+                <div>
+                  <dt>Canales activos</dt>
+                  <dd>
+                    <div class="notif-badge-row">
+                      <span class="naowee-badge naowee-badge--${n.canales.correo ? 'caution' : 'neutral'} naowee-badge--quiet">${ICONS.mail} Correo institucional</span>
+                      <span class="naowee-badge naowee-badge--${n.canales.plataforma ? 'caution' : 'neutral'} naowee-badge--quiet">${ICONS.bell} Notificación in-app</span>
+                      <span class="naowee-badge naowee-badge--${n.canales.sms ? 'caution' : 'neutral'} naowee-badge--quiet">${ICONS.sms} SMS${n.canales.sms ? '' : ' · off'}</span>
+                    </div>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Programación</dt>
+                  <dd>
+                    <span class="notif-inline-line">${ICONS.clock}<span>${programacionTexto(n.programacion)}</span></span>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- Tab: Destinatarios -->
+            <div class="proj-tab-panel" data-panel="destinatarios" hidden>
+              <div class="notif-tab-subhead">
+                <strong>${n.destinatarios.municipios.length}</strong> municipios calculados desde el alcance territorial${n.destinatarios.adicionales?.length ? ` · <strong>${n.destinatarios.adicionales.length}</strong> destinatarios adicionales` : ''}
+              </div>
+              <div class="notif-recipient-list">
+                ${n.destinatarios.municipios.map(m => `
+                  <div class="notif-recipient-row">
+                    <div class="notif-recipient-row__avatar">${m.municipio.charAt(0)}</div>
+                    <div class="notif-recipient-row__main">
+                      <div class="notif-recipient-row__name">${m.municipio}</div>
+                      <div class="notif-recipient-row__email">${m.email}</div>
+                    </div>
+                    <div class="notif-recipient-row__meta">
+                      <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">${m.depto}</span>
+                      <span class="notif-recipient-row__dane">DANE ${m.dane}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              ${n.destinatarios.adicionales?.length ? `
+                <dl class="proj-data" style="grid-template-columns:1fr;margin-top:24px">
+                  <div>
+                    <dt>Destinatarios adicionales (${n.destinatarios.adicionales.length})</dt>
+                    <dd style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;color:var(--text-primary)">${n.destinatarios.adicionales.join(', ')}</dd>
+                  </div>
+                </dl>
+              ` : ''}
+            </div>
+
+            <!-- Tab: Historial — patrón timeline de proyecto-detalle -->
+            <div class="proj-tab-panel" data-panel="historial" hidden>
+              ${timeline.length === 0 ? `
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin eventos en el historial</div>
+                  <div class="table-empty__msg">Aparecerán aquí cuando guardes cambios o realices el primer envío de notificación.</div>
+                </div>
+              ` : `
+                <div class="hist-summary">
+                  <span>${timeline.length} evento${timeline.length === 1 ? '' : 's'} en el historial</span>
+                </div>
+                <div class="timeline">
+                  ${timeline.map(it => {
+                    const dotClass = it.v === 'positive' ? 'green'
+                      : it.v === 'caution' ? 'orange'
+                      : it.v === 'negative' ? 'orange'
+                      : it.v === 'informative' ? 'blue' : 'gray';
+                    return `
+                      <div class="timeline-item">
+                        <div class="timeline-dot ${dotClass}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <div class="timeline-content">
+                          <div class="timeline-title">${it.title}</div>
+                          <div class="timeline-date">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                            ${it.meta}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnEnviarAhora').addEventListener('click', handleEnviarAhora);
+
+      /* Tabs interaction (mover indicator + cambiar panel) — patrón proyecto-detalle */
+      const tabsEl = pageContent.querySelector('.naowee-tabs');
+      const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+      const positionIndicator = (tab) => {
+        const r = tab.getBoundingClientRect();
+        const parent = tabsEl.getBoundingClientRect();
+        indicator.style.width = r.width + 'px';
+        indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+      };
+      const initial = tabsEl.querySelector('.naowee-tab--selected');
+      if (initial) requestAnimationFrame(() => positionIndicator(initial));
+      tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const key = tab.dataset.tab;
+          tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+          pageContent.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
+          positionIndicator(tab);
+        });
+      });
+    }
+
+    /* ════════ Enviar ahora (CTA del bar) ════════
+       Si es el primer envío → confirmación simple.
+       Si es un reenvío → modal con throttle status + toggle "solo no postulantes". */
+    async function handleEnviarAhora() {
+      const n = c.notificacion;
+      if (!n.canales.correo && !n.canales.plataforma && !n.canales.sms) {
+        toast({ variant: 'caution', title: 'Sin canales activos', message: 'La convocatoria no tiene canales de notificación habilitados. Revisa su configuración.' });
+        return;
+      }
+      const esReenvio = !!n.envio;
+      const opts = await openSendConfirmModal({ esReenvio });
+      if (!opts) return;
+      const res = ProjectData.enviarNotificacion(c.id, opts);
+      if (res.throttled) {
+        toast({
+          variant: 'caution',
+          title: 'Espera para reenviar',
+          message: `Faltan ${res.hoursRemaining}h para poder reenviar (throttle de ${ProjectData.NOTIF_THROTTLE_HOURS}h). Marca "Forzar reenvío" si es urgente.`
+        });
+        return;
+      }
+      if (res.empty) {
+        toast({
+          variant: 'caution',
+          title: 'Sin destinatarios',
+          message: 'Todos los municipios destinatarios ya postularon. No queda a quién reenviar.'
+        });
+        return;
+      }
+      const fresh = ProjectData.getConvocatorias().find(x => x.id === c.id);
+      c.notificacion = fresh.notificacion;
+      renderDetail();
+      const conFalla = c.notificacion.envio?.conFalla || 0;
+      const filtroAvisado = opts.soloNoPostulantes ? ' (solo no postulantes)' : '';
+      if (conFalla > 0) {
+        toast({
+          variant: 'caution',
+          title: 'Envío realizado con fallas',
+          message: `${c.notificacion.envio.exitosos} exitosos · ${conFalla} con falla${filtroAvisado}. Revisa el historial.`
+        });
+      } else {
+        toast({
+          variant: 'positive',
+          title: esReenvio ? 'Notificación reenviada' : 'Notificación enviada',
+          message: `${c.notificacion.envio.exitosos} destinatarios recibieron el mensaje${filtroAvisado}.`
+        });
+      }
+    }
+
+    /* Modal DS de confirmación de envío.
+       Si esReenvio = true: muestra throttle status + toggle "solo no postulantes" + forzar.
+       Si esReenvio = false: confirmación simple. */
+    function openSendConfirmModal({ esReenvio }) {
+      const inspect = ProjectData.inspectReenvio(c.id);
+      return new Promise(resolve => {
+        document.querySelector('.send-confirm-overlay')?.remove();
+        const overlay = document.createElement('div');
+        overlay.className = 'send-confirm-overlay';
+        overlay.innerHTML = `
+          <div class="send-confirm-modal">
+            <div class="send-confirm-modal__hero">
+              <div class="send-confirm-modal__title">${esReenvio ? '¿Reenviar notificación?' : '¿Enviar notificación?'}</div>
+              <div class="send-confirm-modal__sub">${esReenvio
+                ? `Esta convocatoria ya tuvo un envío previo. Configura cómo reenviar.`
+                : `Se enviará el correo institucional con la plantilla cargada.`}
+              </div>
+            </div>
+            <div class="send-confirm-modal__body">
+              <dl class="send-confirm-modal__row"><dt>Total destinatarios</dt><dd><strong>${inspect.totalDestinatarios}</strong> municipios</dd></dl>
+              ${esReenvio ? `
+                <dl class="send-confirm-modal__row"><dt>Ya postularon</dt><dd><strong style="color:var(--green)">${inspect.totalDestinatarios - inspect.noPostulantesCount}</strong> municipios</dd></dl>
+                <dl class="send-confirm-modal__row"><dt>No postulantes</dt><dd><strong style="color:var(--accent)">${inspect.noPostulantesCount}</strong> municipios</dd></dl>
+              ` : ''}
+              ${esReenvio ? `
+                <label class="send-confirm-modal__toggle" for="sendOnlyMissing">
+                  <label class="naowee-checkbox ${inspect.noPostulantesCount === 0 ? '' : 'naowee-checkbox--checked'}" data-cb-wrap>
+                    <input type="checkbox" id="sendOnlyMissing" ${inspect.noPostulantesCount === 0 ? 'disabled' : 'checked'}>
+                    <span class="naowee-checkbox__box">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+                      </svg>
+                    </span>
+                  </label>
+                  <span>Reenviar <strong>solo a municipios que aún no han postulado</strong> ${inspect.noPostulantesCount === 0 ? '(no aplica · todos postularon)' : ''}</span>
+                </label>
+              ` : ''}
+              ${esReenvio && !inspect.canSend ? `
+                <div class="naowee-message naowee-message--caution">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                    </span>
+    <span class="naowee-message__title">Throttle activo · Faltan ${inspect.hoursRemaining}h</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Para evitar spam, el sistema bloquea reenvíos consecutivos en menos de ${ProjectData.NOTIF_THROTTLE_HOURS}h. Marca "Forzar reenvío" si es estrictamente necesario.</p>
+  </div>
+</div>
+                <label class="send-confirm-modal__toggle" for="sendForce">
+                  <label class="naowee-checkbox" data-cb-wrap>
+                    <input type="checkbox" id="sendForce">
+                    <span class="naowee-checkbox__box">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.5255 4.86616C11.7859 4.60581 12.2085 4.60582 12.4689 4.86616C12.729 5.12648 12.7291 5.54856 12.4689 5.80887L7.14338 11.1344C7.01837 11.2594 6.8488 11.3297 6.67203 11.3297C6.49525 11.3297 6.32569 11.2594 6.20067 11.1344L3.5314 8.46512C3.27108 8.2048 3.27114 7.78277 3.5314 7.52241C3.79175 7.26206 4.21376 7.26206 4.47411 7.52241L6.67138 9.71968L11.5255 4.86616Z"/>
+                      </svg>
+                    </span>
+                  </label>
+                  <span><strong>Forzar reenvío</strong> (ignorar throttle)</span>
+                </label>
+              ` : ''}
+            </div>
+            <div class="send-confirm-modal__footer">
+              <button type="button" class="naowee-btn naowee-btn--mute" id="sendCancel">Cancelar</button>
+              <button type="button" class="naowee-btn naowee-btn--loud" id="sendAccept">
+                ${esReenvio ? 'Reenviar' : 'Enviar ahora'}
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        /* Sync DS checkbox visual state con el input nativo. */
+        overlay.querySelectorAll('[data-cb-wrap] input[type="checkbox"]').forEach(cb => {
+          const wrap = cb.closest('[data-cb-wrap]');
+          const sync = () => wrap.classList.toggle('naowee-checkbox--checked', cb.checked);
+          cb.addEventListener('change', sync);
+          sync();
+        });
+        const cleanup = () => {
+          overlay.classList.add('is-closing');
+          setTimeout(() => overlay.remove(), 200);
+          document.removeEventListener('keydown', onEsc);
+        };
+        const onEsc = e => { if (e.key === 'Escape') { cleanup(); resolve(null); } };
+        overlay.querySelector('#sendCancel').addEventListener('click', () => { cleanup(); resolve(null); });
+        overlay.addEventListener('click', e => { if (e.target === overlay) { cleanup(); resolve(null); } });
+        document.addEventListener('keydown', onEsc);
+        overlay.querySelector('#sendAccept').addEventListener('click', () => {
+          const soloNoPostulantes = overlay.querySelector('#sendOnlyMissing')?.checked || false;
+          const force = overlay.querySelector('#sendForce')?.checked || false;
+          cleanup();
+          resolve({ soloNoPostulantes, force });
+        });
+      });
+    }
+
+    /* ════════ Inicial ════════ */
+    renderDetail();
+  }
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 <style>
   /* Quitar elevation/sombra del table-card en esta página (DS aplica box-shadow por default) */
   .naowee-table-card { box-shadow: none !important; }
@@ -51,17 +51,9 @@
   .revisor-identity-banner__stat--urgent .revisor-identity-banner__stat-val { color: #b42318; }
   .revisor-identity-banner__stat--urgent .revisor-identity-banner__stat-lbl { color: #b42318; }
 
-  /* ═══ Pill "Mis áreas" en la tabla ═══ */
-  .mias-pill {
-    display: inline-flex; align-items: center;
-    padding: 3px 9px; border-radius: 999px;
-    font-size: 11.5px; font-weight: 700;
-    border: 1px solid transparent; white-space: nowrap;
-  }
-  .mias-pill--ok      { background: #e6f4e7; color: #15803d; border-color: #b7dfb9; }
-  .mias-pill--info    { background: #eef5ff; color: #1f78d1; border-color: #b8d4f5; }
-  .mias-pill--warn    { background: #fff3e6; color: #b45309; border-color: #ffbf75; }
-  .mias-pill--urgent  { background: #fff0ee; color: #b42318; border-color: #ffc4bb; }
+  /* ═══ Pill "Mis áreas" en la tabla — ahora usa naowee-badge canónico DS ═══
+     (legacy .mias-pill removido — los estilos hardcoded violaban el DS;
+     el mapeo a variantes DS vive en el render JS abajo) */
 </style>
 </head>
 <body>
@@ -76,7 +68,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { ESTADOS_POSTULACION, formatoMoneda, fechaCorta, diasRestantes } from '../shared/states.js';
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -296,15 +288,21 @@
                 const plazoBadge = dias === null ? '—'
                   : `<span class="plazo-inline ${dias < 5 ? 'plazo-inline--urgent' : dias > 10 ? 'plazo-inline--ok' : ''}">${ICONS.clock} ${dias} día${dias===1?'':'s'}</span>`;
                 const mis = misAreasDeProyecto(p);
-                /* Mis áreas: badge "X pend / Y total" con color por urgencia */
+                /* Mis áreas: naowee-badge canónico DS con dot de status.
+                   Mapeo de urgencia → variante DS:
+                     vencidas > 0  → negative (rojo)
+                     urgentes > 0  → caution  (naranja)
+                     pendientes > 0 → informative (azul)
+                     todo OK       → positive (verde) */
                 let misBadge = '<span style="color:var(--text-secondary);font-size:12px">—</span>';
                 if (mis.total > 0) {
-                  const cls = mis.vencidas > 0 ? 'mias-pill--urgent'
-                    : mis.urgentes > 0 ? 'mias-pill--warn'
-                    : mis.pendientes > 0 ? 'mias-pill--info'
-                    : 'mias-pill--ok';
+                  const variant = mis.vencidas > 0 ? 'negative'
+                    : mis.urgentes > 0 ? 'caution'
+                    : mis.pendientes > 0 ? 'informative'
+                    : 'positive';
                   const lbl = mis.pendientes > 0 ? `${mis.pendientes} / ${mis.total} pend.` : `${mis.total} ✓`;
-                  misBadge = `<span class="mias-pill ${cls}" title="${mis.total} área${mis.total===1?'':'s'} asignada${mis.total===1?'':'s'} en este proyecto · ${mis.pendientes} pendiente${mis.pendientes===1?'':'s'}${mis.urgentes ? ' · '+mis.urgentes+' urgente'+(mis.urgentes===1?'':'s') : ''}${mis.vencidas ? ' · '+mis.vencidas+' vencida'+(mis.vencidas===1?'':'s') : ''}">${lbl}</span>`;
+                  const tipText = `${mis.total} área${mis.total===1?'':'s'} asignada${mis.total===1?'':'s'} en este proyecto · ${mis.pendientes} pendiente${mis.pendientes===1?'':'s'}${mis.urgentes ? ' · '+mis.urgentes+' urgente'+(mis.urgentes===1?'':'s') : ''}${mis.vencidas ? ' · '+mis.vencidas+' vencida'+(mis.vencidas===1?'':'s') : ''}`;
+                  misBadge = `<span class="naowee-badge naowee-badge--${variant} naowee-badge--quiet" title="${tipText}"><span class="naowee-badge__dot"></span>${lbl}</span>`;
                 }
                 /* Routing por tipo de revisor (Doug 14/05/2026):
                    • RBI revisa la postulación en revisar-postulacion.html (gate inicial)

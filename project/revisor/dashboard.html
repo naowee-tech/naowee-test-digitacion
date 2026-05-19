@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Panel revisor · Ministerio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
+  import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
+  ProjectData.setPerfil('revisor');
+  mountShell({ activeId: 'inicio' });
+
+  const h = new Date().getHours();
+  const saludoBase = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  /* Nombre del perfil activo — se actualiza al cambiar de rol */
+  const primerNombre = ProjectData.getPerfilData()?.nombre?.split(' ')[0] || 'Revisor';
+
+  const proyectos = ProjectData.getProyectos();
+  const enRevision = proyectos.filter(p => p.estado === 'en_revision');
+  const pendienteDocG = proyectos.filter(p => p.estado === 'etapa_documental');
+  const subsanando = proyectos.filter(p => p.estado === 'devuelta_subsanacion');
+  const conceptosEmitidos = proyectos.filter(p => p.estado === 'concepto_favorable' || p.estado === 'en_inversion');
+  const urgentes = enRevision.filter(p => diasRestantes(p.fechaInicioRevision || p.fechaPostulacion) <= 5);
+
+  /* Revisor activo del pool (modelo "todos ven, cada quien aprueba lo suyo"). */
+  const revisorActivo = ProjectData.getRevisorActivo();
+  /* Doug 17/05/2026: panel "Notificaciones para ti" removido del dashboard
+     del revisor. La data de notificaciones sigue persistiendo en
+     localStorage (per-revisor con revisorId) para futuras vistas, pero
+     no se renderiza aquí. */
+  const esGeneral = revisorActivo?.especialidades?.includes('general');
+
+  /* Mis áreas: todas las áreas (técnicas o doc-general) asignadas al revisor activo
+     en proyectos vigentes (etapa_documental). Cada item lleva proyecto + SLA. */
+  const misAreas = [];
+  if (revisorActivo) {
+    proyectos
+      .filter(p => ['etapa_documental','concepto_favorable'].includes(p.estado))
+      .forEach(p => {
+        if (esGeneral && p.docsGeneral) {
+          misAreas.push({
+            proyecto: p, areaId: 'general', nombre: 'Documentación general',
+            estado: p.docsGeneral.estadoRevision || (p.docsGeneral.revisor ? 'en_revision' : 'pendiente'),
+            fechaLimite: p.docsGeneral.fechaLimite
+          });
+        }
+        (p.docsTecnica?.areas || []).filter(a => a.revisorId === revisorActivo.id).forEach(a => {
+          misAreas.push({ proyecto: p, areaId: a.id, nombre: a.nombre, estado: a.estado, fechaLimite: a.fechaLimite });
+        });
+      });
+  }
+  const misPendientes = misAreas.filter(a => a.estado !== 'aprobado');
+  const misAprobadas = misAreas.filter(a => a.estado === 'aprobado');
+  /* Próximas a vencer (no aprobadas): orden ascendente por días restantes. */
+  const misProximas = misPendientes
+    .map(a => ({ ...a, dias: a.fechaLimite ? Math.ceil((new Date(a.fechaLimite) - new Date()) / 86400000) : 999 }))
+    .sort((x, y) => x.dias - y.dias)
+    .slice(0, 5);
+  const misCriticas = misPendientes.filter(a => {
+    if (!a.fechaLimite) return false;
+    const d = Math.ceil((new Date(a.fechaLimite) - new Date()) / 86400000);
+    return d <= 3;
+  }).length;
+
+  const ICONS = {
+    inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5"/><circle cx="12" cy="12" r="9"/></svg>',
+    docs:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>',
+    flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
+    clock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+  };
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+
+      <div class="greeting-row">
+        <div class="greeting">
+          <span class="greeting__avatar" aria-hidden="true">👋</span>
+          <div class="greeting__text">
+            <h1 class="greeting__title">${saludoBase}, ${primerNombre}</h1>
+            <div class="convo-desc convo-desc--single-line" data-collapsed="true">
+              <p class="convo-desc__text greeting__sub">
+                ${revisorActivo
+                  ? `Tienes <strong>${misPendientes.length} área${misPendientes.length===1?'':'s'}</strong> pendiente${misPendientes.length===1?'':'s'} de tu especialidad${misCriticas > 0 ? ` · <strong style="color:#b42318">${misCriticas} con SLA crítico (≤3 días)</strong>` : ''}. Tu equipo revisa <strong>${enRevision.length + pendienteDocG.length}</strong> postulaciones este bienio.`
+                  : `Tienes <strong>${enRevision.length} postulación${enRevision.length===1?'':'es'}</strong> en revisión y <strong>${pendienteDocG.length}</strong> en etapa documental.`}
+              </p>
+              <button type="button" class="convo-desc__toggle" hidden>
+                <span class="convo-desc__toggle-text">Ver más</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="greeting-row__actions">
+          <a class="naowee-btn naowee-btn--loud naowee-btn--large" href="bandeja.html">${ICONS.inbox} Ir a bandeja</a>
+        </div>
+      </div>
+
+      ${urgentes.length > 0 ? `
+        <div class="naowee-message naowee-message--negative" role="status" style="margin-bottom:20px">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 5l6 6M11 5l-6 6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__title">${urgentes.length} postulación${urgentes.length>1?'es':''} con menos de 5 días para vencer</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Atiéndelas pronto para evitar que pasen a estado "no revisada".</p>
+    <a class="naowee-btn naowee-btn--quiet naowee-btn--small naowee-message__action" href="bandeja.html">Atender →</a>
+  </div>
+      ` : ''}
+
+      ${revisorActivo ? `
+        <!-- ═══ Mi carga personal (área-céntrica) ═══
+             Modelo: el equipo revisor ve todos los proyectos pero cada miembro
+             aprueba SOLO sus áreas por especialidad. Estos KPIs son tuyos. -->
+        <div class="rev-mycarga">
+          <div class="rev-mycarga__head">
+            <div class="rev-mycarga__title-row">
+              <div class="ava-ring" style="width:38px;height:38px;background:${revisorActivo.color}22;color:${revisorActivo.color};font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${revisorActivo.avatar}</div>
+              <div>
+                <div class="rev-mycarga__title">Tu carga · ${revisorActivo.especialidad}</div>
+                <div class="rev-mycarga__sub">Solo tú apruebas estas áreas. El resto del equipo revisa las suyas.</div>
+              </div>
+            </div>
+          </div>
+          <div class="rev-mycarga__kpis">
+            <div class="rev-mycarga__kpi">
+              <div class="rev-mycarga__kpi-val">${misPendientes.length}</div>
+              <div class="rev-mycarga__kpi-lbl">Áreas pendientes</div>
+            </div>
+            <div class="rev-mycarga__kpi">
+              <div class="rev-mycarga__kpi-val">${misAprobadas.length}</div>
+              <div class="rev-mycarga__kpi-lbl">Aprobadas (bienio)</div>
+            </div>
+            <div class="rev-mycarga__kpi ${misCriticas > 0 ? 'rev-mycarga__kpi--urgent' : ''}">
+              <div class="rev-mycarga__kpi-val">${misCriticas}</div>
+              <div class="rev-mycarga__kpi-lbl">SLA crítico (≤3d)</div>
+            </div>
+            <div class="rev-mycarga__kpi">
+              <div class="rev-mycarga__kpi-val">${new Set(misPendientes.map(a => a.proyecto.idUnico)).size}</div>
+              <div class="rev-mycarga__kpi-lbl">Proyectos activos</div>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Doug 17/05/2026: panel "Notificaciones para ti" removido del
+           dashboard del revisor (feedback de Doug — no aplica para todos
+           los revisores). La data per-revisor sigue disponible en
+           localStorage para futuras vistas. -->
+
+      <div class="kpi-grid-section-title">Carga global del equipo revisor</div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">En revisión</span>
+            <div class="kpi-card__ico kpi-card__ico--caution">${ICONS.inbox}</div>
+          </div>
+          <div class="kpi-card__val">${enRevision.length}</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend ${urgentes.length > 0 ? 'kpi-trend--down' : 'kpi-trend--flat'}">${urgentes.length} urgente${urgentes.length===1?'':'s'}</span>
+            <span>(≤ 5 días)</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">En subsanación</span>
+            <div class="kpi-card__ico" style="background:#fff0ee;color:#c01818">${ICONS.alert}</div>
+          </div>
+          <div class="kpi-card__val">${subsanando.length}</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--flat">Esperando municipio</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">Etapa documental</span>
+            <div class="kpi-card__ico" style="background:#f3edff;color:#7c3aed">${ICONS.docs}</div>
+          </div>
+          <div class="kpi-card__val">${pendienteDocG.length}</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--flat">Bajo revisión técnica</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">Conceptos emitidos</span>
+            <div class="kpi-card__ico kpi-card__ico--positive">${ICONS.check}</div>
+          </div>
+          <div class="kpi-card__val">${conceptosEmitidos.length}</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--up">Bienio 2025-2026</span>
+          </div>
+        </div>
+      </div>
+
+      ${revisorActivo && misProximas.length > 0 ? `
+        <article class="naowee-card panel-card" style="height:auto;margin-top:20px">
+          <div class="panel-head">
+            <div>
+              <h3>Tus áreas próximas a vencer</h3>
+              <div class="sub">Tu especialidad · ordenadas por días restantes (SLA 15 días desde asignación)</div>
+          <div class="panel-card__body" style="padding-bottom:14px">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Proyecto</th>
+                  <th>Área</th>
+                  <th>Municipio</th>
+                  <th class="numeric">Plazo</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${misProximas.map(a => {
+                  const p = a.proyecto;
+                  const dias = a.dias;
+                  const cls = dias < 0 ? 'plazo-inline--vencido' : dias <= 3 ? 'plazo-inline--urgent' : dias <= 7 ? 'plazo-inline--warn' : 'plazo-inline--ok';
+                  const lbl = dias < 0 ? `Vencido ${Math.abs(dias)}d` : dias === 0 ? 'Vence hoy' : `${dias}d restantes`;
+                  const estLbl = a.estado === 'devuelto' ? 'Devuelta'
+                    : a.estado === 'en_revision' ? 'En revisión'
+                    : 'Pendiente';
+                  const estColor = a.estado === 'devuelto' ? 'caution'
+                    : a.estado === 'en_revision' ? 'informative'
+                    : 'neutral';
+                  const href = a.areaId === 'general' ? `doc-general.html?id=${p.idUnico}` : `revisar-area.html?id=${p.idUnico}&area=${a.areaId}`;
+                  return `
+                    <tr onclick="fadeAndGo('${href}')">
+                      <td class="name-cell"><div class="name-cell__inner"><span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div></td>
+                      <td>${a.nombre}</td>
+                      <td>${p.municipio}<div class="meta-line">${p.departamento || ''}</div></td>
+                      <td class="numeric"><span class="plazo-inline ${cls}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${lbl}</span></td>
+                      <td><span class="naowee-badge naowee-badge--${estColor} naowee-badge--quiet">${estLbl}</span></td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      ` : ''}
+
+      <article class="naowee-card panel-card" style="height:auto;margin-top:20px">
+        <div class="panel-head">
+          <div>
+            <h3>Postulaciones del equipo · en revisión</h3>
+            <div class="sub">Overview global del bienio · ordenadas por días restantes</div>
+          </div>
+        </div>
+        <div class="panel-card__body" style="padding-bottom:14px">
+          ${enRevision.length === 0 ? `
+            <div class="table-empty">
+              <div class="table-empty__title">Sin postulaciones en revisión</div>
+              <div class="table-empty__msg">Cuando los municipios radiquen proyectos y pasen a etapa de revisión, aparecerán aquí.</div>
+            </div>
+          ` : `
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Radicado</th>
+                  <th>Proyecto</th>
+                  <th>Municipio</th>
+                  <th class="numeric">Presupuesto</th>
+                  <th class="numeric">Plazo</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${enRevision.slice(0, 5).map(p => {
+                  const dias = diasRestantes(p.fechaInicioRevision || p.fechaPostulacion);
+                  const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'caution' };
+                  const flag = p.priorizado
+                    ? `<span class="prio-flag" title="Proyecto de enfoque">${ICONS.flag}</span>`
+                    : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`;
+                  return `
+                    <tr onclick="fadeAndGo('revisar-postulacion.html?id=${p.idUnico}')">
+                      <td>
+                        <span class="rad-cell"><span class="code-cell">${flag}${(p.radicado || '—').split('-CONV-')[0]}</span></span>
+                      </td>
+                      <td class="name-cell">
+                        <div class="name-cell__inner"><span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div>
+                      </td>
+                      <td>${p.municipio}<div class="meta-line">${p.departamento || ''}</div></td>
+                      <td class="numeric" style="font-weight:600">${formatoMoneda(p.presupuesto)}</td>
+                      <td class="numeric"><span class="countdown ${dias < 5 ? 'countdown--urgent' : dias > 10 ? 'countdown--ok' : ''}">${ICONS.clock} ${dias} día${dias===1?'':'s'}</span></td>
+                      <td><span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet">${est.label}</span></td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+      </article>
+    </div>
+  `;
+
+  /* Greeting: Ver más / Ver menos solo si overflow */
+  requestAnimationFrame(() => {
+    const wrap = document.querySelector('.greeting .convo-desc');
+    const txt = wrap?.querySelector('.convo-desc__text');
+    const tog = wrap?.querySelector('.convo-desc__toggle');
+    if (!wrap || !txt || !tog) return;
+    if (txt.scrollHeight > txt.clientHeight + 1) {
+      tog.hidden = false;
+      tog.addEventListener('click', () => {
+        const collapsed = wrap.dataset.collapsed === 'true';
+        wrap.dataset.collapsed = collapsed ? 'false' : 'true';
+        tog.querySelector('.convo-desc__toggle-text').textContent = collapsed ? 'Ver menos' : 'Ver más';
+        tog.querySelector('svg').style.transform = collapsed ? 'rotate(180deg)' : '';
+      });
+    }
+  });
+
+  /* Doug 17/05/2026: handler del panel notif removido junto con el panel. */
+</script>
+</body>
+</html>

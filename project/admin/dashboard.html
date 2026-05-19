@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 
 <style>
   /* CSS de .estado-row* removido 13/05/2026 — la sección "Distribución por
@@ -33,9 +33,9 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha } from '../shared/states.js';
-  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260516b';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260517l';
   import { Tour } from '../shared/demo-tour.js?v=20260516b';
 
   /* Asegurar perfil = admin si llegan desde la landing */
@@ -102,7 +102,7 @@
           </button>
           <div style="margin-top:18px;font-size:12.5px;color:var(--text-secondary)">
             ¿Ya conoces el flujo?
-            <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" id="btnSaltarModoLibre" style="vertical-align:baseline;margin-left:4px">Saltar al modo libre con datos de ejemplo →</button>
+            <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" id="btnSaltarModoLibre" style="vertical-align:baseline;margin-left:4px">Saltar al modo libre con datos de ejemplo →</button>
           </div>
         </div>
       </div>
@@ -151,13 +151,15 @@
       ${conConcepto > 0 ? `
         <!-- Banner: proyectos listos para inversión (concepto favorable emitido) -->
         <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:20px">
-          <div class="naowee-message__header">
-            <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span class="naowee-message__title">${conConcepto} proyecto${conConcepto > 1 ? 's' : ''} listo${conConcepto > 1 ? 's' : ''} para activar inversión</span>
-          </div>
-          <div class="naowee-message__text">El equipo revisor emitió ${conConcepto > 1 ? 'sus conceptos' : 'su concepto'} favorable${conConcepto > 1 ? 's' : ''}. Revisa los proyectos y activa la inversión correspondiente.</div>
-          <a class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" href="inversion.html">Ver tabla de inversión →</a>
-        </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">${conConcepto} proyecto${conConcepto > 1 ? 's' : ''} listo${conConcepto > 1 ? 's' : ''} para activar inversión</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">El equipo revisor emitió ${conConcepto > 1 ? 'sus conceptos' : 'su concepto'} favorable${conConcepto > 1 ? 's' : ''}. Revisa los proyectos y activa la inversión correspondiente.</p>
+    <a class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" href="inversion.html">Ver tabla de inversión →</a>
+  </div>
+</div>
       ` : ''}
 
       <!-- ═══ KPIs ═══ -->
@@ -229,7 +231,6 @@
               <h3>Postulaciones recientes</h3>
               <div class="sub">Últimos proyectos radicados o con cambio de estado</div>
             </div>
-            <a href="proyectos.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todas</a>
           </div>
           <div class="panel-card__body">
             ${recientes.length === 0 ? `
@@ -277,7 +278,6 @@
               <h3>Convocatorias activas</h3>
               <div class="sub">Estado de las convocatorias publicadas</div>
             </div>
-            <a href="convocatorias.html" class="naowee-btn naowee-btn--mute naowee-btn--small">Ver todas</a>
           </div>
           <div class="panel-card__body">
             ${convocatorias.length === 0 ? `

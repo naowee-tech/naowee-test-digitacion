@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -30,15 +30,11 @@
   }
   .prorroga-empty__cta:hover { background: var(--orange-bg); border-color: var(--accent); }
 
-  /* Plazo pill (mismo lenguaje que .plazo-inline pero como chip) */
-  .plazo-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border-radius: var(--radius-full);
-    font-size: 12px; font-weight: 600; color: var(--text-secondary);
-    background: #fafbff; border: 1px solid var(--border);
-  }
-  .plazo-pill--urgent { background: #fff0e6; color: #c54500; border-color: #ff9b66; }
-  .plazo-pill--ok { background: var(--green-bg); color: var(--green); border-color: #b7dfb9; }
+  /* .plazo-pill removido — dead code (no había usos en el render).
+     Si se necesita un chip de plazo en esta página, usar naowee-badge canónico:
+     <span class="naowee-badge naowee-badge--{caution|positive} naowee-badge--quiet">
+       <span class="naowee-badge__dot"></span>{label}
+     </span> */
 
   /* CTAs semánticos para decisión: verde favorable, naranja devolver, rojo rechazar.
      Elevation verde memorizada en --shadow-green-cta (token global). */
@@ -239,7 +235,8 @@
   .rp-prio-toggle.is-active .rp-prio-switch { background: var(--accent); }
   .rp-prio-toggle.is-active .rp-prio-switch::after { transform: translateX(16px); }
 
-  /* Prórroga link compacto al final del panel */
+  /* Prórroga link compacto al final del panel (legacy — ya no se usa
+     desde Doug 17/05/2026, el CTA se movió al toolbar top). */
   .rp-prorroga-link {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     width: 100%;
@@ -259,6 +256,27 @@
     color: var(--accent);
   }
   .rp-prorroga-link svg { width: 14px; height: 14px; }
+
+  /* Doug 17/05/2026: toolbar top que aloja back-btn + CTA prórroga
+     en la misma línea (libera el panel de decisión de un 4to CTA). */
+  .rp-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .rp-prorroga-top {
+    /* Naowee link button hereda colores DS — overrides mínimos:
+       icono accent, gap consistente, ghost. */
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md, 8px);
+    color: var(--accent, #d74009);
+    transition: background .12s;
+  }
+  .rp-prorroga-top:hover {
+    background: var(--orange-bg, #fff3e6);
+  }
+  .rp-prorroga-top svg { color: var(--accent, #d74009); }
 
   /* Ribbon-pop animation cuando el proyecto se marca como enfoque */
   @keyframes ribbonPop {
@@ -382,10 +400,10 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta, diasRestantes } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
-  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260516b';
+  import { checkbox, dropdown, textarea, bindDropdowns } from '../shared/modal-convocatoria.js?v=20260517l';
 
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'bandeja' });
@@ -410,9 +428,7 @@
   if (!p) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no encontrado</div>
-        <a class="naowee-btn naowee-btn--quiet" href="bandeja.html">Volver a la bandeja</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
   } else {
     const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'neutral' };
     const dias = p.estado === 'en_revision' ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion) : null;
@@ -425,9 +441,25 @@
     function renderPage() {
       const events = (p.historial || []).slice().reverse();
 
+      /* Doug 17/05/2026: prórroga CTA al top junto al back button —
+         libera espacio del panel de decisión que tenía 4 acciones apiladas
+         (Aprobar / Devolver / Rechazar / Solicitar prórroga). El CTA solo
+         aparece cuando NO existe prórroga activa todavía. */
+      const prExistente = (ProjectData.getProyecto(p.idUnico) || p).prorrogaRBI;
+      const showProrrogaTop = !prExistente;
+
       pageContent.innerHTML = `
         <div class="page-fade-in">
-          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}" style="margin-bottom:14px">${ICONS.back}${backLabel}</a>
+          <div class="rp-toolbar">
+            <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">${ICONS.back}${backLabel}</a>
+            ${showProrrogaTop ? `
+              <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small rp-prorroga-top" id="btnSolicitarProrrogaTop"
+                      title="Puedes solicitar al admin 15 días hábiles extra una sola vez">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                Solicitar prórroga (15 días extra)
+              </button>
+            ` : ''}
+          </div>
 
           <!-- ══════ Hero del proyecto (canónico project-hero) ══════ -->
           <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
@@ -549,12 +581,15 @@
             </section>
           ` : `
             <div class="naowee-message naowee-message--informative" role="status">
-              <div class="naowee-message__header">
-                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-                <span class="naowee-message__title">Esta postulación ya fue procesada</span>
-              </div>
-              <div class="naowee-message__text">Estado actual: ${est.label}. La decisión de revisión ya no está disponible.</div>
-            </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__title">Esta postulación ya fue procesada</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Estado actual: ${est.label}. La decisión de revisión ya no está disponible.</p>
+  </div>
+</div>
+
           `}
           </aside>
 
@@ -590,8 +625,9 @@
             <!-- Tab: Documentos -->
             <div class="proj-tab-panel" data-panel="documentos" hidden>
               ${(p.documentos || []).length === 0 ? `
-                <div class="naowee-empty-state">
-                  <div class="naowee-empty-state__msg">Esta postulación no tiene documentos adjuntos.</div>
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin documentos adjuntos</div>
+                  <div class="table-empty__msg">Esta postulación no incluye documentos en su radicación. El municipio podrá adjuntarlos en la etapa documental tras aprobar el concepto favorable.</div>
                 </div>
               ` : `
                 <div class="rp-docs-grid">
@@ -612,8 +648,9 @@
             <!-- Tab: Historial -->
             <div class="proj-tab-panel" data-panel="historial" hidden>
               ${events.length === 0 ? `
-                <div class="naowee-empty-state">
-                  <div class="naowee-empty-state__msg">Sin eventos registrados aún.</div>
+                <div class="table-empty">
+                  <div class="table-empty__title">Sin eventos en el historial</div>
+                  <div class="table-empty__msg">Aparecerán aquí cuando se registren acciones del proyecto (radicación, devoluciones, subsanaciones, aprobaciones).</div>
                 </div>
               ` : `
                 <div class="hist-summary">
@@ -711,14 +748,11 @@
         if (!widget) return;
         const pr = (ProjectData.getProyecto(p.idUnico) || p).prorrogaRBI;
         if (!pr) {
-          widget.innerHTML = `
-            <button type="button" class="rp-prorroga-link" id="btnSolicitarProrroga"
-                    title="Puedes solicitar al admin 15 días hábiles extra una sola vez">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-              Solicitar prórroga (15 días extra)
-            </button>
-          `;
-          document.getElementById('btnSolicitarProrroga').addEventListener('click', openProrrogaDialog);
+          /* Doug 17/05/2026: el CTA "Solicitar prórroga" se movió al
+             top junto al back button (rp-toolbar). Cuando no hay pr,
+             el widget queda vacío para no apilar acción extra en el
+             panel de decisión. */
+          widget.innerHTML = '';
           return;
         }
         const variant = pr.estado === 'aprobada' ? 'positive'
@@ -740,7 +774,9 @@
               <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
               <span class="naowee-message__title">${titleMap[pr.estado]}</span>
             </div>
-            <div class="naowee-message__text">${detail}</div>
+            <div class="naowee-message__content">
+              <p class="naowee-message__text">${detail}</p>
+            </div>
           </div>
         `;
       }
@@ -756,12 +792,15 @@
             </div>
             <div class="naowee-modal__body" style="display:flex;flex-direction:column;gap:14px">
               <div class="naowee-message naowee-message--informative" role="status">
-                <div class="naowee-message__header">
-                  <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-                  <span class="naowee-message__title">Tienes derecho a 15 días hábiles extra (una sola vez)</span>
-                </div>
-                <div class="naowee-message__text">Indica por qué necesitas más tiempo. El admin verá tu motivo y aprobará o rechazará la solicitud.</div>
-              </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__title">Tienes derecho a 15 días hábiles extra (una sola vez)</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Indica por qué necesitas más tiempo. El admin verá tu motivo y aprobará o rechazará la solicitud.</p>
+  </div>
+</div>
+
               <label class="naowee-textfield naowee-textfield--multiline">
                 <span class="naowee-textfield__label naowee-textfield__label--required">Motivo de la solicitud</span>
                 <div class="naowee-textfield__input-wrap" style="height:auto;padding:12px;align-items:flex-start">
@@ -814,6 +853,10 @@
       }
 
       renderProrrogaWidget();
+
+      /* Doug 17/05/2026: wire del CTA prórroga del toolbar top
+         (visible solo cuando no hay pr activa todavía). */
+      document.getElementById('btnSolicitarProrrogaTop')?.addEventListener('click', openProrrogaDialog);
 
       /* Doug 15/05/2026: toggle compacto de "Proyecto de enfoque" con
          persistencia inmediata + animación del ribbon en el hero + snackbar

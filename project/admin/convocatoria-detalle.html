@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });
@@ -32,7 +32,7 @@
   const c = ProjectData.getConvocatorias().find(x => x.id === id);
 
   if (!c) {
-    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Convocatoria no encontrada</div><a class="naowee-btn naowee-btn--quiet" href="convocatorias.html">Volver</a></div>`;
+    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Convocatoria no encontrada</div>`;
   } else {
     const proyectos = ProjectData.getProyectos(p => p.convocatoriaId === c.id);
     const totalPresupuesto = proyectos.reduce((s, p) => s + (p.presupuesto || 0), 0);
@@ -57,6 +57,36 @@
 
     document.getElementById('pageContent').innerHTML = `
       <div class="page-fade-in">
+        ${c.estado === 'abierta' ? `
+          <div class="convo-status-cenefa convo-status-cenefa--abierta convo-status-cenefa--top">
+            <span class="convo-status-cenefa__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+            </span>
+            <div class="convo-status-cenefa__body">
+              <div class="convo-status-cenefa__title">Convocatoria activa · recibiendo postulaciones</div>
+              <p class="convo-status-cenefa__msg">Cierra el <strong>${formatoFecha(c.cierre)}</strong> a las 5:00 p.m. Después de esa fecha no se aceptan nuevas postulaciones y comienza el período de revisión técnica.</p>
+            </div>
+            <div class="convo-status-cenefa__action">
+              <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatoria-notificar.html?id=${c.id}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                Reenviar notificaciones
+              </a>
+            </div>
+          </div>
+        ` : `
+          <div class="convo-status-cenefa convo-status-cenefa--cerrada convo-status-cenefa--top">
+            <span class="convo-status-cenefa__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+            </span>
+            <div class="convo-status-cenefa__body">
+              <div class="convo-status-cenefa__title">Convocatoria cerrada</div>
+              <p class="convo-status-cenefa__msg">El período de postulación finalizó el <strong>${formatoFecha(c.cierre)}</strong>. Los conceptos se emitirán antes del ${formatoFecha(c.emisionConcepto)}.</p>
+            </div>
+            <div class="convo-status-cenefa__action">
+              <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatorias.html">Ver otras convocatorias</a>
+            </div>
+          </div>
+        `}
         <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="convocatorias.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver a convocatorias</a>
 
         <div class="convo-header">
@@ -75,149 +105,159 @@
 
         ${isNueva ? `
           <div class="naowee-message naowee-message--positive" role="status">
-            <div class="naowee-message__header">
-              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              <span class="naowee-message__title">Convocatoria publicada</span>
-            </div>
-            <div class="naowee-message__text">Los municipios fueron notificados. Las postulaciones aparecerán acá apenas se reciban.</div>
-          </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">Convocatoria publicada</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Los municipios fueron notificados. Las postulaciones aparecerán acá apenas se reciban.</p>
+  </div>
+</div>
+
         ` : ''}
 
-        <!-- KPIs: 2 pequeñas a la izquierda + período rectangular a la derecha -->
+        <!-- Bento grid: 4 cards (Período, Postulaciones, Notificación, Configuración).
+             Tabla de postulaciones recibidas va abajo en ancho completo. (Doug 15/05) -->
         ${(() => {
-          /* Semáforo basado en % de progreso del período:
-             - <50%: positive (verde — sobra tiempo)
-             - 50-75%: caution (amber — la mitad, atención)
-             - 75-90%: caution (naranja accent — urgente)
-             - >90%: negative (rojo — crítico, días por acabarse) */
-          let semVariant, semClass, semLabel;
-          if (c.estado !== 'abierta') { semVariant = 'neutral'; semClass = 'sem-gray'; semLabel = 'Cerrada'; }
-          else if (cierreVencido)    { semVariant = 'negative'; semClass = 'sem-red';   semLabel = 'Cierre vencido'; }
-          else if (diasRestantes === 0) { semVariant = 'negative'; semClass = 'sem-red'; semLabel = 'Cierra hoy'; }
-          else if (progreso >= 90)   { semVariant = 'negative'; semClass = 'sem-red';   semLabel = `${diasRestantes} día${diasRestantes===1?'':'s'} restantes`; }
-          else if (progreso >= 75)   { semVariant = 'caution';  semClass = 'sem-amber'; semLabel = `${diasRestantes} días restantes`; }
-          else if (progreso >= 50)   { semVariant = 'caution';  semClass = 'sem-amber'; semLabel = `${diasRestantes} días restantes`; }
-          else                       { semVariant = 'positive'; semClass = 'sem-green'; semLabel = `${diasRestantes} días restantes`; }
+          /* Semáforo de período */
+          let semVariant, semLabel;
+          if (c.estado !== 'abierta')     { semVariant = 'neutral';  semLabel = 'Cerrada'; }
+          else if (cierreVencido)         { semVariant = 'negative'; semLabel = 'Cierre vencido'; }
+          else if (diasRestantes === 0)   { semVariant = 'negative'; semLabel = 'Cierra hoy'; }
+          else if (progreso >= 90)        { semVariant = 'negative'; semLabel = `${diasRestantes} día${diasRestantes===1?'':'s'} restantes`; }
+          else if (progreso >= 50)        { semVariant = 'caution';  semLabel = `${diasRestantes} días restantes`; }
+          else                            { semVariant = 'positive'; semLabel = `${diasRestantes} días restantes`; }
+
+          /* Detección dinámica del tipo de destinatario (Doug 15/05):
+             cruza email del destinatario con usuariosMunicipales y elige el plural acorde
+             al tipoEntidad mayoritario. Si hay mezcla → "entidades territoriales". */
+          const usuarios = ProjectData.getUsuariosMunicipales?.() || [];
+          function pluralizarDestinatarios(notif) {
+            const dests = [...(notif?.destinatarios?.municipios||[]), ...(notif?.destinatarios?.adicionales||[])];
+            if (!dests.length) return { plural: 'destinatarios', preposicion: 'a' };
+            const tipos = new Set();
+            dests.forEach(d => {
+              const u = usuarios.find(u => u.email === d.email || u.municipio === d.municipio);
+              if (u?.tipoEntidad) tipos.add(u.tipoEntidad);
+            });
+            if (tipos.size === 0) return { plural: 'municipios', preposicion: 'a' };
+            if (tipos.size === 1) {
+              const t = [...tipos][0];
+              const map = {
+                'Alcaldía Municipal':         { plural: 'municipios',         preposicion: 'a' },
+                'Gobernación Departamental':  { plural: 'departamentos',      preposicion: 'a' },
+                'Distrito Especial':          { plural: 'distritos',          preposicion: 'a' },
+                'Resguardo Indígena':         { plural: 'resguardos',         preposicion: 'a' },
+                'Consejo Comunitario':        { plural: 'consejos comunitarios', preposicion: 'a' }
+              };
+              return map[t] || { plural: 'entidades territoriales', preposicion: 'a' };
+            }
+            return { plural: 'entidades territoriales', preposicion: 'a' };
+          }
+
+          /* Notificación: data derivada */
+          const n = c.notificacion;
+          const destLbl = pluralizarDestinatarios(n);
+          const notifCfg = n ? ({
+            pendiente:  { variant: 'caution',     label: 'Pendiente de envío',   cta: 'Configurar y enviar' },
+            programada: { variant: 'informative', label: 'Envío programado',    cta: 'Editar y reenviar' },
+            enviada:    { variant: 'positive',    label: 'Enviada',              cta: 'Editar y reenviar' },
+            con_fallas: { variant: 'caution',     label: 'Enviada con fallas',  cta: 'Reintentar fallos' }
+          }[n.estado] || { variant: 'neutral', label: n.estado, cta: 'Editar' }) : { variant: 'caution', label: 'Sin notificar', cta: 'Configurar y enviar' };
+          const totalDest = n ? (n.destinatarios.municipios.length + (n.destinatarios.adicionales?.length || 0)) : 0;
+          const canalesActivos = n ? [n.canales.correo&&'correo institucional', n.canales.plataforma&&'app', n.canales.sms&&'SMS'].filter(Boolean) : [];
+
           return `
-        <div class="convo-stats">
-          <div class="convo-stats__col">
-            <!-- Bienio -->
-            <div class="convo-stat">
-              <div class="convo-stat__icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div>
-                <div class="convo-stat__lbl">Bienio</div>
-                <div class="convo-stat__val convo-stat__val--sm">${(c.bienio || '').replace('-', ' · ')}</div>
-              </div>
+        <div class="convo-bento">
+          <!-- Card HERO: Período y alcance (col izquierda, span 3 filas) -->
+          <div class="bento-card bento-card--periodo">
+            <div class="bento-card__head">
+              <span class="bento-card__head-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <span class="bento-card__head-title">Período y alcance</span>
+              <span class="naowee-badge naowee-badge--${semVariant} naowee-badge--quiet bento-card__head-pill">${semLabel}</span>
             </div>
-            <!-- Postulaciones -->
-            <div class="convo-stat">
-              <div class="convo-stat__icon convo-stat__icon--accent">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+            <div class="bento-card__body">
+              <div class="bento-periodo__dates">
+                <div class="bento-periodo__row">
+                  <span class="bento-periodo__lbl">Bienio</span>
+                  <span class="bento-periodo__val">${(c.bienio || '—').replace('-', ' · ')}</span>
+                </div>
+                <div class="bento-periodo__row">
+                  <span class="bento-periodo__lbl">Apertura</span>
+                  <span class="bento-periodo__val">${fechaCorta(c.apertura)}</span>
+                </div>
+                <div class="bento-periodo__row">
+                  <span class="bento-periodo__lbl">Cierre</span>
+                  <span class="bento-periodo__val">${fechaCorta(c.cierre)}</span>
+                </div>
               </div>
-              <div>
-                <div class="convo-stat__lbl">Postulaciones</div>
-                <div class="convo-stat__val">${proyectos.length}</div>
-                <div class="convo-stat__delta">${formatoMoneda(totalPresupuesto)} en propuestas</div>
+              <div class="bento-periodo__progress">
+                <div class="bento-periodo__progress-head">
+                  <span class="bento-periodo__progress-lbl">Progreso del período</span>
+                  <span class="bento-periodo__progress-pct">${progreso}%</span>
+                </div>
+                <div class="bento-periodo__bar">
+                  <span class="bento-periodo__fill bento-periodo__fill--${semVariant}" style="width:${progreso}%"></span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Período: apertura → cierre con barra semáforo -->
-          <div class="convo-stat convo-stat--periodo ${semClass}">
-            <div class="convo-periodo__head">
-              <span class="convo-stat__lbl">Período de postulación</span>
-              <span class="naowee-badge naowee-badge--${semVariant} naowee-badge--quiet">${semLabel}</span>
+          <!-- Card 2: Postulaciones (top-right, KPI hero) -->
+          <div class="bento-card bento-card--kpi">
+            <div class="bento-card__head">
+              <span class="bento-card__head-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+              </span>
+              <span class="bento-card__head-title">Postulaciones recibidas</span>
             </div>
-            <div class="convo-periodo__bar">
-              <span class="convo-periodo__fill" style="width:${progreso}%"></span>
-            </div>
-            <div class="convo-periodo__labels">
-              <div>
-                <div class="convo-periodo__lbl">Apertura</div>
-                <div class="convo-periodo__date">${fechaCorta(c.apertura)}</div>
-              </div>
-              <div>
-                <div class="convo-periodo__lbl">Cierre</div>
-                <div class="convo-periodo__date">${fechaCorta(c.cierre)}</div>
-              </div>
+            <div class="bento-card__body bento-card__body--kpi">
+              <div class="bento-kpi__num">${proyectos.length}</div>
+              <div class="bento-kpi__delta">${formatoMoneda(totalPresupuesto)} en propuestas</div>
             </div>
           </div>
-        </div>
 
-        <!-- Strip de configuración (antes era tab separado · Juanma min 43:00) -->
-        <div class="convo-config-strip">
-          <div class="convo-config-strip__item">
-            <span class="convo-config-strip__lbl">Presupuesto total</span>
-            <span class="convo-config-strip__val" style="color:var(--green)">${formatoMoneda(c.presupuestoTotal)}</span>
-          </div>
-          <div class="convo-config-strip__sep"></div>
-          <div class="convo-config-strip__item">
-            <span class="convo-config-strip__lbl">Tope por proyecto</span>
-            <span class="convo-config-strip__val">${formatoMoneda(c.montoMaximoProyecto)}</span>
-          </div>
-          <div class="convo-config-strip__sep"></div>
-          <div class="convo-config-strip__item">
-            <span class="convo-config-strip__lbl">Fuentes de cofinanciación</span>
-            <span class="convo-config-strip__val convo-config-strip__val--chips">
-              ${(c.fuentes || []).slice(0,2).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${f}</span>`).join('')}
-              ${(c.fuentes || []).length > 2 ? `<span class="convo-config-strip__more" title="${(c.fuentes || []).slice(2).join(' · ')}">+${(c.fuentes || []).length - 2}</span>` : ''}
-              ${(c.fuentes || []).length === 0 ? '<span style="color:var(--text-secondary)">—</span>' : ''}
-            </span>
-          </div>
-          <div class="convo-config-strip__sep"></div>
-          <div class="convo-config-strip__item">
-            <span class="convo-config-strip__lbl">Emisión de conceptos</span>
-            <span class="convo-config-strip__val">${formatoFecha(c.emisionConcepto)}</span>
-          </div>
-          <div class="convo-config-strip__sep"></div>
-          <div class="convo-config-strip__item">
-            <span class="convo-config-strip__lbl">2da convocatoria</span>
-            <span class="convo-config-strip__val">${c.permiteSegunda ? '<span style="color:var(--green);font-weight:700">Sí</span>' : 'No'}</span>
+          <!-- Card Notif. a municipios suprimida (Doug 15/05): el CTA "Reenviar
+               notificaciones" de la cenefa superior ya cubre esta acción. -->
+
+
+          <!-- Card 4: Configuración financiera (bottom-right, lista) -->
+          <div class="bento-card bento-card--config">
+            <div class="bento-card__head">
+              <span class="bento-card__head-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              </span>
+              <span class="bento-card__head-title">Configuración financiera</span>
+            </div>
+            <div class="bento-card__body bento-config__body">
+              <div class="bento-config__row">
+                <span class="bento-config__lbl">Presupuesto total</span>
+                <span class="bento-config__val bento-config__val--strong" style="color:var(--green)">${formatoMoneda(c.presupuestoTotal)}</span>
+              </div>
+              <div class="bento-config__row">
+                <span class="bento-config__lbl">Tope por proyecto</span>
+                <span class="bento-config__val">${formatoMoneda(c.montoMaximoProyecto)}</span>
+              </div>
+              <div class="bento-config__row">
+                <span class="bento-config__lbl">Fuentes</span>
+                <span class="bento-config__val bento-config__val--chips">
+                  ${(c.fuentes || []).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${f}</span>`).join('')}
+                  ${(c.fuentes || []).length === 0 ? '<span style="color:var(--text-secondary)">—</span>' : ''}
+                </span>
+              </div>
+              <div class="bento-config__row">
+                <span class="bento-config__lbl">Emisión de conceptos</span>
+                <span class="bento-config__val">${formatoFecha(c.emisionConcepto)}</span>
+              </div>
+              <div class="bento-config__row">
+                <span class="bento-config__lbl">2da convocatoria</span>
+                <span class="bento-config__val">${c.permiteSegunda ? '<span style="color:var(--green);font-weight:700">Sí</span>' : 'No'}</span>
+              </div>
+            </div>
           </div>
         </div>`;
-        })()}
-
-        ${(() => {
-          const n = c.notificacion;
-          if (!n) {
-            return `
-              <div class="notif-card notif-card--pending">
-                <div class="notif-card__main">
-                  <div class="notif-card__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
-                  <div class="notif-card__body">
-                    <div class="notif-card__title">Sin notificar a municipios</div>
-                    <div class="notif-card__sub">La convocatoria está publicada pero no se ha enviado notificación a los municipios destinatarios.</div>
-                  </div>
-                </div>
-                <a class="naowee-btn naowee-btn--loud naowee-btn--small" href="convocatoria-notificar.html?id=${c.id}">Configurar y enviar →</a>
-              </div>
-            `;
-          }
-          const cfg = {
-            pendiente: { variant: 'caution', label: 'Pendiente de envío', cta: 'Configurar y enviar' },
-            programada: { variant: 'informative', label: 'Envío programado', cta: 'Editar y reenviar' },
-            enviada: { variant: 'positive', label: 'Notificación enviada', cta: 'Editar y reenviar' },
-            con_fallas: { variant: 'caution', label: 'Enviada con fallas', cta: 'Reintentar fallos' }
-          }[n.estado] || { variant: 'neutral', label: n.estado, cta: 'Editar' };
-          const total = n.destinatarios.municipios.length + (n.destinatarios.adicionales?.length || 0);
-          return `
-            <div class="notif-card notif-card--${cfg.variant}">
-              <div class="notif-card__main">
-                <div class="notif-card__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-                <div class="notif-card__body">
-                  <div class="notif-card__title">Notificación a municipios <span class="naowee-badge naowee-badge--${cfg.variant} naowee-badge--quiet" style="margin-left:8px;font-size:10.5px">${cfg.label}</span></div>
-                  <div class="notif-card__sub">
-                    ${n.envio
-                      ? `Enviada el ${formatoFecha(n.envio.ts, true)} · <strong>${n.envio.exitosos}</strong> exitosas${n.envio.conFalla ? ` · <strong style="color:#c01818">${n.envio.conFalla} con falla</strong>` : ''} de ${total} municipios`
-                      : `${total} municipios destinatarios · canales: ${[n.canales.correo&&'correo', n.canales.plataforma&&'plataforma', n.canales.sms&&'SMS'].filter(Boolean).join(' + ')}`}
-                  </div>
-                </div>
-              </div>
-              <a class="naowee-btn ${cfg.variant === 'caution' ? 'naowee-btn--loud' : 'naowee-btn--quiet'} naowee-btn--small" href="convocatoria-notificar.html?id=${c.id}">${cfg.cta} →</a>
-            </div>
-          `;
         })()}
 
         <div class="naowee-card proj-tabs-card">
@@ -228,14 +268,6 @@
           <div class="convo-postulaciones-body">
             ${proyectos.length === 0 ? `
               <div class="empty-state-clean">
-                <div class="empty-state-clean__icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="9" y1="13" x2="15" y2="13" stroke-dasharray="2 2"/>
-                    <line x1="9" y1="17" x2="13" y2="17" stroke-dasharray="2 2"/>
-                  </svg>
-                </div>
                 <div class="empty-state-clean__title">Sin postulaciones aún</div>
                 <div class="empty-state-clean__msg">Apenas los municipios envíen sus proyectos, aparecerán aquí.</div>
               </div>
@@ -262,37 +294,6 @@
           </div>
         </div>
 
-        <!-- Cenefa de estado al final del flujo (antes estaba dentro del tab Configuración) -->
-        ${c.estado === 'abierta' ? `
-          <div class="convo-status-cenefa convo-status-cenefa--abierta">
-            <span class="convo-status-cenefa__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-            </span>
-            <div class="convo-status-cenefa__body">
-              <div class="convo-status-cenefa__title">Convocatoria activa · recibiendo postulaciones</div>
-              <p class="convo-status-cenefa__msg">Cierra el <strong>${formatoFecha(c.cierre)}</strong> a las 5:00 p.m. Después de esa fecha no se aceptan nuevas postulaciones y comienza el período de revisión técnica.</p>
-            </div>
-            <div class="convo-status-cenefa__action">
-              <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatoria-notificar.html?id=${c.id}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
-                Reenviar notificaciones
-              </a>
-            </div>
-          </div>
-        ` : `
-          <div class="convo-status-cenefa convo-status-cenefa--cerrada">
-            <span class="convo-status-cenefa__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
-            </span>
-            <div class="convo-status-cenefa__body">
-              <div class="convo-status-cenefa__title">Convocatoria cerrada</div>
-              <p class="convo-status-cenefa__msg">El período de postulación finalizó el <strong>${formatoFecha(c.cierre)}</strong>. Los conceptos se emitirán antes del ${formatoFecha(c.emisionConcepto)}.</p>
-            </div>
-            <div class="convo-status-cenefa__action">
-              <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatorias.html">Ver otras convocatorias</a>
-            </div>
-          </div>
-        `}
       </div>
     `;
 

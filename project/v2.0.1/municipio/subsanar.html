@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Subsanar postulación · Redirigiendo…</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<script>
+  /* La página dedicada de subsanación se reemplazó por modal-subsanar.js.
+     Cualquier link viejo (bookmark, historial, doc) redirige al
+     proyecto-perfil con flag ?subsanar=1 para que el modal se abra
+     automáticamente. */
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const dest = id
+    ? `proyecto-perfil.html?id=${encodeURIComponent(id)}&subsanar=1`
+    : 'proyectos.html';
+  window.location.replace(dest);
+</script>
+</head>
+<body></body>
+</html>

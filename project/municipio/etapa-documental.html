@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { ESTADOS_DOC, ESTADOS_AREA, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
   ProjectData.setPerfil('municipio');
@@ -44,9 +44,7 @@
       pageContent.innerHTML = `
         <div class="naowee-empty-state">
           <div class="naowee-empty-state__title">No tienes proyectos en etapa documental</div>
-          <div class="naowee-empty-state__msg">Los proyectos pasan a etapa documental tras recibir el concepto favorable de postulación.</div>
-          <a class="naowee-btn naowee-btn--quiet" href="proyectos.html">Ver Mis proyectos</a>
-        </div>`;
+          <div class="naowee-empty-state__msg">Los proyectos pasan a etapa documental tras recibir el concepto favorable de postulación.</div>`;
     } else {
       pageContent.innerHTML = `
         <div class="page-fade-in">
@@ -128,9 +126,7 @@
     if (!p) {
       pageContent.innerHTML = `
         <div class="naowee-empty-state">
-          <div class="naowee-empty-state__title">Proyecto no encontrado</div>
-          <a class="naowee-btn naowee-btn--quiet" href="etapa-documental.html">Volver al listado</a>
-        </div>`;
+          <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
     } else {
       /* Asegurar estructura de docs */
       if (!p.docsGeneral) p.docsGeneral = { estadoRevision: 'pendiente', items: [] };

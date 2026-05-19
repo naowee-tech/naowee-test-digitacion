@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260516b">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 <style>
   /* Tabla de fuentes de financiación — formato 11 sección 3 */
@@ -108,7 +108,7 @@
 
 <script type="module">
   import ProjectData from '../shared/data.js';
-  import { mountShell } from '../shared/shell.js?v=20260516b';
+  import { mountShell } from '../shared/shell.js?v=20260519b';
   import { formatoMoneda, formatoFecha } from '../shared/states.js';
   import { toast } from '../shared/toast.js';
   import {
@@ -131,10 +131,7 @@
   if (!p || !['en_inversion', 'concepto_favorable'].includes(p.estado)) {
     pageContent.innerHTML = `
       <div class="naowee-empty-state">
-        <div class="naowee-empty-state__title">Proyecto no disponible para crear inversión</div>
-        <p class="naowee-empty-state__msg">El proyecto debe tener concepto favorable o estar en inversión para crear el formulario completo.</p>
-        <a class="naowee-btn naowee-btn--quiet" href="inversion.html">Volver a inversión</a>
-      </div>`;
+        <div class="naowee-empty-state__title">Proyecto no disponible para crear inversión</div>`;
   } else {
     const isInfra = p.tipo === 'infraestructura';
     const yaExiste = !!p.proyectoInversion;
@@ -200,12 +197,15 @@
 
         ${yaExiste ? `
           <div class="naowee-message naowee-message--informative" role="status" style="margin-bottom:18px">
-            <div class="naowee-message__header">
-              <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-              <span class="naowee-message__title">Ya existe un proyecto de inversión asociado</span>
-            </div>
-            <div class="naowee-message__text">Este proyecto se creó el ${formatoFecha(p.proyectoInversion?.creadoEn)}. Los cambios quedarán en el historial de modificaciones.</div>
-          </div>
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="naowee-message__title">Ya existe un proyecto de inversión asociado</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Este proyecto se creó el ${formatoFecha(p.proyectoInversion?.creadoEn)}. Los cambios quedarán en el historial de modificaciones.</p>
+  </div>
+</div>
+
         ` : ''}
 
         <form id="formIC" class="wz-card" novalidate>

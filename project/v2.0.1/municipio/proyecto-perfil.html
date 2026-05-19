@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Proyecto · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519a';
+  import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, diasRestantes } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+  import { openSubsanarModal } from '../shared/modal-subsanar.js?v=20260517g';
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'mis-proyectos' });
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const isNuevo = params.get('nuevo') === '1';
+  const p = ProjectData.getProyecto(id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!p) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
+  } else {
+    const est = ESTADOS_POSTULACION[p.estado];
+    const dias = p.estado === 'en_revision' || p.estado === 'presentado'
+      ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion)
+      : p.estado === 'devuelta_subsanacion' ? diasRestantes(p.fechaDevolucion)
+      : p.estado === 'etapa_documental' ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion, 20)
+      : null;
+    /* Doug 16/05/2026: slaCls legacy removido — el badge ahora usa el utility
+       transversal .naowee-sla con slaVariant calculado inline en el render. */
+    const slaLabel = p.estado === 'devuelta_subsanacion' ? 'para subsanar'
+      : p.estado === 'etapa_documental' ? 'revisión documental'
+      : 'respuesta Ministerio';
+
+    /* Smart back: respeta el contexto de origen */
+    const ref = document.referrer;
+    let backHref, backLabel;
+    if (ref.includes('proyectos.html')) { backHref = 'proyectos.html'; backLabel = 'Volver a Mis proyectos'; }
+    else if (ref.includes('dashboard.html')) { backHref = 'dashboard.html'; backLabel = 'Volver a Mi panel'; }
+    else { backHref = 'proyectos.html'; backLabel = 'Volver a Mis proyectos'; }
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+
+        ${p.estado === 'devuelta_subsanacion' && (p.observaciones || []).length > 0 ? (() => {
+          /* Doug 16/05/2026: cenefa edge-to-edge top (mismo patrón que la
+             cenefa verde de "te fue asignada" en revisar-area y la azul de
+             "Convocatoria activa" en convocatoria-detalle). CTA Subsanar
+             en el lado derecho via __action wrapper, large size. */
+          const obsCount = p.observaciones.filter(o => o.autor === 'revisor').length;
+          return `
+            <div class="convo-status-cenefa convo-status-cenefa--caution convo-status-cenefa--top">
+              <span class="convo-status-cenefa__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="12" r="9"/></svg>
+              </span>
+              <div class="convo-status-cenefa__body">
+                <div class="convo-status-cenefa__title">Postulación devuelta — ${obsCount} observación${obsCount === 1 ? '' : 'es'} para subsanar</div>
+                <p class="convo-status-cenefa__msg">Tienes 15 días hábiles desde la devolución. Si necesitas más tiempo, puedes solicitar una prórroga.</p>
+              </div>
+              <div class="convo-status-cenefa__action">
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" data-subsanar="${p.idUnico}">
+                  Subsanar
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        })() : ''}
+
+        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          ${backLabel}
+        </a>
+
+        ${isNuevo ? `
+          <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:18px">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">¡Postulación enviada!</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Tu radicado es <strong>${p.radicado}</strong>. El revisor del Ministerio tiene 15 días hábiles para evaluar tu postulación.</p>
+  </div>
+</div>
+        ` : ''}
+
+        <!-- ═══ Hero del proyecto (refactor con patrón canónico) ═══ -->
+        <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
+          ${p.priorizado ? `
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto de enfoque del Ministerio">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+              <span class="prio-ribbon__tooltip" role="tooltip">Proyecto de enfoque del Ministerio</span>
+            </span>
+          ` : ''}
+
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${p.radicado}</div>
+              <h1 class="project-hero__title">${p.nombre}</h1>
+              <div class="project-hero__meta">
+                <span>${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</span>
+                <span>${p.formuladora?.nombre || ''}</span>
+                <span>Postulado: ${formatoFecha(p.fechaPostulacion)}</span>
+                <span>${p.tipoSolicitud || ''}${p.fase ? ` · ${p.fase}` : ''}</span>
+              </div>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${est.label}</span>
+                ${p.tipo === 'infraestructura' ? '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Infraestructura</span>' : ''}
+              </div>
+            </div>
+            <div class="project-hero__right">
+              <div class="project-hero__label">Presupuesto del proyecto</div>
+              <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
+              <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
+              ${dias !== null ? (() => {
+                /* Doug 16/05/2026: utility transversal .naowee-sla.
+                   Semántica: vencido (≤0) · warn (≤5) · ok (>5) */
+                const slaVariant = dias <= 0 ? 'vencido' : dias <= 5 ? 'warn' : 'ok';
+                const slaTime = dias <= 0 ? 'Vencido' : `${dias} día${dias===1?'':'s'}`;
+                return `
+                  <div style="display:flex;justify-content:flex-end;margin-top:10px">
+                    <span class="naowee-sla naowee-sla--${slaVariant}" title="Plazo Resolución 933">
+                      <svg class="naowee-sla__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                      <strong class="naowee-sla__num">${slaTime}</strong>
+                      <span class="naowee-sla__label">${slaLabel}</span>
+                    </span>
+                  </div>`;
+              })() : ''}
+              <!-- Doug 16/05/2026: botón Subsanar removido del top — el banner
+                   contextual abajo y el badge "Devuelta a subsanación" en la lista
+                   de proyectos ya proveen el CTA. Evita duplicación. -->
+
+            </div>
+          </div>
+        </div>
+
+        ${(p.estado === 'concepto_favorable' || p.estado === 'en_inversion') && p.conceptoFavorabilidad ? `
+          <!-- ═══ Certificado de favorabilidad emitido (Res. 933 + acuerdo 29/04/2026) ═══
+               Modelo: el equipo revisor emite un certificado dirigido al ente
+               deportivo (municipio). Es el primer documento oficial del flujo. -->
+          <div class="naowee-card cert-favorabilidad" role="status">
+            <div class="cert-favorabilidad__top">
+              <div class="cert-favorabilidad__ribbon" aria-hidden="true">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="9" r="6"/>
+                  <path d="M8.21 13.89L7 22l5-3 5 3-1.21-8.12"/>
+                </svg>
+              </div>
+              <div class="cert-favorabilidad__main">
+                <div class="cert-favorabilidad__eyebrow">Certificado emitido por el Ministerio del Deporte</div>
+                <div class="cert-favorabilidad__grid">
+                  <div class="cert-favorabilidad__field">
+                    <span class="cert-favorabilidad__field-lbl">Emitido por</span>
+                    <span class="cert-favorabilidad__field-val">${p.conceptoFavorabilidad.emitidoPor || 'Equipo Revisor del Ministerio'}</span>
+                  </div>
+                  <div class="cert-favorabilidad__field">
+                    <span class="cert-favorabilidad__field-lbl">Fecha de emisión</span>
+                    <span class="cert-favorabilidad__field-val">${formatoFecha(p.conceptoFavorabilidad.ts, true)}</span>
+                  </div>
+                  <div class="cert-favorabilidad__field">
+                    <span class="cert-favorabilidad__field-lbl">Código</span>
+                    <span class="cert-favorabilidad__field-val cert-favorabilidad__field-val--mono">${p.conceptoFavorabilidad.certificado || `CERT-FAV-${p.idUnico}.pdf`}</span>
+                  </div>
+                </div>
+                ${p.conceptoFavorabilidad.observaciones ? `
+                  <div class="cert-favorabilidad__obs">${p.conceptoFavorabilidad.observaciones}</div>
+                ` : ''}
+                <div class="cert-favorabilidad__actions">
+                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnDescargarCert">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Descargar certificado (PDF)
+                  </button>
+                </div>
+              </div><!-- /.cert-favorabilidad__main -->
+            </div><!-- /.cert-favorabilidad__top -->
+          </div><!-- /.cert-favorabilidad -->
+        ` : ''}
+
+        <!-- Doug 16/05/2026: el banner caution "Postulación devuelta" se
+             movió a cenefa edge-to-edge top (mismo patrón DS que verde y azul).
+             CTA Subsanar large en el lado opuesto al texto. -->
+
+
+        <!-- ═══ Card unificada con tabs DS Naowee ═══ -->
+        <div class="naowee-card proj-tabs-card">
+          <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+            <button class="naowee-tab naowee-tab--selected" data-tab="datos" role="tab" type="button">Datos del proyecto</button>
+            <button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial</button>
+            ${(p.observaciones || []).length > 0 ? `<button class="naowee-tab" data-tab="observaciones" role="tab" type="button">Conversación <span class="tab-count">${p.observaciones.length}</span></button>` : ''}
+            <span class="naowee-tabs__indicator"></span>
+          </div>
+
+          <!-- Tab: Datos del proyecto -->
+          <div class="proj-tab-panel" data-panel="datos">
+            <dl class="proj-data">
+              <div><dt>Dirección del predio</dt><dd>${p.direccionPredio || '—'}</dd></div>
+              <div><dt>Tipo de solicitud</dt><dd>${p.tipoSolicitud || '—'}</dd></div>
+              <div><dt>Fase</dt><dd>${p.fase || '—'}</dd></div>
+              <div><dt>Convocatoria</dt><dd style="font-weight:600">${p.convocatoriaId || '—'}</dd></div>
+              <div><dt>Monto solicitado</dt><dd style="color:var(--green);font-weight:700">${formatoMoneda(p.montoSolicitado)}</dd></div>
+              <div><dt>Contrapartida municipal</dt><dd>${formatoMoneda(p.contrapartida)}</dd></div>
+              <div><dt>Cofinanciación</dt><dd>${(p.cofinanciacion || []).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
+              <div><dt>Representante legal</dt><dd><strong>${p.representante?.nombre || '—'}</strong><div style="color:var(--text-secondary);font-size:12px;font-weight:400">${p.representante?.documento || ''}${p.representante?.cargo ? ` · ${p.representante.cargo}` : ''}</div></dd></div>
+            </dl>
+
+            ${p.cartaIntencion ? `
+              <div class="proj-data__divider"></div>
+              <div class="proj-data__section-title">Documentos adjuntos</div>
+              <div class="naowee-file-uploader" data-state="uploaded" style="margin-bottom:0">
+                <div class="naowee-file-uploader__input-wrap">
+                  <span class="naowee-file-uploader__file-tag naowee-file-uploader__file-tag--uploaded">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>${p.cartaIntencion.name}</span>
+                  </span>
+                  <a href="#" class="naowee-file-uploader__action" onclick="event.preventDefault();alert('Mock · descarga del PDF')">Descargar</a>
+                </div>
+                <span class="naowee-file-uploader__hint">Carta de Intención · ${(p.cartaIntencion.size / 1024).toFixed(0)} KB</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Tab: Historial -->
+          <div class="proj-tab-panel" data-panel="historial" hidden>
+            ${(() => {
+              const events = (p.historial || []).slice().reverse();
+              if (events.length === 0) {
+                return '<div class="table-empty"><div class="table-empty__title">Sin eventos en el historial</div><div class="table-empty__msg">Aparecerán aquí cuando se registren acciones del proyecto (radicación, devoluciones, subsanaciones, aprobaciones).</div></div>';
+              }
+              const dotColor = (h) => h.actor === 'sistema' ? 'gray'
+                : h.actor === 'revisor' ? 'orange'
+                : h.actor === 'municipio' ? 'blue'
+                : h.estado === 'concepto_favorable' || h.estado === 'en_inversion' ? 'green'
+                : 'orange';
+              const dotIcon = (h) => h.actor === 'sistema'
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+              return `
+                <div class="hist-summary">
+                  <span>${events.length} evento${events.length === 1 ? '' : 's'} en el historial</span>
+                </div>
+                <div class="timeline">
+                  ${events.map(h => `
+                    <div class="timeline-item">
+                      <div class="timeline-dot ${dotColor(h)}">${dotIcon(h)}</div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">${h.evento}</div>
+                        ${h.detalle ? `<div class="timeline-desc">${h.detalle}</div>` : ''}
+                        <div class="timeline-date">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                          ${formatoFecha(h.ts, true)} · Por ${h.actor}
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>`;
+            })()}
+          </div>
+
+          <!-- Tab: Observaciones (histórico — siempre visible si hubo alguna).
+               Doug 14/05/2026: el botón Subsanar solo aparece cuando el proyecto
+               está realmente en estado devuelta_subsanacion. Si ya se subsanó
+               (vuelve a en_revision o avanza), las observaciones quedan como
+               histórico de solo-lectura. -->
+          ${(p.observaciones || []).length > 0 ? `
+            <div class="proj-tab-panel" data-panel="observaciones" hidden>
+              ${p.estado !== 'devuelta_subsanacion' ? `
+                <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:14px">
+                  <div class="naowee-message__header">
+                    <span class="naowee-message__icon">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <span class="naowee-message__body">Ya subsanaste las observaciones. La conversación queda aquí como histórico.</span>
+                  </div>
+                </div>
+              ` : ''}
+              <!-- Doug 15/05/2026: observaciones como ventana de chat con
+                   thumbnail DS oficial (naowee-thumbnail), badges DS y
+                   resolución de autor con fallback al pool de revisores. -->
+              ${(() => {
+                /* Fallback de autorNombre cuando la observación es legacy:
+                   busca en el pool de revisores via getRevisorPorArea + perfil del muni */
+                const perfilMun = ProjectData.getPerfilData?.('municipio');
+                const muniNombre = perfilMun?.nombre || 'Municipio';
+                const muniColor = perfilMun?.color || '#1f78d1';
+                const revGeneral = ProjectData.getRevisorPorArea?.('general');
+                const revRBI = ProjectData.getRevisorPorArea?.('rbi');
+
+                function resolveAutor(o) {
+                  if (o.autorNombre) return { nombre: o.autorNombre, color: o.autorColor, rol: o.autorRol };
+                  if (o.autor === 'municipio') return { nombre: muniNombre, color: muniColor, rol: 'Municipio' };
+                  /* Default: revisor — intenta resolver por área */
+                  if (o.area && /general/i.test(o.area)) return { nombre: revGeneral?.nombre || 'Revisor general', color: revGeneral?.color || '#d74009', rol: 'Doc General' };
+                  if (o.area && (o.area === 'arquitectonico' || /arquitect/i.test(o.area))) {
+                    const r = ProjectData.getRevisorPorArea?.('arquitectonico');
+                    return { nombre: r?.nombre || 'Revisor técnico', color: r?.color || '#d74009', rol: o.area };
+                  }
+                  /* Default: RBI */
+                  return { nombre: revRBI?.nombre || 'Revisor RBI', color: revRBI?.color || '#d74009', rol: 'RBI' };
+                }
+                return `<div class="obs-chat">
+                  ${p.observaciones.map(o => {
+                    const autor = resolveAutor(o);
+                    const initials = autor.nombre.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+                    const fromMuni = o.autor === 'municipio';
+                    return `
+                      <div class="obs-chat__msg ${fromMuni ? 'obs-chat__msg--right' : ''}">
+                        <span class="naowee-thumbnail naowee-thumbnail--small" style="background:${autor.color}22;color:${autor.color}">${initials}</span>
+                        <div class="obs-chat__bubble">
+                          <div class="obs-chat__meta">
+                            <strong>${autor.nombre}</strong>
+                            <span class="naowee-badge naowee-badge--${fromMuni ? 'informative' : 'caution'} naowee-badge--quiet naowee-badge--small">${autor.rol}</span>
+                            ${o.area ? `<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">${o.area}</span>` : ''}
+                            ${o.tipo ? `<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">${o.tipo}</span>` : ''}
+                          </div>
+                          <div class="obs-chat__text">${o.detalle || ''}</div>
+                          <div class="obs-chat__time">${formatoFecha(o.ts, true)}</div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>`;
+              })()}
+              ${p.estado === 'devuelta_subsanacion' ? `
+                <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-subsanar="${p.idUnico}">Subsanar →</button>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    /* Tabs interaction (indicator + cambio de panel) */
+    const tabsEl = document.querySelector('.naowee-tabs');
+    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+    const positionIndicator = (tab) => {
+      const r = tab.getBoundingClientRect();
+      const parent = tabsEl.getBoundingClientRect();
+      indicator.style.width = r.width + 'px';
+      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+    };
+    const initial = tabsEl.querySelector('.naowee-tab--selected');
+    if (initial) requestAnimationFrame(() => positionIndicator(initial));
+    tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const key = tab.dataset.tab;
+        tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+        document.querySelectorAll('.proj-tab-panel').forEach(panel => panel.hidden = panel.dataset.panel !== key);
+        positionIndicator(tab);
+      });
+    });
+
+    /* Descarga del certificado de favorabilidad (mock — sin backend genera toast). */
+    document.getElementById('btnDescargarCert')?.addEventListener('click', () => {
+      toast({
+        variant: 'positive',
+        title: 'Descarga iniciada',
+        message: `${p.conceptoFavorabilidad?.certificado || 'Certificado'} se está generando. En producción este botón descarga el PDF firmado.`
+      });
+    });
+
+    /* Triggers de subsanación → abren modal-subsanar.js (antes era una página dedicada).
+       Doug 16/05/2026: event delegation en document para que funcione con
+       cualquier botón [data-subsanar] presente o agregado dinámicamente
+       (ej: cenefa edge-to-edge top + botón en tab Conversación). */
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-subsanar]');
+      if (!btn) return;
+      e.preventDefault();
+      openSubsanarModal({
+        proyectoId: btn.dataset.subsanar,
+        onSubsanado: () => {
+          setTimeout(() => window.location.reload(), 1200);
+        }
+      });
+    });
+
+    /* Auto-abrir el modal si llegó vía redirect desde subsanar.html?id=X */
+    if (params.get('subsanar') === '1' && p.estado === 'devuelta_subsanacion') {
+      setTimeout(() => {
+        openSubsanarModal({
+          proyectoId: p.idUnico,
+          onSubsanado: () => setTimeout(() => window.location.reload(), 1200)
+        });
+      }, 300);
+    }
+  }
+</script>
+</body>
+</html>

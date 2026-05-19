@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519g">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519h">
 <style>
   /* ─── Bloque card: header con progreso + items en grid limpio ─── */
   .dg-bloque {
@@ -402,9 +402,31 @@
       <div class="dg-confirm-modal__sub" id="dgConfirmSub">Marcarás la documentación general como conforme. Si todas las áreas técnicas también están aprobadas, se emitirá automáticamente el concepto de favorabilidad.</div>
     </div>
     <div class="dg-confirm-modal__body">
-      <dl class="dg-confirm-modal__row"><dt>Proyecto</dt><dd id="dgConfirmProj">—</dd></dl>
-      <dl class="dg-confirm-modal__row"><dt>Radicado</dt><dd id="dgConfirmRad">—</dd></dl>
-      <dl class="dg-confirm-modal__row"><dt>Ítems verificados</dt><dd id="dgConfirmItems">—</dd></dl>
+      <div class="naowee-confirm-summary">
+        <div class="naowee-confirm-summary__header">
+          <h4 class="naowee-confirm-summary__name" id="dgConfirmProj">—</h4>
+          <div class="naowee-confirm-summary__meta">
+            <span class="naowee-confirm-summary__rad" id="dgConfirmRad">—</span>
+            <span class="naowee-confirm-summary__inline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="dgConfirmMuni">—</span>
+            </span>
+          </div>
+        </div>
+        <div class="naowee-confirm-summary__stats">
+          <div class="naowee-confirm-stat">
+            <span class="naowee-confirm-stat__label">Ítems verificados</span>
+            <div class="naowee-confirm-stat__value-count" id="dgConfirmItems">—</div>
+          </div>
+          <div class="naowee-confirm-stat">
+            <span class="naowee-confirm-stat__label">Representante</span>
+            <div class="naowee-confirm-stat__value-rep">
+              <div class="naowee-confirm-stat__rep-avatar" id="dgConfirmRepAvatar" aria-hidden="true">—</div>
+              <span class="naowee-confirm-stat__rep-name" id="dgConfirmRepName">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="dg-confirm-modal__footer">
       <button type="button" class="naowee-btn naowee-btn--mute" id="dgConfirmCancel">Cancelar</button>
@@ -871,7 +893,20 @@
       return new Promise(resolve => {
         document.getElementById('dgConfirmProj').textContent = p.nombre || '—';
         document.getElementById('dgConfirmRad').textContent = (p.radicado || '—').split('-CONV-')[0];
+        document.getElementById('dgConfirmMuni').textContent = `${p.municipio || ''}${p.departamento ? `, ${p.departamento}` : ''}`;
         document.getElementById('dgConfirmItems').textContent = verifMsg;
+        /* Representante legal con avatar canónico (color perfil municipio) */
+        const perfilMuni = ProjectData.getPerfilData?.('municipio');
+        const repColor = perfilMuni?.color || '#1f78d1';
+        const repName = p.representante?.nombre || '—';
+        const repInitials = repName !== '—'
+          ? repName.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—'
+          : '—';
+        const repAv = document.getElementById('dgConfirmRepAvatar');
+        repAv.textContent = repInitials;
+        repAv.style.background = `${repColor}22`;
+        repAv.style.color = repColor;
+        document.getElementById('dgConfirmRepName').textContent = repName;
         dgConfirmOverlay.hidden = false;
         requestAnimationFrame(() => dgConfirmOverlay.classList.add('is-open'));
         const cancelBtn = document.getElementById('dgConfirmCancel');

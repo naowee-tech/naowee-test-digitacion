@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519g">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519h">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -348,94 +348,10 @@
   .rp-confirm-modal__body {
     padding: 20px 28px 24px;
   }
-  /* Doug 19/05/2026 — rediseño del data display del modal:
-     Antes 3 rows planas (Proyecto/Radicado/Municipio) sin jerarquía.
-     Ahora summary card con:
-     · Hero: nombre del proyecto como heading + radicado como badge
-       mono + municipio con icon pin (contexto de identidad)
-     · Stats split: representante (avatar canónico) + monto solicitado
-       (peso financiero de la decisión) — los dos datos accionables
-       para que el revisor confirme con contexto. */
-  .rp-confirm-summary {
-    background: linear-gradient(180deg, #fafbfd 0%, #fff 100%);
-    border: 1px solid var(--border, #e7e9f3);
-    border-radius: var(--radius-lg, 12px);
-    overflow: hidden;
-  }
-  .rp-confirm-summary__header {
-    padding: 16px 18px 14px;
-    border-bottom: 1px solid var(--border, #e7e9f3);
-  }
-  .rp-confirm-summary__name {
-    font-size: 16px; font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 6px;
-    line-height: 1.3;
-    word-break: break-word;
-  }
-  .rp-confirm-summary__meta {
-    display: flex; align-items: center; flex-wrap: wrap;
-    gap: 8px;
-    font-size: 12.5px;
-    color: var(--text-secondary);
-  }
-  .rp-confirm-summary__rad {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 11.5px; font-weight: 600;
-    color: var(--text-primary);
-    background: #fff;
-    border: 1px solid var(--border-dark, #d0d4e6);
-    padding: 2px 8px;
-    border-radius: var(--radius-sm, 6px);
-  }
-  .rp-confirm-summary__muni {
-    display: inline-flex; align-items: center; gap: 4px;
-  }
-  .rp-confirm-summary__muni svg {
-    width: 13px; height: 13px;
-    color: var(--text-secondary);
-    flex-shrink: 0;
-  }
-  .rp-confirm-summary__stats {
-    display: grid; grid-template-columns: 1fr 1fr;
-    /* divider sutil vertical entre las dos stats */
-    background-image: linear-gradient(to bottom, transparent 18%, var(--border, #e7e9f3) 18% 82%, transparent 82%);
-    background-size: 1px 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-  .rp-confirm-stat {
-    padding: 14px 18px;
-    display: flex; flex-direction: column; gap: 6px;
-    min-width: 0;
-  }
-  .rp-confirm-stat__label {
-    font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
-    color: var(--text-secondary); text-transform: uppercase;
-  }
-  .rp-confirm-stat__value--rep {
-    display: flex; align-items: center; gap: 8px;
-    min-width: 0;
-  }
-  .rp-confirm-stat__rep-avatar {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    flex-shrink: 0;
-  }
-  .rp-confirm-stat__rep-name {
-    font-size: 13px; font-weight: 600;
-    color: var(--text-primary);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    min-width: 0;
-  }
-  .rp-confirm-stat__value--money {
-    font-size: 17px; font-weight: 700;
-    color: var(--green, #1f8923);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -.01em;
-  }
+  /* Doug 19/05/2026: summary card promovida a pages.css como
+     .naowee-confirm-summary (transversal, usada por todos los modales
+     de decisión: aprobar RBI, aprobar área, aprobar doc general,
+     enviar notificación). Ver pages.css. */
   .rp-confirm-modal__footer {
     padding: 16px 28px; border-top: 1px solid var(--border);
     display: flex; justify-content: flex-end; gap: 10px;
@@ -463,28 +379,28 @@
       <div class="rp-confirm-modal__sub" id="rpConfirmSub">El proyecto pasará a revisión documental. La asignación de las 8 áreas técnicas + documentación general se hará automáticamente por especialidad. Esta acción se registra como <strong>Aprobado en RBI</strong>.</div>
     </div>
     <div class="rp-confirm-modal__body">
-      <div class="rp-confirm-summary">
-        <div class="rp-confirm-summary__header">
-          <h4 class="rp-confirm-summary__name" id="rpConfirmProj">—</h4>
-          <div class="rp-confirm-summary__meta">
-            <span class="rp-confirm-summary__rad" id="rpConfirmRad">—</span>
-            <span class="rp-confirm-summary__muni">
+      <div class="naowee-confirm-summary">
+        <div class="naowee-confirm-summary__header">
+          <h4 class="naowee-confirm-summary__name" id="rpConfirmProj">—</h4>
+          <div class="naowee-confirm-summary__meta">
+            <span class="naowee-confirm-summary__rad" id="rpConfirmRad">—</span>
+            <span class="naowee-confirm-summary__inline">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <span id="rpConfirmMuni">—</span>
             </span>
           </div>
         </div>
-        <div class="rp-confirm-summary__stats">
-          <div class="rp-confirm-stat">
-            <span class="rp-confirm-stat__label">Representante</span>
-            <div class="rp-confirm-stat__value rp-confirm-stat__value--rep">
-              <div class="rp-confirm-stat__rep-avatar" id="rpConfirmRepAvatar" aria-hidden="true">—</div>
-              <span class="rp-confirm-stat__rep-name" id="rpConfirmRepName">—</span>
+        <div class="naowee-confirm-summary__stats">
+          <div class="naowee-confirm-stat">
+            <span class="naowee-confirm-stat__label">Representante</span>
+            <div class="naowee-confirm-stat__value-rep">
+              <div class="naowee-confirm-stat__rep-avatar" id="rpConfirmRepAvatar" aria-hidden="true">—</div>
+              <span class="naowee-confirm-stat__rep-name" id="rpConfirmRepName">—</span>
             </div>
           </div>
-          <div class="rp-confirm-stat">
-            <span class="rp-confirm-stat__label">Monto solicitado</span>
-            <div class="rp-confirm-stat__value rp-confirm-stat__value--money" id="rpConfirmMonto">—</div>
+          <div class="naowee-confirm-stat">
+            <span class="naowee-confirm-stat__label">Monto solicitado</span>
+            <div class="naowee-confirm-stat__value-money" id="rpConfirmMonto">—</div>
           </div>
         </div>
       </div>

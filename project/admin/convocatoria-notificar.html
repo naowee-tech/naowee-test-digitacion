@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519g">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519h">
 <style>
   /* ─── Modal de confirmación de envío (throttle + filtro no-postulantes) ─── */
   .send-confirm-overlay {
@@ -392,11 +392,34 @@
               </div>
             </div>
             <div class="send-confirm-modal__body">
-              <dl class="send-confirm-modal__row"><dt>Total destinatarios</dt><dd><strong>${inspect.totalDestinatarios}</strong> municipios</dd></dl>
-              ${esReenvio ? `
-                <dl class="send-confirm-modal__row"><dt>Ya postularon</dt><dd><strong style="color:var(--green)">${inspect.totalDestinatarios - inspect.noPostulantesCount}</strong> municipios</dd></dl>
-                <dl class="send-confirm-modal__row"><dt>No postulantes</dt><dd><strong style="color:var(--accent)">${inspect.noPostulantesCount}</strong> municipios</dd></dl>
-              ` : ''}
+              <div class="naowee-confirm-summary">
+                <div class="naowee-confirm-summary__header">
+                  <h4 class="naowee-confirm-summary__name">${c.nombre || c.id}</h4>
+                  <div class="naowee-confirm-summary__meta">
+                    <span class="naowee-confirm-summary__rad">${c.id}</span>
+                    ${c.bienio ? `<span>Bienio ${c.bienio}</span>` : ''}
+                  </div>
+                </div>
+                <div class="naowee-confirm-summary__stats ${esReenvio ? 'naowee-confirm-summary__stats--triple' : 'naowee-confirm-summary__stats--single'}">
+                  <div class="naowee-confirm-stat">
+                    <span class="naowee-confirm-stat__label">Destinatarios</span>
+                    <div class="naowee-confirm-stat__value-count">${inspect.totalDestinatarios}</div>
+                    <div class="naowee-confirm-stat__hint">municipios</div>
+                  </div>
+                  ${esReenvio ? `
+                    <div class="naowee-confirm-stat">
+                      <span class="naowee-confirm-stat__label">Ya postularon</span>
+                      <div class="naowee-confirm-stat__value-count" style="color:var(--green)">${inspect.totalDestinatarios - inspect.noPostulantesCount}</div>
+                      <div class="naowee-confirm-stat__hint">municipios</div>
+                    </div>
+                    <div class="naowee-confirm-stat">
+                      <span class="naowee-confirm-stat__label">Sin postular</span>
+                      <div class="naowee-confirm-stat__value-count" style="color:var(--accent)">${inspect.noPostulantesCount}</div>
+                      <div class="naowee-confirm-stat__hint">municipios</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
               ${esReenvio ? `
                 <label class="send-confirm-modal__toggle" for="sendOnlyMissing">
                   <label class="naowee-checkbox ${inspect.noPostulantesCount === 0 ? '' : 'naowee-checkbox--checked'}" data-cb-wrap>

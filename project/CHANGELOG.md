@@ -13,7 +13,30 @@
 
 ## [Unreleased] — `v2.0.x` (próximo PATCH)
 
-> Sin cambios acumulados aún. La última versión publicada es `project-v2.0.1`.
+> Sin cambios funcionales acumulados aún. La última versión publicada es `project-v2.0.1`.
+
+### Added
+- **Historial de versiones accesible bajo `/project/vX.Y.Z/`** (Doug 19/05/2026). Cada release publicado vive permanentemente en su propia URL:
+  - https://naowee-tech.github.io/naowee-test-digitacion/project/v2.0.1/index.html
+  - Permite al dev team comparar UX entre versiones, validar regressions y reproducir bugs sobre versión específica
+  - Snapshot generado vía `scripts/snapshot-version.sh vX.Y.Z` (rsync de `project/` excluyendo otras carpetas de versión y `scripts/`)
+- **Version switcher en el footer** — el badge `Project vX.Y.Z` ahora es un dropdown que:
+  - Lista todas las versiones publicadas (fetch en runtime desde `api.github.com/repos/.../releases`, cache sessionStorage 10 min)
+  - Marca la versión activa con badge `Viendo` y la más reciente con badge `Latest`
+  - Click en cualquier item navega al snapshot de esa versión (preservando el path actual: `/admin/dashboard.html` → `/v2.0.1/admin/dashboard.html`)
+  - Footer del dropdown: link a "Ver todos los releases en GitHub"
+  - Fallback elegante si la API falla (rate limit, offline)
+
+### Release process (documentado)
+A partir de v2.0.1, cada release sigue este flujo:
+1. Bump `PROJECT_VERSION` constante en `shared/shell.js`
+2. Bump cache buster de `shell.js` en todos los HTML que lo importen
+3. Mover `[Unreleased]` → `[project-vX.Y.Z]` en este CHANGELOG con fecha y resumen de cambios
+4. Commit + push de los cambios
+5. Crear tag annotated: `git tag -a project-vX.Y.Z <commit> -m "..."` + push
+6. Crear GitHub Release: `gh release create project-vX.Y.Z --notes "..."`
+7. **Snapshot de la versión:** `./scripts/snapshot-version.sh vX.Y.Z` + `git add project/vX.Y.Z` + commit + push
+8. Actualizar título del PR si aplica
 
 ---
 

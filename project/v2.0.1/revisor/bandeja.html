@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bandeja · Revisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+<style>
+  /* Quitar elevation/sombra del table-card en esta página (DS aplica box-shadow por default) */
+  .naowee-table-card { box-shadow: none !important; }
+  /* .plazo-inline canónico vive en shared/pages.css */
+
+  /* ═══ Banner identidad del revisor activo ═══
+       Muestra avatar + especialidades + carga personal agregada. */
+  .revisor-identity-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+    background: linear-gradient(135deg, #fffaf2 0%, #fff 60%);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+  .revisor-identity-banner__left {
+    display: flex; align-items: center; gap: 14px; flex: 1; min-width: 240px;
+  }
+  .revisor-identity-banner__name {
+    font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.2;
+  }
+  .revisor-identity-banner__role {
+    font-size: 12px; color: var(--text-secondary); margin-top: 3px;
+  }
+  .revisor-identity-banner__stats {
+    display: flex; gap: 28px; align-items: center;
+  }
+  .revisor-identity-banner__stat {
+    display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2;
+  }
+  .revisor-identity-banner__stat-val {
+    font-size: 22px; font-weight: 800; color: var(--text-primary);
+  }
+  .revisor-identity-banner__stat-lbl {
+    font-size: 10.5px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .3px; font-weight: 600;
+    margin-top: 4px;
+  }
+  .revisor-identity-banner__stat--urgent .revisor-identity-banner__stat-val { color: #b42318; }
+  .revisor-identity-banner__stat--urgent .revisor-identity-banner__stat-lbl { color: #b42318; }
+
+  /* ═══ Pill "Mis áreas" en la tabla — ahora usa naowee-badge canónico DS ═══
+     (legacy .mias-pill removido — los estilos hardcoded violaban el DS;
+     el mapeo a variantes DS vive en el render JS abajo) */
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519a';
+  import { ESTADOS_POSTULACION, formatoMoneda, fechaCorta, diasRestantes } from '../shared/states.js';
+  ProjectData.setPerfil('revisor');
+  mountShell({ activeId: 'bandeja' });
+
+  const proyectos = ProjectData.getProyectos();
+  /* v2.0 — Bandeja se filtra por el tipo del revisor activo (Danna/Juanma 14/05/2026):
+     - RBI ve proyectos en estado `presentado` o `en_revision_rbi` o `devuelta_subsanacion`
+     - General ve proyectos en `rbi_aprobada`, `en_revision_docs` o `etapa_documental`
+     - Técnico ve mismo scope que General, filtrado por área de su especialidad
+     Legacy `en_revision` se considera equivalente a `en_revision_rbi`. */
+  const revisorActivo = ProjectData.getRevisorActivo();
+  const tipoRevisor = revisorActivo?.tipo || 'tecnico';
+  const ESTADOS_RBI = ['presentado','en_revision','en_revision_rbi','devuelta_subsanacion'];
+  const ESTADOS_POST_RBI = ['rbi_aprobada','en_revision_docs','etapa_documental','favorable'];
+  const filtroEstado = tipoRevisor === 'rbi' ? ESTADOS_RBI : ESTADOS_POST_RBI;
+  /* Doug 14/05/2026: además del filtro por tipo, incluir proyectos donde el
+     revisor activo tenga áreas delegadas (revisorId === self.id). Caso real:
+     un revisor RBI al que le delegaron un área técnica debe poder ver ese
+     proyecto en su bandeja aunque esté en `en_revision_docs`. */
+  const tieneAreaAsignada = (p) => {
+    if (!revisorActivo) return false;
+    return (p.docsTecnica?.areas || []).some(a => a.revisorId === revisorActivo.id)
+        || (p.docsGeneral?.revisorId === revisorActivo.id);
+  };
+  const enRev = proyectos.filter(p => filtroEstado.includes(p.estado) || tieneAreaAsignada(p));
+  const counts = enRev.reduce((acc, p) => { acc[p.estado] = (acc[p.estado] || 0) + 1; return acc; }, {});
+  const esGeneral = tipoRevisor === 'general';
+
+  /* Helper: cuáles áreas de un proyecto le tocan al revisor activo
+     + cuántas están pendientes/en revisión + SLA agregado. */
+  function misAreasDeProyecto(p) {
+    if (!revisorActivo) return { total: 0, pendientes: 0, urgentes: 0, vencidas: 0, areas: [] };
+    if (esGeneral) {
+      if (!p.docsGeneral) return { total: 0, pendientes: 0, urgentes: 0, vencidas: 0, areas: [] };
+      const a = { id: 'general', nombre: 'Documentación general',
+                  estado: p.docsGeneral.estadoRevision || (p.docsGeneral.revisor ? 'en_revision' : 'pendiente'),
+                  fechaLimite: p.docsGeneral.fechaLimite };
+      const dias = a.fechaLimite ? Math.ceil((new Date(a.fechaLimite) - new Date()) / 86400000) : null;
+      return {
+        total: 1,
+        pendientes: a.estado === 'aprobado' ? 0 : 1,
+        urgentes: (a.estado !== 'aprobado' && dias !== null && dias <= 3 && dias >= 0) ? 1 : 0,
+        vencidas: (a.estado !== 'aprobado' && dias !== null && dias < 0) ? 1 : 0,
+        areas: [a]
+      };
+    }
+    const areas = (p.docsTecnica?.areas || []).filter(a => a.revisorId === revisorActivo.id);
+    let pendientes = 0, urgentes = 0, vencidas = 0;
+    areas.forEach(a => {
+      if (a.estado === 'aprobado') return;
+      pendientes++;
+      const dias = a.fechaLimite ? Math.ceil((new Date(a.fechaLimite) - new Date()) / 86400000) : null;
+      if (dias !== null && dias < 0) vencidas++;
+      else if (dias !== null && dias <= 3) urgentes++;
+    });
+    return { total: areas.length, pendientes, urgentes, vencidas, areas };
+  }
+
+  /* Carga personal del revisor activo agregada (todos los proyectos vigentes). */
+  const cargaPersonal = enRev.reduce((acc, p) => {
+    const m = misAreasDeProyecto(p);
+    acc.proyectos += (m.total > 0 ? 1 : 0);
+    acc.totalAreas += m.total;
+    acc.pendientes += m.pendientes;
+    acc.urgentes   += m.urgentes;
+    acc.vencidas   += m.vencidas;
+    return acc;
+  }, { proyectos: 0, totalAreas: 0, pendientes: 0, urgentes: 0, vencidas: 0 });
+
+  const ICONS = {
+    back: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+    search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    chev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    flag: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
+    clock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+  };
+
+  const STATE_LABELS = {
+    todos: 'Todos',
+    presentado: 'Sin asignar',
+    en_revision: 'En revisión',
+    devuelta_subsanacion: 'En subsanación',
+    priorizado: 'De enfoque'
+  };
+  const FILTER_LABELS = { estado: 'Estado', prioridad: 'Prioridad' };
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+      <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html" style="margin-bottom:14px">${ICONS.back}Volver al panel</a>
+      <div class="naowee-page-header naowee-page-header--centered">
+        <div class="naowee-page-header__main">
+          <h1>Bandeja de postulaciones</h1>
+          <p>Postulaciones que requieren tu acción. Tienes 15 días hábiles para revisar cada una.</p>
+        </div>
+      </div>
+
+      ${revisorActivo ? `
+        <div class="revisor-identity-banner" role="status">
+          <div class="revisor-identity-banner__left">
+            <div class="ava-ring" style="width:46px;height:46px;background:${revisorActivo.color}22;color:${revisorActivo.color};font-size:15px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0">${revisorActivo.avatar}</div>
+            <div>
+              <div class="revisor-identity-banner__name">${revisorActivo.nombre}</div>
+              <div class="revisor-identity-banner__role">${revisorActivo.especialidad} · Equipo revisor del Ministerio</div>
+            </div>
+          </div>
+          <div class="revisor-identity-banner__stats">
+            <div class="revisor-identity-banner__stat">
+              <span class="revisor-identity-banner__stat-val">${cargaPersonal.pendientes}</span>
+              <span class="revisor-identity-banner__stat-lbl">Áreas mías pendientes</span>
+            </div>
+            <div class="revisor-identity-banner__stat">
+              <span class="revisor-identity-banner__stat-val">${cargaPersonal.proyectos}</span>
+              <span class="revisor-identity-banner__stat-lbl">Proyectos asignados</span>
+            </div>
+            ${cargaPersonal.urgentes + cargaPersonal.vencidas > 0 ? `
+              <div class="revisor-identity-banner__stat revisor-identity-banner__stat--urgent">
+                <span class="revisor-identity-banner__stat-val">${cargaPersonal.urgentes + cargaPersonal.vencidas}</span>
+                <span class="revisor-identity-banner__stat-lbl">${cargaPersonal.vencidas > 0 ? 'SLA vencido / crítico' : 'SLA crítico ≤3d'}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="naowee-table-card">
+        <div class="naowee-table-card__toolbar">
+          <div class="naowee-table-card__toolbar-left">
+            <div class="naowee-searchbox naowee-searchbox--medium" id="searchbox" style="width:360px">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">${ICONS.search}</span>
+                <input type="text" class="naowee-searchbox__input" id="searchInput" placeholder="Buscar radicado, proyecto o municipio">
+                <button type="button" class="naowee-searchbox__clear" id="searchClear" aria-label="Limpiar búsqueda">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="naowee-filter-dropdown" data-filter="estado">
+              <button class="naowee-filter-dropdown__trigger" type="button">
+                <span data-dd-label>Estado</span>
+                <span class="naowee-filter-dropdown__chev">${ICONS.chev}</span>
+              </button>
+              <div class="naowee-filter-dropdown__menu">
+                <button type="button" class="naowee-filter-dropdown__option" data-value="todos" aria-selected="true">
+                  <span class="ff-checkbox">${ICONS.check}</span>
+                  <span class="ff-dot" data-color="neutral"></span>
+                  <span class="ff-label">Todos</span>
+                  <span class="ff-count">${enRev.length}</span>
+                </button>
+                <button type="button" class="naowee-filter-dropdown__option" data-value="presentado" aria-selected="false">
+                  <span class="ff-checkbox">${ICONS.check}</span>
+                  <span class="ff-dot" data-color="informative"></span>
+                  <span class="ff-label">Sin asignar</span>
+                  <span class="ff-count">${counts.presentado || 0}</span>
+                </button>
+                <button type="button" class="naowee-filter-dropdown__option" data-value="en_revision" aria-selected="false">
+                  <span class="ff-checkbox">${ICONS.check}</span>
+                  <span class="ff-dot" data-color="caution"></span>
+                  <span class="ff-label">En revisión</span>
+                  <span class="ff-count">${counts.en_revision || 0}</span>
+                </button>
+                <button type="button" class="naowee-filter-dropdown__option" data-value="devuelta_subsanacion" aria-selected="false">
+                  <span class="ff-checkbox">${ICONS.check}</span>
+                  <span class="ff-dot" data-color="caution"></span>
+                  <span class="ff-label">En subsanación</span>
+                  <span class="ff-count">${counts.devuelta_subsanacion || 0}</span>
+                </button>
+              </div>
+            </div>
+            <div class="naowee-filter-dropdown" data-filter="prioridad">
+              <button class="naowee-filter-dropdown__trigger" type="button">
+                <span data-dd-label>Prioridad</span>
+                <span class="naowee-filter-dropdown__chev">${ICONS.chev}</span>
+              </button>
+              <div class="naowee-filter-dropdown__menu">
+                <button type="button" class="naowee-filter-dropdown__option" data-value="todos" aria-selected="true">
+                  <span class="ff-checkbox">${ICONS.check}</span>
+                  <span class="ff-dot" data-color="neutral"></span>
+                  <span class="ff-label">Todos</span>
+                </button>
+                <button type="button" class="naowee-filter-dropdown__option" data-value="priorizado" aria-selected="false">
+                  <span class="ff-checkbox">${ICONS.check}</span>
+                  <span class="ff-dot" data-color="caution"></span>
+                  <span class="ff-label">De enfoque</span>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" id="filterClear" disabled>Limpiar filtros <span id="filterClearCount"></span></button>
+          </div>
+        </div>
+        <div class="naowee-table-card__active-tags" id="filterTags" style="display:none"></div>
+        ${enRev.length === 0 ? `
+          <div class="table-empty">
+            <div class="table-empty__title">Sin postulaciones por revisar</div>
+            <div class="table-empty__msg">Cuando un municipio radique un proyecto en una convocatoria, aparecerá aquí para que el equipo revisor lo evalúe.</div>
+          </div>
+        ` : `
+        <div class="naowee-table-card__table-wrap">
+          <table class="naowee-table--in-card" id="bandejaTable">
+            <thead>
+              <tr>
+                <th>Radicado</th>
+                <th>Proyecto</th>
+                <th>Municipio</th>
+                <th class="numeric">Presupuesto</th>
+                <th class="numeric">Plazo</th>
+                <th>Mis áreas</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              ${enRev.map(p => {
+                const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'neutral' };
+                const dias = p.estado === 'en_revision' ? diasRestantes(p.fechaInicioRevision || p.fechaPostulacion)
+                  : p.estado === 'devuelta_subsanacion' ? diasRestantes(p.fechaDevolucion) : null;
+                const plazoBadge = dias === null ? '—'
+                  : `<span class="plazo-inline ${dias < 5 ? 'plazo-inline--urgent' : dias > 10 ? 'plazo-inline--ok' : ''}">${ICONS.clock} ${dias} día${dias===1?'':'s'}</span>`;
+                const mis = misAreasDeProyecto(p);
+                /* Mis áreas: naowee-badge canónico DS con dot de status.
+                   Mapeo de urgencia → variante DS:
+                     vencidas > 0  → negative (rojo)
+                     urgentes > 0  → caution  (naranja)
+                     pendientes > 0 → informative (azul)
+                     todo OK       → positive (verde) */
+                let misBadge = '<span style="color:var(--text-secondary);font-size:12px">—</span>';
+                if (mis.total > 0) {
+                  const variant = mis.vencidas > 0 ? 'negative'
+                    : mis.urgentes > 0 ? 'caution'
+                    : mis.pendientes > 0 ? 'informative'
+                    : 'positive';
+                  const lbl = mis.pendientes > 0 ? `${mis.pendientes} / ${mis.total} pend.` : `${mis.total} ✓`;
+                  const tipText = `${mis.total} área${mis.total===1?'':'s'} asignada${mis.total===1?'':'s'} en este proyecto · ${mis.pendientes} pendiente${mis.pendientes===1?'':'s'}${mis.urgentes ? ' · '+mis.urgentes+' urgente'+(mis.urgentes===1?'':'s') : ''}${mis.vencidas ? ' · '+mis.vencidas+' vencida'+(mis.vencidas===1?'':'s') : ''}`;
+                  misBadge = `<span class="naowee-badge naowee-badge--${variant} naowee-badge--quiet" title="${tipText}"><span class="naowee-badge__dot"></span>${lbl}</span>`;
+                }
+                /* Routing por tipo de revisor (Doug 14/05/2026):
+                   • RBI revisa la postulación en revisar-postulacion.html (gate inicial)
+                   • Doc General revisa los documentos en doc-general.html
+                   • Técnico va al detalle de áreas en doc-tecnica.html
+                   Sin este routing, todos caían a revisar-postulacion y veían
+                   "Esta postulación ya fue procesada" cuando el proyecto avanzó. */
+                const detailHref = tipoRevisor === 'general' ? `doc-general.html?id=${p.idUnico}`
+                  : tipoRevisor === 'tecnico' ? `doc-tecnica.html?id=${p.idUnico}`
+                  : `revisar-postulacion.html?id=${p.idUnico}`;
+                return `
+                  <tr data-estado="${p.estado}" data-prioridad="${p.priorizado ? 'priorizado' : ''}" data-mias="${mis.total > 0 ? '1' : '0'}" data-search="${(p.radicado+' '+p.nombre+' '+p.municipio).toLowerCase()}" onclick="fadeAndGo('${detailHref}')">
+                    <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
+                      <span class="rad-cell" title="${p.radicado || ''}">
+                        ${p.priorizado
+                          ? `<span class="prio-flag" title="Proyecto de enfoque del Ministerio" aria-label="Proyecto de enfoque">${ICONS.flag}</span>`
+                          : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`}
+                        ${(p.radicado || '—').split('-CONV-')[0]}
+                      </span>
+                    </td>
+                    <td class="naowee-table__cell-name proj-name-cell">
+                      <div class="proj-name-cell__title" title="${p.nombre}">${p.nombre}</div>
+                      <div class="naowee-table__cell-muted" style="font-weight:400;font-size:11.5px;margin-top:2px">${p.tipoSolicitud||''}</div>
+                    </td>
+                    <td>${p.municipio}<div class="naowee-table__cell-muted" style="font-size:11.5px;margin-top:2px">${p.departamento||''}</div></td>
+                    <td class="numeric" style="font-weight:600;white-space:nowrap">${formatoMoneda(p.presupuesto)}</td>
+                    <td class="numeric" style="white-space:nowrap">${plazoBadge}</td>
+                    <td>${misBadge}</td>
+                    <td><span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet">${est.label}</span></td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+          <div class="table-empty-state" id="emptyState" hidden>
+            <div class="table-empty-state__icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </div>
+            <div class="table-empty-state__title">Sin resultados</div>
+            <div class="table-empty-state__msg">No encontramos postulaciones que coincidan con los filtros aplicados. Intenta ajustar los criterios de búsqueda.</div>
+            <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small table-empty-state__btn" id="emptyClearBtn">Limpiar filtros</button>
+          </div>
+        </div>
+        `}
+      </div>
+    </div>
+  `;
+
+  /* ───── Filtros + búsqueda con tags ───── */
+  const activeFilters = {};
+  let searchTerm = '';
+  const searchBoxEl = document.getElementById('searchbox');
+  const searchInputEl = document.getElementById('searchInput');
+
+  function applyFilters() {
+    let visible = 0;
+    document.querySelectorAll('#tbody tr').forEach(tr => {
+      const matchEstado = !activeFilters.estado || activeFilters.estado === 'todos' || tr.dataset.estado === activeFilters.estado;
+      const matchPrio = !activeFilters.prioridad || activeFilters.prioridad === 'todos' || tr.dataset.prioridad === activeFilters.prioridad;
+      const matchSearch = !searchTerm || tr.dataset.search.includes(searchTerm);
+      const show = matchEstado && matchPrio && matchSearch;
+      tr.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    const hasFilters = Object.keys(activeFilters).length > 0 || !!searchTerm;
+    const emptyEl = document.getElementById('emptyState');
+    const tbodyEl = document.getElementById('tbody');
+    if (visible === 0 && hasFilters) {
+      emptyEl.hidden = false;
+      tbodyEl.style.visibility = 'hidden';
+    } else {
+      emptyEl.hidden = true;
+      tbodyEl.style.visibility = '';
+    }
+    renderTags();
+  }
+
+  function renderTags() {
+    const tags = document.getElementById('filterTags');
+    const clear = document.getElementById('filterClear');
+    const clearCount = document.getElementById('filterClearCount');
+    const entries = Object.entries(activeFilters).filter(([, v]) => v && v !== 'todos');
+    tags.innerHTML = entries.map(([key, val]) => `
+      <span class="naowee-tag naowee-tag--small naowee-tag--accent">
+        ${FILTER_LABELS[key]}: ${STATE_LABELS[val] || val}
+        <span class="naowee-tag__active-area" role="button" tabindex="0" aria-label="Quitar filtro ${FILTER_LABELS[key]}" data-remove="${key}">
+          <span class="naowee-tag__close">${ICONS.close}</span>
+        </span>
+      </span>
+    `).join('');
+    tags.style.display = entries.length ? 'flex' : 'none';
+    clear.disabled = entries.length === 0 && !searchTerm;
+    clearCount.textContent = entries.length ? ` (${entries.length})` : '';
+    document.querySelectorAll('.naowee-filter-dropdown[data-filter]').forEach(dd => {
+      const key = dd.dataset.filter;
+      const lbl = dd.querySelector('[data-dd-label]');
+      const val = activeFilters[key];
+      lbl.textContent = (val && val !== 'todos') ? (STATE_LABELS[val] || val) : FILTER_LABELS[key];
+    });
+    tags.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const k = btn.dataset.remove;
+        delete activeFilters[k];
+        document.querySelectorAll(`.naowee-filter-dropdown[data-filter="${k}"] .naowee-filter-dropdown__option`).forEach(o => o.setAttribute('aria-selected', String(o.dataset.value === 'todos')));
+        applyFilters();
+      });
+    });
+  }
+
+  /* Toggle dropdowns + selección */
+  document.querySelectorAll('.naowee-filter-dropdown[data-filter]').forEach(dd => {
+    const trig = dd.querySelector('.naowee-filter-dropdown__trigger');
+    trig.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = dd.classList.contains('is-open');
+      document.querySelectorAll('.naowee-filter-dropdown.is-open').forEach(d => d.classList.remove('is-open'));
+      if (!wasOpen) dd.classList.add('is-open');
+    });
+    dd.querySelectorAll('.naowee-filter-dropdown__option').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        const key = dd.dataset.filter;
+        const val = opt.dataset.value;
+        dd.querySelectorAll('.naowee-filter-dropdown__option').forEach(o => o.setAttribute('aria-selected', String(o === opt)));
+        if (val === 'todos') delete activeFilters[key];
+        else activeFilters[key] = val;
+        dd.classList.remove('is-open');
+        applyFilters();
+      });
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.naowee-filter-dropdown.is-open').forEach(d => d.classList.remove('is-open'));
+  });
+
+  /* Search */
+  searchInputEl.addEventListener('input', e => {
+    searchTerm = e.target.value.trim().toLowerCase();
+    searchBoxEl.classList.toggle('naowee-searchbox--has-value', !!searchInputEl.value);
+    applyFilters();
+  });
+  document.getElementById('searchClear').addEventListener('click', () => {
+    searchInputEl.value = '';
+    searchTerm = '';
+    searchBoxEl.classList.remove('naowee-searchbox--has-value');
+    applyFilters();
+  });
+
+  /* Clear all filters */
+  function clearAllFilters() {
+    Object.keys(activeFilters).forEach(k => delete activeFilters[k]);
+    searchTerm = '';
+    searchInputEl.value = '';
+    searchBoxEl.classList.remove('naowee-searchbox--has-value');
+    document.querySelectorAll('.naowee-filter-dropdown__option').forEach(o => o.setAttribute('aria-selected', String(o.dataset.value === 'todos')));
+    applyFilters();
+  }
+  document.getElementById('filterClear').addEventListener('click', clearAllFilters);
+  document.getElementById('emptyClearBtn').addEventListener('click', clearAllFilters);
+
+  /* Initial render */
+  applyFilters();
+</script>
+</body>
+</html>

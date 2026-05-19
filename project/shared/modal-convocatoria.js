@@ -1783,6 +1783,7 @@ function bindDatepickers(scope) {
       popovers.forEach(({ field: f, popover: p }) => {
         if (p !== popover) {
           p.hidden = true;
+          p.classList.remove('naowee-datepicker--open');
           f.classList.remove('naowee-datepicker-field--active');
           const otherInput = f.querySelector('.naowee-datepicker-field__input');
           otherInput?.setAttribute('aria-expanded', 'false');
@@ -1794,6 +1795,11 @@ function bindDatepickers(scope) {
         }
       });
       popover.hidden = false;
+      /* DS v1.8.0: el popover requiere .naowee-datepicker--open para que
+         opacity pase de 0 → 1 y pointer-events de none → auto. Sin esta
+         clase, hidden=false renderiza el popover pero queda invisible
+         (opacity:0). Doug 19/05/2026. */
+      requestAnimationFrame(() => popover.classList.add('naowee-datepicker--open'));
       field.classList.add('naowee-datepicker-field--active');
       inputContainer.setAttribute('aria-expanded', 'true');
       /* Aplicar focus state inline (vence !important del DS oficial) */
@@ -1833,6 +1839,7 @@ function bindDatepickers(scope) {
 
     const close = () => {
       popover.hidden = true;
+      popover.classList.remove('naowee-datepicker--open');
       field.classList.remove('naowee-datepicker-field--active');
       inputContainer.setAttribute('aria-expanded', 'false');
       /* Limpiar inline focus styles */
@@ -1888,6 +1895,7 @@ function bindDatepickers(scope) {
       popovers.forEach(({ field: f, popover: p }) => {
         if (!p.hidden) {
           p.hidden = true;
+          p.classList.remove('naowee-datepicker--open');
           f.classList.remove('naowee-datepicker-field--active');
           const inp = f.querySelector('.naowee-datepicker-field__input');
           if (inp) {
@@ -1920,6 +1928,7 @@ function renderCalendarPortal(popover, field, viewYear, viewMonth) {
 
   const closePopover = () => {
     popover.hidden = true;
+    popover.classList.remove('naowee-datepicker--open');
     field.classList.remove('naowee-datepicker-field--active');
     const inp = field.querySelector('.naowee-datepicker-field__input');
     if (inp) {
@@ -3030,7 +3039,7 @@ function getEditPolicy(conv) {
                               minValue: hasPostulaciones ? conv.presupuestoTotal : 0,
                               minValueNote: hasPostulaciones ? `Solo aumentar — ya hay ${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicadas` : null },
       montoMaximoProyecto:  { editable: !hasPostulaciones && !isCerrada,
-                              lockReason: hasPostulaciones ? `Bloqueado — ${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicaron con esta regla` : isCerrada ? 'Convocatoria cerrada' : null },
+                              lockReason: hasPostulaciones ? `${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicaron con esta regla — el tope no se puede modificar` : isCerrada ? 'Convocatoria cerrada' : null },
       estado:               { editable: !isCerrada,
                               lockReason: isCerrada ? 'Una convocatoria cerrada no se puede reabrir' : null,
                               canCloseManually: !isCerrada }
@@ -3126,42 +3135,53 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
         display: none !important;
       }
 
-      /* Help icon (lock + info): ? circular naranja al final del label
-         con tooltip DS. Usado para:
+      /* Help icon (lock + info): SVG outline naranja inline al lado
+         del label con tooltip DS. Doug 19/05 rev6: pasó del badge
+         circular con texto "?" a un info-icon Lucide-style (outline
+         puro) más pegado al label (margin 3px) — visualmente más
+         ligero y consistente con el resto de iconografía de la app.
+         Usado para:
            - lockIcon(reason)  -> tooltip "Bloqueado: <reason>"
            - infoIcon(text)    -> tooltip "<text>" (restricciones no-lock,
              ej. "Solo puedes extender el plazo") */
       .editq-help-icon {
         display: inline-flex; align-items: center; justify-content: center;
-        width: 16px; height: 16px;
-        margin-left: 6px;
-        border-radius: 50%;
-        background: transparent;
-        border: 1.5px solid var(--accent, #d74009);
+        width: 14px; height: 14px;
+        margin-left: 3px;
         color: var(--accent, #d74009);
-        font-size: 11px; font-weight: 700; line-height: 1;
         cursor: help;
         vertical-align: middle;
+        border-radius: 50%;
         transition: background .12s;
       }
+      .editq-help-icon svg { width: 14px; height: 14px; display: block; }
       .editq-help-icon:hover,
       .editq-help-icon:focus-visible {
         background: var(--orange-bg, #fff3e6);
         outline: none;
       }
+
+      /* Doug 19/05 rev6: ocultar el asterisco (*) que el DS añade vía
+         .naowee-textfield__label--required::after — preferimos un copy
+         más limpio (sin marker de required visible). La semántica de
+         required se conserva en el <input required> para validación. */
+      #editConvQuickOverlay .naowee-textfield__label--required::after {
+        display: none !important;
+      }
     `;
     document.head.appendChild(st);
   }
 
-  /* Helpers locales: renderizan icono `?` circular naranja con tooltip DS
+  /* Helpers locales: renderizan icono info outline naranja con tooltip DS
      al final del label. Se concatenan al string del label que recibe
      textfield/dropdown/datepicker (esos helpers no escapan HTML, así que
      el span se inyecta limpio).
        - lockIcon(reason): tooltip "Bloqueado: <reason>" — campo read-only
        - infoIcon(text):   tooltip "<text>" — restricción no-lock
          (ej. cierre: "Solo puedes extender el plazo (no acortar al pasado)") */
+  const HELP_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 17v-5"/><circle cx="12" cy="8" r=".5" fill="currentColor"/></svg>';
   const helpIcon = (text, prefix = '', ariaPrefix = '') => text
-    ? ` <span class="editq-help-icon has-tooltip" data-tooltip="${prefix}${text}" tabindex="0" aria-label="${ariaPrefix}${text}">?</span>`
+    ? ` <span class="editq-help-icon has-tooltip" data-tooltip="${prefix}${text}" tabindex="0" aria-label="${ariaPrefix}${text}" role="img">${HELP_ICON_SVG}</span>`
     : '';
   const lockIcon = (reason) => helpIcon(reason, 'Bloqueado: ', 'Campo bloqueado: ');
   const infoIcon = (text) => helpIcon(text, '', 'Restricción: ');

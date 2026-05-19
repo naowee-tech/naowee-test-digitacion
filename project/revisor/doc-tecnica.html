@@ -94,18 +94,25 @@
     cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s;
     position: relative;
     /* overflow: visible para que el .dt-area-card__owner-badge pueda
-       protruir desde el top de la card. La strip lateral del ::before
-       sigue confinada porque está positioned dentro del border-radius. */
+       protruir desde el top de la card. */
     overflow: visible;
   }
   .dt-area-card:hover {
     transform: translateY(-2px); border-color: var(--border-dark);
     box-shadow: 0 8px 20px -6px rgba(15, 17, 35, .12);
   }
-  /* Strip lateral de color según estado */
+  /* Doug 19/05/2026: strip lateral. Bug previo: top/bottom = 0 hacía que
+     las esquinas cuadradas del strip salieran por fuera del border-radius
+     del card (la card tiene overflow:visible por el owner-badge, asi que
+     no hay clipping). Fix transversal: top/bottom = radius-lg para que
+     el strip viva DENTRO del safe zone (rectangulo central, no toca los
+     corners curvos). Visualmente queda un strip vertical limpio. */
   .dt-area-card::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    content: ''; position: absolute;
+    left: 0; top: var(--radius-lg, 12px); bottom: var(--radius-lg, 12px);
+    width: 3px;
     background: var(--strip-color, var(--border-dark)); opacity: 0;
+    border-radius: 99px;
     transition: opacity .15s;
   }
   .dt-area-card[data-estado="aprobado"] { --strip-color: var(--green); }

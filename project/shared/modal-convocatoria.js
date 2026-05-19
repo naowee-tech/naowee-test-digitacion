@@ -1135,79 +1135,78 @@ function modalStyles() {
     }
     .naowee-file-uploader__file-tag--error svg { color: #b42318; }
 
-    /* Multi-file v2 (Doug 14/05): chips inline en row dentro del input-wrap.
-       Cuando hay overflow, último chip → "+N más" en lugar de wrap a otra línea.
-       Doug 17/05/2026 (rev): chips refinados al DS Naowee — antes era verde
-       saturado que no pertenecía al lenguaje del DS. Ahora pattern neutro
-       elegante: surface blanca + border sutil + icon PDF rojo mini circular
-       (consistente con .convo-doc-chip en municipio). Color text-primary. */
+    /* Multi-file v3 (Doug 19/05/2026): chips reanchados al pattern
+       DS canonical .naowee-file-uploader__file-tag--uploaded — mismo
+       look-and-feel que el single-file uploader (border verde 2px +
+       shadow positive halo + icon outline). Antes los chips eran
+       pills con icono PDF rojo circular: inconsistente con el resto
+       de file-tags del modal. Ahora son visualmente idénticos. */
     .naowee-file-uploader--multiple .naowee-file-uploader__input-wrap {
       flex-wrap: nowrap; overflow: hidden;
     }
     .naowee-file-uploader__chips {
-      display: flex; align-items: center; gap: 6px;
+      display: flex; align-items: center; gap: 8px;
       flex: 1 1 auto; min-width: 0;
       overflow: hidden;
     }
     .naowee-file-uploader__chip {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 3px 3px 3px 3px;
+      padding: 4px 8px;
+      height: 32px;
       background: var(--surface, #fff);
-      border: 1px solid var(--border-dark, #d0d4e6);
+      /* Match DS --uploaded: border 2px verde + shadow positive halo */
+      border: 2px solid var(--naowee-color-feedback-border-positive-loud, #1f8923);
+      box-shadow: var(--naowee-shadow-highlight-positive, 0 0 0 3px rgba(31, 137, 35, .12));
       color: var(--text-primary, #282834);
-      border-radius: 999px;
+      border-radius: var(--naowee-border-radius-square-to-circle-small, 8px);
       font-size: 12px; font-weight: 600;
-      max-width: 200px;
+      max-width: 220px;
       flex-shrink: 0;
       white-space: nowrap;
-      transition: border-color .15s, background .12s;
+      transition: background .12s;
     }
     .naowee-file-uploader__chip:hover {
-      border-color: var(--accent, #d74009);
-      background: #fff8f4;
+      background: #f8fdf8;
     }
-    /* Icono circular rojo tipo PDF — mismo pattern que .convo-doc-chip__icon */
+    /* Icono document outline — sin background ni fill, solo stroke
+       (mismo pattern que .naowee-file-uploader__file-tag svg del DS) */
     .naowee-file-uploader__chip > svg {
-      width: 22px; height: 22px;
-      padding: 5px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #e63946 0%, #c41e3a 100%);
-      color: #fff;
+      width: 18px; height: 18px;
+      color: var(--text-secondary, #646587);
       flex-shrink: 0;
-      box-shadow: 0 1px 2px rgba(196, 30, 58, .2);
-      box-sizing: border-box;
     }
     .naowee-file-uploader__chip-name {
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      max-width: 140px;
-      padding-right: 2px;
+      max-width: 150px;
     }
     .naowee-file-uploader__chip-x {
       background: transparent; border: 0;
-      width: 20px; height: 20px; border-radius: 50%;
+      width: 20px; height: 20px; border-radius: 4px;
       color: var(--text-secondary, #646587); cursor: pointer;
       display: inline-flex; align-items: center; justify-content: center;
       transition: background .12s, color .12s;
       flex-shrink: 0;
-      margin-right: 2px;
+      margin-left: 2px;
     }
     .naowee-file-uploader__chip-x:hover {
       background: var(--bg, #f5f6fa);
-      color: #b42318;
+      color: var(--text-primary, #282834);
     }
-    .naowee-file-uploader__chip-x > svg { width: 11px; height: 11px; }
-    /* Variante overflow "+N más" — DS subtle, no compite con los chips */
+    .naowee-file-uploader__chip-x > svg { width: 12px; height: 12px; }
+    /* Variante overflow "+N más" — DS subtle, no compite con los chips
+       verdes. Override del border verde + shadow positive: queda neutro. */
     .naowee-file-uploader__chip--overflow {
       background: var(--bg, #f5f6fa);
-      border-color: var(--border-dark, #d0d4e6);
+      border: 1px solid var(--border-dark, #d0d4e6);
+      box-shadow: none;
       color: var(--text-secondary, #646587);
       cursor: help;
       padding: 4px 10px;
+      height: auto;
       font-weight: 700;
     }
     .naowee-file-uploader__chip--overflow:hover {
       background: var(--bg, #f5f6fa);
-      border-color: var(--border-dark, #d0d4e6);
     }
 
     /* ═══ Naowee message — overrides mínimos sobre DS oficial v1.8.0 ═══

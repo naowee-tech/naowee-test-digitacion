@@ -24,29 +24,20 @@
     border-top: 0;
     padding: 18px 18px 14px;
   }
-  /* Doug 14/05: el header gris (thead) estaba pegado al searchbox y al CTA.
-     Agregamos respiro entre toolbar → thead, y entre thead → primera fila. */
+  /* Doug 19/05/2026 rev2: simplificado al patron canonico
+     .naowee-table-card (mismo que dash-table) — thead gris flotante
+     como pill inset del card con border-radius en las 4 esquinas.
+     Reemplaza los overrides de margin negativo / padding restituido
+     que rompian el pattern (header gris pegado a los bordes sin
+     border-radius en bottom corners). El DS provee el styling
+     correcto automaticamente, esta clase solo da respiro vertical
+     del header. */
   .usuarios-card .naowee-table-card__table-wrap {
     padding-top: 6px;
-    /* Doug 15/05: extender table-wrap a los bordes del card para que los
-       dividers entre filas sean edge-to-edge (escapar el padding 32px del card). */
-    margin-left: -32px;
-    margin-right: -32px;
-    width: calc(100% + 64px);
-  }
-  /* Reagregar padding interno solo a los cells del extremo para que el
-     contenido respete el respiro del card pero los dividers vayan al borde. */
-  .usuarios-card .naowee-table-card__table-wrap th:first-child,
-  .usuarios-card .naowee-table-card__table-wrap td:first-child {
-    padding-left: 32px;
-  }
-  .usuarios-card .naowee-table-card__table-wrap th:last-child,
-  .usuarios-card .naowee-table-card__table-wrap td:last-child {
-    padding-right: 32px;
   }
   .usuarios-card thead th {
-    padding-top: 14px !important; padding-bottom: 14px !important;
-    background: #fafbfd;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
   }
 
   /* ─── Áreas técnicas: cards horizontales ─── */

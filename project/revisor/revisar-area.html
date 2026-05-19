@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519g">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519h">
 <style>
   /* ─── Hero strip del proyecto + área ─── */
   .ra-hero {
@@ -1174,10 +1174,26 @@
             <div class="ra-modal__subtitle">El área se devolverá al municipio con las observaciones marcadas. Tendrán ${ventanaDias} días hábiles para subsanar antes de que la postulación expire.</div>
           </div>
           <div class="ra-modal__body">
-            <dl class="ra-modal__row"><dt>Área</dt><dd><strong>${areaInfo.nombre}</strong></dd></dl>
-            <dl class="ra-modal__row"><dt>Proyecto</dt><dd>${p.nombre} · ${p.idUnico}</dd></dl>
-            <dl class="ra-modal__row"><dt>Plazo</dt><dd><strong>${ventanaDias} días hábiles</strong> · vence el ${fechaLimiteStr}</dd></dl>
-            <div>
+            <div class="naowee-confirm-summary">
+              <div class="naowee-confirm-summary__header">
+                <h4 class="naowee-confirm-summary__name">${p.nombre}</h4>
+                <div class="naowee-confirm-summary__meta">
+                  <span class="naowee-confirm-summary__rad">${p.idUnico}</span>
+                  <span class="naowee-confirm-summary__inline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    <span>${areaInfo.nombre}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="naowee-confirm-summary__stats naowee-confirm-summary__stats--single">
+                <div class="naowee-confirm-stat">
+                  <span class="naowee-confirm-stat__label">Plazo de subsanación</span>
+                  <div class="naowee-confirm-stat__value-strong"><strong style="color:var(--accent)">${ventanaDias} días hábiles</strong></div>
+                  <div class="naowee-confirm-stat__hint">Vence el ${fechaLimiteStr}</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:16px">
               <div style="font-size:11px;font-weight:700;letter-spacing:.35px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px">Observaciones a subsanar (${observaciones.length})</div>
               <div class="ra-modal__obs-list">
                 ${observaciones.map(o => `
@@ -1239,9 +1255,38 @@
             <div class="ra-modal__subtitle">Esta área cumple con todos los requisitos de la Resolución 933 de 2024. Cuando todas las áreas + documentación general estén aprobadas, se emitirá el concepto de favorabilidad automáticamente.</div>
           </div>
           <div class="ra-modal__body">
-            <dl class="ra-modal__row"><dt>Área</dt><dd><strong>${areaInfo.nombre}</strong></dd></dl>
-            <dl class="ra-modal__row"><dt>Proyecto</dt><dd>${p.nombre} · ${p.idUnico}</dd></dl>
-            <dl class="ra-modal__row"><dt>Aprobada por</dt><dd>Juan Manuel Ávila · ${new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</dd></dl>
+            ${(() => {
+              const revisor = ProjectData.getRevisores?.()?.find?.(r => r.especialidades?.includes(areaInfo.id) || r.especialidades?.includes('arquitectura')) || { nombre: 'Juan Manuel Ávila', color: '#7c3aed' };
+              const revInitials = revisor.nombre.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—';
+              const fechaApr = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+              return `
+                <div class="naowee-confirm-summary">
+                  <div class="naowee-confirm-summary__header">
+                    <h4 class="naowee-confirm-summary__name">${p.nombre}</h4>
+                    <div class="naowee-confirm-summary__meta">
+                      <span class="naowee-confirm-summary__rad">${p.idUnico}</span>
+                      <span class="naowee-confirm-summary__inline">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        <span>${areaInfo.nombre}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="naowee-confirm-summary__stats">
+                    <div class="naowee-confirm-stat">
+                      <span class="naowee-confirm-stat__label">Aprobada por</span>
+                      <div class="naowee-confirm-stat__value-rep">
+                        <div class="naowee-confirm-stat__rep-avatar" style="background:${revisor.color}22;color:${revisor.color}" aria-hidden="true">${revInitials}</div>
+                        <span class="naowee-confirm-stat__rep-name">${revisor.nombre}</span>
+                      </div>
+                    </div>
+                    <div class="naowee-confirm-stat">
+                      <span class="naowee-confirm-stat__label">Fecha de aprobación</span>
+                      <div class="naowee-confirm-stat__value-strong">${fechaApr}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })()}
           </div>
           <div class="ra-modal__footer">
             <button type="button" class="naowee-btn naowee-btn--mute" data-close>Continuar revisando</button>

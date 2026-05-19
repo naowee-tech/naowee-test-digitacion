@@ -711,6 +711,86 @@ function bindFooterScrollHide(footer) {
   track(() => window.scrollY || document.documentElement.scrollTop, window);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   .has-tooltip — Body-portal version (position:fixed)
+   ═══════════════════════════════════════════════════════════════════
+   El ::after CSS-only del .has-tooltip se clipea cuando el trigger
+   vive dentro de un contenedor con overflow:auto/hidden/scroll (ej.
+   columna ACCIONES dentro de .naowee-table-card__table-wrap con
+   overflow-x:auto). Solución: instanciar UN tooltip <div> position:
+   fixed adjunto al <body> y posicionarlo con getBoundingClientRect
+   en cada mouseenter. El CSS desactiva el ::after cuando body tiene
+   .has-tooltip-portal-active (set aquí), evitando duplicados.
+
+   Delegación a nivel document — funciona para .has-tooltip que se
+   renderizan después (tabs dinámicas, modales, render async).
+   ═══════════════════════════════════════════════════════════════════ */
+function initHasTooltipPortal() {
+  if (window.__hasTooltipPortalReady) return;
+  window.__hasTooltipPortalReady = true;
+  document.body.classList.add('has-tooltip-portal-active');
+
+  let tip = null;
+  let currentTrigger = null;
+
+  const ensure = () => {
+    if (tip) return tip;
+    tip = document.createElement('div');
+    tip.className = 'naowee-tip-portal';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+    return tip;
+  };
+
+  const show = (trigger) => {
+    const text = trigger.getAttribute('data-tooltip');
+    if (!text) return;
+    const t = ensure();
+    t.textContent = text;
+    const r = trigger.getBoundingClientRect();
+    /* Centro horizontal del trigger, justo encima de su top */
+    t.style.left = (r.left + r.width / 2) + 'px';
+    t.style.top = r.top + 'px';
+    requestAnimationFrame(() => t.classList.add('is-visible'));
+    currentTrigger = trigger;
+  };
+
+  const hide = () => {
+    if (tip) tip.classList.remove('is-visible');
+    currentTrigger = null;
+  };
+
+  document.addEventListener('mouseover', (e) => {
+    const trigger = e.target.closest('.has-tooltip[data-tooltip]');
+    if (!trigger || trigger === currentTrigger) return;
+    show(trigger);
+  }, true);
+
+  document.addEventListener('mouseout', (e) => {
+    const trigger = e.target.closest('.has-tooltip[data-tooltip]');
+    if (!trigger) return;
+    /* No esconder si el mouse pasa a un hijo del propio trigger */
+    if (e.relatedTarget && trigger.contains(e.relatedTarget)) return;
+    hide();
+  }, true);
+
+  /* Focus de teclado: mostrar/ocultar */
+  document.addEventListener('focusin', (e) => {
+    const trigger = e.target.closest('.has-tooltip[data-tooltip]');
+    if (trigger) show(trigger);
+  });
+  document.addEventListener('focusout', (e) => {
+    const trigger = e.target.closest('.has-tooltip[data-tooltip]');
+    if (trigger) hide();
+  });
+
+  /* Esconder en scroll/resize/click — la posición fixed quedaría stale */
+  window.addEventListener('scroll', hide, true);
+  window.addEventListener('resize', hide);
+  document.addEventListener('click', hide, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+}
+
 /* ───── PUBLIC API ───── */
 export function mountShell({ activeId = 'inicio' } = {}) {
   const perfil = ProjectData.getPerfil();
@@ -726,6 +806,11 @@ export function mountShell({ activeId = 'inicio' } = {}) {
      posteriormente (modales, paneles, etc.). Doug 15/05. */
   enhanceSearchboxes(document);
   observeSearchboxes();
+
+  /* Global: tooltips .has-tooltip via body-portal (position:fixed) — escapa
+     cualquier overflow ancestor (típicamente tablas con overflow-x:auto que
+     clipean el ::after del tooltip CSS-only). Doug 19/05/2026. */
+  initHasTooltipPortal();
 
   /* v2.0 — Tour guiado: se monta automáticamente en cada página cuando
      demoMode === 'guided'. Doug 14/05/2026. */

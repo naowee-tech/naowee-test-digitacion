@@ -382,7 +382,8 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
   }
 
   const tipoSolicitudOptions = ['Construcción nueva', 'Mejoramiento', 'Adecuación', 'Dotación'];
-  const faseOptions = ['Fase I — Diseños', 'Fase II — Obra', 'Fase III — Obra y Dotación'];
+  /* faseOptions removido — antes alimentaba el dropdown "Fase" en step 1,
+     eliminado por Doug 19/05/2026 (proceso documental sin fasing). */
   const fuentes = conv.fuentes || [];
 
   const perfilMun = ProjectData.getPerfilData('municipio');
@@ -487,13 +488,15 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
 
             <div class="ai-section-title" style="margin-top:18px">Identificación del proyecto</div>
             ${textfield({ label: 'Nombre del proyecto', name: 'nombre', required: true, placeholder: 'Ej: Construcción Coliseo Cubierto Quibdó', maxlength: 200 })}
+            <!-- Doug 19/05/2026: "Fase" eliminado del wizard - el proceso
+                 documental se hace de un solo, sin fasing. -->
             <div class="ai-grid-2">
-              ${dropdown({ label: 'Fase', name: 'fase', required: true, options: faseOptions })}
               ${dropdown({ label: 'Tipo de solicitud', name: 'tipoSolicitud', required: true, options: tipoSolicitudOptions })}
+              ${dropdown({ label: 'Tipología principal (Censo)', name: 'tipologia', required: true, options: tipologias })}
             </div>
             <div class="ai-grid-2">
-              ${dropdown({ label: 'Tipología principal (Censo)', name: 'tipologia', required: true, options: tipologias })}
               ${textfield({ label: 'Subtipología (opcional)', name: 'subtipologia', placeholder: 'Ej: Coliseo polifuncional cubierto' })}
+              <div></div>
             </div>
 
             ${multiselect({
@@ -815,7 +818,6 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
         title: 'Identificación del proyecto',
         rows: [
           ['Nombre', fd.get('nombre') || '—'],
-          ['Fase', fd.get('fase') || '—'],
           ['Tipo de solicitud', fd.get('tipoSolicitud') || '—'],
           ['Tipología principal', fd.get('tipologia') || '—'],
           ['Subtipología', fd.get('subtipologia') || '<span style="color:var(--text-secondary);font-style:italic">—</span>'],
@@ -869,7 +871,8 @@ export function openPostularModal({ convocatoriaId, onPostulado } = {}) {
       presupuesto: unmask(fd.get('presupuesto')) || 0,
       montoSolicitado: unmask(fd.get('monto')) || 0,
       contrapartida: unmask(fd.get('contrapartida')) || 0,
-      fase: fd.get('fase') || '',
+      /* fase eliminada del wizard (Doug 19/05/2026) — proceso documental
+         se hace de un solo, sin fasing. */
       tipoSolicitud: fd.get('tipoSolicitud') || '',
       tipologia: fd.get('tipologia') || '',
       subtipologia: fd.get('subtipologia') || '',

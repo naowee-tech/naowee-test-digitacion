@@ -5328,51 +5328,25 @@ body > .naowee-dropdown__menu.is-open {
   margin-top: 4px;
 }
 
-/* v2.0 — Sección "Modo demo" en el switcher (Doug 14/05/2026) */
+/* Sección "Modo demo" en el switcher — Doug 19/05/2026 rev2:
+   migrado a componentes DS canónicos. Los 2 chips estáticos +
+   botón "Saltar a modo libre" pasaron a un .naowee-segment
+   interactivo (toggle directo). "Reiniciar tour" pasó a .naowee-btn
+   --mute --small. Esta clase wrapper solo controla spacing y layout. */
 .demo-mode-row {
   padding: 8px 14px 12px;
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; gap: 10px;
 }
-.demo-mode-row__current {
-  display: flex; gap: 6px; flex-wrap: wrap;
+.demo-mode-row .naowee-segment {
+  width: 100%;
 }
-.demo-mode-row__chip {
-  font-size: 11px; font-weight: 700;
-  padding: 3px 9px; border-radius: 999px;
-  background: #f5f6fa; color: var(--text-secondary, #646587);
-  border: 1px solid var(--border, #e7e9f3);
+.demo-mode-secondary-btn {
+  display: flex !important;
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
 }
-.demo-mode-row__chip.is-active {
-  background: var(--orange-bg, #fff3e6);
-  color: var(--accent, #d74009);
-  border-color: var(--orange-border, #ffbf75);
-}
-.demo-mode-row__actions {
-  display: flex; flex-direction: column; gap: 6px;
-}
-.demo-mode-row__btn {
-  background: var(--orange-bg, #fff3e6);
-  border: 1px solid var(--orange-border, #ffbf75);
-  color: var(--accent, #d74009);
-  border-radius: var(--radius-md, 8px);
-  padding: 7px 12px;
-  font: inherit; font-size: 12px; font-weight: 700;
-  cursor: pointer; text-align: left;
-  transition: background .15s, border-color .15s;
-}
-.demo-mode-row__btn:hover {
-  background: #ffe4cc;
-  border-color: var(--accent, #d74009);
-}
-.demo-mode-row__btn--quiet {
-  background: transparent;
-  border-color: var(--border, #e7e9f3);
-  color: var(--text-secondary, #646587);
-}
-.demo-mode-row__btn--quiet:hover {
-  background: #fafbfd;
-  color: var(--text-primary, #282834);
-}
+.demo-mode-secondary-btn svg { flex-shrink: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════
    Observaciones — chat-style (Doug 15/05/2026)

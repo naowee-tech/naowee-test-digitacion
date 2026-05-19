@@ -262,12 +262,19 @@ function renderDemoSwitcher(perfil) {
         <span class="demo-role-switcher__chev">${ICONS.chevron}</span>
       </button>
       <div class="demo-role-switcher__panel" id="demoSwitcherPanel">
-        <div class="demo-role-switcher__panel-label">Cambiar de perfil (simulado)</div>
-        <div class="demo-role-switcher__list">${items}</div>
-        ${equipoItems}
-        ${renderDemoModeSection()}
+        <!-- Doug 19/05/2026: contenedor único de scroll para todo el panel.
+             Antes cada .demo-role-switcher__list tenía overflow:auto,
+             causando que cada sección (RBI/General/Técnico) scrolleara
+             independientemente y se viera cortada en pantallas chicas.
+             Ahora hay UN solo scroll container. -->
+        <div class="demo-role-switcher__scroll">
+          <div class="demo-role-switcher__panel-label">Cambiar de perfil (simulado)</div>
+          <div class="demo-role-switcher__list">${items}</div>
+          ${equipoItems}
+          ${renderDemoModeSection()}
+        </div>
         <div class="demo-role-switcher__panel-footer">
-          <button type="button" class="demo-reset-btn" id="demoResetBtn" title="Restablece el mock data al estado original (útil después de probar acciones como activar inversión)">
+          <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small demo-reset-btn-canonical" id="demoResetBtn" title="Restablece el mock data al estado original (útil después de probar acciones como activar inversión)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
             Reiniciar demo
           </button>
@@ -281,19 +288,29 @@ function renderDemoSwitcher(perfil) {
 function renderDemoModeSection() {
   const mode = ProjectData.getDemoMode?.() || 'guided';
   const esGuiado = mode === 'guided';
+  /* Doug 19/05/2026: migrado a componentes DS canónicos.
+     - Los 2 chips estáticos + botón "Saltar a modo libre" se reemplazan
+       por un .naowee-segment interactivo (toggle directo, sin botón
+       redundante). El click en cualquier item dispara el switch.
+     - "Reiniciar tour" pasa a .naowee-btn--mute --small. */
   return `
     <div class="demo-role-switcher__panel-label" style="margin-top:8px">Modo demo</div>
     <div class="demo-mode-row">
-      <div class="demo-mode-row__current">
-        <span class="demo-mode-row__chip ${esGuiado ? 'is-active' : ''}">Guiado · vacío</span>
-        <span class="demo-mode-row__chip ${esGuiado ? '' : 'is-active'}">Libre · con datos</span>
+      <div class="naowee-segment naowee-segment--small naowee-segment--proportional" data-segment="demo-mode" role="radiogroup" aria-label="Modo demo">
+        <div class="naowee-segment__pill" aria-hidden="true"></div>
+        <button type="button"
+                class="naowee-segment__item ${esGuiado ? 'naowee-segment__item--active' : ''}"
+                data-demo-mode="guided" role="radio" aria-checked="${esGuiado}"
+                id="demoModeBtnGuided">Guiado · vacío</button>
+        <button type="button"
+                class="naowee-segment__item ${esGuiado ? '' : 'naowee-segment__item--active'}"
+                data-demo-mode="free" role="radio" aria-checked="${!esGuiado}"
+                id="demoModeBtnFree">Libre · con datos</button>
       </div>
-      <div class="demo-mode-row__actions">
-        ${esGuiado
-          ? `<button type="button" class="demo-mode-row__btn" id="demoSwitchModeBtn">Saltar a modo libre →</button>`
-          : `<button type="button" class="demo-mode-row__btn" id="demoSwitchModeBtn">← Volver al modo guiado</button>`}
-        <button type="button" class="demo-mode-row__btn demo-mode-row__btn--quiet" id="demoRestartTourBtn">Reiniciar tour</button>
-      </div>
+      <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small demo-mode-secondary-btn" id="demoRestartTourBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Reiniciar tour
+      </button>
     </div>
   `;
 }
@@ -437,15 +454,36 @@ function bindShell() {
       window.location.reload();
     });
 
-    /* v2.0 — Toggle Modo guiado / libre (Doug 14/05/2026) */
-    document.getElementById('demoSwitchModeBtn')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const cur = ProjectData.getDemoMode?.() || 'guided';
-      const next = cur === 'guided' ? 'free' : 'guided';
-      ProjectData.setDemoMode(next);
-      /* Limpia flag de tour cerrado para que reaparezca si vuelve a guided */
-      if (next === 'guided') localStorage.removeItem('naowee.project.tourClosed');
-      window.location.href = pathPrefix() + 'admin/dashboard.html';
+    /* Toggle Modo guiado / libre — vía .naowee-segment canonical
+       (Doug 19/05/2026: reemplaza el botón "Saltar a modo libre"). */
+    document.querySelectorAll('[data-segment="demo-mode"] .naowee-segment__item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const next = btn.dataset.demoMode;
+        const cur = ProjectData.getDemoMode?.() || 'guided';
+        if (next === cur) return;
+        ProjectData.setDemoMode(next);
+        if (next === 'guided') localStorage.removeItem('naowee.project.tourClosed');
+        window.location.href = pathPrefix() + 'admin/dashboard.html';
+      });
+    });
+    /* Posicionar el sliding pill del segment al abrir el panel */
+    const positionDemoModePill = () => {
+      const seg = document.querySelector('[data-segment="demo-mode"]');
+      if (!seg) return;
+      const pill = seg.querySelector('.naowee-segment__pill');
+      const active = seg.querySelector('.naowee-segment__item--active');
+      if (!pill || !active) return;
+      pill.classList.add('naowee-segment__pill--no-anim');
+      pill.style.setProperty('--segment-pill-x', active.offsetLeft + 'px');
+      pill.style.width = active.offsetWidth + 'px';
+      requestAnimationFrame(() => requestAnimationFrame(() =>
+        pill.classList.remove('naowee-segment__pill--no-anim')));
+    };
+    document.getElementById('demoSwitcherToggle')?.addEventListener('click', () => {
+      /* Después de que el panel se abre (transición de opacity), reposicionar.
+         offsetLeft/Width necesitan que el segment sea visible. */
+      setTimeout(positionDemoModePill, 220);
     });
     /* Reiniciar tour: limpia flag de cerrado y refresca el tour */
     document.getElementById('demoRestartTourBtn')?.addEventListener('click', (e) => {

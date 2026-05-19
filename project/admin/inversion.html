@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519i">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519j">
 </head>
 <body>
 <div class="shell">
@@ -299,7 +299,7 @@
                             <span class="inversion-suid-pill__dot" aria-hidden="true"></span>
                             <span class="inversion-suid-pill__code">${suidCode}</span>
                           </button>`
-                        : `<button type="button" class="inversion-suid-cta" data-suid-modal="${p.idUnico}">Diligenciar →</button>`}
+                        : `<button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" data-suid-modal="${p.idUnico}" style="gap:6px">Diligenciar<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>`}
                     </td>
                   </tr>
                 `;}).join('')}

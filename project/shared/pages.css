@@ -1088,6 +1088,33 @@
 .convo-card__count strong { color: var(--accent); font-size: 14px; font-weight: 700; }
 .convo-card__cta { color: var(--accent); font-weight: 700; font-size: 13px; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   Edit button (cards + tabla) — Doug 19/05/2026
+   ═══════════════════════════════════════════════════════════════════
+   Asegura que el hover orange-bg cubra TODA el área clickeable (icono +
+   texto), no solo el bounding box del svg. Override del padding default
+   del DS naowee-btn--link --small para tener proporción consistente. */
+.convo-edit-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px !important;
+  border-radius: var(--radius-md, 8px) !important;
+  min-height: 30px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.convo-edit-btn svg {
+  flex-shrink: 0;
+  display: block;
+}
+/* Variante icon-only (tabla) — cuadrado consistente sin texto */
+.convo-edit-btn--icon-only {
+  padding: 7px !important;
+  width: 30px; height: 30px;
+  justify-content: center;
+}
+
 /* ═══ KPI cards — patrón EXACTO incentivo-02-dashboard.html ═══
    border:none, padding 20px 22px, val 28px/800, hover translateY(-2px) con shadow */
 .kpi-grid {

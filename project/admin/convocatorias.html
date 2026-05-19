@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css">
-<link rel="stylesheet" href="../shared/pages.css?v=20260517m">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519c">
 </head>
 <body>
 <div class="shell">
@@ -23,7 +23,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260519b';
   import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
-  import { openConvocatoriaModal, openEditarConvocatoriaQuick } from '../shared/modal-convocatoria.js?v=20260517l';
+  import { openConvocatoriaModal, openEditarConvocatoriaQuick } from '../shared/modal-convocatoria.js?v=20260519a';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });
 
@@ -77,8 +77,8 @@
             <span class="convo-card__count"><strong>${c.postulaciones}</strong> postulaciones</span>
             ${countdownLabel ? `<span class="naowee-badge naowee-badge--${countdownVariant} naowee-badge--quiet">${countdownLabel}</span>` : ''}
           </div>
-          <div class="convo-card__cta-group" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:12px">
-            <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" data-conv-edit="${c.id}" title="Editar convocatoria" style="padding:0">
+          <div class="convo-card__cta-group" style="display:inline-flex;align-items:center;gap:12px">
+            <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small convo-edit-btn has-tooltip" data-conv-edit="${c.id}" data-tooltip="Editar convocatoria" aria-label="Editar convocatoria">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Editar
             </button>
@@ -109,8 +109,8 @@
         <td class="numeric" style="font-weight:600;color:var(--green);white-space:nowrap">${formatoMoneda(c.presupuestoTotal)}</td>
         <td><strong style="color:var(--accent)">${c.postulaciones}</strong></td>
         <td><span class="naowee-badge naowee-badge--${badgeVariant} naowee-badge--quiet">${badgeLabel}</span></td>
-        <td class="convo-row-actions" onclick="event.stopPropagation()" style="text-align:right;white-space:nowrap">
-          <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small has-tooltip" data-conv-edit="${c.id}" data-tooltip="Editar convocatoria" aria-label="Editar">
+        <td class="convo-row-actions" style="text-align:right;white-space:nowrap">
+          <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small convo-edit-btn convo-edit-btn--icon-only has-tooltip" data-conv-edit="${c.id}" data-tooltip="Editar convocatoria" aria-label="Editar convocatoria">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
         </td>
@@ -208,21 +208,25 @@
     });
   });
 
-  /* Doug 17/05/2026: edit button on cards + rows abre quick-edit modal.
-     Event delegation para sobrevivir re-renders de vista (cards ⇄ tabla). */
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('[data-conv-edit]');
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    openEditarConvocatoriaQuick({
-      convocatoriaId: btn.dataset.convEdit,
-      onUpdated: () => {
-        /* Reload para refrescar la vista con los datos actualizados */
-        setTimeout(() => window.location.reload(), 600);
-      }
+  /* Doug 17/05/2026 rev2: edit button bind DIRECTO post-render.
+     El document-level delegation no funcionaba porque la fila tiene
+     onclick=fadeAndGo() que se dispara ANTES de que el evento llegue
+     a document (navegando antes de abrir el modal). Solución: bind
+     directo en la captura de la fase para que stopPropagation funcione. */
+  function bindEditButtons() {
+    document.querySelectorAll('[data-conv-edit]').forEach(btn => {
+      if (btn.__editBound) return;
+      btn.__editBound = true;
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        openEditarConvocatoriaQuick({
+          convocatoriaId: btn.dataset.convEdit,
+          onUpdated: () => setTimeout(() => window.location.reload(), 600)
+        });
+      });
     });
-  });
+  }
 
   /* Estado del filtro y vista */
   const STATE_LABELS = { todas: 'Todas', abierta: 'Abierta', cerrada: 'Cerrada' };
@@ -265,6 +269,7 @@
       `;
     }
     applyFilters();
+    bindEditButtons();
   }
 
   function applyFilters() {

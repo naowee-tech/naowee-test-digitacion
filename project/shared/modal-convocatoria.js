@@ -2996,6 +2996,48 @@ export function openConvocatoriaModal({ onCreated } = {}) {
      - presupuesto total, monto máximo por proyecto (money mask)
      - estado (abierta / cerrada)
    ═══════════════════════════════════════════════════════════════════ */
+/* ─── Edit policy: qué campos son editables según estado + postulaciones ───
+   Doug 19/05/2026: lógica de negocio para edición segura post-activación.
+   - Apertura ya pasada: lock (no reescribir historia)
+   - Postulaciones activas: tope por proyecto lock (regla del juego inmutable)
+   - Estado cerrada: todo lock (read-only)
+   - Cierre futuro: editable pero solo extender (no acortar al pasado)
+   - Presupuesto total: editable solo aumentando si hay postulaciones */
+function getEditPolicy(conv) {
+  const proyectos = ProjectData.getProyectos();
+  const postulacionesCount = proyectos.filter(p => p.convocatoriaId === conv.id).length;
+  const now = new Date();
+  const apertura = conv.apertura ? new Date(conv.apertura) : null;
+  const cierre = conv.cierre ? new Date(conv.cierre) : null;
+  const aperturaPasada = apertura && !isNaN(apertura.getTime()) && apertura <= now;
+  const cierrePasado = cierre && !isNaN(cierre.getTime()) && cierre <= now;
+  const hasPostulaciones = postulacionesCount > 0;
+  const isCerrada = conv.estado === 'cerrada' || cierrePasado;
+
+  return {
+    aperturaPasada, cierrePasado, hasPostulaciones, isCerrada, postulacionesCount,
+    fields: {
+      nombre:               { editable: !isCerrada, lockReason: isCerrada ? 'Convocatoria cerrada' : null },
+      descripcion:          { editable: !isCerrada, lockReason: isCerrada ? 'Convocatoria cerrada' : null },
+      apertura:             { editable: !aperturaPasada && !isCerrada,
+                              lockReason: aperturaPasada ? 'La fecha de apertura ya pasó — no se puede reescribir' : isCerrada ? 'Convocatoria cerrada' : null },
+      cierre:               { editable: !isCerrada,
+                              lockReason: isCerrada ? 'Convocatoria cerrada' : null,
+                              minDate: now.toISOString().split('T')[0],
+                              minDateNote: 'Solo puedes extender el plazo (no acortar al pasado)' },
+      presupuestoTotal:     { editable: !isCerrada,
+                              lockReason: isCerrada ? 'Convocatoria cerrada' : null,
+                              minValue: hasPostulaciones ? conv.presupuestoTotal : 0,
+                              minValueNote: hasPostulaciones ? `Solo aumentar — ya hay ${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicadas` : null },
+      montoMaximoProyecto:  { editable: !hasPostulaciones && !isCerrada,
+                              lockReason: hasPostulaciones ? `Bloqueado — ${postulacionesCount} postulación${postulacionesCount === 1 ? '' : 'es'} aplicaron con esta regla` : isCerrada ? 'Convocatoria cerrada' : null },
+      estado:               { editable: !isCerrada,
+                              lockReason: isCerrada ? 'Una convocatoria cerrada no se puede reabrir' : null,
+                              canCloseManually: !isCerrada }
+    }
+  };
+}
+
 export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) {
   const conv = ProjectData.getConvocatorias().find(c => c.id === convocatoriaId);
   if (!conv) {
@@ -3003,12 +3045,14 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     return;
   }
 
+  const policy = getEditPolicy(conv);
+
   /* CSS one-time */
   if (!document.getElementById('editConvQuickStyle')) {
     const st = document.createElement('style');
     st.id = 'editConvQuickStyle';
     st.textContent = `
-      #editConvQuickOverlay .naowee-modal { width: 600px !important; max-width: calc(100vw - 48px) !important; border-radius: 16px; }
+      #editConvQuickOverlay .naowee-modal { width: 620px !important; max-width: calc(100vw - 48px) !important; border-radius: 16px; }
       #editConvQuickOverlay .naowee-modal__body { display: flex !important; flex-direction: column !important; gap: 16px !important; padding: 20px 24px !important; }
       #editConvQuickOverlay .naowee-modal__footer { padding: 16px 24px !important; gap: 12px !important; display: flex !important; }
       #editConvQuickOverlay .naowee-modal__footer .naowee-btn { flex: 1; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; }
@@ -3019,6 +3063,48 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
       .editq-segment { display: inline-flex; padding: 3px; gap: 3px; border: 1px solid var(--border-dark); border-radius: 8px; background: #fff; width: fit-content; }
       .editq-segment__opt { padding: 7px 16px; background: transparent; border: 0; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
       .editq-segment__opt.is-selected { background: var(--orange-bg, #fff3e6); color: var(--accent); border: 1px solid var(--accent); padding: 6px 15px; }
+      .editq-segment__opt:disabled { opacity: .5; cursor: not-allowed; }
+      /* Locked field — gris + lock icon + helper rojo sutil */
+      .editq-field-wrap { position: relative; }
+      .editq-field-wrap.is-locked .naowee-textfield__input,
+      .editq-field-wrap.is-locked .naowee-textfield__input-wrap,
+      .editq-field-wrap.is-locked .naowee-dropdown__trigger,
+      .editq-field-wrap.is-locked .naowee-datepicker-field__input,
+      .editq-field-wrap.is-locked textarea {
+        background: var(--bg, #f5f6fa) !important;
+        color: var(--text-secondary, #9c9ebf) !important;
+        cursor: not-allowed !important;
+        pointer-events: none;
+      }
+      .editq-field-wrap.is-locked .naowee-textfield__label::after {
+        content: ' 🔒';
+        font-size: 11px;
+        margin-left: 4px;
+      }
+      .editq-field-wrap__lock-reason {
+        display: flex; align-items: flex-start; gap: 6px;
+        margin-top: 6px;
+        padding: 6px 10px;
+        background: #fff8f4;
+        border-left: 2px solid var(--accent, #d74009);
+        border-radius: 4px;
+        font-size: 11.5px;
+        color: var(--text-secondary, #646587);
+        line-height: 1.4;
+      }
+      .editq-field-wrap__lock-reason strong { color: var(--accent, #d74009); }
+      .editq-field-hint {
+        display: flex; align-items: flex-start; gap: 6px;
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: var(--text-secondary, #646587);
+        line-height: 1.4;
+      }
+      .editq-field-hint__icon {
+        color: var(--blue-info, #1f78d1);
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
     `;
     document.head.appendChild(st);
   }
@@ -3043,35 +3129,84 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
       <div class="naowee-modal__body">
         <form id="editConvForm" novalidate>
 
+          ${policy.isCerrada ? `
+            <div class="naowee-message naowee-message--caution" role="status">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/></svg></span>
+                <span class="naowee-message__title">Convocatoria cerrada — modo solo lectura</span>
+              </div>
+              <div class="naowee-message__content">
+                <p class="naowee-message__text">Esta convocatoria ya cerró${policy.cierrePasado ? ' (fecha de cierre pasada)' : ''}. No se permiten ediciones para preservar la integridad histórica.</p>
+              </div>
+            </div>
+          ` : policy.hasPostulaciones ? `
+            <div class="naowee-message naowee-message--informative" role="status">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__title">${policy.postulacionesCount} postulación${policy.postulacionesCount === 1 ? '' : 'es'} aplicada${policy.postulacionesCount === 1 ? '' : 's'} — algunos campos bloqueados</span>
+              </div>
+              <div class="naowee-message__content">
+                <p class="naowee-message__text">Para proteger las reglas del juego de los municipios que ya postularon: el <strong>tope por proyecto</strong> queda fijo${policy.aperturaPasada ? ', la <strong>fecha de apertura</strong> no puede reescribirse' : ''} y el <strong>presupuesto total</strong> solo puede aumentar.</p>
+              </div>
+            </div>
+          ` : policy.aperturaPasada ? `
+            <div class="naowee-message naowee-message--informative" role="status">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                <span class="naowee-message__title">Convocatoria ya activada — la fecha de apertura queda bloqueada</span>
+              </div>
+            </div>
+          ` : ''}
+
           <div class="ai-section-title">Identificación</div>
-          ${textfield({ label: 'Nombre de la convocatoria', name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
-          ${textarea({ label: 'Descripción', name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
+          <div class="editq-field-wrap ${policy.fields.nombre.editable ? '' : 'is-locked'}">
+            ${textfield({ label: 'Nombre de la convocatoria', name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
+            ${policy.fields.nombre.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.nombre.lockReason}</div>` : ''}
+          </div>
+          <div class="editq-field-wrap ${policy.fields.descripcion.editable ? '' : 'is-locked'}">
+            ${textarea({ label: 'Descripción', name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
+          </div>
 
           <div class="ai-section-title">Ventana de postulación</div>
           <div class="ai-grid-2">
-            ${datepicker({ label: 'Apertura', name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
-            ${datepicker({ label: 'Cierre', name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
+            <div class="editq-field-wrap ${policy.fields.apertura.editable ? '' : 'is-locked'}">
+              ${datepicker({ label: 'Apertura', name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
+              ${policy.fields.apertura.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.apertura.lockReason}</div>` : ''}
+            </div>
+            <div class="editq-field-wrap ${policy.fields.cierre.editable ? '' : 'is-locked'}">
+              ${datepicker({ label: 'Cierre', name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
+              ${policy.fields.cierre.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.cierre.lockReason}</div>` : (policy.fields.cierre.minDateNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.cierre.minDateNote}</span></div>` : '')}
+            </div>
           </div>
 
           <div class="ai-section-title">Presupuesto</div>
           <div class="ai-grid-2">
-            ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
-            ${textfield({ label: 'Tope por proyecto (COP)', name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
+            <div class="editq-field-wrap ${policy.fields.presupuestoTotal.editable ? '' : 'is-locked'}">
+              ${textfield({ label: 'Presupuesto total (COP)', name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
+              ${policy.fields.presupuestoTotal.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.presupuestoTotal.lockReason}</div>` : (policy.fields.presupuestoTotal.minValueNote ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>${policy.fields.presupuestoTotal.minValueNote}</span></div>` : '')}
+            </div>
+            <div class="editq-field-wrap ${policy.fields.montoMaximoProyecto.editable ? '' : 'is-locked'}">
+              ${textfield({ label: 'Tope por proyecto (COP)', name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
+              ${policy.fields.montoMaximoProyecto.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.montoMaximoProyecto.lockReason}</div>` : ''}
+            </div>
           </div>
 
           <div class="ai-section-title">Estado</div>
-          <div class="editq-segment" role="radiogroup" aria-label="Estado">
-            <button type="button" class="editq-segment__opt ${conv.estado === 'abierta' ? 'is-selected' : ''}" data-estado="abierta">Abierta</button>
-            <button type="button" class="editq-segment__opt ${conv.estado === 'cerrada' ? 'is-selected' : ''}" data-estado="cerrada">Cerrada</button>
+          <div class="editq-field-wrap ${policy.fields.estado.editable ? '' : 'is-locked'}">
+            <div class="editq-segment" role="radiogroup" aria-label="Estado">
+              <button type="button" class="editq-segment__opt ${conv.estado === 'abierta' ? 'is-selected' : ''}" data-estado="abierta" ${policy.fields.estado.editable ? '' : 'disabled'}>Abierta</button>
+              <button type="button" class="editq-segment__opt ${conv.estado === 'cerrada' ? 'is-selected' : ''}" data-estado="cerrada" ${policy.fields.estado.editable ? '' : 'disabled'}>Cerrada</button>
+            </div>
+            <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
+            ${policy.fields.estado.lockReason ? `<div class="editq-field-wrap__lock-reason"><strong>Bloqueado:</strong> ${policy.fields.estado.lockReason}</div>` : (policy.fields.estado.canCloseManually ? `<div class="editq-field-hint"><svg class="editq-field-hint__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.</span></div>` : '')}
           </div>
-          <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
 
         </form>
       </div>
 
       <div class="naowee-modal__footer">
-        <button type="button" class="naowee-btn naowee-btn--mute" data-close>Cancelar</button>
-        <button type="button" class="naowee-btn naowee-btn--loud" data-save>Guardar cambios</button>
+        <button type="button" class="naowee-btn naowee-btn--mute" data-close>${policy.isCerrada ? 'Cerrar' : 'Cancelar'}</button>
+        ${policy.isCerrada ? '' : '<button type="button" class="naowee-btn naowee-btn--loud" data-save>Guardar cambios</button>'}
       </div>
     </div>
   `;
@@ -3106,10 +3241,11 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     });
   }, 50);
 
-  /* Segment estado */
+  /* Segment estado — respeta disabled */
   const estadoHidden = form.querySelector('input[name="estado"]');
   overlay.querySelectorAll('.editq-segment__opt').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.disabled) return;
       overlay.querySelectorAll('.editq-segment__opt').forEach(b => b.classList.remove('is-selected'));
       btn.classList.add('is-selected');
       if (estadoHidden) estadoHidden.value = btn.dataset.estado;
@@ -3119,29 +3255,90 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
   /* Bind masks */
   if (typeof bindMasksInLocal === 'function') bindMasksInLocal(form);
 
-  /* Save */
-  overlay.querySelector('[data-save]').addEventListener('click', () => {
+  /* Save — solo si hay save button (no en modo read-only) */
+  const saveBtn = overlay.querySelector('[data-save]');
+  if (saveBtn) saveBtn.addEventListener('click', () => {
     const fd = new FormData(form);
     const nombre = (fd.get('nombre') || '').toString().trim();
     const apertura = (fd.get('apertura') || '').toString().trim();
     const cierre = (fd.get('cierre') || '').toString().trim();
 
-    if (!nombre) { alert('El nombre es obligatorio.'); return; }
-    if (!apertura || !cierre) { alert('Las fechas de apertura y cierre son obligatorias.'); return; }
+    /* Validaciones básicas */
+    if (!nombre) {
+      alert('El nombre es obligatorio.');
+      return;
+    }
+    if (!apertura || !cierre) {
+      alert('Las fechas de apertura y cierre son obligatorias.');
+      return;
+    }
 
     const presupuestoTotal = parseInt((fd.get('presupuestoTotal') || '').toString().replace(/\D/g, '')) || 0;
     const montoMaximoProyecto = parseInt((fd.get('montoMaximoProyecto') || '').toString().replace(/\D/g, '')) || 0;
+    const nuevoCierre = new Date(cierre);
+    const nuevoEstado = fd.get('estado') || 'abierta';
+    const now = new Date();
+
+    /* ─── Business rules enforcement ─── */
+    /* 1. Si apertura está bloqueada, conservar la original (no permitir override) */
+    const aperturaFinal = policy.fields.apertura.editable ? apertura : conv.apertura;
+
+    /* 2. Si cierre cambió, no puede ser pasado ni antes que apertura */
+    if (policy.fields.cierre.editable && nuevoCierre <= now) {
+      alert('La nueva fecha de cierre debe ser futura (no puedes acortar al pasado).');
+      return;
+    }
+    if (policy.fields.cierre.editable && new Date(aperturaFinal) >= nuevoCierre) {
+      alert('La fecha de cierre debe ser posterior a la apertura.');
+      return;
+    }
+
+    /* 3. Si tope por proyecto está bloqueado (hay postulaciones), conservar */
+    const topeFinal = policy.fields.montoMaximoProyecto.editable
+      ? montoMaximoProyecto
+      : conv.montoMaximoProyecto;
+
+    /* 4. Presupuesto total no puede reducirse si hay postulaciones */
+    if (policy.fields.presupuestoTotal.minValue && presupuestoTotal < policy.fields.presupuestoTotal.minValue) {
+      alert(`El presupuesto total no puede reducirse — hay ${policy.postulacionesCount} postulación${policy.postulacionesCount === 1 ? '' : 'es'} comprometidas con el monto actual.`);
+      return;
+    }
+
+    /* 5. Estado: una vez cerrada no se puede reabrir (UI ya lo bloquea, doble seguro acá) */
+    const estadoFinal = policy.fields.estado.editable ? nuevoEstado : conv.estado;
+
+    /* 6. Detectar cambios "blandos" para mensaje al user */
+    const cambios = [];
+    if (nombre !== conv.nombre) cambios.push('nombre');
+    if (aperturaFinal !== conv.apertura) cambios.push('apertura');
+    if (cierre !== conv.cierre) cambios.push(new Date(cierre) > new Date(conv.cierre) ? 'cierre extendido' : 'cierre');
+    if (presupuestoTotal !== conv.presupuestoTotal) cambios.push(presupuestoTotal > conv.presupuestoTotal ? 'presupuesto +' : 'presupuesto');
+    if (topeFinal !== conv.montoMaximoProyecto) cambios.push('tope');
+    if (estadoFinal !== conv.estado) cambios.push(`estado→${estadoFinal}`);
+
+    if (cambios.length === 0) {
+      alert('No hay cambios para guardar.');
+      return;
+    }
 
     ProjectData.setConvocatoria(convocatoriaId, c => ({
       ...c,
       nombre,
       descripcion: (fd.get('descripcion') || '').toString().trim(),
-      apertura,
+      apertura: aperturaFinal,
       cierre,
       presupuestoTotal,
-      montoMaximoProyecto,
-      estado: fd.get('estado') || 'abierta',
-      actualizadaEn: new Date().toISOString()
+      montoMaximoProyecto: topeFinal,
+      estado: estadoFinal,
+      actualizadaEn: new Date().toISOString(),
+      historial: [
+        ...(c.historial || []),
+        {
+          ts: new Date().toISOString(),
+          actor: 'admin',
+          evento: `Editada — ${cambios.join(', ')}${policy.hasPostulaciones ? ` · ${policy.postulacionesCount} postulación(es) afectada(s)` : ''}`
+        }
+      ]
     }));
 
     close();

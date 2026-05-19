@@ -23,7 +23,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260519c';
   import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
-  import { openConvocatoriaModal, openEditarConvocatoriaQuick } from '../shared/modal-convocatoria.js?v=20260519e';
+  import { openConvocatoriaModal, openEditarConvocatoriaQuick } from '../shared/modal-convocatoria.js?v=20260519f';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'convocatorias' });
 
@@ -208,6 +208,13 @@
     });
   });
 
+  /* Doug 19/05/2026: bindEditButtons en el INITIAL render. Antes solo
+     se invocaba desde renderView() (cuando el user togglea vistas),
+     pero el cards view se renderiza inline en pageContent.innerHTML
+     arriba — sin bind los <button> heredaban el onclick="fadeAndGo()"
+     del <article> padre al bubblear (el modal nunca abría). */
+  bindEditButtons();
+
   /* Doug 17/05/2026 rev2: edit button bind DIRECTO post-render.
      El document-level delegation no funcionaba porque la fila tiene
      onclick=fadeAndGo() que se dispara ANTES de que el evento llegue
@@ -222,7 +229,10 @@
         e.stopPropagation();
         openEditarConvocatoriaQuick({
           convocatoriaId: btn.dataset.convEdit,
-          onUpdated: () => setTimeout(() => window.location.reload(), 600)
+          /* Reload diferido para que el toast de éxito (esquina inferior
+             derecha, duration 4200ms) sea visible ~2.5s antes del refresh
+             que recarga los datos del card. Doug 19/05/2026. */
+          onUpdated: () => setTimeout(() => window.location.reload(), 2500)
         });
       });
     });

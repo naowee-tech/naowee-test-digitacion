@@ -43,7 +43,9 @@ const DEPARTAMENTOS = [
   'Valle del Cauca','Vaupés','Vichada','Bogotá D.C.'
 ];
 const TIPOS_SOLICITUD = ['Construcción nueva','Mejoramiento','Adecuación','Dotación'];
-const FASES_PROYECTO = ['FASE I — Perfil','FASE II — Prefactibilidad','FASE III — Factibilidad'];
+/* FASES_PROYECTO removido — antes alimentaba el multiSelect "Fases del
+   proyecto permitidas" en step 3, eliminado por Doug 19/05/2026 (el
+   proceso documental se hace de un solo, sin fasing). */
 
 const closeIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -1328,11 +1330,8 @@ function stepIdentificacion() {
       ${datepicker({ label: 'Apertura', name: 'apertura', required: true })}
       ${datepicker({ label: 'Cierre', name: 'cierre', required: true, helper: 'Postulaciones expiran tras esta fecha' })}
     </div>
-    <h3 class="convo-section" style="margin-top:8px">Plazo posterior al cierre</h3>
-    <div class="convo-grid-2">
-      ${datepicker({ label: 'Emisión de conceptos', name: 'emisionConcepto', helper: 'Fecha límite para que los revisores publiquen el concepto técnico' })}
-      <div></div>
-    </div>
+    <!-- Doug 19/05/2026: "Plazo posterior al cierre" / "Emisión de conceptos"
+         eliminado del wizard - el flujo no requiere capturar este dato. -->
   `;
 }
 
@@ -1405,24 +1404,21 @@ function stepAlcance() {
 function stepCondiciones() {
   return `
     <h3 class="convo-section">Condiciones de participación</h3>
+    <!-- Doug 19/05/2026: 3 cambios al multiSelect-stack:
+         · "Fases del proyecto permitidas" ELIMINADO (el proceso documental
+           se hace de un solo, no hay fasing).
+         · "Tipos de solicitud permitidos" y "Fuentes de financiación
+           permitidas" ya no son required (opcionales — admin puede dejar
+           sin filtro y todos los tipos/fuentes son aceptados por default). -->
     ${multiSelect({
       label: 'Tipos de solicitud permitidos',
       name: 'tiposSolicitud',
-      required: true,
       placeholder: 'Selecciona los tipos de proyecto que se pueden radicar…',
       options: TIPOS_SOLICITUD
     })}
     ${multiSelect({
-      label: 'Fases del proyecto permitidas',
-      name: 'fasesProyecto',
-      required: true,
-      placeholder: 'Selecciona las fases admitidas…',
-      options: FASES_PROYECTO
-    })}
-    ${multiSelect({
       label: 'Fuentes de financiación permitidas',
       name: 'fuentes',
-      required: true,
       placeholder: 'Selecciona las fuentes de financiación…',
       options: FUENTES
     })}
@@ -2911,7 +2907,6 @@ export function openConvocatoriaModal({ onCreated } = {}) {
     const fd = new FormData(form);
 
     const tiposSolicitud = fd.getAll('tiposSolicitud');
-    const fasesProyecto = fd.getAll('fasesProyecto');
     const fuentes = fd.getAll('fuentes');
     const cobertura = fd.get('cobertura') || 'Nacional';
     const departamentos = fd.getAll('departamentos');
@@ -2933,7 +2928,8 @@ export function openConvocatoriaModal({ onCreated } = {}) {
          "NaN días para cerrar". */
       apertura: (fd.get('apertura') || '').toString().trim() || null,
       cierre: (fd.get('cierre') || '').toString().trim() || null,
-      emisionConcepto: fd.get('emisionConcepto') || null,
+      /* emisionConcepto eliminado del wizard (Doug 19/05/2026) — el flujo
+         no requiere capturar este dato. */
       cobertura,
       /* especificaTipo solo aplica si cobertura === 'Específica'. XOR municipios|departamentos */
       especificaTipo: cobertura === 'Específica' ? (fd.get('especificaTipo') || 'municipios') : null,
@@ -2943,7 +2939,8 @@ export function openConvocatoriaModal({ onCreated } = {}) {
       soloZOMAC: ((cobertura === 'Nacional') || (cobertura === 'Específica' && (fd.get('especificaTipo') || 'municipios') === 'municipios')) && fd.get('soloZOMAC') === 'true',
       soloPDET: ((cobertura === 'Nacional') || (cobertura === 'Específica' && (fd.get('especificaTipo') || 'municipios') === 'municipios')) && fd.get('soloPDET') === 'true',
       tiposSolicitud,
-      fasesProyecto,
+      /* fasesProyecto eliminado del wizard (Doug 19/05/2026) — el proceso
+         documental se hace de un solo, sin fasing. */
       fuentes,
       areasRequeridas, /* ids de áreas técnicas que requieren concepto · Sprint 2 */
       docGeneralRequerida: true, /* siempre true por Res. 933 · disabled en UI */

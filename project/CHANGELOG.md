@@ -13,7 +13,18 @@
 
 ## [Unreleased] — `v2.0.x` (próximo PATCH)
 
-> Sin cambios funcionales acumulados aún. La última versión publicada es `project-v2.0.1`.
+> Cambios acumulados desde `project-v2.0.1`.
+
+### Refined — modal de edición rápida de convocatoria (`openEditarConvocatoriaQuick`)
+- **Section titles** ahora usan gris claro explícito `#9ca0b8` (antes heredaba un color demasiado oscuro), separación visual clara entre bloques de sección.
+- **Spacing entre campos**: body gap aumentado de 16px → 22px. Nombre y descripción ya respiran.
+- **Estado lock UX — sin emojis** (Doug 19/05/2026):
+  - Eliminado el `🔒` que se añadía como pseudo-element `::after` al label de campos bloqueados.
+  - Eliminados los bloques `editq-field-wrap__lock-reason` que duplicaban el motivo del lock como texto debajo del input.
+  - **Nuevo:** icono `?` circular naranja inline al final del label (`.editq-lock-icon` — 16×16, border 1.5px accent, cursor `help`). Al hover/focus muestra tooltip DS canónico con copy: **"Bloqueado: \<reason\>"**.
+  - Inputs/dropdowns/datepickers/textarea bloqueados usan ahora los tokens DS Naowee de disabled (`--naowee-color-bg-disabled`, `--naowee-color-text-disabled`, `--naowee-color-border-disabled`) en lugar de un estilo custom.
+- **Estado segment**: reemplazado el segment no-canónico por el pattern DS canónico (mismo que `.suid-segment` en `modal-suid.js`) — outline container con padding 3px, opt transparente, selected `orange-bg + accent` SIN shift visual.
+- **Footer CTAs**: cambiaron de stretch (`flex:1`) a auto-width (`flex: 0 0 auto`), posicionados en lados opuestos vía `justify-content: space-between` — Cancelar pegado a la izquierda, Guardar cambios pegado a la derecha.
 
 ### Added
 - **Historial de versiones accesible bajo `/project/vX.Y.Z/`** (Doug 19/05/2026). Cada release publicado vive permanentemente en su propia URL:

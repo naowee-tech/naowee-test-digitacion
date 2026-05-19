@@ -13,7 +13,15 @@
 
 ## [Unreleased] — `v2.0.x` (próximo PATCH)
 
-> Cambios acumulados desde `project-v2.0.0`. Cuando se junten suficientes fixes UI se promueve a `project-v2.0.1`.
+> Sin cambios acumulados aún. La última versión publicada es `project-v2.0.1`.
+
+---
+
+## [project-v2.0.1] — 2026-05-19 · Patch UI/UX consolidado
+
+> **Hito:** primer PATCH después del MVP. Consolida 16 commits de refinos UI/UX, fixes visuales y mejoras de flujo distribuidos en todos los perfiles.
+> **Tag git:** `project-v2.0.1` · **Release:** [project-v2.0.1 — Patch UI/UX consolidado](https://github.com/naowee-tech/naowee-test-digitacion/releases/tag/project-v2.0.1)
+> **Demo Pages:** https://naowee-tech.github.io/naowee-test-digitacion/project/index.html (badge `v2.0.1` visible en el footer)
 
 ### Fixed
 - **`municipio/proyecto-perfil.html`** · layout del certificado: el card del certificado tenía 2 `</div>` faltantes (`__main` y `__top` quedaban abiertos), por lo que el `proj-tabs-card` se renderizaba como hermano de `__main` dentro de `__top` (flex container) y quedaba side-by-side con el certificado en lugar de debajo. Cierre estructural correcto: el certificado ahora ocupa el ancho completo del contenedor en el medio del layout, con la card de tabs (Datos / Historial / Conversación) apilada debajo.

@@ -509,10 +509,20 @@ function mountNaoweeFooter() {
   footer.className = 'naowee-floating-footer';
   footer.setAttribute('role', 'contentinfo');
   footer.setAttribute('aria-label', 'Pie de página Naowee');
+  /* Doug 19/05/2026: badge de versión visible en el footer para que
+     el dev team identifique inmediatamente qué versión está corriendo
+     en la demo Pages. Click → abre release notes en GitHub. */
+  const PROJECT_VERSION = 'v2.0.1';
+  const RELEASE_URL = `https://github.com/naowee-tech/naowee-test-digitacion/releases/tag/project-${PROJECT_VERSION}`;
   footer.innerHTML = `
     <img src="${pathPrefix()}shared/logos/naowee.svg" alt="Naowee" class="naowee-floating-footer__logo" onerror="this.style.display='none'"/>
     <div class="naowee-floating-footer__sep"></div>
     <span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; 2026</strong></span>
+    <div class="naowee-floating-footer__sep"></div>
+    <a href="${RELEASE_URL}" target="_blank" rel="noopener" class="naowee-floating-footer__version" title="Ver release notes en GitHub">
+      Project <strong>${PROJECT_VERSION}</strong>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
+    </a>
   `;
   document.body.appendChild(footer);
   bindFooterScrollHide(footer);

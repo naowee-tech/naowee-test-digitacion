@@ -635,6 +635,24 @@ a{color:inherit;text-decoration:none}
 .naowee-floating-footer__text{font-weight:500;line-height:1}
 .naowee-floating-footer__text strong{color:var(--text-primary);font-weight:700}
 
+/* Doug 19/05/2026: badge versión clickeable al release notes */
+.naowee-floating-footer__version{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;line-height:1;
+  color:var(--text-secondary);text-decoration:none;
+  padding:4px 8px;border-radius:6px;
+  transition:background .12s,color .12s;
+}
+.naowee-floating-footer__version strong{
+  color:var(--accent);font-weight:700;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+}
+.naowee-floating-footer__version:hover{
+  background:var(--orange-bg,#fff3e6);color:var(--accent);
+}
+.naowee-floating-footer__version svg{opacity:.6;transition:opacity .12s,transform .12s}
+.naowee-floating-footer__version:hover svg{opacity:1;transform:translate(1px,-1px)}
+
 /* Page placeholder (sandbox-only) */
 .page-placeholder{
   background:var(--surface);

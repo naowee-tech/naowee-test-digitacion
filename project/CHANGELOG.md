@@ -15,6 +15,20 @@
 
 > Cambios acumulados desde `project-v2.0.1`.
 
+### Fixed — botón editar de la tabla de convocatorias
+- **Inner shadow naranja persistente** después del primer click: el DS aplica `box-shadow: 0 0 0 3px rgba(215,64,9,.15)` (`--naowee-shadow-focus-accent`) en `:focus-visible`, y el botón retenía el halo después de click + hover siguiente. Fix scoped en `pages.css`: `.convo-edit-btn:focus-visible` ahora adopta el mismo estado visual que `:hover` (orange-bg + accent + svg accent) **sin** box-shadow ni outline — feedback claro para teclado y mouse, sin el ring "fantasma".
+- **Tooltip "Editar convocatoria" no se mostraba en la tabla** (sí funcionaba en cards). Root cause: el `::after` CSS-only del `.has-tooltip` se posiciona `bottom: calc(100% + 8px)` (arriba del trigger), pero la columna ACCIONES vive dentro de `.naowee-table-card__table-wrap` que tiene `overflow-x: auto` — y por spec CSS, eso fuerza `overflow-y: auto` también, **clipeando** el tooltip que extiende hacia arriba del primer row.
+
+### Refactored — `.has-tooltip` ahora usa body-portal (`position: fixed`)
+- Nuevo helper `initHasTooltipPortal()` en `shell.js` instancia UN tooltip `<div class="naowee-tip-portal">` adjunto al `<body>` con `position: fixed`. En cada `mouseover` / `focusin` de un `.has-tooltip[data-tooltip]`, el helper posiciona el tooltip vía `getBoundingClientRect()` justo encima del trigger. Beneficios:
+  - Escapa cualquier overflow ancestor (tablas, cards, modales scrollables)
+  - Una sola instancia DOM reutilizada para todos los triggers (memoria mínima)
+  - Delegación a nivel `document` — funciona para `.has-tooltip` que se renderizan después (tabs, modales, listas async)
+  - Soporte de teclado (`focusin`/`focusout`) + escape via `Esc`
+  - Auto-hide en `scroll` / `resize` / `click` (la posición fixed quedaría stale)
+- Cuando el portal se inicializa, `<body>` recibe la clase `has-tooltip-portal-active` y `pages.css` desactiva el `::after` CSS-only para evitar tooltips duplicados.
+- **Transversal por defecto:** se inicializa desde `mountShell()`, así que toda página del módulo recibe el upgrade sin cambio adicional.
+
 ### Refined — modal de edición rápida de convocatoria (`openEditarConvocatoriaQuick`)
 - **Section titles** ahora usan gris claro explícito `#9ca0b8` (antes heredaba un color demasiado oscuro), separación visual clara entre bloques de sección.
 - **Spacing entre campos**: body gap aumentado de 16px → 22px. Nombre y descripción ya respiran.

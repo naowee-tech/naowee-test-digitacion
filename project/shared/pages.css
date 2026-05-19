@@ -1114,6 +1114,22 @@
   width: 30px; height: 30px;
   justify-content: center;
 }
+/* Doug 19/05/2026: el DS aplica box-shadow: 0 0 0 3px rgba(215,64,9,.15)
+   en :focus-visible (--naowee-shadow-focus-accent), que después de un
+   click deja un halo naranja persistente alrededor del botón ("inner
+   shadow" visible al hover siguiente). Override: focus-visible adopta
+   el mismo estado que :hover (orange-bg + accent) — feedback claro
+   para teclado y mouse, sin halo. */
+.convo-edit-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: var(--orange-bg, #fff3e6) !important;
+  color: var(--accent, #d74009) !important;
+}
+.convo-edit-btn:focus-visible svg {
+  color: var(--accent, #d74009) !important;
+  stroke: var(--accent, #d74009) !important;
+}
 
 /* ═══ KPI cards — patrón EXACTO incentivo-02-dashboard.html ═══
    border:none, padding 20px 22px, val 28px/800, hover translateY(-2px) con shadow */
@@ -1824,6 +1840,49 @@
 .has-tooltip:hover::before,
 .has-tooltip:focus-visible::before {
   opacity: 1;
+}
+
+/* ═══ Portal tooltip — escapa overflow:auto/hidden de tablas ═══
+   Doug 19/05/2026: el ::after del .has-tooltip se clipea cuando el
+   trigger vive dentro de un contenedor con overflow:auto (ej. la
+   columna ACCIONES de la tabla, dentro de .naowee-table-card__table-wrap
+   que tiene overflow-x:auto). Solución: shell.js inicializa un portal
+   de tooltips position:fixed adjunto al <body>, escapando cualquier
+   stacking/overflow context. Cuando esto se activa, body recibe la
+   clase has-tooltip-portal-active y desactivamos el ::after para
+   evitar duplicados. */
+body.has-tooltip-portal-active .has-tooltip::after,
+body.has-tooltip-portal-active .has-tooltip::before {
+  display: none !important;
+}
+.naowee-tip-portal {
+  position: fixed;
+  background: #282834;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 11.5px; font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(40,40,52,.18);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, calc(-100% - 4px));
+  transition: opacity .15s cubic-bezier(.4,0,.2,1),
+              transform .15s cubic-bezier(.4,0,.2,1);
+}
+.naowee-tip-portal.is-visible {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% - 8px));
+}
+.naowee-tip-portal::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #282834;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

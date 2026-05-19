@@ -810,10 +810,33 @@
         </div>
       `;
       document.body.appendChild(menu);
+      /* Doug 19/05/2026: smart positioning — si no cabe abajo, se abre
+         arriba. También se constrain el max-height al espacio disponible
+         para que el menu nunca se salga del viewport. */
       const rect = anchor.getBoundingClientRect();
       menu.style.position = 'fixed';
-      menu.style.top = (rect.bottom + 6) + 'px';
       menu.style.right = Math.max(8, (window.innerWidth - rect.right)) + 'px';
+      /* Medir menu tras append (offsetHeight necesita estar en DOM) */
+      requestAnimationFrame(() => {
+        const menuH = menu.offsetHeight || 320;
+        const spaceBelow = window.innerHeight - rect.bottom - 16;
+        const spaceAbove = rect.top - 16;
+        if (menuH > spaceBelow && spaceAbove > spaceBelow) {
+          /* No cabe abajo y arriba hay más espacio → abrir arriba */
+          menu.style.top = Math.max(8, rect.top - menuH - 6) + 'px';
+          if (menuH > spaceAbove) {
+            menu.style.setProperty('max-height', Math.max(180, spaceAbove) + 'px', 'important');
+            menu.style.overflowY = 'auto';
+          }
+        } else {
+          /* Cabe abajo (o abajo tiene más espacio): mantener abajo */
+          menu.style.top = (rect.bottom + 6) + 'px';
+          if (menuH > spaceBelow) {
+            menu.style.setProperty('max-height', Math.max(180, spaceBelow) + 'px', 'important');
+            menu.style.overflowY = 'auto';
+          }
+        }
+      });
       menu.querySelectorAll('.reassign-menu__item').forEach(item => {
         item.addEventListener('click', () => {
           const revId = item.dataset.rev;

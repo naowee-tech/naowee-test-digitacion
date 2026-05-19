@@ -2403,6 +2403,57 @@ body.has-tooltip-portal-active .has-tooltip::before {
   transform: none !important;
 }
 
+/* Doug 19/05/2026: el DS aplica box-shadow: var(--naowee-shadow-focus-accent)
+   (3px halo naranja) en .naowee-btn:focus-visible, que despues de un click
+   deja un "glow naranja" sobre los CTAs verdes (.btn-favorable, .btn-aprobar,
+   .btn-aprobar-doc). Override scoped: mantener la elevation verde del propio
+   CTA en lugar del halo naranja. */
+.btn-favorable:focus-visible,
+.btn-aprobar:focus-visible,
+.btn-aprobar-doc:focus-visible {
+  box-shadow: var(--shadow-green-cta) !important;
+  outline: none !important;
+}
+
+/* ═══ Empty state de página (cuando no hay items globales) ═══
+   Doug 19/05/2026: pattern transversal para empty states a nivel
+   página (sin tabla), reemplaza el .table-empty floating sin
+   contenedor. Card visual con icon circular + title + msg
+   centrados. Usado en doc-general / doc-tecnica cuando aun no
+   hay proyectos asignados al revisor. */
+.naowee-page-empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 72px 32px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e7e9f3);
+  border-radius: var(--radius-xl, 20px);
+  min-height: 360px;
+}
+.naowee-page-empty__icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--bg, #f5f6fa);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary, #646587);
+  margin-bottom: 16px;
+}
+.naowee-page-empty__icon svg {
+  width: 28px; height: 28px;
+}
+.naowee-page-empty__title {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+}
+.naowee-page-empty__msg {
+  font-size: 13.5px; color: var(--text-secondary);
+  max-width: 420px;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* View toggle (segmented button group cards/list) */
 .view-toggle {
   display: inline-flex; align-items: center;

@@ -3054,12 +3054,27 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
     st.textContent = `
       #editConvQuickOverlay .naowee-modal { width: 620px !important; max-width: calc(100vw - 48px) !important; border-radius: 16px; }
 
-      /* Doug 19/05/2026 rev4: body con gap 20px (separación clara entre
-         campos sin sobre-respirar), section titles gris claro #9ca0b8. */
+      /* Doug 19/05/2026 rev5: jerarquía visual con sections wrappers.
+         Bug previo: el gap estaba en .naowee-modal__body pero ese
+         contenedor solo tiene 1 hijo (el <form>), así que nunca aplicaba.
+         Solución: el form es flex con gap-entre-sections (28px), y cada
+         <section.editq-section> es flex interno con gap-entre-fields
+         (16px). Title ↔ field próximos (12px) por proximidad semántica. */
       #editConvQuickOverlay .naowee-modal__body {
-        display: flex !important; flex-direction: column !important;
-        gap: 20px !important;
         padding: 22px 24px !important;
+      }
+      #editConvQuickOverlay #editConvForm {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      #editConvQuickOverlay .editq-section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      #editConvQuickOverlay .editq-section > .ai-section-title + * {
+        margin-top: -4px; /* gap 16 - 4 = 12px efectivo title -> primer field */
       }
       #editConvQuickOverlay .ai-section-title {
         font-size: 11px; font-weight: 700;
@@ -3200,43 +3215,51 @@ export function openEditarConvocatoriaQuick({ convocatoriaId, onUpdated } = {}) 
             </div>
           ` : ''}
 
-          <div class="ai-section-title">Identificación</div>
-          <div class="editq-field-wrap ${policy.fields.nombre.editable ? '' : 'is-locked'}">
-            ${textfield({ label: 'Nombre de la convocatoria' + lockIcon(policy.fields.nombre.lockReason), name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
-          </div>
-          <div class="editq-field-wrap ${policy.fields.descripcion.editable ? '' : 'is-locked'}">
-            ${textarea({ label: 'Descripción' + lockIcon(policy.fields.descripcion.lockReason), name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
-          </div>
+          <section class="editq-section">
+            <div class="ai-section-title">Identificación</div>
+            <div class="editq-field-wrap ${policy.fields.nombre.editable ? '' : 'is-locked'}">
+              ${textfield({ label: 'Nombre de la convocatoria' + lockIcon(policy.fields.nombre.lockReason), name: 'nombre', required: true, placeholder: 'Convocatoria Nacional…', value: conv.nombre || '' })}
+            </div>
+            <div class="editq-field-wrap ${policy.fields.descripcion.editable ? '' : 'is-locked'}">
+              ${textarea({ label: 'Descripción' + lockIcon(policy.fields.descripcion.lockReason), name: 'descripcion', placeholder: 'Descripción general de la convocatoria', rows: 3, value: conv.descripcion || '' })}
+            </div>
+          </section>
 
-          <div class="ai-section-title">Ventana de postulación</div>
-          <div class="ai-grid-2">
-            <div class="editq-field-wrap ${policy.fields.apertura.editable ? '' : 'is-locked'}">
-              ${datepicker({ label: 'Apertura' + lockIcon(policy.fields.apertura.lockReason), name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
+          <section class="editq-section">
+            <div class="ai-section-title">Ventana de postulación</div>
+            <div class="ai-grid-2">
+              <div class="editq-field-wrap ${policy.fields.apertura.editable ? '' : 'is-locked'}">
+                ${datepicker({ label: 'Apertura' + lockIcon(policy.fields.apertura.lockReason), name: 'apertura', required: true, helper: 'Postulaciones se habilitan' })}
+              </div>
+              <div class="editq-field-wrap ${policy.fields.cierre.editable ? '' : 'is-locked'}">
+                ${datepicker({ label: 'Cierre' + lockIcon(policy.fields.cierre.lockReason) + (!policy.fields.cierre.lockReason ? infoIcon(policy.fields.cierre.minDateNote) : ''), name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
+              </div>
             </div>
-            <div class="editq-field-wrap ${policy.fields.cierre.editable ? '' : 'is-locked'}">
-              ${datepicker({ label: 'Cierre' + lockIcon(policy.fields.cierre.lockReason) + (!policy.fields.cierre.lockReason ? infoIcon(policy.fields.cierre.minDateNote) : ''), name: 'cierre', required: true, helper: 'Postulaciones expiran' })}
-            </div>
-          </div>
+          </section>
 
-          <div class="ai-section-title">Presupuesto</div>
-          <div class="ai-grid-2">
-            <div class="editq-field-wrap ${policy.fields.presupuestoTotal.editable ? '' : 'is-locked'}">
-              ${textfield({ label: 'Presupuesto total (COP)' + lockIcon(policy.fields.presupuestoTotal.lockReason) + (!policy.fields.presupuestoTotal.lockReason ? infoIcon(policy.fields.presupuestoTotal.minValueNote) : ''), name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
+          <section class="editq-section">
+            <div class="ai-section-title">Presupuesto</div>
+            <div class="ai-grid-2">
+              <div class="editq-field-wrap ${policy.fields.presupuestoTotal.editable ? '' : 'is-locked'}">
+                ${textfield({ label: 'Presupuesto total (COP)' + lockIcon(policy.fields.presupuestoTotal.lockReason) + (!policy.fields.presupuestoTotal.lockReason ? infoIcon(policy.fields.presupuestoTotal.minValueNote) : ''), name: 'presupuestoTotal', required: true, placeholder: '80.000.000.000', mask: 'money', value: conv.presupuestoTotal ? String(conv.presupuestoTotal) : '' })}
+              </div>
+              <div class="editq-field-wrap ${policy.fields.montoMaximoProyecto.editable ? '' : 'is-locked'}">
+                ${textfield({ label: 'Tope por proyecto (COP)' + lockIcon(policy.fields.montoMaximoProyecto.lockReason), name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
+              </div>
             </div>
-            <div class="editq-field-wrap ${policy.fields.montoMaximoProyecto.editable ? '' : 'is-locked'}">
-              ${textfield({ label: 'Tope por proyecto (COP)' + lockIcon(policy.fields.montoMaximoProyecto.lockReason), name: 'montoMaximoProyecto', required: true, placeholder: '12.000.000.000', mask: 'money', value: conv.montoMaximoProyecto ? String(conv.montoMaximoProyecto) : '' })}
-            </div>
-          </div>
+          </section>
 
-          <div class="ai-section-title">Estado${lockIcon(policy.fields.estado.lockReason)}${!policy.fields.estado.lockReason && policy.fields.estado.canCloseManually ? infoIcon('Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.') : ''}</div>
-          <div class="editq-field-wrap ${policy.fields.estado.editable ? '' : 'is-locked'}">
-            <div class="naowee-segment naowee-segment--small" role="radiogroup" aria-label="Estado" data-segment="estado">
-              <div class="naowee-segment__pill" aria-hidden="true"></div>
-              <button type="button" class="naowee-segment__item ${conv.estado === 'abierta' ? 'naowee-segment__item--active' : ''} ${policy.fields.estado.editable ? '' : 'naowee-segment__item--disabled'}" data-estado="abierta" role="radio" aria-checked="${conv.estado === 'abierta'}">Abierta</button>
-              <button type="button" class="naowee-segment__item ${conv.estado === 'cerrada' ? 'naowee-segment__item--active' : ''} ${policy.fields.estado.editable ? '' : 'naowee-segment__item--disabled'}" data-estado="cerrada" role="radio" aria-checked="${conv.estado === 'cerrada'}">Cerrada</button>
+          <section class="editq-section">
+            <div class="ai-section-title">Estado${lockIcon(policy.fields.estado.lockReason)}${!policy.fields.estado.lockReason && policy.fields.estado.canCloseManually ? infoIcon('Puedes cerrar manualmente antes del cierre programado, pero no podrás reabrirla.') : ''}</div>
+            <div class="editq-field-wrap ${policy.fields.estado.editable ? '' : 'is-locked'}">
+              <div class="naowee-segment naowee-segment--small" role="radiogroup" aria-label="Estado" data-segment="estado">
+                <div class="naowee-segment__pill" aria-hidden="true"></div>
+                <button type="button" class="naowee-segment__item ${conv.estado === 'abierta' ? 'naowee-segment__item--active' : ''} ${policy.fields.estado.editable ? '' : 'naowee-segment__item--disabled'}" data-estado="abierta" role="radio" aria-checked="${conv.estado === 'abierta'}">Abierta</button>
+                <button type="button" class="naowee-segment__item ${conv.estado === 'cerrada' ? 'naowee-segment__item--active' : ''} ${policy.fields.estado.editable ? '' : 'naowee-segment__item--disabled'}" data-estado="cerrada" role="radio" aria-checked="${conv.estado === 'cerrada'}">Cerrada</button>
+              </div>
+              <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
             </div>
-            <input type="hidden" name="estado" value="${conv.estado || 'abierta'}"/>
-          </div>
+          </section>
 
         </form>
       </div>

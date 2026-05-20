@@ -264,6 +264,41 @@
   }
   .dg-summary__actions { display: flex; gap: 10px; }
 
+  /* Doug 19/05/2026: indicador de modo solo-lectura en la zona de
+     acción. Se muestra cuando el revisor activo no es el assignee del
+     doc general. Pattern production-natural: en lugar de ofrecer un
+     switch de perfil (demo plumbing), comunica claramente "solo
+     lectura" + quien tiene que decidir. */
+  .dg-summary__readonly {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    background: #f5f6fa;
+    border: 1px solid var(--border, #e7e9f3);
+    border-radius: var(--radius-md, 8px);
+    font-size: 12.5px;
+    color: var(--text-secondary, #646587);
+  }
+  .dg-summary__readonly-icon {
+    color: var(--text-secondary, #646587);
+    flex-shrink: 0;
+  }
+  .dg-summary__readonly-text {
+    font-weight: 700; color: var(--text-primary, #282834);
+    text-transform: uppercase; font-size: 11px; letter-spacing: .35px;
+  }
+  .dg-summary__readonly-sep { opacity: .5; }
+  .dg-summary__readonly-msg { color: var(--text-secondary); }
+  .dg-summary__readonly-rep {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-primary);
+  }
+  .dg-summary__readonly-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
   /* CTAs semánticos del summary con elevation tokens globales */
   .btn-aprobar-doc {
     background: #15803d !important; color: #fff !important; border-color: #15803d !important;
@@ -807,15 +842,23 @@
                 <button type="button" class="naowee-btn btn-aprobar-doc" id="btnAprobar">${ICONS.check} Aprobar documentación general</button>
               </div>
             ` : `
-              <!-- Doug 19/05/2026: cuando el revisor activo no es el revisor
-                   general, el flow de aprobar/devolver queda gated. Mostrar un
-                   prompt accionable que cambie al perfil correcto (1 click)
-                   para que el demo no se atasque sin CTAs visibles. -->
-              <div class="dg-summary__actions">
-                <button type="button" class="naowee-btn naowee-btn--loud" id="btnSwitchGeneral" ${revisorGeneralPool ? '' : 'disabled'} style="gap:8px">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
-                  Cambiar a ${revisorGeneralPool?.nombre?.split(' ')[0] || 'Revisor Doc. General'} para decidir
-                </button>
+              <!-- Doug 19/05/2026 rev2: en lugar de ofrecer un swap de perfil
+                   (demo plumbing, no UX real), mostramos un indicador de
+                   "modo solo lectura" con avatar del asignado. Production-
+                   natural: en cualquier app con RBAC, cuando no puedes
+                   actuar, ves un read-only badge claro en la zona de
+                   accion. -->
+              <div class="dg-summary__readonly" role="status">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="dg-summary__readonly-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span class="dg-summary__readonly-text">Solo lectura</span>
+                <span class="dg-summary__readonly-sep" aria-hidden="true">·</span>
+                <span class="dg-summary__readonly-msg">Esperando decisión de</span>
+                ${revisorGeneralPool ? `
+                  <span class="dg-summary__readonly-rep">
+                    <span class="dg-summary__readonly-avatar" style="background:${revisorGeneralPool.color}22;color:${revisorGeneralPool.color}">${revisorGeneralPool.avatar || revisorGeneralPool.nombre.split(' ').map(w => w[0]).slice(0,2).join('')}</span>
+                    <strong>${revisorGeneralPool.nombre}</strong>
+                  </span>
+                ` : '<strong>Revisor Doc. General</strong>'}
               </div>
             `}
           </div>
@@ -856,27 +899,6 @@
         : `Devolver con ${nocumple} ${nocumple === 1 ? 'observación' : 'observaciones'} al municipio`;
     }
     updateSummary();
-
-    /* Doug 19/05/2026: si el revisor activo no es Doc General, mostramos
-       el CTA "Cambiar a {nombre}" en lugar de Aprobar/Devolver. El
-       handler hace el swap del revisor activo y recarga (mismo mecanismo
-       que usa el demo-switcher del shell para items [data-revisor]). */
-    document.getElementById('btnSwitchGeneral')?.addEventListener('click', () => {
-      const rev = revisorGeneralPool;
-      if (!rev) return;
-      ProjectData.update(s => {
-        s.perfilActivo = 'revisor';
-        s.perfiles.revisor = {
-          ...s.perfiles.revisor,
-          revisorId: rev.id,
-          nombre: rev.nombre,
-          avatar: rev.avatar,
-          color: rev.color,
-          cargo: `Revisor · ${rev.especialidad}`
-        };
-      });
-      window.location.reload();
-    });
 
     /* Refresh progress bars per bloque */
     function updateBloques() {

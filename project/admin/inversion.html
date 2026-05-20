@@ -119,7 +119,7 @@
      por el modal de pre-validacion canonico del modulo escenarios
      (modal-registro-escenario.js). Mismos campos, estilos, componentes:
      datos basicos + Leaflet map + geolocation + lat/lon + direccion. */
-  import { openRegistroEscenarioModal } from '../shared/modal-registro-escenario.js?v=20260519a';
+  import { openRegistroEscenarioModal } from '../shared/modal-registro-escenario.js?v=20260519b';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'inversion' });
 
@@ -353,13 +353,23 @@
     if (!btn) return;
     e.preventDefault();
     e.stopPropagation();
-    openRegistroEscenarioModal({
-      proyectoId: btn.dataset.suidModal,
-      onCompleted: () => {
-        /* Reload la pantalla para refrescar el badge SUID en la tabla */
-        setTimeout(() => window.location.reload(), 800);
+    console.log('[SUID] Diligenciar click — proyectoId:', btn.dataset.suidModal);
+    try {
+      const result = openRegistroEscenarioModal({
+        proyectoId: btn.dataset.suidModal,
+        onCompleted: () => setTimeout(() => window.location.reload(), 800)
+      });
+      console.log('[SUID] openRegistroEscenarioModal returned:', result);
+      if (result instanceof Promise) {
+        result.catch(err => {
+          console.error('[SUID] modal promise rejected:', err);
+          alert('Error al abrir modal: ' + (err?.message || err));
+        });
       }
-    });
+    } catch (err) {
+      console.error('[SUID] modal threw synchronously:', err);
+      alert('Error sync al abrir modal: ' + (err?.message || err));
+    }
   });
 
   /* ═══ Filtro por departamento (filtra rows visibles + recalcula totales) ═══ */

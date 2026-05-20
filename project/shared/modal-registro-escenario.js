@@ -24,7 +24,12 @@ import ProjectData from './data.js';
 
 const LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
 const LEAFLET_JS  = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-const MUNI_JS     = './colombia-municipios.js';
+/* Doug 19/05/2026: usar import.meta.url para que el src del <script>
+   resuelva relativo al MODULO (siempre /shared/) y no a la pagina que
+   lo importa (puede ser /admin/, /municipio/, etc.). Sin esto, el
+   script.src queda como /admin/colombia-municipios.js -> 404 ->
+   setInterval polling infinito -> modal nunca abre. */
+const MUNI_JS = new URL('./colombia-municipios.js', import.meta.url).href;
 
 /* Estado del modal (singleton, se resetea en cada apertura) */
 const regState = {

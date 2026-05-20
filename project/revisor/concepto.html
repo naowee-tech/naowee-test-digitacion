@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519l">
 <style>
   /* ─── Hero KPIs específicos de esta página ─── */
   .cf-summary {
@@ -141,7 +141,7 @@
   mountShell({ activeId: 'concepto' });
 
   const conConcepto = ProjectData.getProyectos(p => p.estado === 'concepto_favorable' || p.estado === 'en_inversion');
-  const enProceso = ProjectData.getProyectos(p => p.estado === 'etapa_documental');
+  const enProceso = ProjectData.getProyectos(p => ['etapa_documental', 'en_revision_docs'].includes(p.estado));
   const montoCertificado = conConcepto.reduce((s, p) => s + (p.presupuesto || 0), 0);
 
   const ICONS = {

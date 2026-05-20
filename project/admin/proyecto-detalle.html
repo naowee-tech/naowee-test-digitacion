@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519l">
 <link rel="stylesheet" href="../shared/wizard-page.css">
 </head>
 <body>
@@ -139,14 +139,16 @@
           ` : ''}
         </div>
 
-        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental','concepto_favorable','en_inversion'].includes(p.estado)) ? (() => {
+        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental','en_revision_docs','concepto_favorable','en_inversion'].includes(p.estado)) ? (() => {
           /* Equipo revisor: informativo, no seleccionable. Todos ven el proyecto,
              pero cada quien aprueba SOLO sus áreas (modelo Andrea + Danna 29/04/2026).
              La asignación es AUTOMÁTICA por especialidad cuando el proyecto pasa
              a etapa documental. */
           const equipo = ProjectData.getRevisores();
           const areasDeEsteProyecto = p.docsTecnica?.areas || [];
-          const equipoActivo = ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado);
+          /* Doug 19/05/2026: aceptar AMBOS estados — 'en_revision_docs'
+             canónico nuevo + 'etapa_documental' legacy. */
+          const equipoActivo = ['etapa_documental','en_revision_docs','concepto_favorable','en_inversion'].includes(p.estado);
           /* Para cada revisor: qué áreas de este proyecto le tocan + estado agregado */
           const equipoEnriquecido = equipo.map(r => {
             const misAreas = r.especialidades?.includes('general')
@@ -163,9 +165,9 @@
           /* Timeline de fases — visualiza CUÁNDO sucede la asignación automática */
           const fases = [
             { key: 'postulacion', label: 'Postulación recibida', done: true },
-            { key: 'revision',    label: 'Revisión inicial',     done: ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado), active: ['presentado','en_revision','devuelta_subsanacion'].includes(p.estado) },
-            { key: 'asignacion',  label: 'Equipo asignado',      done: ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado), active: p.estado === 'etapa_documental' },
-            { key: 'concepto',    label: 'Concepto emitido',     done: ['concepto_favorable','en_inversion'].includes(p.estado), active: p.estado === 'etapa_documental' }
+            { key: 'revision',    label: 'Revisión inicial',     done: ['etapa_documental','en_revision_docs','concepto_favorable','en_inversion'].includes(p.estado), active: ['presentado','en_revision','devuelta_subsanacion'].includes(p.estado) },
+            { key: 'asignacion',  label: 'Equipo asignado',      done: ['etapa_documental','en_revision_docs','concepto_favorable','en_inversion'].includes(p.estado), active: ['etapa_documental','en_revision_docs'].includes(p.estado) },
+            { key: 'concepto',    label: 'Concepto emitido',     done: ['concepto_favorable','en_inversion'].includes(p.estado), active: ['etapa_documental','en_revision_docs'].includes(p.estado) }
           ];
           /* Mensaje contextual + título según el estado del flujo */
           let mensajeFlujo = '';
@@ -179,7 +181,7 @@
           } else if (p.estado === 'devuelta_subsanacion') {
             titleFlujo = 'Postulación devuelta al municipio';
             mensajeFlujo = `El equipo se asignará cuando vuelva a revisión y la postulación sea aprobada.`;
-          } else if (p.estado === 'etapa_documental') {
+          } else if (['etapa_documental', 'en_revision_docs'].includes(p.estado)) {
             titleFlujo = 'Equipo asignado automáticamente';
             mensajeFlujo = `Cada miembro recibió las áreas de su especialidad. SLA 15 días por área. Puedes <strong>reasignar un área puntual</strong> desde la card de Áreas técnicas más abajo si un revisor está saturado.`;
           } else if (['concepto_favorable','en_inversion'].includes(p.estado)) {

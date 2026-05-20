@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519l">
 <style>
   /* ─── LIST page (sin id) — searchbox + tabla ─── */
   .dt-hero { /* legacy del list page, no aplica en detail */ }
@@ -374,7 +374,11 @@
   ProjectData.setPerfil('revisor');
   mountShell({ activeId: 'doc-tecnica' });
 
-  const proyectos = ProjectData.getProyectos(p => p.estado === 'etapa_documental' && p.docsTecnica);
+  /* Doug 19/05/2026: aceptar AMBOS estados — 'en_revision_docs' canónico
+     nuevo + 'etapa_documental' legacy. */
+  const proyectos = ProjectData.getProyectos(p =>
+    ['etapa_documental', 'en_revision_docs'].includes(p.estado) && p.docsTecnica
+  );
   const id = new URLSearchParams(location.search).get('id');
   const p = id ? ProjectData.getProyecto(id) : null;
   const pageContent = document.getElementById('pageContent');

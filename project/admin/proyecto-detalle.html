@@ -422,25 +422,35 @@
       </div>
     `;
 
-    /* Tabs interaction (mover indicator + cambiar panel) */
-    const tabsEl = document.querySelector('.naowee-tabs');
-    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
-    const positionIndicator = (tab) => {
-      const r = tab.getBoundingClientRect();
-      const parent = tabsEl.getBoundingClientRect();
-      indicator.style.width = r.width + 'px';
-      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
-    };
-    const initial = tabsEl.querySelector('.naowee-tab--selected');
-    if (initial) requestAnimationFrame(() => positionIndicator(initial));
-    tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const key = tab.dataset.tab;
-        tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
-        document.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
-        positionIndicator(tab);
+    /* Tabs interaction (mover indicator + cambiar panel).
+       Doug 19/05/2026: bug — el primer `document.querySelector('.naowee-tabs')`
+       en la pagina podia ser de OTRO componente (DS, shell sidebar, etc.) que
+       no tenia __indicator child -> TypeError "Cannot read properties of null
+       (reading querySelector)" en linea 427. Eso aborta la ejecucion del
+       script y el btnActivarInv NUNCA recibe handler.
+       Fix: scope al pageContent (donde si esta la card del proyecto) +
+       null-guard si el match es inesperado. */
+    const tabsEl = document.querySelector('#pageContent .naowee-tabs');
+    if (tabsEl) {
+      const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+      const positionIndicator = (tab) => {
+        if (!indicator) return;
+        const r = tab.getBoundingClientRect();
+        const parent = tabsEl.getBoundingClientRect();
+        indicator.style.width = r.width + 'px';
+        indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+      };
+      const initial = tabsEl.querySelector('.naowee-tab--selected');
+      if (initial) requestAnimationFrame(() => positionIndicator(initial));
+      tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const key = tab.dataset.tab;
+          tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+          document.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
+          positionIndicator(tab);
+        });
       });
-    });
+    }
 
     /* Activar inversión: modal en vez de página dedicada.
        Doug 19/05/2026: cambiado de bind directo a event delegation

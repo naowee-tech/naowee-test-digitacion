@@ -785,7 +785,12 @@
                      DS tooltip vía .has-tooltip + data-tooltip (NO title=, evita
                      el tooltip nativo del browser duplicado). */
                   const downloadBtn = `<button type="button" class="dg-item__download has-tooltip" data-download="${it.n}" data-tooltip="Descargar documento adjunto" aria-label="Descargar adjunto del item ${it.n}">${ICONS.download}</button>`;
-                  if (aprobado) {
+                  /* Doug 19/05/2026: read-only no solo cuando aprobado,
+                     tambien cuando el revisor activo no es Doc General
+                     (no puede marcar cumple/no cumple/no aplica — eso es
+                     decision del general). Pill estatica + pointer-events
+                     none en items aplicado a ambos casos. */
+                  if (aprobado || !esRevisorGeneral) {
                     /* Read-only: pill inline en lugar de toggle editable */
                     const pill = sel === 'cumple'   ? `<span class="dg-readonly-pill dg-readonly-pill--cumple">${ICONS.check} Cumple</span>`
                              :  sel === 'nocumple' ? `<span class="dg-readonly-pill dg-readonly-pill--nocumple">${ICONS.x} No cumple</span>`
@@ -927,8 +932,10 @@
       });
     });
 
-    /* Click en cada toggle — solo en modo editable */
-    if (!aprobado) document.querySelectorAll('.dg-item').forEach(itemEl => {
+    /* Click en cada toggle — solo en modo editable (no aprobado
+       y el revisor activo es Doc General). Doug 19/05/2026: doble
+       gate para que otros revisores no puedan marcar items. */
+    if (!aprobado && esRevisorGeneral) document.querySelectorAll('.dg-item').forEach(itemEl => {
       const n = itemEl.dataset.item;
       itemEl.querySelectorAll('.dg-toggle__btn').forEach(btn => {
         btn.addEventListener('click', () => {

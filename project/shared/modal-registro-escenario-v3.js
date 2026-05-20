@@ -369,20 +369,28 @@ function injectStyles() {
 
 /* ── Helper error inline debajo de cada campo ── */
 .reg-field-helper {
-  display: flex; align-items: flex-start; gap: 6px;
-  margin-top: 6px;
-  font-size: 12px; line-height: 1.4;
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
+  font-size: 13px; line-height: 1.4; font-weight: 500;
   color: #d33e3e;
   animation: regHelperFadeIn .18s cubic-bezier(.4,0,.2,1) both;
 }
+/* CRITICAL: el atributo HTML 'hidden' debe vencer al display:flex */
+.reg-field-helper[hidden] { display: none !important; }
 .reg-field-helper svg {
-  flex-shrink: 0; width: 14px; height: 14px; margin-top: 1px;
+  flex-shrink: 0; width: 16px; height: 16px;
   color: #d33e3e;
 }
 @keyframes regHelperFadeIn {
   from { opacity: 0; transform: translateY(-2px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Step container: gap vertical entre filas/campos ── */
+.reg-step {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.reg-step[hidden] { display: none !important; }
 
 /* ── Banner de borrador recuperado ── */
 .reg-draft-banner {
@@ -403,9 +411,6 @@ function injectStyles() {
   padding: 4px 10px; border-radius: 6px;
 }
 .reg-draft-banner button:hover { background: rgba(31,120,209,.1); }
-
-/* ── Paso oculto ── */
-.reg-step[hidden] { display: none !important; }
 
 /* ── Step indicator pill ── */
 .reg-modal__step-progress {
@@ -518,7 +523,7 @@ function buildModalHTML(proyecto) {
             <input type="text" id="regNombre" class="naowee-textfield__input" placeholder="Centro deportivo Prado" minlength="5" autocomplete="off"/>
           </div>
           <div class="reg-field-helper" id="regHlpNombre" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
             <span></span>
           </div>
         </div>
@@ -537,7 +542,7 @@ function buildModalHTML(proyecto) {
             </button>
             <div class="naowee-dropdown__menu" role="listbox" id="regDepMenu" style="max-height: 280px; overflow-y: auto;"></div>
             <div class="reg-field-helper" id="regHlpDepartamento" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>
@@ -554,7 +559,7 @@ function buildModalHTML(proyecto) {
             </button>
             <div class="naowee-dropdown__menu" role="listbox" id="regMpioMenu" style="max-height: 280px; overflow-y: auto;"></div>
             <div class="reg-field-helper" id="regHlpMunicipio" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>
@@ -567,7 +572,7 @@ function buildModalHTML(proyecto) {
             <input type="text" id="regCatastral" class="naowee-textfield__input" placeholder="080010101000000010901900000012" inputmode="numeric" pattern="[0-9]*" autocomplete="off"/>
           </div>
           <div class="reg-field-helper" id="regHlpCatastral" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
             <span></span>
           </div>
         </div>
@@ -620,7 +625,7 @@ function buildModalHTML(proyecto) {
           </div>
         </div>
         <div class="reg-field-helper" id="regHlpCoords" hidden style="margin-top:-8px;margin-bottom:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
           <span></span>
         </div>
 
@@ -640,7 +645,7 @@ function buildModalHTML(proyecto) {
             <input type="text" id="regDireccion" class="naowee-textfield__input" placeholder="Cl. 6 #No. 16-95, Salgar" minlength="5" maxlength="200" autocomplete="street-address"/>
           </div>
           <div class="reg-field-helper" id="regHlpDireccion" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
             <span></span>
           </div>
         </div>
@@ -666,7 +671,7 @@ function buildModalHTML(proyecto) {
             </button>
             <div class="naowee-dropdown__menu" role="listbox" id="regZonaMenu"></div>
             <div class="reg-field-helper" id="regHlpZona" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>
@@ -692,7 +697,7 @@ function buildModalHTML(proyecto) {
             </button>
             <div class="naowee-dropdown__menu" role="listbox" id="regTipoMenu" style="max-height: 280px; overflow-y: auto;"></div>
             <div class="reg-field-helper" id="regHlpTipo" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>
@@ -705,7 +710,7 @@ function buildModalHTML(proyecto) {
                 <input type="number" id="regArea" class="naowee-textfield__input" placeholder="2500" min="1" max="999999" inputmode="numeric" autocomplete="off"/>
               </div>
               <div class="reg-field-helper" id="regHlpArea" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
                 <span></span>
               </div>
             </div>
@@ -715,7 +720,7 @@ function buildModalHTML(proyecto) {
                 <input type="number" id="regCapacidad" class="naowee-textfield__input" placeholder="500" min="1" max="999999" inputmode="numeric" autocomplete="off"/>
               </div>
               <div class="reg-field-helper" id="regHlpCapacidad" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
                 <span></span>
               </div>
             </div>
@@ -734,7 +739,7 @@ function buildModalHTML(proyecto) {
             </button>
             <div class="naowee-dropdown__menu" role="listbox" id="regEstadoMenu"></div>
             <div class="reg-field-helper" id="regHlpEstado" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>
@@ -746,7 +751,7 @@ function buildModalHTML(proyecto) {
             <label class="naowee-textfield__label naowee-textfield__label--required">Disciplinas que se practican</label>
             <div class="reg-disciplinas-grid" id="regDisciplinasGrid"></div>
             <div class="reg-field-helper" id="regHlpDisciplinas" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>
@@ -758,7 +763,7 @@ function buildModalHTML(proyecto) {
             <label class="naowee-textfield__label" for="regDescripcion">Observaciones (opcional)</label>
             <textarea id="regDescripcion" class="reg-textarea" placeholder="Características adicionales del escenario, condiciones especiales, restricciones de uso, etc." maxlength="500"></textarea>
             <div class="reg-field-helper" id="regHlpDescripcion" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               <span></span>
             </div>
           </div>

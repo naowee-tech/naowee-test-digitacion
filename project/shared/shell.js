@@ -553,7 +553,7 @@ function mountNaoweeFooter() {
      lista todas las versiones publicadas (cada una snapshot bajo
      /project/vX.Y.Z/). Highlight de la versión activa + link al release
      notes en GitHub. */
-  const PROJECT_VERSION = 'v2.0.1';
+  const PROJECT_VERSION = 'v2.0.2';
   const REPO = 'naowee-tech/naowee-test-digitacion';
   const RELEASE_URL = `https://github.com/${REPO}/releases/tag/project-${PROJECT_VERSION}`;
   footer.innerHTML = `

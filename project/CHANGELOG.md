@@ -13,7 +13,15 @@
 
 ## [Unreleased] — `v2.0.x` (próximo PATCH)
 
-> Cambios acumulados desde `project-v2.0.1`.
+> Sin cambios funcionales acumulados aún. La última versión publicada es `project-v2.0.2`.
+
+---
+
+## [project-v2.0.2] — 2026-05-19 · Patch UI/UX refinements + DS canonical
+
+> **Hito:** segundo PATCH consolidado. 23 commits de refinos visuales, fixes UX y migración de componentes custom al patrón canónico DS Naowee. Sin cambios funcionales/breaking — todo es visual + refinos de interacción.
+> **Tag git:** `project-v2.0.2` · **Release:** [project-v2.0.2 — Patch UI/UX consolidado v2](https://github.com/naowee-tech/naowee-test-digitacion/releases/tag/project-v2.0.2)
+> **Snapshot:** https://naowee-tech.github.io/naowee-test-digitacion/project/v2.0.2/index.html
 
 ### Fixed — botón editar de la tabla de convocatorias
 - **Inner shadow naranja persistente** después del primer click: el DS aplica `box-shadow: 0 0 0 3px rgba(215,64,9,.15)` (`--naowee-shadow-focus-accent`) en `:focus-visible`, y el botón retenía el halo después de click + hover siguiente. Fix scoped en `pages.css`: `.convo-edit-btn:focus-visible` ahora adopta el mismo estado visual que `:hover` (orange-bg + accent + svg accent) **sin** box-shadow ni outline — feedback claro para teclado y mouse, sin el ring "fantasma".
@@ -62,6 +70,78 @@ A partir de v2.0.1, cada release sigue este flujo:
 6. Crear GitHub Release: `gh release create project-vX.Y.Z --notes "..."`
 7. **Snapshot de la versión:** `./scripts/snapshot-version.sh vX.Y.Z` + `git add project/vX.Y.Z` + commit + push
 8. Actualizar título del PR si aplica
+
+### Refined — modal de edición rápida v3+ (rev finales)
+- **Spacing vertical real con section wrappers**: el `gap: 22px` del body nunca aplicaba (el body solo tenía 1 hijo: el `<form>`). Refactor con `<section class="editq-section">` por bloque + flex anidado (form gap 28px entre sections, section gap 16px entre fields, title→field 12px efectivo).
+- **Datepicker funcional**: bug pre-existente — el DS v1.8.0 requiere `.naowee-datepicker--open` para que el popover sea visible (opacity 0→1). `bindDatepickers` solo togglaba el atributo `hidden` → popover renderizaba pero invisible. Fix transversal: add/remove `--open` class en open/close/closePopover/outside-click.
+- **Tooltip copy limpio**: removidos los em-dashes (`—`) de todos los tooltips y el prefijo "Bloqueado:" del `lockIcon` helper. Mensajes naturales sin verbo redundante.
+- **? icon refinado**: SVG Lucide-style info outline (no más text-based "?"), 14px, margin-left 3px (más pegado al label). Asteriscos `*` de required ocultos en el modal scope.
+- **Guardar deshabilitado sin cambios + toast en éxito**: dirty-tracking con `snapshotForm()` JSON post-prefill. Save button arranca `disabled`. Toast `naowee-message--positive` en esquina inferior derecha al guardar.
+- **Card-view edit-btn fix**: bug — `bindEditButtons()` solo se llamaba desde `renderView()` (toggle), pero el cards view se renderiza inline en el initial load. Sin bind, los buttons heredaban el `onclick="fadeAndGo()"` del `<article>` padre → modal nunca abría. Fix: bind también post-initial-render.
+
+### Fixed — datepicker UX + persist view preference
+- **Month-selector "Mayo 2026" rectángulo gris**: el DS define el `<button>` sin background ni border explícitos → heredaba UA default. Fix transversal en pages.css: `background: transparent !important` + hover orange-bg.
+- **Clear (×) siempre visible en datepicker idle**: el DS pone `display: flex` explícito en `.naowee-datepicker-field__clear` que sobrescribe el `hidden` attribute. Fix: `[hidden] { display: none !important }`.
+- **Preferencia cards/list persistente**: `localStorage` con key `naowee-project-convocatorias-view`. Sticky entre refreshes y sesiones. View-toggle buttons dinámicos en HTML + handler guarda en cada cambio.
+- **TDZ regression fix**: `renderView()` se llamaba antes de la declaración de `activeFilters` (const, no hoistea) → crashbomb silencioso. Llamada movida al final del script.
+
+### Refined — wizard de creación de convocatoria
+- **Eliminados campos innecesarios** del wizard admin: "Plazo posterior al cierre / Emisión de conceptos" (step 1) y "Fases del proyecto permitidas" (step 3). El proceso documental se hace de un solo, sin fasing.
+- **2 multiSelect ya no required**: "Tipos de solicitud permitidos" y "Fuentes de financiación permitidas" pueden quedar vacíos como filtro abierto (default: todos los tipos/fuentes aceptados).
+
+### Refined — demo-switcher (panel del DEMO chip)
+- **Botones + chips migrados a DS canonical**: los 2 chips estáticos + botón "Saltar a modo libre" → un solo `.naowee-segment --small --proportional` interactivo (toggle directo con sliding pill). "Reiniciar tour" y "Reiniciar demo" → `.naowee-btn --mute --small`.
+- **Scroll unificado**: cada `.demo-role-switcher__list` tenía su propio `overflow-y: auto` → cada sección scrolleaba independientemente. Fix: nuevo wrapper `.demo-role-switcher__scroll` envuelve todo el contenido scrollable, footer queda sticky.
+
+### Refined — file-uploader multi-chip al pattern `--uploaded`
+- Los chips de `Plantillas y anexos` (multi-file) tenían icono PDF rojo circular + border gris → inconsistente con los uploaders single-file (Acto admin / Términos) que usan el pattern canonical `--uploaded` (border verde 2px + shadow positive halo).
+- Refactor: chip ahora con `background: surface blanca` + `border: 2px solid feedback-border-positive-loud` + `box-shadow: highlight-positive` + icono document outline.
+
+### Refined — `proj-data` transversal (proyecto-perfil, proyecto-detalle, revisar-postulacion)
+- Eliminado el campo "Fase" del wizard postular (`modal-postular.js`) — consistente con el wizard admin. Const `faseOptions` removida + persistencia + row del review step 5.
+- `proj-data` spacing: row gap 18px→24px, dt→dd margin 4px→6px, dd font 13.5→14px.
+- **Representante legal → avatar component canónico transversal** en 3 pages: avatar circular 28-36px con iniciales (color = `perfilMuni.color`) + nombre + cargo secundario. Reemplaza `<strong>nombre</strong>` + línea con "documento · cargo".
+
+### Refined — modal de confirmación RBI con jerarquía y peso financiero
+- Rediseño del data display del modal `¿Aprobar RBI de esta postulación?` en `revisor/revisar-postulacion.html`. Antes 3 rows planas (Proyecto/Radicado/Municipio) sin jerarquía.
+- Nuevo summary card con hero (nombre + radicado pill + 📍 muni) + stats split (representante con avatar + monto solicitado verde 17px tabular).
+
+### Refactored — `.naowee-confirm-summary` transversal en 4 modales de decisión
+- Pattern promovido a `pages.css` como clase compartida y aplicado en:
+  - `revisor/revisar-postulacion` (Aprobar RBI)
+  - `revisor/doc-general` (Aprobar doc general)
+  - `revisor/revisar-area` (Devolver + Aprobar área — 2 modales)
+  - `admin/convocatoria-notificar` (Enviar / Reenviar notificación con stats grid `--triple` para reenvio)
+- Modifiers `__stats--single` y `__stats--triple` para layouts de 1 o 3 columnas. 4 value variants (`-rep`, `-money`, `-count`, `-strong`).
+
+### Fixed — green CTA focus glow + empty states con container DS
+- El DS aplica `box-shadow: var(--naowee-shadow-focus-accent)` (3px halo naranja) en `.naowee-btn:focus-visible`. Los CTAs verdes (`btn-favorable`, `btn-aprobar`, `btn-aprobar-doc`) quedaban con halo naranja después del click. Override scoped: mantiene la elevation verde del CTA en focus-visible.
+- Empty states de `doc-general` y `doc-tecnica` flotaban sin container → nuevo pattern `.naowee-page-empty` (card con border + radius + icon circular + title + msg) en pages.css.
+
+### Refined — veredicto buttons (Cumple / No cumple / No aplica)
+- Tooltips simplificados: `"Marcar como cumple"` → **`"Cumple"`** (mismo para los otros 2).
+- Icon-only sin stroke: idle = icono en su color semántico (green/red/blue), hover = bg subtle del color, active = bg subtle + icono en **variant oscuro** (`#156d18` verde / `#8a1212` rojo / `#145b9c` azul).
+- Aplicado en `revisor/doc-general` (`.dg-toggle__btn` con hover-reveal pattern) y `revisor/revisar-area` (`.ra-toggle__btn` refactor de segmented-control con text → 3 icon-only buttons).
+
+### Fixed — strip lateral del `dt-area-card` confinado dentro del border-radius
+- El strip vertical de status (green/orange/red) sobresalía del border-radius del card. Root cause: la card tiene `overflow: visible` (necesario para que el badge "Tu área" protruya), así que el strip absolutely-positioned con `top: 0; bottom: 0` se salía por los corners curvos.
+- Fix transversal sin tocar `overflow`: strip ahora con `top: var(--radius-lg); bottom: var(--radius-lg)` para vivir dentro del safe zone. `border-radius: 99px` adicional le da pill-cap.
+
+### Refined — cenefa edge-to-edge para revisión completada (`admin/proyecto-detalle`)
+- Cuando el proyecto está en `concepto_favorable` o `en_inversion`, el mensaje "Revisión completada" ya no vive dentro del stepper card sino como **cenefa edge-to-edge** pegada al header (`.convo-status-cenefa--positive --top`). Mismo pattern que `convocatoria-detalle` y `proyecto-perfil`.
+- Bonus: limpieza de un bug previo donde `__content + </div>` orfanos hacían aparecer el mensaje 2 veces.
+
+### Fixed — botón Diligenciar al pattern ghost DS Naowee
+- En `admin/inversion.html`, el botón "Diligenciar →" de la columna SUID usaba `.inversion-suid-cta` (clase custom que solo seteaba color, sin reset de background/border → heredaba UA defaults del `<button>` como un rectángulo gris).
+- Migrado al pattern canónico `.naowee-btn --link --small` con SVG arrow inline. Clase custom eliminada de pages.css.
+
+### Fixed — tabla `usuarios` al pattern canonico `naowee-table-card`
+- El header gris no estaba separado de los bordes del card y sin border-radius en las esquinas inferiores. Overrides `margin-left/right: -32px` rompían el pattern pill canónico del DS.
+- Fix: removidos los overrides que extendían el table-wrap edge-to-edge. El thead ahora aparece como pill flotante con 4 esquinas redondeadas inset del card, igual que las demás tablas del módulo.
+
+### Refined — pull-quote oficial del certificado de favorabilidad
+- El bloque `__obs` del certificado en `municipio/proyecto-perfil.html` era una simple card blanca con border gris → se sentía como comentario informal, no como cláusula formal de certificado.
+- Redesign: dashed green border + double-frame (outline + outline-offset), Georgia serif italic center-aligned, decorative quote glyphs `❝ ❞` floating en las esquinas (56px verde 22% opacity).
 
 ---
 

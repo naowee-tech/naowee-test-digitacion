@@ -645,15 +645,10 @@ export async function openRegistroEscenarioModal({ proyectoId, onCompleted } = {
     catInput.value = catInput.value.replace(/\D/g, '');
     regState.catastral = catInput.value;
     clearFieldError(overlay.querySelector('#regFldCatastral'));
-    /* Mock duplicate check — in real app would hit backend.
-       Trigger "duplicate" if user types EXACTLY the example placeholder. */
-    if (regState.catastral === '080010101000000010901900000012') {
-      regState.catastralState = 'duplicate';
-      dupMsg.hidden = false;
-    } else {
-      regState.catastralState = regState.catastral.length >= 30 ? 'valid' : 'empty';
-      dupMsg.hidden = true;
-    }
+    /* Mock duplicate check removed — backend will validate in real flow.
+       Always hide the duplicate message so the user can advance. */
+    regState.catastralState = regState.catastral.length >= 30 ? 'valid' : 'empty';
+    dupMsg.hidden = true;
   });
 
   /* ── Bind: Lat/Lon inputs (sync con marker) ── */
@@ -761,9 +756,7 @@ export async function openRegistroEscenarioModal({ proyectoId, onCompleted } = {
     if (!regState.catastral || regState.catastral.length < 30) {
       errors.push({ id: 'regFldCatastral', msg: 'Número de registro catastral (30 dígitos)' });
     }
-    if (regState.catastralState === 'duplicate') {
-      errors.push({ id: 'regFldCatastral', msg: 'Catastral duplicado' });
-    }
+    /* Duplicate check disabled — backend will validate. */
     if (regState.lat === null || regState.lon === null) {
       errors.push({ id: 'regMap', msg: 'Latitud y Longitud (marca un punto en el mapa)' });
     }

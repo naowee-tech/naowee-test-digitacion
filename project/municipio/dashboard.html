@@ -40,7 +40,16 @@
      (configurable en seed — soporta multi-municipio para gobernaciones). */
   const municipiosCubiertos = perfil?.municipiosCubiertos || [perfil?.municipio].filter(Boolean);
   const misProyectos = data.proyectos.filter(p => municipiosCubiertos.includes(p.municipio));
-  const convocatoriasAbiertas = data.convocatorias.filter(c => c.estado === 'abierta');
+  /* Doug 20/05/2026: una convocatoria es "abierta" SOLO si estado='abierta'
+     Y la fecha actual esta dentro de la ventana apertura..cierre. Antes solo
+     se chequeaba el estado, lo que dejaba colar convocatorias que ya cerraron
+     (caso reproducido: "DANNA" mostrandose en el dashboard pero ya cerrada en
+     /municipio/convocatorias.html). Misma logica que usa convocatorias.html. */
+  const _ahora = new Date();
+  const convocatoriasAbiertas = data.convocatorias.filter(c => {
+    if (c.estado !== 'abierta') return false;
+    return _ahora >= new Date(c.apertura) && _ahora <= new Date(c.cierre);
+  });
   const notifs = (data.notificaciones || []).filter(n => n.perfil === 'municipio');
   const enSubsanacion = misProyectos.filter(p => p.estado === 'devuelta_subsanacion');
 
@@ -233,10 +242,25 @@
     }));
   });
   document.querySelectorAll('[data-postular-conv]').forEach(row => {
-    row.addEventListener('click', () => openPostularModal({
-      convocatoriaId: row.dataset.postularConv,
-      onPostulado: (nuevo) => { window.location.href = `proyecto-perfil.html?id=${nuevo.idUnico}&nuevo=1`; }
-    }));
+    row.addEventListener('click', () => {
+      /* Defense-in-depth: re-validar al momento del click que la convocatoria
+         siga abierta (estado + ventana de fechas). Si cerro entre render y
+         click, abortar y avisar al usuario en vez de abrir el modal. */
+      const cid = row.dataset.postularConv;
+      const conv = data.convocatorias.find(c => c.id === cid);
+      const now = new Date();
+      const sigueAbierta = conv && conv.estado === 'abierta'
+        && now >= new Date(conv.apertura) && now <= new Date(conv.cierre);
+      if (!sigueAbierta) {
+        alert('Esta convocatoria ya cerró. No se pueden recibir más postulaciones.');
+        window.location.reload();
+        return;
+      }
+      openPostularModal({
+        convocatoriaId: cid,
+        onPostulado: (nuevo) => { window.location.href = `proyecto-perfil.html?id=${nuevo.idUnico}&nuevo=1`; }
+      });
+    });
   });
 
   /* Greeting: Ver más / Ver menos solo si overflow */

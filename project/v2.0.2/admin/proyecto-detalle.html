@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Proyecto · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { ESTADOS_POSTULACION, ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { openActivarInversionModal } from '../shared/modal-activar-inversion.js?v=20260516v';
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'proyectos' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const p = ProjectData.getProyecto(id);
+
+  if (!p) {
+    document.getElementById('pageContent').innerHTML = `<div class="naowee-empty-state"><div class="naowee-empty-state__title">Proyecto no encontrado</div>`;
+  } else {
+    const est = ESTADOS_POSTULACION[p.estado];
+    const puedeActivar = p.estado === 'concepto_favorable';
+    const yaInversion = p.estado === 'en_inversion';
+
+    /* Smart back button — respeta el contexto de origen.
+       - Desde convocatoria-detalle: vuelve a esa convocatoria específica
+       - Desde dashboard: vuelve al panel
+       - Default: lista de proyectos */
+    const ref = document.referrer;
+    let backHref, backLabel;
+    if (ref.includes('convocatoria-detalle.html') && p.convocatoriaId) {
+      backHref = `convocatoria-detalle.html?id=${p.convocatoriaId}`;
+      backLabel = 'Volver a la convocatoria';
+    } else if (ref.includes('dashboard.html')) {
+      backHref = 'dashboard.html';
+      backLabel = 'Volver al panel';
+    } else {
+      backHref = 'proyectos.html';
+      backLabel = 'Volver a proyectos';
+    }
+
+    /* Doug 19/05/2026: cuando la revisión esta completada (concepto
+       favorable emitido o inversion activada), el mensaje vive como
+       cenefa edge-to-edge pegada al header, no dentro del stepper card.
+       Mismo pattern .convo-status-cenefa--top que convocatoria-detalle
+       y proyecto-perfil. */
+    const isCompleted = ['concepto_favorable', 'en_inversion'].includes(p.estado);
+    const conceptoFecha = p.conceptoFavorabilidad?.ts ? formatoFecha(p.conceptoFavorabilidad.ts) : null;
+
+    document.getElementById('pageContent').innerHTML = `
+      <div class="page-fade-in">
+        ${isCompleted ? `
+          <div class="convo-status-cenefa convo-status-cenefa--positive convo-status-cenefa--top" role="status">
+            <span class="convo-status-cenefa__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div class="convo-status-cenefa__body">
+              <div class="convo-status-cenefa__title">Revisión completada · concepto favorable emitido</div>
+              <p class="convo-status-cenefa__msg">Todas las áreas técnicas + documentación general fueron aprobadas${conceptoFecha ? ` el <strong>${conceptoFecha}</strong>` : ''}. El proyecto queda listo para activar la inversión.</p>
+            </div>
+          </div>
+        ` : ''}
+        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          ${backLabel}
+        </a>
+
+        <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''} ${yaInversion ? 'project-hero--inversion' : ''}">
+          ${p.priorizado ? `
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto de enfoque del Ministerio">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+              <span class="prio-ribbon__tooltip" role="tooltip">Proyecto de enfoque del Ministerio</span>
+            </span>
+          ` : ''}
+
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${p.radicado || p.idUnico}</div>
+              <h1 class="project-hero__title">${p.nombre}</h1>
+              <div class="project-hero__meta">
+                <span>${p.municipio}, ${p.departamento || ''}</span>
+                <span>${p.formuladora?.nombre || ''}</span>
+                <span>Postulado: ${formatoFecha(p.fechaPostulacion)}</span>
+                <span>${p.tipoSolicitud || ''}${p.fase ? ` · ${p.fase}` : ''}</span>
+              </div>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${est.label}</span>
+                ${p.tipo === 'infraestructura' ? '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Infraestructura</span>' : ''}
+              </div>
+            </div>
+            <div class="project-hero__right">
+              <div class="project-hero__label">Presupuesto del proyecto</div>
+              <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
+              <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
+              ${puedeActivar ? `<button type="button" class="naowee-btn naowee-btn--loud" id="btnActivarInv" style="margin-top:14px;background:#15803d !important;border-color:#15803d !important;box-shadow:var(--shadow-green-cta)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg> Activar inversión</button>` : ''}
+            </div>
+          </div>
+
+          ${yaInversion ? `
+            <div class="hero-cenefa hero-cenefa--inversion" role="status">
+              <span class="hero-cenefa__icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="hero-cenefa__label">Inversión activada</span>
+              <span class="hero-cenefa__sep" aria-hidden="true"></span>
+              <div class="hero-cenefa__stat">
+                <span class="hero-cenefa__stat-label">Monto aprobado</span>
+                <span class="hero-cenefa__stat-value">${formatoMoneda(p.inversion?.montoAprobado)}</span>
+              </div>
+              <span class="hero-cenefa__sep" aria-hidden="true"></span>
+              <div class="hero-cenefa__stat">
+                <span class="hero-cenefa__stat-label">BPIN</span>
+                <span class="hero-cenefa__stat-value hero-cenefa__stat-value--mono">${p.inversion?.bpin || '—'}</span>
+              </div>
+              ${p.inversion?.centroCosto ? `
+                <span class="hero-cenefa__sep" aria-hidden="true"></span>
+                <div class="hero-cenefa__stat">
+                  <span class="hero-cenefa__stat-label">Centro de costo</span>
+                  <span class="hero-cenefa__stat-value hero-cenefa__stat-value--mono">${p.inversion.centroCosto}</span>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+        </div>
+
+        ${(['presentado','en_revision','devuelta_subsanacion','etapa_documental','concepto_favorable','en_inversion'].includes(p.estado)) ? (() => {
+          /* Equipo revisor: informativo, no seleccionable. Todos ven el proyecto,
+             pero cada quien aprueba SOLO sus áreas (modelo Andrea + Danna 29/04/2026).
+             La asignación es AUTOMÁTICA por especialidad cuando el proyecto pasa
+             a etapa documental. */
+          const equipo = ProjectData.getRevisores();
+          const areasDeEsteProyecto = p.docsTecnica?.areas || [];
+          const equipoActivo = ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado);
+          /* Para cada revisor: qué áreas de este proyecto le tocan + estado agregado */
+          const equipoEnriquecido = equipo.map(r => {
+            const misAreas = r.especialidades?.includes('general')
+              ? (p.docsGeneral ? [{ nombre: 'Documentación general', estado: p.docsGeneral.estadoRevision || (p.docsGeneral.revisor ? 'en_revision' : 'pendiente') }] : [])
+              : areasDeEsteProyecto.filter(a => a.revisorId === r.id);
+            const aprobadas = misAreas.filter(a => a.estado === 'aprobado').length;
+            const enRevision = misAreas.filter(a => a.estado === 'en_revision' || (a.estado || '').startsWith('en_revision')).length;
+            const pendientes = misAreas.filter(a => a.estado === 'pendiente').length;
+            const devueltas = misAreas.filter(a => a.estado === 'devuelto').length;
+            return { r, misAreas, aprobadas, enRevision, pendientes, devueltas };
+          });
+          const totalAreas = areasDeEsteProyecto.length + (p.docsGeneral ? 1 : 0);
+          const totalAprobadas = equipoEnriquecido.reduce((s, e) => s + e.aprobadas, 0);
+          /* Timeline de fases — visualiza CUÁNDO sucede la asignación automática */
+          const fases = [
+            { key: 'postulacion', label: 'Postulación recibida', done: true },
+            { key: 'revision',    label: 'Revisión inicial',     done: ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado), active: ['presentado','en_revision','devuelta_subsanacion'].includes(p.estado) },
+            { key: 'asignacion',  label: 'Equipo asignado',      done: ['etapa_documental','concepto_favorable','en_inversion'].includes(p.estado), active: p.estado === 'etapa_documental' },
+            { key: 'concepto',    label: 'Concepto emitido',     done: ['concepto_favorable','en_inversion'].includes(p.estado), active: p.estado === 'etapa_documental' }
+          ];
+          /* Mensaje contextual + título según el estado del flujo */
+          let mensajeFlujo = '';
+          let titleFlujo = equipoActivo ? 'Equipo asignado · proceso en marcha' : 'Equipo en standby';
+          if (p.estado === 'presentado') {
+            titleFlujo = 'Equipo en standby';
+            mensajeFlujo = `El equipo revisor del Ministerio se asignará automáticamente por especialidad cuando apruebes la revisión inicial de la postulación.`;
+          } else if (p.estado === 'en_revision') {
+            titleFlujo = 'Revisión inicial en curso';
+            mensajeFlujo = `Si apruebas la postulación, las <strong>áreas técnicas + doc general</strong> se asignarán automáticamente a los revisores por especialidad. Sin intervención manual.`;
+          } else if (p.estado === 'devuelta_subsanacion') {
+            titleFlujo = 'Postulación devuelta al municipio';
+            mensajeFlujo = `El equipo se asignará cuando vuelva a revisión y la postulación sea aprobada.`;
+          } else if (p.estado === 'etapa_documental') {
+            titleFlujo = 'Equipo asignado automáticamente';
+            mensajeFlujo = `Cada miembro recibió las áreas de su especialidad. SLA 15 días por área. Puedes <strong>reasignar un área puntual</strong> desde la card de Áreas técnicas más abajo si un revisor está saturado.`;
+          } else if (['concepto_favorable','en_inversion'].includes(p.estado)) {
+            titleFlujo = 'Revisión completada';
+            mensajeFlujo = `Todas las áreas + doc general aprobadas. Concepto favorable emitido${p.conceptoFavorabilidad?.ts ? ` el ${formatoFecha(p.conceptoFavorabilidad.ts)}` : ''}.`;
+          }
+          return `
+          <!-- ═══ Equipo revisor del Ministerio (Res. 933 Art. 3 + transcripción 29/04/2026) ═══
+               Modelo: todos ven el proyecto, cada quien aprueba lo suyo por especialidad.
+               Asignación automática por área (no por proyecto). -->
+          <div class="naowee-card equipo-revisor-card">
+            <!-- Timeline visual del proceso de revisión (4 fases) -->
+            <div class="rev-flow-timeline" role="list" aria-label="Fases del proceso de revisión">
+              ${fases.map((f, i) => `
+                <div class="rev-flow-timeline__step ${f.done ? 'is-done' : ''} ${f.active ? 'is-active' : ''}" role="listitem">
+                  <div class="rev-flow-timeline__dot">
+                    ${f.done
+                      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                      : f.active
+                      ? '<span class="rev-flow-timeline__pulse"></span>'
+                      : `<span>${i + 1}</span>`}
+                  </div>
+                  <div class="rev-flow-timeline__lbl">${f.label}</div>
+                </div>
+                ${i < fases.length - 1 ? `<div class="rev-flow-timeline__line ${fases[i+1].done ? 'is-done' : ''}"></div>` : ''}
+              `).join('')}
+            </div>
+
+            <!-- Mensaje contextual según el estado del proyecto.
+                 Doug 19/05/2026: cuando isCompleted, el mensaje vive
+                 como cenefa edge-to-edge arriba (no se duplica aqui).
+                 También se limpio un bug previo donde habia un
+                 naowee-message__content + </div> orfanos (mensaje
+                 aparecia 2 veces). */
+            ${isCompleted ? '' : `
+              <div class="naowee-message naowee-message--${equipoActivo ? 'positive' : 'caution'}" role="status" style="margin-bottom:18px">
+                <div class="naowee-message__header">
+                  <span class="naowee-message__icon">
+                    ${equipoActivo
+                      ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                      : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>'}
+                  </span>
+                  <span class="naowee-message__title">${titleFlujo}</span>
+                </div>
+                <div class="naowee-message__content">
+                  <p class="naowee-message__text">${mensajeFlujo}</p>
+                </div>
+              </div>
+            `}
+
+
+            <div class="equipo-revisor__head">
+              <div>
+                <div class="equipo-revisor__title">Equipo revisor del Ministerio</div>
+                <div class="equipo-revisor__hint">El pool de especialistas cubre las áreas técnicas + doc general. La asignación es por especialidad — no se selecciona manualmente.</div>
+              </div>
+              ${equipoActivo ? `
+                <div class="equipo-revisor__progress" title="${totalAprobadas} de ${totalAreas} áreas aprobadas">
+                  <div class="equipo-revisor__progress-val">${totalAprobadas}<span>/${totalAreas}</span></div>
+                  <div class="equipo-revisor__progress-lbl">áreas aprobadas</div>
+                </div>
+              ` : `
+                <div class="equipo-revisor__progress equipo-revisor__progress--standby">
+                  <div class="equipo-revisor__progress-val equipo-revisor__progress-val--standby">—</div>
+                  <div class="equipo-revisor__progress-lbl">aún sin asignar</div>
+                </div>
+              `}
+            </div>
+            <div class="equipo-revisor__grid">
+              ${equipoEnriquecido.map(({ r, misAreas, aprobadas, enRevision, pendientes, devueltas }) => {
+                const total = misAreas.length;
+                const stateBits = [];
+                if (aprobadas > 0)  stateBits.push(`<span class="rev-stat rev-stat--ok">${aprobadas} aprobada${aprobadas===1?'':'s'}</span>`);
+                if (enRevision > 0) stateBits.push(`<span class="rev-stat rev-stat--info">${enRevision} en revisión</span>`);
+                if (devueltas > 0)  stateBits.push(`<span class="rev-stat rev-stat--warn">${devueltas} devuelta${devueltas===1?'':'s'}</span>`);
+                if (pendientes > 0) stateBits.push(`<span class="rev-stat rev-stat--mute">${pendientes} pendiente${pendientes===1?'':'s'}</span>`);
+                const pct = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
+                const isGeneral = r.especialidades?.includes('general');
+                /* Cuando el equipo NO está activo, mostrar las áreas que LE TOCARÁN
+                   en lugar de "Sin áreas". Más informativo + revela el modelo. */
+                const areasPreview = isGeneral
+                  ? ['Documentación general']
+                  : (r.especialidades || []);
+                return `
+                  <div class="equipo-revisor-card-item ${total === 0 ? 'is-idle' : ''}">
+                    <div class="equipo-revisor-card-item__top">
+                      <div class="naowee-thumbnail naowee-thumbnail--small" style="background:${r.color}22;color:${r.color}">
+                        <span class="naowee-thumbnail__initials">${r.avatar}</span>
+                      </div>
+                      <div style="flex:1;min-width:0">
+                        <div class="equipo-revisor-card-item__name">${r.nombre}</div>
+                        <div class="equipo-revisor-card-item__role">${isGeneral ? 'Doc. General' : r.especialidad}</div>
+                      </div>
+                    </div>
+                    <div class="equipo-revisor-card-item__meta">
+                      ${total === 0
+                        ? `<span class="rev-stat rev-stat--mute">${equipoActivo ? 'Sin áreas en este proyecto' : `Cubrirá: ${areasPreview.length} área${areasPreview.length===1?'':'s'}`}</span>`
+                        : stateBits.join('')}
+                    </div>
+                    ${total > 0 ? `<div class="equipo-revisor-card-item__bar"><span style="width:${pct}%"></span></div>` : ''}
+                  </div>`;
+              }).join('')}
+            </div>
+          </div>
+        `;})() : ''}
+
+        <div class="naowee-card proj-tabs-card">
+          <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+            <button class="naowee-tab naowee-tab--selected" data-tab="datos" role="tab" type="button">Datos del proyecto</button>
+            <button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial</button>
+            <span class="naowee-tabs__indicator"></span>
+          </div>
+
+          <!-- Tab: Datos -->
+          <div class="proj-tab-panel" data-panel="datos">
+            ${(() => {
+              const perfilMuni = ProjectData.getPerfilData?.('municipio');
+              const repColor = perfilMuni?.color || '#1f78d1';
+              const repName = p.representante?.nombre || '';
+              const initials = repName
+                ? repName.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—'
+                : '—';
+              return `
+                <dl class="proj-data">
+                  <div><dt>Dirección</dt><dd>${p.direccionPredio || '—'}</dd></div>
+                  <div><dt>Cofinanciación</dt><dd>${(p.cofinanciacion||[]).map(f=>`<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}</dd></div>
+                  <div><dt>Convocatoria</dt><dd style="font-weight:600">${p.convocatoriaId}</dd></div>
+                  <div><dt>Tipo</dt><dd>${p.tipoSolicitud || '—'}</dd></div>
+                  <div>
+                    <dt>Representante legal</dt>
+                    <dd class="proj-data__rep">
+                      <div class="proj-data__rep-avatar" style="background:${repColor}22;color:${repColor}" aria-hidden="true">${initials}</div>
+                      <div class="proj-data__rep-meta">
+                        <span class="proj-data__rep-name">${repName || '—'}</span>
+                        ${p.representante?.cargo ? `<span class="proj-data__rep-cargo">${p.representante.cargo}</span>` : ''}
+                      </div>
+                    </dd>
+                  </div>
+                </dl>
+              `;
+            })()}
+          </div>
+
+          <!-- Tab: Historial (timeline patrón escenario-09) -->
+          <div class="proj-tab-panel" data-panel="historial" hidden>
+            ${(() => {
+              const events = (p.historial || []).slice().reverse();
+              if (events.length === 0) return '<div class="table-empty"><div class="table-empty__title">Sin eventos en el historial</div><div class="table-empty__msg">Aparecerán aquí cuando se registren acciones del proyecto (radicación, devoluciones, subsanaciones, aprobaciones).</div></div>';
+              const dotColor = (h) => h.actor === 'sistema' ? 'gray'
+                : h.actor === 'revisor' ? 'orange'
+                : h.actor === 'municipio' ? 'blue'
+                : h.estado === 'concepto_favorable' || h.estado === 'en_inversion' ? 'green'
+                : 'orange';
+              const dotIcon = (h) => h.actor === 'sistema'
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+              return `
+                <div class="hist-summary">
+                  <span>${events.length} evento${events.length === 1 ? '' : 's'} en el historial</span>
+                </div>
+                <div class="timeline">
+                  ${events.map(h => `
+                    <div class="timeline-item">
+                      <div class="timeline-dot ${dotColor(h)}">${dotIcon(h)}</div>
+                      <div class="timeline-content">
+                        <div class="timeline-title">${h.evento}</div>
+                        ${h.detalle ? `<div class="timeline-desc">${h.detalle}</div>` : ''}
+                        <div class="timeline-date">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                          ${formatoFecha(h.ts, true)} · Por ${h.actor}
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `;
+            })()}
+          </div>
+        </div>
+
+        ${p.docsTecnica ? `
+          <div class="naowee-card" style="margin-top:20px">
+            <div class="naowee-card__header">
+              <div class="naowee-card__title">Áreas técnicas</div>
+              <div class="naowee-card__subtitle">Cada área tiene revisor asignado por especialidad. SLA: 15 días desde la asignación (Res. 933).</div>
+            </div>
+            <div class="naowee-card__body">
+              <div class="area-grid">
+                ${p.docsTecnica.areas.map(a => {
+                  const e = ESTADOS_AREA[a.estado];
+                  const pct = a.items > 0 ? (a.aprobados / a.items * 100) : 0;
+                  const r = a.revisorId ? ProjectData.getRevisor(a.revisorId) : null;
+                  /* SLA: días restantes hasta fechaLimite. Solo aplica cuando NO está aprobada.
+                     Usa naowee-badge canónico DS (mismo patrón que tabla bandeja revisor):
+                       vencido (<0)   → negative
+                       urgent (≤3d)   → caution
+                       warn   (4-7d)  → informative
+                       ok     (>7d)   → positive */
+                  let slaHtml = '';
+                  if (a.fechaLimite && a.estado !== 'aprobado') {
+                    const ms = new Date(a.fechaLimite) - new Date();
+                    const dias = Math.ceil(ms / 86400000);
+                    const variant = dias < 0 ? 'negative'
+                      : dias <= 3 ? 'caution'
+                      : dias <= 7 ? 'informative'
+                      : 'positive';
+                    const lbl = dias < 0 ? `Vencido ${Math.abs(dias)}d` : dias === 0 ? 'Vence hoy' : `${dias}d restantes`;
+                    slaHtml = `<span class="naowee-badge naowee-badge--${variant} naowee-badge--quiet" title="SLA del área de revisión"><span class="naowee-badge__dot"></span>${lbl}</span>`;
+                  }
+                  return `
+                    <div class="area-card" data-area-id="${a.id}">
+                      <div class="area-card__head">
+                        <div class="area-card__title">${a.nombre}</div>
+                        <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+                      </div>
+                      <div class="area-card__progress"><span style="width:${pct}%"></span></div>
+                      <div class="area-card__stats"><span>${a.aprobados} de ${a.items} ítems</span><span>${Math.round(pct)}%</span></div>
+                      <div class="area-card__footer">
+                        ${r ? `
+                          <div class="area-card__rev">
+                            <div class="naowee-thumbnail naowee-thumbnail--xsmall" style="background:${r.color}22;color:${r.color}">
+                              <span class="naowee-thumbnail__initials">${r.avatar}</span>
+                            </div>
+                            <span class="area-card__rev-name" title="${r.nombre}">${r.nombre.split(' ').slice(0,2).join(' ')}</span>
+                          </div>
+                        ` : `<div class="area-card__rev"><span style="color:var(--text-secondary);font-style:italic;font-size:11.5px">Sin asignar</span></div>`}
+                        ${slaHtml}
+                        <button type="button" class="area-card__reassign has-tooltip" data-area="${a.id}" data-tooltip="Reasignar a otro miembro del equipo" aria-label="Reasignar área">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                        </button>
+                      </div>
+                    </div>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    /* Tabs interaction (mover indicator + cambiar panel) */
+    const tabsEl = document.querySelector('.naowee-tabs');
+    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+    const positionIndicator = (tab) => {
+      const r = tab.getBoundingClientRect();
+      const parent = tabsEl.getBoundingClientRect();
+      indicator.style.width = r.width + 'px';
+      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+    };
+    const initial = tabsEl.querySelector('.naowee-tab--selected');
+    if (initial) requestAnimationFrame(() => positionIndicator(initial));
+    tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const key = tab.dataset.tab;
+        tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+        document.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
+        positionIndicator(tab);
+      });
+    });
+
+    /* Activar inversión: modal en vez de página dedicada */
+    document.getElementById('btnActivarInv')?.addEventListener('click', () => {
+      openActivarInversionModal({
+        proyectoId: p.idUnico,
+        onActivado: () => {
+          /* Refrescar la página para que el hero muestre "En inversión" con BPIN */
+          window.location.reload();
+        }
+      });
+    });
+
+    /* Reasignar área puntual (admin override) — abre menú emergente con el
+       equipo revisor para asignar a otro miembro. Solo afecta el área clicada. */
+    document.querySelectorAll('.area-card__reassign').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const areaId = btn.dataset.area;
+        const area = p.docsTecnica?.areas?.find(a => a.id === areaId);
+        if (!area) return;
+        openReassignMenu(btn, area);
+      });
+    });
+
+    function openReassignMenu(anchor, area) {
+      document.querySelector('.reassign-menu')?.remove();
+      const equipo = ProjectData.getRevisores().filter(r => !r.especialidades?.includes('general'));
+      const menu = document.createElement('div');
+      menu.className = 'reassign-menu';
+      menu.innerHTML = `
+        <div class="reassign-menu__title">Reasignar “${area.nombre}”</div>
+        <div class="reassign-menu__list">
+          ${equipo.map(r => {
+            const cubre = r.especialidades?.some(s => s === (ProjectData.AREA_TO_SPECIALTY?.[area.id]));
+            return `
+              <button type="button" class="reassign-menu__item ${area.revisorId === r.id ? 'is-current' : ''}" data-rev="${r.id}">
+                <div class="naowee-thumbnail naowee-thumbnail--xsmall" style="background:${r.color}22;color:${r.color}">
+                  <span class="naowee-thumbnail__initials">${r.avatar}</span>
+                </div>
+                <div style="flex:1;text-align:left">
+                  <div style="font-weight:600;font-size:13px">${r.nombre}</div>
+                  <div style="font-size:11px;color:var(--text-secondary)">${r.especialidad} · ${r.cargaActiva} activos${cubre ? ' · <strong style="color:var(--green)">especialista</strong>' : ''}</div>
+                </div>
+                ${area.revisorId === r.id ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+      document.body.appendChild(menu);
+      const rect = anchor.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 6) + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      menu.querySelectorAll('.reassign-menu__item').forEach(item => {
+        item.addEventListener('click', () => {
+          const revId = item.dataset.rev;
+          const rev = ProjectData.getRevisor(revId);
+          ProjectData.setProyecto(p.idUnico, x => {
+            const areas = x.docsTecnica?.areas || [];
+            const idx = areas.findIndex(a => a.id === area.id);
+            if (idx >= 0) {
+              areas[idx] = { ...areas[idx], revisorId: revId, asignadoEn: new Date().toISOString() };
+              const lim = new Date(); lim.setDate(lim.getDate() + 15);
+              areas[idx].fechaLimite = lim.toISOString();
+            }
+            x.historial = x.historial || [];
+            x.historial.push({
+              ts: new Date().toISOString(),
+              actor: 'admin',
+              evento: `Área “${area.nombre}” reasignada a ${rev.nombre}`,
+              estado: x.estado
+            });
+            return x;
+          });
+          menu.remove();
+          window.location.reload();
+        });
+      });
+      setTimeout(() => {
+        document.addEventListener('click', function close(ev) {
+          if (!menu.contains(ev.target)) {
+            menu.remove();
+            document.removeEventListener('click', close);
+          }
+        });
+      }, 50);
+    }
+  }
+</script>
+</body>
+</html>

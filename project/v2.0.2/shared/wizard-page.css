@@ -1,0 +1,426 @@
+/* ═══════════════════════════════════════════════════════════════════
+   wizard-page.css — Wizard pattern embebido en página (no modal)
+   Reusa clases DS oficiales (.naowee-stepper*, .naowee-textfield*, etc.)
+   Espejo del modal de convocatoria, sin el scoping a #convocatoriaOverlay
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Wrapper de página */
+.wz-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Header de página (breadcrumb + título + subtítulo) — gap consistente */
+.wz-page__header {
+  margin-bottom: 18px;
+}
+.wz-page__title {
+  margin: 8px 0 4px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text-primary, #282834);
+  line-height: 1.15;
+}
+.wz-page__subtitle {
+  color: var(--text-secondary, #646587);
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Card del wizard: stepper + body + footer */
+.wz-card {
+  background: #fff;
+  border: 1px solid var(--border, #e7e9f3);
+  border-radius: 16px;
+  box-shadow:
+    0 0 2px rgba(145,158,171,.2),
+    0 12px 24px -4px rgba(145,158,171,.12);
+  overflow: hidden;
+}
+
+/* ═══ Stepper wrapper ═══ */
+.wz-stepper-wrap {
+  padding: 18px 28px 16px;
+  border-bottom: 1px solid var(--border, #e7e9f3);
+  display: flex;
+  justify-content: center;
+  background: #fff;
+}
+.wz-stepper-wrap .naowee-stepper {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  border-bottom: 0;
+  overflow-x: auto;
+}
+.wz-stepper-wrap .naowee-stepper__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  cursor: default;
+}
+.wz-stepper-wrap .naowee-stepper__number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--grey-bg, #f5f6fa);
+  color: var(--text-secondary, #646587);
+  transition: all .2s;
+}
+.wz-stepper-wrap .naowee-stepper__label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary, #646587);
+  white-space: nowrap;
+  transition: color .2s;
+}
+.wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__number {
+  background: var(--accent, #d74009);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(215,64,9,.12);
+}
+.wz-stepper-wrap .naowee-stepper--pulse .naowee-stepper__step--active .naowee-stepper__number {
+  animation: wzStepperPulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+@keyframes wzStepperPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(215, 64, 9, .45); }
+  50%      { box-shadow: 0 0 0 8px rgba(215, 64, 9, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wz-stepper-wrap .naowee-stepper--pulse .naowee-stepper__step--active .naowee-stepper__number {
+    animation: none;
+  }
+}
+.wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__label {
+  color: var(--text-primary, #282834);
+  font-weight: 600;
+}
+.wz-stepper-wrap .naowee-stepper__step--done .naowee-stepper__number {
+  background: #15803d;
+  color: #fff;
+}
+.wz-stepper-wrap .naowee-stepper__step--done .naowee-stepper__label {
+  color: var(--text-primary, #282834);
+}
+.wz-stepper-wrap .naowee-stepper__step--done {
+  cursor: pointer;
+}
+.wz-stepper-wrap .naowee-stepper__step--done:hover .naowee-stepper__label {
+  color: var(--accent, #d74009);
+}
+.wz-stepper-wrap .naowee-stepper__connector {
+  flex: 1 1 auto;
+  height: 2px;
+  background: var(--border, #e7e9f3);
+  min-width: 24px;
+  transition: background .25s;
+}
+.wz-stepper-wrap .naowee-stepper__connector--done {
+  background: #15803d;
+}
+
+/* ═══ Body con paneles ═══ */
+.wz-body {
+  padding: 24px 28px;
+}
+
+.wz-step-panel {
+  display: none;
+  animation: wzStepFadeIn .3s cubic-bezier(.32,.72,0,1) both;
+}
+.wz-step-panel.is-active {
+  display: block;
+}
+@keyframes wzStepFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Section title — gris muy claro #b5b9d4 (HANDOFF: NO usar text-secondary) */
+.wz-section {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: #b5b9d4;
+  margin: 22px 0 12px;
+}
+.wz-section:first-child { margin-top: 0; }
+
+/* Grids */
+.wz-grid-2 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-bottom: 18px;
+  align-items: start;
+}
+.wz-grid-3 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  margin-bottom: 18px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .wz-grid-2,
+  .wz-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Spacing entre inputs standalone (no en grid) — 18px */
+.wz-step-panel > .naowee-textfield,
+.wz-step-panel > .naowee-dropdown,
+.wz-step-panel > .naowee-datepicker-field {
+  margin-bottom: 18px;
+}
+.wz-grid-2 > .naowee-textfield,
+.wz-grid-2 > .naowee-dropdown,
+.wz-grid-3 > .naowee-textfield,
+.wz-grid-3 > .naowee-dropdown {
+  margin-bottom: 0;
+}
+
+/* ═══ File drop reusable ═══ */
+.wz-file-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  border: 1.5px dashed var(--border-dark, #d0d4e6);
+  border-radius: 12px;
+  background: #fafbff;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+.wz-file-drop:hover {
+  border-color: var(--accent, #d74009);
+  background: #fff8f4;
+}
+.wz-file-drop.is-filled {
+  border-style: solid;
+  border-color: #15803d;
+  background: #f0faf2;
+}
+.wz-file-drop__icon {
+  color: var(--text-secondary, #646587);
+}
+.wz-file-drop.is-filled .wz-file-drop__icon {
+  color: #15803d;
+}
+.wz-file-drop__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #282834);
+}
+.wz-file-drop__hint {
+  font-size: 12px;
+  color: var(--text-secondary, #646587);
+  text-align: center;
+}
+.wz-file-drop__name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #15803d;
+  margin-top: 4px;
+}
+.wz-file-drop input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ═══ Footer flat (estructura horizontal con margin-right: auto en Anterior) ═══ */
+.wz-footer {
+  padding: 18px 28px;
+  border-top: 1px solid var(--border, #e7e9f3);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.wz-footer__prev {
+  margin-right: auto;
+}
+
+/* "Guardar borrador" link naranja, large 46px (verbatim del modal) */
+.wz-save-draft {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  height: 46px;
+  padding: 0 18px;
+  color: var(--accent, #d74009);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--radius-md, 8px);
+  transition: background .15s, transform .12s;
+  white-space: nowrap;
+}
+.wz-save-draft:hover { background: var(--orange-bg, #fff3e6); }
+.wz-save-draft:active { transform: scale(.97); }
+.wz-save-draft svg { width: 18px; height: 18px; }
+
+/* Botón large dentro del wizard footer — padding/altura consistente con el modal */
+.wz-footer .naowee-btn--large {
+  height: 46px;
+  padding: 0 24px !important;
+  gap: 10px !important;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.wz-footer .naowee-btn--large svg { flex-shrink: 0; }
+
+/* ═══ Review (paso final) — listas key/value ═══ */
+.wz-review {
+  display: grid;
+  gap: 14px;
+}
+.wz-review__group {
+  border: 1px solid var(--border, #e7e9f3);
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: #fbfbfd;
+}
+.wz-review__group-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--accent, #d74009);
+  margin: 0 0 10px;
+}
+.wz-review__row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed var(--border, #e7e9f3);
+}
+.wz-review__row:last-child { border-bottom: 0; }
+.wz-review__label {
+  color: var(--text-secondary, #646587);
+  font-weight: 500;
+}
+.wz-review__value {
+  color: var(--text-primary, #282834);
+  font-weight: 600;
+  word-break: break-word;
+}
+@media (max-width: 640px) {
+  .wz-review__row { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* ═══ Success view (confetti + check verde) — pattern incentivo-11 ═══ */
+.wz-success {
+  position: relative;
+  text-align: center;
+  padding: 56px 32px;
+  overflow: hidden;
+  animation: wzStepFadeIn .35s cubic-bezier(.32,.72,0,1) both;
+}
+.wz-success__check {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: #15803d;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 8px rgba(21,128,61,.12);
+  animation: wzCheckPop .5s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes wzCheckPop {
+  from { transform: scale(.4); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.wz-success h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #282834);
+}
+.wz-success p {
+  margin: 0 auto 14px;
+  max-width: 480px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #646587);
+}
+.wz-success__stamp {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+.wz-success__cta {
+  margin-top: 28px;
+}
+
+/* Confetti pattern */
+.wz-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.wz-confetti span {
+  position: absolute;
+  width: 8px;
+  height: 14px;
+  opacity: 0;
+  animation: wzConfetti 2.4s ease-out forwards;
+}
+@keyframes wzConfetti {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(640px) rotate(540deg); opacity: 0; }
+}
+
+/* ═══ Helpers visuales para review ═══ */
+.wz-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.wz-pill {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+  border: 1px solid var(--orange-border, #ffbf75);
+}

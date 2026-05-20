@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Áreas técnicas · Revisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<style>
+  /* ─── LIST page (sin id) — searchbox + tabla ─── */
+  .dt-hero { /* legacy del list page, no aplica en detail */ }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     HERO STRIP — Proyecto + Avance global + Monto en una sola fila
+     ═══════════════════════════════════════════════════════════════════ */
+  .dt-hero-strip {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 24px;
+    display: grid;
+    grid-template-columns: minmax(220px, 1.1fr) 1px minmax(260px, 1.4fr) auto;
+    gap: 24px; align-items: center;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 980px) {
+    .dt-hero-strip { grid-template-columns: 1fr; gap: 14px; }
+    .dt-hero-strip__divider { display: none; }
+  }
+  .dt-hero-strip__divider { width: 1px; background: var(--border); align-self: stretch; }
+  .dt-hero-strip__proj { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .dt-hero-strip__rad { font-size: 11px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
+  .dt-hero-strip__title { font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .dt-hero-strip__meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  .dt-hero-strip__progress { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .dt-hero-strip__progress-top { display: flex; align-items: baseline; gap: 10px; }
+  .dt-hero-strip__pct { font-size: 22px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .dt-hero-strip__pct-lbl { font-size: 12px; color: var(--text-secondary); }
+  .dt-hero-strip__progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .dt-hero-strip__progress-bar > span { display: block; height: 100%; background: var(--green); border-radius: 99px; transition: width .35s cubic-bezier(.4,0,.2,1); }
+  .dt-hero-strip__breakdown { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+
+  /* Mini pill compacto para el breakdown del hero */
+  .dt-mini-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: var(--radius-full);
+    font-size: 11.5px; font-weight: 600;
+  }
+  .dt-mini-pill__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dt-mini-pill strong { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dt-mini-pill--green { background: var(--green-bg); color: var(--green); }
+  .dt-mini-pill--green .dt-mini-pill__dot { background: var(--green); }
+  .dt-mini-pill--orange { background: var(--orange-bg); color: var(--accent); }
+  .dt-mini-pill--orange .dt-mini-pill__dot { background: var(--accent); }
+  .dt-mini-pill--red { background: var(--red-bg); color: #c01818; }
+  .dt-mini-pill--red .dt-mini-pill__dot { background: #c01818; }
+  .dt-mini-pill--gray { background: #f5f6fa; color: var(--text-secondary); }
+  .dt-mini-pill--gray .dt-mini-pill__dot { background: #9c9ebf; }
+
+  .dt-hero-strip__amount { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .dt-hero-strip__amount-lbl { font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--text-secondary); text-transform: uppercase; }
+  .dt-hero-strip__amount-val { font-size: 20px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; letter-spacing: -.01em; white-space: nowrap; }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     DETAIL — Layout 2 columnas: áreas (izquierda) + sidebar (derecha)
+     ═══════════════════════════════════════════════════════════════════ */
+  .dt-layout {
+    display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr); gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1100px) { .dt-layout { grid-template-columns: 1fr; } }
+  .dt-layout > * { min-width: 0; }
+
+  /* ── Columna izquierda: encabezado bloque + grid 2 cols de cards ── */
+  .dt-areas-section { display: flex; flex-direction: column; gap: 14px; }
+  .dt-areas-section__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 4px;
+  }
+  .dt-areas-section__title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  .dt-areas-section__sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+  .dt-areas-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  @media (max-width: 720px) { .dt-areas-grid { grid-template-columns: 1fr; } }
+
+  /* ── Card de área ── */
+  .dt-area-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative;
+    /* overflow: visible para que el .dt-area-card__owner-badge pueda
+       protruir desde el top de la card. */
+    overflow: visible;
+  }
+  .dt-area-card:hover {
+    transform: translateY(-2px); border-color: var(--border-dark);
+    box-shadow: 0 8px 20px -6px rgba(15, 17, 35, .12);
+  }
+  /* Doug 19/05/2026: strip lateral. Bug previo: top/bottom = 0 hacía que
+     las esquinas cuadradas del strip salieran por fuera del border-radius
+     del card (la card tiene overflow:visible por el owner-badge, asi que
+     no hay clipping). Fix transversal: top/bottom = radius-lg para que
+     el strip viva DENTRO del safe zone (rectangulo central, no toca los
+     corners curvos). Visualmente queda un strip vertical limpio. */
+  .dt-area-card::before {
+    content: ''; position: absolute;
+    left: 0; top: var(--radius-lg, 12px); bottom: var(--radius-lg, 12px);
+    width: 3px;
+    background: var(--strip-color, var(--border-dark)); opacity: 0;
+    border-radius: 99px;
+    transition: opacity .15s;
+  }
+  .dt-area-card[data-estado="aprobado"] { --strip-color: var(--green); }
+  .dt-area-card[data-estado="en_revision"] { --strip-color: var(--accent); }
+  .dt-area-card[data-estado="devuelto"] { --strip-color: #c01818; }
+  .dt-area-card[data-estado="pendiente"] { --strip-color: var(--border-dark); }
+  .dt-area-card::before { opacity: 1; }
+
+  .dt-area-card__head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  }
+  .dt-area-card__icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .dt-area-card[data-estado="aprobado"] .dt-area-card__icon {
+    background: var(--green-bg); color: var(--green);
+  }
+  .dt-area-card[data-estado="en_revision"] .dt-area-card__icon {
+    background: var(--orange-bg); color: var(--accent);
+  }
+  .dt-area-card[data-estado="devuelto"] .dt-area-card__icon {
+    background: var(--red-bg); color: #c01818;
+  }
+  .dt-area-card[data-estado="pendiente"] .dt-area-card__icon {
+    background: #f5f6fa; color: var(--text-secondary);
+  }
+  .dt-area-card__icon svg { width: 22px; height: 22px; }
+
+  .dt-area-card__title {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .dt-area-card__progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .dt-area-card__progress {
+    height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .dt-area-card__progress > span {
+    display: block; height: 100%; border-radius: 99px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .dt-area-card__stats {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11.5px; color: var(--text-secondary); font-weight: 600;
+  }
+  .dt-area-card__stats strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+  .dt-area-card__footer {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 10px; border-top: 1px dashed var(--border);
+  }
+  .dt-area-card__avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .dt-area-card__revisor {
+    font-size: 12px; color: var(--text-secondary); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dt-area-card__revisor--empty { font-style: italic; }
+  .dt-area-card__cta {
+    font-size: 11.5px; font-weight: 600; color: var(--text-secondary);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .dt-area-card__cta--mia {
+    color: var(--accent); font-weight: 700;
+  }
+  .dt-area-card__cta svg { width: 12px; height: 12px; }
+
+  /* ─── Jerarquía visual mi-área vs otras (Doug 14/05/2026) ───
+       Las áreas que NO le tocan al revisor activo se muestran muted
+       (border discreto, contenido ligeramente atenuado, CTA "Ver" gris).
+       La propia se resalta con border accent + glow + badge "Tu área". */
+  .dt-area-card--mia {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 4px rgba(215, 64, 9, .08), 0 6px 16px -4px rgba(215, 64, 9, .18);
+    background: linear-gradient(180deg, #fffaf5 0%, var(--surface) 60%);
+  }
+  .dt-area-card--mia:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 4px rgba(215, 64, 9, .12), 0 10px 24px -4px rgba(215, 64, 9, .25);
+  }
+  /* Owner badge: pill protruding desde el TOP-CENTER de la card.
+     Resuelve el overlap con los badges de estado (Pendiente/En revisión)
+     que viven en el __head; ahora son layers independientes. */
+  .dt-area-card__owner-badge {
+    position: absolute; top: -10px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; letter-spacing: .35px;
+    padding: 4px 10px; border-radius: var(--radius-full);
+    text-transform: uppercase; white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(215, 64, 9, .35),
+                0 0 0 3px var(--surface, #fff);
+    z-index: 2;
+  }
+  /* Otras áreas: muted — el revisor solo puede VER, no decidir */
+  .dt-area-card--otra {
+    opacity: .72;
+    background: #fafbfd;
+  }
+  .dt-area-card--otra:hover {
+    opacity: 1;
+    border-color: var(--border-dark);
+    box-shadow: 0 4px 12px -4px rgba(15, 17, 35, .08);
+    transform: none;
+  }
+  .dt-area-card--otra .dt-area-card__icon {
+    background: #f0f2f7 !important;
+    color: #9c9ebf !important;
+  }
+  .dt-area-card--otra .dt-area-card__title {
+    color: var(--text-secondary);
+  }
+  /* Botones del footer: usan DS naowee-btn canónico (Delegar mute, Revisar
+     quiet). Override mínimo de tamaño para encajar en el footer compacto. */
+  .dt-area-card__footer .naowee-btn {
+    height: 30px; min-height: 30px;
+    padding: 0 10px;
+    font-size: 11.5px; font-weight: 700;
+    border-radius: var(--radius-md);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .dt-area-card__footer .naowee-btn svg { width: 12px; height: 12px; }
+  /* Delegar a la izquierda, Revisar/Ver a la derecha del footer */
+  .dt-area-card__delegate-btn { margin-left: auto; }
+  .dt-area-card__cta-btn { margin-left: 6px; }
+
+  /* ── Columna derecha: sidebar con contexto del proyecto ── */
+  .dt-sidebar {
+    display: flex; flex-direction: column; gap: 14px;
+    position: sticky; top: 16px;
+  }
+  .dt-side-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px;
+  }
+  .dt-side-card__title {
+    font-size: 11px; font-weight: 700; letter-spacing: .4px;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Resumen proyecto */
+  .dt-proj-rad { font-size: 11.5px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
+  .dt-proj-title { font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-top: 4px; }
+  .dt-proj-meta { font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4; }
+  .dt-proj-amount {
+    font-size: 18px; font-weight: 700; color: var(--green);
+    margin-top: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* Progreso global */
+  .dt-progress-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .dt-progress-pct {
+    font-size: 22px; font-weight: 700; color: var(--text-primary);
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .dt-progress-lbl { font-size: 12px; color: var(--text-secondary); }
+  .dt-progress-bar {
+    height: 8px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .dt-progress-bar > span {
+    display: block; height: 100%; background: var(--green); border-radius: 99px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .dt-status-breakdown {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;
+  }
+  .dt-status-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: var(--radius-md);
+    font-size: 12px; font-weight: 600;
+  }
+  .dt-status-pill__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dt-status-pill__count { color: var(--text-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dt-status-pill--green { background: var(--green-bg); color: var(--green); }
+  .dt-status-pill--orange { background: var(--orange-bg); color: var(--accent); }
+  .dt-status-pill--red { background: var(--red-bg); color: #c01818; }
+  .dt-status-pill--gray { background: #f5f6fa; color: var(--text-secondary); }
+  .dt-status-pill--green .dt-status-pill__dot { background: var(--green); }
+  .dt-status-pill--orange .dt-status-pill__dot { background: var(--accent); }
+  .dt-status-pill--red .dt-status-pill__dot { background: #c01818; }
+  .dt-status-pill--gray .dt-status-pill__dot { background: #9c9ebf; }
+
+  /* Equipo de revisores — más respiro vertical entre rows + avatar usa
+     el color real del revisor (mismo color en todas las páginas). */
+  .dt-team-list {
+    display: flex; flex-direction: column;
+    gap: 4px;
+    /* Separación visual via padding interno por row + divider sutil */
+  }
+  .dt-team-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 4px;
+    border-radius: var(--radius-md);
+    transition: background .12s;
+  }
+  .dt-team-row:hover { background: #fafbfd; }
+  .dt-team-row + .dt-team-row {
+    border-top: 1px solid var(--border);
+  }
+  .dt-team-row__avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    /* Color override por revisor vía inline style; defaults para fallback */
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 700; flex-shrink: 0;
+    letter-spacing: .2px;
+  }
+  .dt-team-row__avatar--empty {
+    background: #f5f6fa !important; color: var(--text-secondary) !important;
+  }
+  .dt-team-row__main { flex: 1; min-width: 0; }
+  .dt-team-row__name {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .dt-team-row__area {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Acciones rápidas */
+  .dt-actions { display: flex; flex-direction: column; gap: 8px; }
+  .dt-actions .naowee-btn { width: 100%; justify-content: flex-start; }
+
+  /* ── List page hero (sin id) ── */
+  .dt-hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 22px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin-bottom: 18px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { toast } from '../shared/toast.js';
+
+  ProjectData.setPerfil('revisor');
+  mountShell({ activeId: 'doc-tecnica' });
+
+  const proyectos = ProjectData.getProyectos(p => p.estado === 'etapa_documental' && p.docsTecnica);
+  const id = new URLSearchParams(location.search).get('id');
+  const p = id ? ProjectData.getProyecto(id) : null;
+  const pageContent = document.getElementById('pageContent');
+  /* Revisor activo del pool — usado para detectar "mis áreas" y mostrar
+     el botón Delegar (autodelegar si estoy saturado). */
+  const revisorActivo = ProjectData.getRevisorActivo?.();
+
+  const ICONS = {
+    back:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+    search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    flag:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+    alert: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></svg>',
+    notify:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+    download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>'
+  };
+
+  /* ═══ Iconos semánticos por área técnica ═══ */
+  function iconForArea(areaName) {
+    const n = (areaName || '').toLowerCase();
+    /* Levantamiento topográfico */
+    if (n.includes('topogr')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l4-8 4 4 5-10 5 14"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/><circle cx="11" cy="15" r="1.2" fill="currentColor"/><circle cx="16" cy="5" r="1.2" fill="currentColor"/></svg>';
+    /* Estudio de suelos */
+    if (n.includes('suelo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/><path d="M5 7v10M19 7v10" stroke-dasharray="2 2"/></svg>';
+    /* Diseño arquitectónico */
+    if (n.includes('arquitect')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6M9 12h.01M15 12h.01"/></svg>';
+    /* Diseño estructural */
+    if (n.includes('estructur')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18" rx="1"/><rect x="15" y="3" width="6" height="18" rx="1"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="20" x2="15" y2="20"/></svg>';
+    /* Diseño hidráulico, sanitario y pluvial */
+    if (n.includes('hidr') || n.includes('sanit') || n.includes('pluv')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5C8 7 6 10.5 6 13.5a6 6 0 0012 0c0-3-2-6.5-6-11z"/></svg>';
+    /* Diseño eléctrico */
+    if (n.includes('eléct') || n.includes('elect')) return '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L4.5 14h6L9 22l8.5-12h-6L13 2z"/></svg>';
+    /* Planes de manejo, riesgos y ambiental */
+    if (n.includes('riesg') || n.includes('ambient') || n.includes('manejo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>';
+    /* Presupuesto */
+    if (n.includes('presup') || n.includes('cost')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+    /* Default: grid */
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     Sin ?id → LISTA de proyectos
+     ════════════════════════════════════════════════════════════════ */
+  if (!p) {
+    if (proyectos.length === 0) {
+      pageContent.innerHTML = `
+        <div class="page-fade-in">
+          <div class="naowee-page-header naowee-page-header--centered">
+            <div class="naowee-page-header__main">
+              <h1>Áreas técnicas</h1>
+              <p>Revisión de las 8 áreas técnicas (jurídica, financiera, arquitectónica, etc.) por proyecto.</p>
+            </div>
+          </div>
+          <div class="naowee-page-empty">
+            <div class="naowee-page-empty__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </div>
+            <h2 class="naowee-page-empty__title">Sin proyectos por revisar</h2>
+            <p class="naowee-page-empty__msg">Cuando un proyecto apruebe RBI y pase a etapa documental, las áreas técnicas asignadas a tu especialidad aparecerán aquí.</p>
+          </div>
+        </div>
+      `;
+    } else {
+      renderList();
+    }
+  } else {
+    renderDetail();
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     LIST: tabla con avance técnico por proyecto
+     ════════════════════════════════════════════════════════════════ */
+  function renderList() {
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+        <div class="naowee-page-header naowee-page-header--centered">
+          <div class="naowee-page-header__main">
+            <h1>Áreas técnicas</h1>
+            <p>Selecciona un proyecto para revisar las 8 áreas técnicas (jurídica, financiera, arquitectónica, estructural, hidráulica, eléctrica, sostenibilidad, social).</p>
+          </div>
+        </div>
+
+        <div class="naowee-table-card">
+          <div class="naowee-table-card__toolbar">
+            <div class="naowee-table-card__toolbar-left">
+              <div class="naowee-searchbox naowee-searchbox--medium" id="searchbox" style="width:340px">
+                <div class="naowee-searchbox__input-wrap">
+                  <span class="naowee-searchbox__icon">${ICONS.search}</span>
+                  <input type="text" class="naowee-searchbox__input" id="searchInput" placeholder="Buscar radicado, proyecto o municipio">
+                  <button type="button" class="naowee-searchbox__clear" id="searchClear" aria-label="Limpiar búsqueda">${ICONS.close}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="naowee-table-card__table-wrap">
+            <table class="naowee-table--in-card">
+              <thead>
+                <tr>
+                  <th>Radicado</th>
+                  <th>Proyecto</th>
+                  <th>Municipio</th>
+                  <th class="numeric">Presupuesto</th>
+                  <th class="numeric">Áreas aprobadas</th>
+                  <th>Estado técnico</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                ${proyectos.map(pr => {
+                  const areas = pr.docsTecnica?.areas || [];
+                  const total = areas.length;
+                  const aprobadas = areas.filter(a => a.estado === 'aprobado').length;
+                  const enRevision = areas.filter(a => a.estado === 'en_revision').length;
+                  const devueltas = areas.filter(a => a.estado === 'devuelto').length;
+                  const allDone = aprobadas === total;
+                  const badgeColor = allDone ? 'positive' : devueltas > 0 ? 'negative' : enRevision > 0 ? 'caution' : 'neutral';
+                  const badgeLabel = allDone ? 'Todas aprobadas' : devueltas > 0 ? `${devueltas} devuelta${devueltas===1?'':'s'}` : enRevision > 0 ? `${enRevision} en revisión` : 'Pendiente';
+                  return `
+                    <tr data-search="${(pr.radicado+' '+pr.nombre+' '+pr.municipio).toLowerCase()}" onclick="fadeAndGo('doc-tecnica.html?id=${pr.idUnico}')">
+                      <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
+                        <span class="rad-cell">
+                          ${pr.priorizado
+                            ? `<span class="prio-flag" title="Proyecto de enfoque">${ICONS.flag}</span>`
+                            : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`}
+                          ${(pr.radicado || '—').split('-CONV-')[0]}
+                        </span>
+                      </td>
+                      <td class="naowee-table__cell-name proj-name-cell">
+                        <div class="proj-name-cell__title" title="${pr.nombre}">${pr.nombre}</div>
+                      </td>
+                      <td>${pr.municipio}<div class="naowee-table__cell-muted" style="font-size:11.5px;margin-top:2px">${pr.departamento || ''}</div></td>
+                      <td class="numeric" style="font-weight:600;white-space:nowrap">${formatoMoneda(pr.presupuesto)}</td>
+                      <td class="numeric">
+                        <div style="display:inline-flex;align-items:center;gap:8px;min-width:120px">
+                          <div style="flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+                            <span style="display:block;height:100%;width:${(aprobadas/total)*100}%;background:${allDone ? 'var(--green)' : aprobadas > 0 ? 'var(--accent)' : 'var(--border-dark)'}"></span>
+                          </div>
+                          <span style="font-size:11.5px;font-weight:600;color:var(--text-secondary);min-width:60px;text-align:right">${aprobadas}/${total}</span>
+                        </div>
+                      </td>
+                      <td><span class="naowee-badge naowee-badge--${badgeColor} naowee-badge--quiet">${badgeLabel}</span></td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+            <div class="table-empty-state" id="emptyState" hidden>
+              <div class="table-empty-state__icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              </div>
+              <div class="table-empty-state__title">Sin resultados</div>
+              <div class="table-empty-state__msg">No encontramos proyectos que coincidan con tu búsqueda.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const searchBoxEl = document.getElementById('searchbox');
+    const searchInputEl = document.getElementById('searchInput');
+    function applySearch() {
+      const q = searchInputEl.value.trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('#tbody tr').forEach(tr => {
+        const show = !q || tr.dataset.search.includes(q);
+        tr.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      const emptyEl = document.getElementById('emptyState');
+      const tbodyEl = document.getElementById('tbody');
+      if (visible === 0 && q) { emptyEl.hidden = false; tbodyEl.style.visibility = 'hidden'; }
+      else { emptyEl.hidden = true; tbodyEl.style.visibility = ''; }
+    }
+    searchInputEl.addEventListener('input', () => {
+      searchBoxEl.classList.toggle('naowee-searchbox--has-value', !!searchInputEl.value);
+      applySearch();
+    });
+    document.getElementById('searchClear').addEventListener('click', () => {
+      searchInputEl.value = '';
+      searchBoxEl.classList.remove('naowee-searchbox--has-value');
+      applySearch();
+    });
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     DETAIL: layout 2 columnas (áreas + sidebar contextual)
+     ════════════════════════════════════════════════════════════════ */
+  function renderDetail() {
+    const areas = p.docsTecnica?.areas || [];
+    const total = areas.length;
+    const aprobadas = areas.filter(a => a.estado === 'aprobado').length;
+    const enRevision = areas.filter(a => a.estado === 'en_revision').length;
+    const devueltas = areas.filter(a => a.estado === 'devuelto').length;
+    const pendientes = total - aprobadas - enRevision - devueltas;
+    const pctGlobal = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
+
+    const conRevisor = areas.filter(a => a.revisor);
+    const sinRevisor = areas.filter(a => !a.revisor);
+
+    /* Actividad reciente: eventos del historial con foco técnico */
+    const eventos = (p.historial || []).slice().reverse().slice(0, 4);
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="doc-tecnica.html" style="margin-bottom:14px">${ICONS.back}Volver al listado</a>
+
+        <div class="naowee-page-header naowee-page-header--centered">
+          <div class="naowee-page-header__main">
+            <h1>Áreas técnicas</h1>
+            <p>Cada área tiene su propio revisor especializado. Todos pueden ver toda la documentación, pero solo gestionan su área.</p>
+          </div>
+          <div class="naowee-page-header__actions">
+            ${sinRevisor.length > 0 ? `<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" id="btnAsignar">${ICONS.notify} Asignar revisores (${sinRevisor.length})</button>` : ''}
+            <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnExportar">${ICONS.download} Exportar resumen</button>
+          </div>
+        </div>
+
+        ${devueltas > 0 ? `
+          <div class="naowee-message naowee-message--caution" role="status" style="margin-bottom:18px">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5v3.5M8 10.75v.05" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M7.13 2.5L1.78 12.5a1 1 0 00.87 1.5h10.7a1 1 0 00.87-1.5L8.87 2.5a1 1 0 00-1.74 0z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">${devueltas} área${devueltas === 1 ? '' : 's'} devuelta${devueltas === 1 ? '' : 's'} con observaciones</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">Requiere acción del municipio para subsanar antes de continuar.</p>
+    <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" id="btnNotify">${ICONS.notify} Notificar municipio</button>
+  </div>
+</div>
+        ` : ''}
+
+        <!-- Hero canónico project-hero con cenefa de progreso de áreas técnicas -->
+        <div class="project-hero ${p.priorizado ? 'project-hero--priorizado' : ''}">
+          ${p.priorizado ? `
+            <span class="prio-ribbon" tabindex="0" role="img" aria-label="Proyecto de enfoque del Ministerio">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>
+              <span class="prio-ribbon__tooltip" role="tooltip">Proyecto de enfoque del Ministerio</span>
+            </span>
+          ` : ''}
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${(p.radicado || '—').split('-CONV-')[0]}</div>
+              <h1 class="project-hero__title" style="font-size:20px">${p.nombre}</h1>
+              <div class="project-hero__meta">
+                <span>${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</span>
+                <span>${p.formuladora?.nombre || ''}</span>
+                <span>${p.tipoSolicitud || ''}${p.fase ? ` · ${p.fase}` : ''}</span>
+              </div>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--brand naowee-badge--quiet"><span class="naowee-badge__dot"></span>Etapa documental</span>
+                <span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Infraestructura</span>
+              </div>
+            </div>
+            <div class="project-hero__right">
+              <div class="project-hero__label">Presupuesto del proyecto</div>
+              <div class="project-hero__amount">${formatoMoneda(p.presupuesto)}</div>
+              <div class="project-hero__breakdown">Solicitado: ${formatoMoneda(p.montoSolicitado)} · Contrapartida: ${formatoMoneda(p.contrapartida)}</div>
+            </div>
+          </div>
+          <!-- Cenefa de progreso de áreas técnicas — edge-to-edge en la base del hero -->
+          <div class="hero-cenefa" style="background:linear-gradient(90deg,var(--orange-bg,#fff3e6) 0%,#fff8ef 60%,#fff 100%);border-top-color:var(--orange-border,#ffbf75)">
+            <div style="display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap">
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span style="font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${pctGlobal}%</span>
+                <span style="font-size:12px;color:var(--text-secondary)"><strong style="color:var(--text-primary)">${aprobadas}</strong> de ${total} áreas aprobadas</span>
+              </div>
+              <div style="flex:1;min-width:160px;height:6px;background:var(--grey-bg,#f5f6fa);border-radius:999px;overflow:hidden">
+                <span style="display:block;height:100%;width:${pctGlobal}%;background:linear-gradient(90deg,var(--green,#15803d),#27a13c);border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1)"></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:700">
+              <span class="naowee-badge naowee-badge--positive naowee-badge--quiet"><span class="naowee-badge__dot"></span>${aprobadas} aprobadas</span>
+              <span class="naowee-badge naowee-badge--caution naowee-badge--quiet"><span class="naowee-badge__dot"></span>${enRevision} en revisión</span>
+              <span class="naowee-badge naowee-badge--negative naowee-badge--quiet"><span class="naowee-badge__dot"></span>${devueltas} devueltas</span>
+              <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet"><span class="naowee-badge__dot"></span>${pendientes} pendientes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dt-layout">
+          <!-- ───── COLUMNA IZQUIERDA: áreas técnicas (count dinámico) ───── -->
+          <div class="dt-areas-section">
+            <div class="dt-areas-section__head">
+              <div>
+                <div class="dt-areas-section__title">Las ${areas.length} áreas técnicas</div>
+                <div class="dt-areas-section__sub">Click en una para entrar al detalle de revisión</div>
+              </div>
+            </div>
+            <div class="dt-areas-grid">
+              ${areas.map(a => {
+                const e = ESTADOS_AREA[a.estado] || { label: a.estado, color: 'neutral' };
+                const pct = a.items > 0 ? Math.round((a.aprobados / a.items) * 100) : 0;
+                const barColor = a.estado === 'aprobado' ? 'var(--green)'
+                  : a.estado === 'devuelto' ? '#c01818'
+                  : a.estado === 'en_revision' ? 'var(--accent)'
+                  : 'var(--border-dark)';
+                /* Avatar canónico: usa color/iniciales del revisor real
+                   (consistente entre páginas). Fallback al iniciales del
+                   nombre si no encontramos el id en el catálogo. */
+                const rArea = a.revisorId ? ProjectData.getRevisor(a.revisorId) : null;
+                const initial = rArea?.avatar
+                  || (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase()
+                  || '?';
+                const avatarStyle = rArea?.color
+                  ? ` style="background:${rArea.color}22;color:${rArea.color}"`
+                  : '';
+                /* Es mi área si soy el revisor asignado Y no está cerrada.
+                   Doug 14/05/2026: las áreas que NO son mías se renderizan en
+                   tono muted con CTA "Ver" — solo el dueño puede ejercer
+                   "Revisar" sobre su especialidad. */
+                const esMia = revisorActivo && a.revisorId === revisorActivo.id && a.estado !== 'aprobado';
+                const otraArea = revisorActivo && !esMia && a.revisorId !== revisorActivo.id && a.estado !== 'aprobado';
+                const ctaLabel = a.estado === 'aprobado' ? 'Ver' : (esMia ? 'Revisar' : 'Ver');
+                return `
+                  <article class="dt-area-card ${esMia ? 'dt-area-card--mia' : ''} ${otraArea ? 'dt-area-card--otra' : ''}" data-estado="${a.estado}" onclick="fadeAndGo('revisar-area.html?id=${p.idUnico}&area=${a.id}')">
+                    ${esMia ? '<span class="dt-area-card__owner-badge">Tu área</span>' : ''}
+                    <div class="dt-area-card__head">
+                      <div class="dt-area-card__icon">${iconForArea(a.nombre)}</div>
+                      <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+                    </div>
+                    <div class="dt-area-card__title">${a.nombre}</div>
+                    <div class="dt-area-card__progress-wrap">
+                      <div class="dt-area-card__progress"><span style="width:${pct}%;background:${barColor}"></span></div>
+                      <div class="dt-area-card__stats">
+                        <span><strong>${a.aprobados}</strong> de ${a.items} ítems</span>
+                        <span>${pct}%</span>
+                      </div>
+                    </div>
+                    <div class="dt-area-card__footer">
+                      ${a.revisor
+                        ? `<span class="dt-area-card__avatar"${avatarStyle}>${initial}</span>
+                           <span class="dt-area-card__revisor">${a.revisor}</span>`
+                        : `<span class="dt-area-card__avatar dt-area-card__avatar--empty" style="background:#f5f6fa;color:var(--text-secondary)">?</span>
+                           <span class="dt-area-card__revisor dt-area-card__revisor--empty">Sin revisor asignado</span>`}
+                      ${esMia ? `
+                        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small dt-area-card__delegate dt-area-card__delegate-btn"
+                                data-area="${a.id}"
+                                aria-label="Delegar esta área a otro miembro del equipo">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                          Delegar
+                        </button>
+                      ` : ''}
+                      <span class="naowee-btn naowee-btn--quiet naowee-btn--small dt-area-card__cta-btn" aria-hidden="true">${ctaLabel} ${ICONS.arrow}</span>
+                    </div>
+                  </article>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- ───── COLUMNA DERECHA: solo Equipo de revisión ───── -->
+          <aside class="dt-sidebar">
+            <div class="dt-areas-section__head">
+              <div>
+                <div class="dt-areas-section__title">Equipo de revisión</div>
+                <div class="dt-areas-section__sub">${conRevisor.length} de ${total} áreas con revisor asignado</div>
+              </div>
+            </div>
+            <div class="dt-side-card">
+              <div class="dt-team-list">
+                ${conRevisor.map(a => {
+                  /* Buscamos el revisor real por id para usar SU color/avatar
+                     canónico (consistente con otras páginas). Fallback al
+                     iniciales calculadas si no encontramos el id. */
+                  const r = a.revisorId ? ProjectData.getRevisor(a.revisorId) : null;
+                  const avatar = r?.avatar || (a.revisor || '').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+                  const colorStyle = r?.color
+                    ? `background:${r.color}22;color:${r.color}`
+                    : '';
+                  return `
+                    <div class="dt-team-row">
+                      <span class="dt-team-row__avatar" style="${colorStyle}">${avatar}</span>
+                      <div class="dt-team-row__main">
+                        <div class="dt-team-row__name">${a.revisor}</div>
+                        <div class="dt-team-row__area">${a.nombre}</div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+                ${sinRevisor.length > 0 ? `
+                  <div class="dt-team-row">
+                    <span class="dt-team-row__avatar dt-team-row__avatar--empty">?</span>
+                    <div class="dt-team-row__main">
+                      <div class="dt-team-row__name" style="color:var(--text-secondary);font-style:italic">${sinRevisor.length} área${sinRevisor.length === 1 ? '' : 's'} sin asignar</div>
+                      <div class="dt-team-row__area">${sinRevisor.map(a => a.nombre).join(' · ')}</div>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+          </aside>
+        </div>
+      </div>
+    `;
+
+    /* Wire actions (placeholder con toast) */
+    document.getElementById('btnNotify')?.addEventListener('click', () => {
+      toast({ variant: 'positive', title: 'Notificación enviada', message: 'El municipio recibirá un correo con las observaciones de las áreas devueltas.' });
+    });
+    document.getElementById('btnAsignar')?.addEventListener('click', () => {
+      toast({ variant: 'informative', title: 'Asignación de revisores', message: 'Esta acción se habilitará cuando el módulo de gestión de equipo esté disponible.' });
+    });
+    document.getElementById('btnExportar')?.addEventListener('click', () => {
+      toast({ variant: 'informative', title: 'Resumen exportado', message: 'El reporte de áreas técnicas se descargará en breve.' });
+    });
+
+    /* Delegar área a otro miembro del equipo (autodelegación si estoy saturado).
+       Solo aparece en áreas asignadas al revisor activo. Reutiliza el patrón
+       de popover ya usado por admin en proyecto-detalle. */
+    document.querySelectorAll('.dt-area-card__delegate').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const areaId = btn.dataset.area;
+        const area = areas.find(x => x.id === areaId);
+        if (!area) return;
+        openDelegateMenu(btn, area);
+      });
+    });
+
+    function openDelegateMenu(anchor, area) {
+      document.querySelector('.reassign-menu')?.remove();
+      /* Excluir al revisor activo (no puede delegarse a sí mismo) y al general */
+      const candidatos = ProjectData.getRevisores().filter(r =>
+        !r.especialidades?.includes('general') && r.id !== revisorActivo?.id
+      );
+      const menu = document.createElement('div');
+      menu.className = 'reassign-menu';
+      menu.innerHTML = `
+        <div class="reassign-menu__title">Delegar “${area.nombre}”</div>
+        <div class="reassign-menu__list">
+          ${candidatos.map(r => {
+            const cubre = r.especialidades?.some(s => s === (ProjectData.AREA_TO_SPECIALTY?.[area.id]));
+            return `
+              <button type="button" class="reassign-menu__item" data-rev="${r.id}">
+                <div class="ava-ring" style="width:26px;height:26px;background:${r.color}22;color:${r.color};font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${r.avatar}</div>
+                <div style="flex:1;text-align:left">
+                  <div style="font-weight:600;font-size:13px">${r.nombre}</div>
+                  <div style="font-size:11px;color:var(--text-secondary)">${r.especialidad} · ${r.cargaActiva} activos${cubre ? ' · <strong style="color:var(--green)">especialista</strong>' : ''}</div>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+      document.body.appendChild(menu);
+      /* Doug 19/05/2026: smart positioning — si no cabe abajo, se abre
+         arriba. También se constrain el max-height al espacio disponible
+         para que el menu nunca se salga del viewport. */
+      const rect = anchor.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.right = Math.max(8, (window.innerWidth - rect.right)) + 'px';
+      /* Medir menu tras append (offsetHeight necesita estar en DOM) */
+      requestAnimationFrame(() => {
+        const menuH = menu.offsetHeight || 320;
+        const spaceBelow = window.innerHeight - rect.bottom - 16;
+        const spaceAbove = rect.top - 16;
+        if (menuH > spaceBelow && spaceAbove > spaceBelow) {
+          /* No cabe abajo y arriba hay más espacio → abrir arriba */
+          menu.style.top = Math.max(8, rect.top - menuH - 6) + 'px';
+          if (menuH > spaceAbove) {
+            menu.style.setProperty('max-height', Math.max(180, spaceAbove) + 'px', 'important');
+            menu.style.overflowY = 'auto';
+          }
+        } else {
+          /* Cabe abajo (o abajo tiene más espacio): mantener abajo */
+          menu.style.top = (rect.bottom + 6) + 'px';
+          if (menuH > spaceBelow) {
+            menu.style.setProperty('max-height', Math.max(180, spaceBelow) + 'px', 'important');
+            menu.style.overflowY = 'auto';
+          }
+        }
+      });
+      menu.querySelectorAll('.reassign-menu__item').forEach(item => {
+        item.addEventListener('click', () => {
+          const revId = item.dataset.rev;
+          const rev = ProjectData.getRevisor(revId);
+          ProjectData.setProyecto(p.idUnico, x => {
+            const idx = x.docsTecnica.areas.findIndex(a => a.id === area.id);
+            if (idx >= 0) {
+              x.docsTecnica.areas[idx] = {
+                ...x.docsTecnica.areas[idx],
+                revisorId: revId, revisor: rev.nombre,
+                asignadoEn: new Date().toISOString(),
+                fechaLimite: (() => { const d = new Date(); d.setDate(d.getDate() + 15); return d.toISOString(); })()
+              };
+            }
+            x.historial = x.historial || [];
+            x.historial.push({
+              ts: new Date().toISOString(),
+              actor: 'revisor',
+              evento: `Área “${area.nombre}” delegada por ${revisorActivo.nombre} a ${rev.nombre}`,
+              estado: x.estado
+            });
+            return x;
+          });
+          /* Notificar al nuevo revisor */
+          ProjectData.pushNotificacion({
+            perfil: 'revisor',
+            tipo: 'asignacion',
+            titulo: 'Nueva área delegada',
+            detalle: `${rev.nombre} recibió “${area.nombre}” de ${revisorActivo.nombre}`
+          });
+          toast({
+            variant: 'positive',
+            title: 'Área delegada',
+            message: `${area.nombre} pasó a ${rev.nombre}. SLA reiniciado a 15 días.`
+          });
+          menu.remove();
+          setTimeout(() => location.reload(), 700);
+        });
+      });
+      setTimeout(() => {
+        document.addEventListener('click', function close(ev) {
+          if (!menu.contains(ev.target)) {
+            menu.remove();
+            document.removeEventListener('click', close);
+          }
+        });
+      }, 50);
+    }
+  }
+</script>
+</body>
+</html>

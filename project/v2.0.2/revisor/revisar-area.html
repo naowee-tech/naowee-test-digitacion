@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Revisar área · Revisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<style>
+  /* ─── Hero strip del proyecto + área ─── */
+  .ra-hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 16px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .ra-hero__icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ra-hero__icon svg { width: 22px; height: 22px; }
+  .ra-hero__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ra-hero__rad { font-size: 11px; font-weight: 600; letter-spacing: .35px; color: var(--text-secondary); text-transform: uppercase; }
+  .ra-hero__title { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+  .ra-hero__meta { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ─── Bloque de items con header tipo dash-table ─── */
+  .ra-bloque {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    margin-bottom: 0;
+  }
+  .ra-bloque__head {
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    background: linear-gradient(180deg, #fafbff 0%, var(--surface) 100%);
+  }
+  .ra-bloque__title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .ra-bloque__sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  .ra-progress {
+    display: flex; align-items: center; gap: 10px; min-width: 220px;
+  }
+  .ra-progress-bar {
+    flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .ra-progress-bar > span {
+    display: block; height: 100%; background: var(--green); border-radius: 99px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .ra-progress-text {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  /* ─── Items ─── */
+  .ra-item {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    gap: 16px; align-items: center;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .ra-item:last-child { border-bottom: 0; }
+  .ra-item:hover { background: #fafbff; }
+  .ra-item__num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg, #f5f6fa); color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    transition: background .15s, color .15s;
+  }
+  .ra-item.is-cumple .ra-item__num { background: var(--green-bg); color: var(--green); }
+  .ra-item.is-nocumple .ra-item__num { background: var(--red-bg); color: #c01818; }
+  .ra-item.is-na .ra-item__num { background: var(--blue-bg); color: var(--blue-info); }
+  .ra-item__main { min-width: 0; }
+  .ra-item__text { font-size: 13.5px; line-height: 1.45; color: var(--text-primary); }
+  .ra-item__ref {
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* ═══ Bento layout: PROYECTO full-width arriba + 70/30 abajo ═══
+     Doug 16/05/2026: el proyecto se ve siempre, el checklist domina la
+     izquierda (70%) y los documentos quedan sticky a la derecha (30%)
+     como referencia mientras el revisor marca cumple/no cumple. */
+  .ra-proyecto-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    /* Doug 16/05/2026: card normal sin shadow widget — match con el resto
+       del project (stroke gris uniforme). */
+    box-shadow: none;
+    display: flex; align-items: flex-start; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .ra-proyecto-card__hero {
+    display: flex; align-items: center; gap: 14px;
+    flex: 1 1 320px; min-width: 0;
+  }
+  .ra-proyecto-card__icon {
+    width: 44px; height: 44px; border-radius: var(--radius-md);
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ra-proyecto-card__icon svg { width: 22px; height: 22px; }
+  .ra-proyecto-card__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ra-proyecto-card__rad {
+    font-size: 11px; font-weight: 600; letter-spacing: .35px;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .ra-proyecto-card__title {
+    font-size: 17px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.25;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .ra-proyecto-card__meta {
+    font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;
+  }
+  .ra-proyecto-card__status {
+    flex-shrink: 0; align-self: center;
+  }
+  /* (Doug 16/05/2026: el banner de asignación se movió fuera del project
+     card → ahora vive como .convo-status-cenefa--top edge-to-edge pegado
+     al header. CSS .ra-proyecto-card__banner removido por dead code.) */
+
+  /* Bento grid 70/30 — checklist + docs */
+  .ra-bento {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .ra-bento { grid-template-columns: 1fr; }
+  }
+
+  /* Right column: docs sticky compactos como referencia.
+     Doug 16/05/2026: card normal sin shadow widget — match con el resto
+     del project (stroke gris uniforme). */
+  .ra-docs-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    padding: 18px 20px;
+    position: sticky;
+    top: 16px;
+    display: flex; flex-direction: column;
+    /* Doug 17/05/2026: overflow visible + sin max-height para que el
+       tooltip DS canónico del download icon escape del card. El control
+       de docs largos lo hace el patrón "Ver más" (no scroll interno). */
+    overflow: visible;
+  }
+  @media (max-width: 1024px) {
+    .ra-docs-card { position: static; }
+  }
+  .ra-docs-card__head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; margin-bottom: 14px;
+  }
+  .ra-docs-card__title-group { min-width: 0; }
+  .ra-docs-card__title {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: .2px;
+  }
+  .ra-docs-card__sub {
+    font-size: 11.5px; color: var(--text-secondary);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+  .ra-docs-card__count {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .ra-docs-card__list {
+    display: flex; flex-direction: column; gap: 0;
+    /* Doug 17/05/2026: overflow visible (era overflow-y:auto, que
+       implícitamente clipea overflow-x y mataba al tooltip DS del
+       botón download). El crecimiento del listado se contiene con el
+       patrón "Ver más" en el footer del card. */
+    overflow: visible;
+  }
+  /* Doc pill (compact row) — pattern del DS file uploader.
+     Doug 16/05/2026: sin dividers entre rows (visual cleaner). */
+  .ra-doc-pill {
+    display: grid; grid-template-columns: 32px 1fr 30px;
+    align-items: center; gap: 10px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: background .12s;
+  }
+  .ra-doc-pill:hover { background: #fafbff; }
+  .ra-doc-pill__icon {
+    width: 32px; height: 32px; border-radius: var(--radius-md);
+    background: var(--orange-bg); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ra-doc-pill__icon svg { width: 16px; height: 16px; }
+  .ra-doc-pill__main { min-width: 0; }
+  .ra-doc-pill__name {
+    font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+    line-height: 1.3;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .ra-doc-pill__meta {
+    font-size: 10.5px; color: var(--text-secondary); margin-top: 2px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  /* Doug 17/05/2026: ghost button DS Naowee — icon-only naranja, hover
+     orange-bg sutil (sin border). Consistente con .dg-item__download. */
+  .ra-doc-pill__download {
+    width: 30px; height: 30px;
+    border-radius: var(--radius-md);
+    border: 0;
+    background: transparent;
+    color: var(--accent, #d74009);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    transition: background .12s, transform .12s;
+  }
+  .ra-doc-pill__download:hover {
+    background: var(--orange-bg, #fff3e6);
+  }
+  .ra-doc-pill__download:active { transform: scale(.94); }
+  .ra-doc-pill__download svg { width: 14px; height: 14px; }
+
+  /* Doug 17/05/2026: highlight de documentos nuevos cuando el área
+     está en estado 'subsanada'. Pill con bg azul info + tag "NUEVO"
+     a la derecha del nombre, y la card padre con border-top azul. */
+  .ra-docs-card--has-new {
+    border-top: 3px solid var(--blue-info, #1f78d1);
+  }
+  .ra-doc-pill--new {
+    background: var(--blue-bg, #eef5ff);
+    border: 1px solid #c8dcf5;
+  }
+  .ra-doc-pill--new:hover { background: #e0eefb; }
+  .ra-doc-pill--new .ra-doc-pill__icon {
+    background: #d4e7fa;
+    color: var(--blue-info, #1f78d1);
+  }
+  .ra-doc-pill__new-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: var(--blue-info, #1f78d1);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    border-radius: var(--radius-full, 9999px);
+    vertical-align: 2px;
+    line-height: 1.4;
+  }
+
+  /* "Ver más" button — toggle inline expansion */
+  .ra-docs-card__more {
+    margin-top: 10px;
+    align-self: stretch;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px dashed var(--border-dark);
+    background: #fff;
+    border-radius: var(--radius-md);
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .12s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .ra-docs-card__more:hover {
+    border-color: var(--accent); color: var(--accent); background: var(--orange-bg);
+  }
+  .ra-docs-card__more svg {
+    width: 12px; height: 12px;
+    transition: transform .2s ease;
+  }
+  .ra-docs-card.is-expanded .ra-docs-card__more svg { transform: rotate(180deg); }
+  .ra-doc-pill[data-extra="true"] { display: none; }
+  .ra-docs-card.is-expanded .ra-doc-pill[data-extra="true"] { display: grid; }
+
+  /* DS tooltip — opt-in vía .has-tooltip + data-tooltip (consistente con doc-general) */
+  .has-tooltip { position: relative; }
+  .has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #282834; color: #fff;
+    padding: 6px 10px; border-radius: var(--radius-md, 8px);
+    font-size: 11.5px; font-weight: 500; line-height: 1.3;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(40,40,52,.18);
+    opacity: 0; pointer-events: none;
+    transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+  }
+  .has-tooltip::before {
+    content: '';
+    position: absolute; bottom: calc(100% + 3px); left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #282834;
+    opacity: 0; pointer-events: none;
+    transition: opacity .15s;
+    z-index: 100;
+  }
+  .has-tooltip:hover::after, .has-tooltip:focus-visible::after {
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
+  .has-tooltip:hover::before, .has-tooltip:focus-visible::before { opacity: 1; }
+
+  /* Documentos cargados por el municipio (Doug 14/05/2026) — LEGACY,
+     reemplazado por ra-doc-pill arriba. Se mantiene CSS por backward-compat
+     con cualquier vista read-only que aún lo use. */
+  .ra-doc-row {
+    display: grid; grid-template-columns: 40px 1fr auto;
+    gap: 14px; align-items: center;
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .ra-doc-row:last-child { border-bottom: 0; }
+  .ra-doc-row:hover { background: #fafbff; }
+  .ra-doc-row__icon {
+    width: 40px; height: 40px; border-radius: var(--radius-md);
+    background: var(--orange-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ra-doc-row__icon svg { width: 20px; height: 20px; }
+  .ra-doc-row__main { min-width: 0; }
+  .ra-doc-row__name {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .ra-doc-row__meta {
+    font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ra-doc-row__action {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: var(--radius-md);
+    background: transparent; border: 1px solid var(--border-dark);
+    color: var(--accent); font-size: 12px; font-weight: 700;
+    text-decoration: none; cursor: pointer;
+    transition: all .15s;
+  }
+  .ra-doc-row__action:hover {
+    background: var(--orange-bg); border-color: var(--accent);
+  }
+
+  /* Doug 19/05/2026 rev2: icon-only sin stroke ni rectangle, mismo
+     pattern que .dg-toggle__btn de doc-general. Idle = icono en su
+     color semantico. Hover = bg subtle del color. Active = bg subtle
+     + icono en variant oscuro. Tooltips DS: "Cumple"/"No cumple"/
+     "No aplica" (directos). */
+  .ra-toggle {
+    display: inline-flex; align-items: center;
+    gap: 4px;
+    background: transparent; border: 0; padding: 0;
+  }
+  .ra-toggle__btn {
+    width: 32px; height: 32px;
+    padding: 0; min-width: 0;
+    font-family: inherit;
+    background: transparent; border: 0;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background .12s, color .12s, transform .12s;
+    flex-shrink: 0;
+  }
+  .ra-toggle__btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .ra-toggle__btn[data-r="cumple"]   { color: var(--green, #1f8923); }
+  .ra-toggle__btn[data-r="nocumple"] { color: #c01818; }
+  .ra-toggle__btn[data-r="na"]       { color: var(--blue-info, #1f78d1); }
+  .ra-toggle__btn[data-r="cumple"]:hover    { background: var(--green-bg, #e6f4e7); }
+  .ra-toggle__btn[data-r="nocumple"]:hover  { background: var(--red-bg, #fff0ee); }
+  .ra-toggle__btn[data-r="na"]:hover        { background: var(--blue-bg, #eef5ff); }
+  .ra-toggle__btn:active { transform: scale(.94); }
+  .ra-toggle__btn.is-active--cumple   { background: var(--green-bg, #e6f4e7); color: #156d18; }
+  .ra-toggle__btn.is-active--nocumple { background: var(--red-bg, #fff0ee);  color: #8a1212; }
+  .ra-toggle__btn.is-active--na       { background: var(--blue-bg, #eef5ff); color: #145b9c; }
+
+  /* Sticky footer con summary */
+  .ra-summary {
+    position: sticky; bottom: 0; z-index: 5;
+    background: var(--surface); border-top: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    box-shadow: 0 -8px 20px -8px rgba(15, 17, 35, 0.08);
+  }
+  .ra-summary__stats {
+    display: flex; gap: 18px; font-size: 13px; color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+  .ra-summary__stat strong {
+    color: var(--text-primary); font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .ra-summary__actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+  /* Acción semántica: devolver = naranja, aprobar = verde (con elevation token global) */
+  .btn-aprobar {
+    background: #15803d !important; color: #fff !important; border-color: #15803d !important;
+    box-shadow: var(--shadow-green-cta);
+    transition: background .15s, border-color .15s, box-shadow .15s, transform .12s;
+  }
+  .btn-aprobar:hover:not(:disabled) {
+    background: #166f30 !important; border-color: #166f30 !important;
+    box-shadow: var(--shadow-green-cta-hover);
+    transform: translateY(-1px);
+  }
+  .btn-devolver-area {
+    background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
+    box-shadow: var(--shadow-accent-cta);
+    transition: background .15s, border-color .15s, box-shadow .15s, transform .12s;
+  }
+  .btn-devolver-area:hover:not(:disabled) {
+    background: #b8350a !important; border-color: #b8350a !important;
+    transform: translateY(-1px);
+  }
+  /* Disabled state: sin elevation, gris del DS */
+  .btn-aprobar:disabled, .btn-devolver-area:disabled {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  /* Disabled del DS oficial: gray-500 sobre gray-50, sin tinted del color semántico */
+  .btn-aprobar:disabled, .btn-devolver-area:disabled {
+    background: var(--naowee-color-surface-disabled, #f5f6fa) !important;
+    color: var(--naowee-color-text-disabled, #9C9EBF) !important;
+    border-color: var(--naowee-color-border-disabled, #e7e9f3) !important;
+    cursor: not-allowed;
+  }
+  .btn-aprobar:disabled svg, .btn-devolver-area:disabled svg {
+    color: var(--naowee-color-icon-disabled, #9C9EBF) !important;
+    stroke: var(--naowee-color-icon-disabled, #9C9EBF) !important;
+  }
+
+  /* ─── Modal de confirmación (devolución / aprobación) ─── */
+  .ra-modal-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .ra-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .ra-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 560px; max-height: 92vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px -12px rgba(15, 17, 35, .35), 0 0 0 1px var(--border);
+    transform: translateY(16px) scale(.97); opacity: 0;
+    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  .ra-modal-overlay.is-open .ra-modal { transform: translateY(0) scale(1); opacity: 1; }
+
+  .ra-modal__hero {
+    padding: 32px 28px 20px; text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .ra-modal__hero--success {
+    background: linear-gradient(180deg, var(--green-bg) 0%, #fff 80%);
+  }
+  .ra-modal__hero--caution {
+    background: linear-gradient(180deg, var(--orange-bg) 0%, #fff 80%);
+  }
+  .ra-modal__icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .ra-modal__icon--success { background: var(--green); color: #fff; box-shadow: 0 8px 24px rgba(21,128,61,.3); animation: raPop .4s cubic-bezier(.18,.89,.32,1.28); }
+  .ra-modal__icon--caution { background: var(--accent); color: #fff; box-shadow: 0 8px 24px rgba(215,64,9,.3); }
+  .ra-modal__icon svg { width: 30px; height: 30px; stroke: #fff; }
+  @keyframes raPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .ra-modal__title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .ra-modal__subtitle { font-size: 13.5px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; max-width: 420px; margin-inline: auto; }
+
+  .ra-modal__body { padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; }
+  .ra-modal__row {
+    display: grid; grid-template-columns: 110px 1fr; gap: 14px;
+    font-size: 13px;
+  }
+  .ra-modal__row dt {
+    font-size: 11px; font-weight: 700; letter-spacing: .35px;
+    color: var(--text-secondary); text-transform: uppercase;
+    align-self: center;
+  }
+  .ra-modal__row dd { color: var(--text-primary); font-weight: 500; margin: 0; }
+  .ra-modal__row dd strong { font-weight: 700; }
+
+  .ra-modal__obs-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-top: 4px;
+  }
+  .ra-modal__obs-item {
+    display: flex; gap: 10px;
+    padding: 10px 12px;
+    background: var(--red-bg); border: 1px solid #ffc4bb;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+  }
+  .ra-modal__obs-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #c01818; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .ra-modal__obs-text { color: var(--text-primary); line-height: 1.4; }
+  .ra-modal__obs-ref { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .ra-modal__footer {
+    padding: 16px 28px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* Confetti — partículas SVG absolutas */
+  .ra-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .ra-confetti span {
+    position: absolute; top: -10px;
+    width: 8px; height: 14px; border-radius: 2px;
+    opacity: 0; animation: raConfetti 1.8s cubic-bezier(.16, 1, .3, 1) forwards;
+  }
+  @keyframes raConfetti {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(420px) rotate(720deg); opacity: 0; }
+  }
+
+  /* ─── Read-only view: cuando el área ya fue aprobada o devuelta ─── */
+  .ra-item--ro {
+    grid-template-columns: 36px 1fr auto;
+  }
+  .ra-readonly-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 700;
+  }
+  .ra-readonly-pill svg { width: 13px; height: 13px; }
+  .ra-readonly-pill--cumple { background: var(--green-bg); color: var(--green); }
+  .ra-readonly-pill--nocumple { background: var(--red-bg); color: #c01818; }
+  .ra-readonly-pill--na { background: var(--blue-bg); color: var(--blue-info); }
+  .ra-readonly-pill--empty { background: #f5f6fa; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { ESTADOS_AREA, formatoMoneda } from '../shared/states.js';
+  import { toast, snackbar } from '../shared/toast.js';
+
+  ProjectData.setPerfil('revisor');
+  mountShell({ activeId: 'doc-tecnica' });
+
+  /* Checklist 8 áreas Res. 933 */
+  const AREAS = {
+    topografico: { nombre: 'Levantamiento Topográfico', items: [
+      { n:1, item:'Informe de levantamiento topográfico/arquitectónico presente, sellado y firmado.', ref:'Art. 3.1.1' },
+      { n:2, item:'Planos de planimetría y altimetría firmados por la entidad emisora.', ref:'Art. 3.1.2' },
+      { n:3, item:'Documentos del profesional responsable completos.', ref:'Art. 3.1.3' },
+      { n:4, item:'El levantamiento refleja las condiciones reales del predio.', ref:'Verificación técnica' },
+      { n:5, item:'Las medidas y linderos coinciden con el plano catastral.', ref:'Verificación técnica' }
+    ]},
+    suelos: { nombre: 'Estudio de Suelos', items: [
+      { n:1, item:'Informe de caracterización o estudio geotécnico presente.', ref:'Art. 3.2.1' },
+      { n:2, item:'Resultados de pruebas y ensayos de campo y laboratorio.', ref:'Art. 3.2.2' },
+      { n:3, item:'Documentos del profesional responsable completos.', ref:'Art. 3.2.3' },
+      { n:4, item:'La caracterización es consistente con la tipología del proyecto.', ref:'Verificación técnica' }
+    ]},
+    arquitectonico: { nombre: 'Diseño Arquitectónico', items: [
+      { n:1, item:'Memoria descriptiva del diseño arquitectónico.', ref:'Art. 3.3.1' },
+      { n:2, item:'Planos arquitectónicos generales, plantas, cortes y fachadas.', ref:'Art. 3.3.2' },
+      { n:3, item:'Plano de zona de competencia con dimensiones reglamentarias.', ref:'Art. 3.3.3' },
+      { n:4, item:'Plano de señalética y rutas de evacuación.', ref:'Art. 3.3.4' },
+      { n:5, item:'Documentos del profesional responsable.', ref:'Art. 3.3.5' },
+      { n:6, item:'Diseño accesible para personas con discapacidad.', ref:'Verificación técnica' }
+    ]},
+    estructural: { nombre: 'Diseño Estructural', items: [
+      { n:1, item:'Memoria de cálculo estructural firmada por el profesional.', ref:'Art. 3.4.1' },
+      { n:2, item:'Planos estructurales completos.', ref:'Art. 3.4.2' },
+      { n:3, item:'Documentos del profesional responsable.', ref:'Art. 3.4.3' },
+      { n:4, item:'Cumple con la NSR-10 vigente.', ref:'Verificación técnica' }
+    ]},
+    /* Doug 14/05/2026: alineado con AREAS_CATALOG canónico — key `hidrosanitario` */
+    hidrosanitario: { nombre: 'Diseño hidráulico, sanitario y pluvial', items: [
+      { n:1, item:'Memoria de cálculo hidráulico, sanitario y pluvial.', ref:'Art. 3.5.1' },
+      { n:2, item:'Planos hidráulicos, sanitarios y pluviales.', ref:'Art. 3.5.2' },
+      { n:3, item:'Documentos del profesional responsable.', ref:'Art. 3.5.3' },
+      { n:4, item:'Coherente con disponibilidad de servicios públicos.', ref:'Verificación técnica' },
+      { n:5, item:'Incluye certificado de disponibilidad de acueducto.', ref:'Art. 3.5.1.1' },
+      { n:6, item:'Incluye certificado de disponibilidad de alcantarillado.', ref:'Art. 3.5.1.2' }
+    ]},
+    electrico: { nombre: 'Diseño Eléctrico', items: [
+      { n:1, item:'Memoria de cálculo eléctrico.', ref:'Art. 3.6.1' },
+      { n:2, item:'Planos eléctricos completos (iluminación, fuerza, comunicaciones).', ref:'Art. 3.6.2' },
+      { n:3, item:'Documentos del profesional responsable y matrícula RETIE.', ref:'Art. 3.6.3' },
+      { n:4, item:'Cumple con RETIE vigente.', ref:'Verificación técnica' }
+    ]},
+    ambiental: { nombre: 'Manejo, Riesgos y Ambiental', items: [
+      { n:1, item:'Plan de manejo ambiental durante la construcción.', ref:'Art. 3.7.1' },
+      { n:2, item:'Plan de manejo de riesgos del proyecto.', ref:'Art. 3.7.2' },
+      { n:3, item:'Documentos del profesional responsable.', ref:'Art. 3.7.3' }
+    ]},
+    presupuesto: { nombre: 'Presupuesto', items: [
+      { n:1, item:'Presupuesto detallado por capítulos y subcapítulos.', ref:'Art. 3.8.1' },
+      { n:2, item:'Análisis de Precios Unitarios (APU) de cada actividad.', ref:'Art. 3.8.2' },
+      { n:3, item:'Cantidades de obra por actividad.', ref:'Art. 3.8.3' },
+      { n:4, item:'Especificaciones técnicas de materiales y procesos.', ref:'Art. 3.8.4' },
+      { n:5, item:'Cronograma de ejecución valorado.', ref:'Art. 3.8.5' },
+      { n:6, item:'Certificado de Disponibilidad Presupuestal (CDP).', ref:'Art. 3.8.6' },
+      { n:7, item:'Análisis de costos de interventoría.', ref:'Art. 3.8.7' },
+      { n:8, item:'Coherencia entre cantidades, presupuesto y planos.', ref:'Verificación técnica' }
+    ]}
+  };
+
+  /* Iconos semánticos por área (mismos que doc-tecnica) */
+  function iconForArea(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('topogr')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l4-8 4 4 5-10 5 14"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/><circle cx="11" cy="15" r="1.2" fill="currentColor"/><circle cx="16" cy="5" r="1.2" fill="currentColor"/></svg>';
+    if (n.includes('suelo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>';
+    if (n.includes('arquitect')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>';
+    if (n.includes('estructur')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18" rx="1"/><rect x="15" y="3" width="6" height="18" rx="1"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="14" x2="15" y2="14"/></svg>';
+    if (n.includes('hidr')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5C8 7 6 10.5 6 13.5a6 6 0 0012 0c0-3-2-6.5-6-11z"/></svg>';
+    if (n.includes('eléct') || n.includes('electric')) return '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L4.5 14h6L9 22l8.5-12h-6L13 2z"/></svg>';
+    if (n.includes('ambient') || n.includes('riesg') || n.includes('manejo')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>';
+    if (n.includes('presup')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+  }
+
+  const ICONS = {
+    back: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    checkBig: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>',
+    revert:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>'
+  };
+
+  const id = new URLSearchParams(location.search).get('id');
+  const areaId = new URLSearchParams(location.search).get('area');
+  const p = ProjectData.getProyecto(id);
+  const areaInfo = AREAS[areaId];
+  const pageContent = document.getElementById('pageContent');
+
+  if (!p || !areaInfo) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Área no encontrada</div>`;
+  } else {
+    const areaState = p.docsTecnica.areas.find(a => a.id === areaId);
+    const e = ESTADOS_AREA[areaState.estado] || { label: areaState.estado, color: 'neutral' };
+    const aprobado = areaState.estado === 'aprobado';
+    const devuelto = areaState.estado === 'devuelto';
+    /* Doug 17/05/2026: 'subsanada' = el municipio respondió y mandó nuevos
+       docs. Se trata como editable (igual que 'pendiente'/'en_revision') —
+       la cenefa info indica que hay material nuevo para re-evaluar. */
+    const subsanada = areaState.estado === 'subsanada';
+
+    /* Gate "solo apruebas lo tuyo" (modelo Andrea + Danna 29/04/2026):
+       cada área tiene un revisor del equipo asignado por especialidad.
+       Si NO eres el asignado, la vista es de consulta.
+       Fallback robusto: si `revisorId` falta (state legacy o seed sin enrich),
+       resuelve por especialidad para no mostrar banner equivocado. */
+    const revisorActivo = ProjectData.getRevisorActivo();
+    const areaRev = areaState.revisorId
+      ? ProjectData.getRevisor(areaState.revisorId)
+      : ProjectData.getRevisorPorArea(areaId);
+    const esMia = !!(revisorActivo && areaRev && revisorActivo.id === areaRev.id);
+    const bloqueado = !aprobado && !devuelto && !esMia;
+    /* readOnly cubre: ya cerrada (aprobada/devuelta) O no es tu especialidad.
+       NOTA: 'subsanada' NO entra en readOnly — es el estado donde el revisor
+       debe re-evaluar después de recibir nueva documentación del municipio. */
+    const readOnly = aprobado || devuelto || bloqueado;
+
+    /* Helper: nombre del revisor a mostrar — prioriza pool sobre legacy string. */
+    function revisorDisplay() {
+      if (areaState.revisorId) {
+        const r = ProjectData.getRevisor(areaState.revisorId);
+        if (r) return r.nombre;
+      }
+      return areaState.revisor || 'el revisor';
+    }
+
+    const ref = document.referrer;
+    const backHref = ref.includes('doc-tecnica.html') ? `doc-tecnica.html?id=${p.idUnico}` : 'dashboard.html';
+    const backLabel = backHref.includes('doc-tecnica.html') ? 'Volver a áreas técnicas' : 'Volver al panel';
+
+    /* Estado del checklist en memoria (recupera del backend si existe) */
+    const initialChecklist = areaState.checklist || {};
+    const state = { ...initialChecklist };
+    const totalItems = areaInfo.items.length;
+
+    function renderPage() {
+      pageContent.innerHTML = `
+        <div class="page-fade-in">
+
+          <!-- ═══ Cenefa contextual edge-to-edge pegada al header ═══
+               Estado del área (asignada/aprobada/devuelta/bloqueada).
+               Patrón canónico DS — mismo que admin/convocatoria-detalle. -->
+          ${(() => {
+            /* SLA helper compartido por todos los estados */
+            const slaTxt = areaState.fechaLimite ? (() => {
+              const dias = Math.ceil((new Date(areaState.fechaLimite) - new Date()) / 86400000);
+              return dias < 0
+                ? ` SLA: <strong style="color:#b42318">vencido hace ${Math.abs(dias)} día${Math.abs(dias)===1?'':'s'}</strong>.`
+                : dias === 0
+                ? ' SLA: <strong>vence hoy</strong>.'
+                : ` SLA: <strong>${dias} día${dias===1?'':'s'} restante${dias===1?'':'s'}</strong>.`;
+            })() : '';
+
+            /* Mapeo estado → variante DS + icono + título + mensaje */
+            let variant, iconSvg, title, msg;
+            if (aprobado) {
+              variant = 'positive';
+              iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+              title = 'Área aprobada';
+              msg = `Aprobada por <strong>${revisorDisplay()}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. La decisión es final — esta vista es solo de consulta.`;
+            } else if (devuelto) {
+              variant = 'caution';
+              iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 4 3 12 11 12"/></svg>`;
+              title = 'Área devuelta al municipio';
+              msg = `Devuelta por <strong>${revisorDisplay()}</strong>${areaState.revisadoEn ? ` el ${new Date(areaState.revisadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}. Esperando subsanación del municipio. Esta vista es solo de consulta.`;
+            } else if (subsanada) {
+              /* Doug 17/05/2026: nuevo estado — el municipio respondió con
+                 documentos corregidos. Cenefa info para diferenciar de
+                 "pendiente normal" y dar contexto del re-trabajo. */
+              variant = 'informative';
+              iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
+              const subsFecha = areaState.subsanadoEn
+                ? new Date(areaState.subsanadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+                : '';
+              const docsCount = areaState.nuevosDocsCount || 0;
+              const obsCount = areaState.nuevasObsCount || 0;
+              title = 'Subsanación recibida — re-evalúa el área';
+              msg = `El municipio envió <strong>${docsCount} documento${docsCount === 1 ? '' : 's'} corregido${docsCount === 1 ? '' : 's'}</strong>${obsCount > 0 ? ` y <strong>${obsCount} respuesta${obsCount === 1 ? '' : 's'}</strong> a las observaciones` : ''}${subsFecha ? ` el ${subsFecha}` : ''}. Revisa el material nuevo y vuelve a evaluar cada ítem del checklist.${slaTxt} <strong>Aprobar</strong> cierra el área. <strong>Devolver</strong> envía nuevas observaciones y reinicia el ciclo.`;
+            } else if (bloqueado) {
+              variant = 'caution';
+              iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+              title = `Área asignada a ${areaRev?.nombre || 'otro revisor'}`;
+              msg = `Especialidad: <strong>${areaRev?.especialidad || '—'}</strong>. Solo el revisor asignado puede aprobarla o devolverla.${revisorActivo ? ` Estás como <strong>${revisorActivo.nombre}</strong> — puedes consultar el avance pero no decidir.` : ''}${slaTxt}`;
+            } else {
+              variant = 'positive';
+              iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+              title = 'Esta área te fue asignada';
+              msg = `Asignada a <strong>${revisorActivo?.nombre || 'ti'}</strong>${areaState.asignadoEn ? ` el ${new Date(areaState.asignadoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}.${slaTxt} <strong>Aprobar</strong> solo se habilita si todos los ítems están en Cumple o N/A. <strong>Devolver</strong> requiere al menos un ítem en No cumple.`;
+            }
+            return `
+              <div class="convo-status-cenefa convo-status-cenefa--${variant} convo-status-cenefa--top">
+                <span class="convo-status-cenefa__icon" aria-hidden="true">${iconSvg}</span>
+                <div class="convo-status-cenefa__body">
+                  <div class="convo-status-cenefa__title">${title}</div>
+                  <p class="convo-status-cenefa__msg">${msg}</p>
+                </div>
+              </div>
+            `;
+          })()}
+
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="${backHref}" style="margin-bottom:14px">${ICONS.back}${backLabel}</a>
+
+          <div class="naowee-page-header naowee-page-header--centered">
+            <div class="naowee-page-header__main">
+              <h1>Revisión de área técnica</h1>
+              <p>Marca cada ítem del checklist. Las observaciones marcadas como "No cumple" se devuelven al municipio para subsanación.</p>
+            </div>
+          </div>
+
+          <!-- ═══ PROYECTO CARD full-width: hero compacto (sin banner — la cenefa top lo cubre) ═══ -->
+          <section class="ra-proyecto-card">
+            <div class="ra-proyecto-card__hero">
+              <div class="ra-proyecto-card__icon">${iconForArea(areaInfo.nombre)}</div>
+              <div class="ra-proyecto-card__main">
+                <span class="ra-proyecto-card__rad">${(p.radicado || '—').split('-CONV-')[0]} · ${areaInfo.nombre}</span>
+                <span class="ra-proyecto-card__title" title="${p.nombre}">${p.nombre}</span>
+                <span class="ra-proyecto-card__meta">${p.municipio}${p.departamento ? `, ${p.departamento}` : ''} · ${p.tipoSolicitud || ''}</span>
+              </div>
+            </div>
+            <div class="ra-proyecto-card__status">
+              <span class="naowee-badge naowee-badge--${e.color} naowee-badge--quiet">${e.label}</span>
+            </div>
+          </section>
+
+          <!-- ═══ BENTO 70/30: checklist (left) + docs sidebar (right sticky) ═══ -->
+          <div class="ra-bento">
+
+            <!-- COLUMNA IZQUIERDA: checklist de ítems (70%) -->
+            <section class="ra-bloque" id="bloqueChecklist">
+            <div class="ra-bloque__head">
+              <div>
+                <div class="ra-bloque__title">${readOnly ? 'Resultado de verificación' : 'Ítems de verificación'} · ${areaInfo.nombre}</div>
+                <div class="ra-bloque__sub">${readOnly ? 'Estado final del checklist al cierre de la revisión.' : 'Marca cada ítem como Cumple, No cumple o No aplica.'}</div>
+              </div>
+              <div class="ra-progress">
+                <div class="ra-progress-bar"><span id="bloqueProgress" style="width:0%"></span></div>
+                <span class="ra-progress-text" id="bloqueProgressText">0 de ${totalItems} verificados</span>
+              </div>
+            </div>
+            <div>
+              ${areaInfo.items.map(it => {
+                const sel = state[it.n];
+                const itemClass = sel === 'cumple' ? 'is-cumple' : sel === 'nocumple' ? 'is-nocumple' : sel === 'na' ? 'is-na' : '';
+                if (readOnly) {
+                  /* Vista read-only: badge inline en lugar de toggle */
+                  const pill = sel === 'cumple'   ? `<span class="ra-readonly-pill ra-readonly-pill--cumple">${ICONS.check} Cumple</span>`
+                           :  sel === 'nocumple' ? `<span class="ra-readonly-pill ra-readonly-pill--nocumple">${ICONS.x} No cumple</span>`
+                           :  sel === 'na'       ? `<span class="ra-readonly-pill ra-readonly-pill--na">N/A</span>`
+                           :                       `<span class="ra-readonly-pill ra-readonly-pill--empty">Sin verificar</span>`;
+                  return `
+                    <div class="ra-item ra-item--ro ${itemClass}" data-item="${it.n}">
+                      <div class="ra-item__num">${it.n}</div>
+                      <div class="ra-item__main">
+                        <div class="ra-item__text">${it.item}</div>
+                        <div class="ra-item__ref">Res. 933 · ${it.ref}</div>
+                      </div>
+                      ${pill}
+                    </div>`;
+                }
+                return `
+                  <div class="ra-item ${itemClass}" data-item="${it.n}">
+                    <div class="ra-item__num">${it.n}</div>
+                    <div class="ra-item__main">
+                      <div class="ra-item__text">${it.item}</div>
+                      <div class="ra-item__ref">Res. 933 · ${it.ref}</div>
+                    </div>
+                    <div class="ra-toggle" role="group" aria-label="Veredicto del ítem">
+                      <button type="button" class="ra-toggle__btn has-tooltip ${sel === 'cumple' ? 'is-active--cumple' : ''}" data-r="cumple" data-tooltip="Cumple" aria-label="Cumple">${ICONS.check}</button>
+                      <button type="button" class="ra-toggle__btn has-tooltip ${sel === 'nocumple' ? 'is-active--nocumple' : ''}" data-r="nocumple" data-tooltip="No cumple" aria-label="No cumple">${ICONS.x}</button>
+                      <button type="button" class="ra-toggle__btn has-tooltip ${sel === 'na' ? 'is-active--na' : ''}" data-r="na" data-tooltip="No aplica" aria-label="No aplica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                    </div>
+                  </div>`;
+              }).join('')}
+            </div>
+            ${readOnly ? `
+              <div class="ra-summary">
+                <div class="ra-summary__stats">
+                  <span class="ra-summary__stat"><strong id="sumDone">0</strong> / ${totalItems} verificados</span>
+                  <span class="ra-summary__stat" style="color:var(--green)"><strong id="sumCumple">0</strong> cumple</span>
+                  <span class="ra-summary__stat" style="color:#c01818"><strong id="sumNocumple">0</strong> no cumple</span>
+                  <span class="ra-summary__stat" style="color:var(--blue-info)"><strong id="sumNa">0</strong> N/A</span>
+                </div>
+              </div>
+            ` : `
+              <div class="ra-summary">
+                <div class="ra-summary__stats">
+                  <span class="ra-summary__stat"><strong id="sumDone">0</strong> / ${totalItems} verificados</span>
+                  <span class="ra-summary__stat" style="color:var(--green)"><strong id="sumCumple">0</strong> cumple</span>
+                  <span class="ra-summary__stat" style="color:#c01818"><strong id="sumNocumple">0</strong> no cumple</span>
+                  <span class="ra-summary__stat" style="color:var(--blue-info)"><strong id="sumNa">0</strong> N/A</span>
+                </div>
+                <div class="ra-summary__actions">
+                  <button type="button" class="naowee-btn btn-devolver-area" id="btnDevolver">${ICONS.revert} Devolver área a subsanación</button>
+                  <button type="button" class="naowee-btn btn-aprobar" id="btnAprobar">${ICONS.checkBig} Aprobar área</button>
+                </div>
+              </div>
+            `}
+            </section>
+
+            <!-- COLUMNA DERECHA: docs sticky compactos como referencia (30%) -->
+            ${(() => {
+              /* Filtra por areaId; fallback a stub docs si no hay reales */
+              const docs = (p.documentos || []).filter(d =>
+                d.areaId === areaId || (d.bloque === 'tecnica' && (!d.areaId || d.areaId === areaId))
+              );
+              const stubDocs = docs.length === 0
+                ? areaInfo.items.slice(0, Math.min(3, areaInfo.items.length)).map((it, i) => ({
+                    id: `stub-${areaId}-${i}`,
+                    nombre: it.item.split(';')[0].split('.')[0].slice(0, 60),
+                    archivo: `${areaId}_${it.ref.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`,
+                    size: 280000 + i * 120000,
+                    subidoEn: p.fechaPostulacion
+                  }))
+                : docs;
+              const COLLAPSED_LIMIT = 4;
+              const overflow = stubDocs.length > COLLAPSED_LIMIT;
+              const artNum = areaId === 'topografico' ? '1' : areaId === 'suelos' ? '2' : areaId === 'arquitectonico' ? '3' : areaId === 'estructural' ? '4' : areaId === 'hidrosanitario' ? '5' : areaId === 'electrico' ? '6' : '';
+              /* Doug 17/05/2026: si el área está en 'subsanada', ordenar
+                 los docs nuevos (subsanacionDe) primero y marcarlos con
+                 una pill "Nuevo" para que el revisor sepa qué cambió. */
+              const newDocsFirst = subsanada
+                ? [
+                    ...stubDocs.filter(d => d.subsanacionDe),
+                    ...stubDocs.filter(d => !d.subsanacionDe)
+                  ]
+                : stubDocs;
+              const nuevosCount = stubDocs.filter(d => d.subsanacionDe).length;
+              return `
+                <aside class="ra-docs-card${subsanada && nuevosCount > 0 ? ' ra-docs-card--has-new' : ''}" id="raDocsCard">
+                  <div class="ra-docs-card__head">
+                    <div class="ra-docs-card__title-group">
+                      <div class="ra-docs-card__title">Documentos cargados${nuevosCount > 0 ? ` <span class="naowee-badge naowee-badge--informative naowee-badge--small" style="margin-left:6px;vertical-align:1px">${nuevosCount} nuevo${nuevosCount === 1 ? '' : 's'}</span>` : ''}</div>
+                      <div class="ra-docs-card__sub">${stubDocs.length} archivo${stubDocs.length === 1 ? '' : 's'}${artNum ? ` · Res. 933 Art. 3.${artNum}` : ''}</div>
+                    </div>
+                    <span class="naowee-badge naowee-badge--informative naowee-badge--quiet ra-docs-card__count">${stubDocs.length}</span>
+                  </div>
+                  <div class="ra-docs-card__list">
+                    ${newDocsFirst.map((d, i) => {
+                      const sizeKb = Math.round((d.size || 0) / 1024);
+                      const fechaTxt = d.subidoEn
+                        ? new Date(d.subidoEn).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
+                        : '';
+                      const isExtra = i >= COLLAPSED_LIMIT;
+                      const isNew = !!d.subsanacionDe;
+                      return `
+                        <div class="ra-doc-pill${isNew ? ' ra-doc-pill--new' : ''}"${isExtra ? ' data-extra="true"' : ''}>
+                          <span class="ra-doc-pill__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          </span>
+                          <div class="ra-doc-pill__main">
+                            <div class="ra-doc-pill__name" title="${d.nombre}">${d.nombre}${isNew ? ' <span class="ra-doc-pill__new-tag">NUEVO</span>' : ''}</div>
+                            <div class="ra-doc-pill__meta" title="${d.archivo}">${sizeKb} KB${fechaTxt ? ' · ' + fechaTxt : ''}</div>
+                          </div>
+                          <button type="button" class="ra-doc-pill__download has-tooltip" data-doc-id="${d.id}" data-tooltip="Descargar PDF" aria-label="Descargar ${d.nombre}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          </button>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  ${overflow ? `
+                    <button type="button" class="ra-docs-card__more" id="raDocsMore" aria-expanded="false">
+                      <span data-collapsed-text>Ver los ${stubDocs.length - COLLAPSED_LIMIT} restantes</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                  ` : ''}
+                </aside>
+              `;
+            })()}
+
+          </div>
+        </div>
+      `;
+
+      bindInteractions();
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+      const done = all.length;
+      const cumple = all.filter(v => v === 'cumple').length;
+      const nocumple = all.filter(v => v === 'nocumple').length;
+      const na = all.filter(v => v === 'na').length;
+
+      document.getElementById('sumDone').textContent = done;
+      document.getElementById('sumCumple').textContent = cumple;
+      document.getElementById('sumNocumple').textContent = nocumple;
+      document.getElementById('sumNa').textContent = na;
+
+      const pct = Math.round((done / totalItems) * 100);
+      document.getElementById('bloqueProgress').style.width = pct + '%';
+      document.getElementById('bloqueProgressText').textContent = `${done} de ${totalItems} verificados`;
+
+      const btnAprobar = document.getElementById('btnAprobar');
+      const btnDevolver = document.getElementById('btnDevolver');
+      /* En read-only los botones no existen, no hay nada que actualizar */
+      if (!btnAprobar || !btnDevolver) return;
+
+      const allDone = done === totalItems;
+      /* Aprobar: todos verificados y CERO "no cumple" */
+      btnAprobar.disabled = !allDone || nocumple > 0;
+      btnAprobar.title = !allDone
+        ? `Faltan ${totalItems - done} ítem${totalItems - done === 1 ? '' : 's'} por verificar`
+        : nocumple > 0
+        ? `No se puede aprobar: ${nocumple} ítem${nocumple === 1 ? '' : 's'} en "No cumple" requiere${nocumple === 1 ? '' : 'n'} devolución`
+        : '';
+
+      /* Devolver: al menos UN "no cumple" */
+      btnDevolver.disabled = nocumple === 0;
+      btnDevolver.title = nocumple === 0
+        ? 'No hay observaciones para devolver — marca al menos un ítem como "No cumple"'
+        : `Devolver con ${nocumple} ${nocumple === 1 ? 'observación' : 'observaciones'} al municipio`;
+    }
+
+    function bindInteractions() {
+      /* ─── Docs sidebar (siempre disponible — incluso en read-only) ─── */
+      /* "Ver más" toggle: expande/colapsa el listado de docs cuando hay overflow */
+      const moreBtn = document.getElementById('raDocsMore');
+      if (moreBtn) {
+        moreBtn.addEventListener('click', () => {
+          const card = document.getElementById('raDocsCard');
+          const isExpanded = card.classList.toggle('is-expanded');
+          moreBtn.setAttribute('aria-expanded', String(isExpanded));
+          const lbl = moreBtn.querySelector('[data-collapsed-text]');
+          if (lbl) {
+            const extras = card.querySelectorAll('.ra-doc-pill[data-extra="true"]').length;
+            lbl.textContent = isExpanded
+              ? 'Ocultar adicionales'
+              : `Ver los ${extras} restantes`;
+          }
+        });
+      }
+      /* Mock download: snackbar de confirmación. En producción: trigger
+         del fetch del adjunto desde el storage del proyecto. */
+      document.querySelectorAll('.ra-doc-pill__download').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const docId = btn.dataset.docId;
+          const pill = btn.closest('.ra-doc-pill');
+          const name = pill?.querySelector('.ra-doc-pill__name')?.textContent?.trim() || 'documento';
+          snackbar({
+            text: `Descargando: ${name.length > 50 ? name.slice(0, 50) + '…' : name}`,
+            duration: 2500
+          });
+        });
+      });
+
+      /* En read-only no hay toggles ni botones a bindear */
+      if (readOnly) return;
+
+      document.querySelectorAll('.ra-item').forEach(itemEl => {
+        const n = itemEl.dataset.item;
+        itemEl.querySelectorAll('.ra-toggle__btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+            const r = btn.dataset.r;
+            if (state[n] === r) {
+              delete state[n];
+              itemEl.classList.remove('is-cumple', 'is-nocumple', 'is-na');
+              btn.classList.remove('is-active--cumple', 'is-active--nocumple', 'is-active--na');
+            } else {
+              state[n] = r;
+              itemEl.classList.remove('is-cumple', 'is-nocumple', 'is-na');
+              itemEl.classList.add(r === 'cumple' ? 'is-cumple' : r === 'nocumple' ? 'is-nocumple' : 'is-na');
+              itemEl.querySelectorAll('.ra-toggle__btn').forEach(b => b.classList.remove('is-active--cumple', 'is-active--nocumple', 'is-active--na'));
+              btn.classList.add('is-active--' + r);
+            }
+            updateSummary();
+          });
+        });
+      });
+
+      document.getElementById('btnAprobar').addEventListener('click', () => {
+        const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+        const allDone = all.length === totalItems;
+        const nocumple = all.filter(v => v === 'nocumple').length;
+        if (!allDone || nocumple > 0) {
+          toast({ variant: 'caution', title: 'No se puede aprobar', message: !allDone ? 'Marca todos los ítems antes de aprobar.' : `Hay ${nocumple} ítem(s) en "No cumple". El área debe devolverse.` });
+          return;
+        }
+        openApproveModal(() => {
+        ProjectData.setProyecto(p.idUnico, x => {
+          const ar = x.docsTecnica.areas.find(a => a.id === areaId);
+          ar.estado = 'aprobado';
+          ar.aprobados = ar.items;
+          ar.checklist = { ...state };
+          /* Quien aprueba = el revisor activo del pool (modelo equipo revisor). */
+          ar.revisorId = revisorActivo?.id || ar.revisorId;
+          ar.revisor = revisorActivo?.nombre || ar.revisor || 'Equipo revisor';
+          ar.revisadoEn = new Date().toISOString();
+          x.historial = x.historial || [];
+          x.historial.push({ ts: new Date().toISOString(), actor: 'revisor', evento: `Área aprobada · ${areaInfo.nombre} · por ${revisorActivo?.nombre || 'revisor'}` });
+
+          /* Cierre automático del concepto cuando todas áreas + general OK */
+          const todasAprobadas = x.docsTecnica.areas.every(a => a.estado === 'aprobado');
+          const generalAprobada = x.docsGeneral && x.docsGeneral.estadoRevision === 'aprobado';
+          if (todasAprobadas && generalAprobada) {
+            x.estado = 'concepto_favorable';
+            x.conceptoFavorabilidad = {
+              ts: new Date().toISOString(),
+              certificado: `CERT-FAV-${p.idUnico}.pdf`,
+              emitidoPor: 'Equipo Revisor del Ministerio',
+              observaciones: 'Proyecto cumple con la totalidad de requisitos de la Resolución 933 de 2024.'
+            };
+            x.historial.push({ ts: new Date().toISOString(), actor: 'sistema', evento: 'Concepto de favorabilidad emitido', estado: 'concepto_favorable' });
+            window.__conceptoCerrado = true;
+          }
+        });
+        /* Notificar a admin + municipio si cerró el concepto */
+        if (window.__conceptoCerrado) {
+          ProjectData.pushNotificacion({ perfil: 'admin', tipo: 'favorabilidad', titulo: 'Proyecto listo para inversión', detalle: `${p.idUnico} · Concepto favorable emitido · ${p.nombre}` });
+          ProjectData.pushNotificacion({ perfil: 'municipio', tipo: 'favorabilidad', titulo: 'Certificado de favorabilidad emitido', detalle: `${p.idUnico} · ${p.nombre} · descarga el certificado en el perfil del proyecto` });
+          window.__conceptoCerrado = false;
+        }
+        });
+      });
+
+      document.getElementById('btnDevolver').addEventListener('click', () => {
+        const all = Object.values(state).filter(v => ['cumple','nocumple','na'].includes(v));
+        const nocumple = all.filter(v => v === 'nocumple').length;
+        if (nocumple === 0) {
+          toast({ variant: 'caution', title: 'Sin ítems para devolver', message: 'Marca al menos un ítem como "No cumple" para devolver el área.' });
+          return;
+        }
+        /* Lista de ítems en no cumple para enviar al municipio */
+        const observaciones = areaInfo.items
+          .filter(it => state[it.n] === 'nocumple')
+          .map(it => ({ n: it.n, item: it.item, ref: it.ref }));
+        openReturnModal(observaciones, () => {
+        /* Doug 15/05/2026: además de la metadata del área, persistir cada
+           ítem como observación en el hilo de chat del proyecto + cambiar
+           estado a `devuelta_subsanacion` para que el municipio vea la
+           pantalla con los detalles. */
+        const ahora = new Date().toISOString();
+        const obsPush = observaciones.map(o => ({
+          ts: ahora,
+          autor: 'revisor',
+          autorNombre: revisorActivo?.nombre || 'Revisor técnico',
+          autorAvatar: revisorActivo?.avatar || 'RT',
+          autorColor: revisorActivo?.color || '#7c3aed',
+          autorRol: areaInfo.nombre,
+          area: areaInfo.nombre,
+          tipo: 'Ítem no cumple',
+          ref: o.ref,
+          detalle: o.item
+        }));
+        ProjectData.setProyecto(p.idUnico, x => {
+          const ar = x.docsTecnica.areas.find(a => a.id === areaId);
+          ar.estado = 'devuelto';
+          ar.checklist = { ...state };
+          ar.observaciones = observaciones;
+          ar.revisorId = revisorActivo?.id || ar.revisorId;
+          ar.revisor = revisorActivo?.nombre || ar.revisor || 'Equipo revisor';
+          ar.revisadoEn = ahora;
+          /* Marcar proyecto como devuelto en subsanación a nivel global +
+             append observaciones al hilo de chat. */
+          x.estado = 'devuelta_subsanacion';
+          x.fechaDevolucion = ahora;
+          x.observaciones = x.observaciones || [];
+          obsPush.forEach(o => x.observaciones.push(o));
+          x.historial = x.historial || [];
+          x.historial.push({
+            ts: ahora, actor: 'revisor',
+            evento: `Área devuelta · ${areaInfo.nombre} · ${nocumple} observación(es) · por ${revisorActivo?.nombre || 'revisor'}`,
+            estado: 'devuelta_subsanacion'
+          });
+          return x;
+        });
+        ProjectData.pushNotificacion({
+          perfil: 'municipio',
+          tipo: 'subsanacion',
+          titulo: `Área técnica devuelta · ${areaInfo.nombre}`,
+          detalle: `${p.idUnico} · ${nocumple} ítem(s) requieren subsanación`
+        });
+        });
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       MODALES: confirmación de devolución y aprobación con confetti
+       ════════════════════════════════════════════════════════════════ */
+    function openReturnModal(observaciones, onConfirm) {
+      const ventanaDias = 15;
+      const fechaLimite = new Date(Date.now() + ventanaDias * 24 * 3600 * 1000);
+      const fechaLimiteStr = fechaLimite.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      const overlay = document.createElement('div');
+      overlay.className = 'ra-modal-overlay';
+      overlay.innerHTML = `
+        <div class="ra-modal" role="dialog" aria-modal="true" aria-labelledby="raModalTitle">
+          <div class="ra-modal__hero ra-modal__hero--caution">
+            <div class="ra-modal__icon ra-modal__icon--caution">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+            </div>
+            <div class="ra-modal__title" id="raModalTitle">Confirmar devolución</div>
+            <div class="ra-modal__subtitle">El área se devolverá al municipio con las observaciones marcadas. Tendrán ${ventanaDias} días hábiles para subsanar antes de que la postulación expire.</div>
+          </div>
+          <div class="ra-modal__body">
+            <div class="naowee-confirm-summary">
+              <div class="naowee-confirm-summary__header">
+                <h4 class="naowee-confirm-summary__name">${p.nombre}</h4>
+                <div class="naowee-confirm-summary__meta">
+                  <span class="naowee-confirm-summary__rad">${p.idUnico}</span>
+                  <span class="naowee-confirm-summary__inline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    <span>${areaInfo.nombre}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="naowee-confirm-summary__stats naowee-confirm-summary__stats--single">
+                <div class="naowee-confirm-stat">
+                  <span class="naowee-confirm-stat__label">Plazo de subsanación</span>
+                  <div class="naowee-confirm-stat__value-strong"><strong style="color:var(--accent)">${ventanaDias} días hábiles</strong></div>
+                  <div class="naowee-confirm-stat__hint">Vence el ${fechaLimiteStr}</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:16px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.35px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px">Observaciones a subsanar (${observaciones.length})</div>
+              <div class="ra-modal__obs-list">
+                ${observaciones.map(o => `
+                  <div class="ra-modal__obs-item">
+                    <span class="ra-modal__obs-num">${o.n}</span>
+                    <div>
+                      <div class="ra-modal__obs-text">${o.item}</div>
+                      <div class="ra-modal__obs-ref">Res. 933 · ${o.ref}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="ra-modal__footer">
+            <button type="button" class="naowee-btn naowee-btn--mute" data-close>Cancelar</button>
+            <button type="button" class="naowee-btn btn-devolver-area" data-confirm>${ICONS.revert} Confirmar devolución</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+      const close = () => {
+        overlay.classList.remove('is-open');
+        setTimeout(() => overlay.remove(), 240);
+      };
+      overlay.querySelector('[data-close]').addEventListener('click', close);
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      overlay.querySelector('[data-confirm]').addEventListener('click', () => {
+        close();
+        onConfirm();
+        toast({ variant: 'caution', title: 'Área devuelta', message: `${observaciones.length} observación(es) enviadas. El municipio tiene ${ventanaDias} días hábiles para subsanar.` });
+        setTimeout(() => { window.location.href = `doc-tecnica.html?id=${p.idUnico}`; }, 1200);
+      });
+    }
+
+    function openApproveModal(onConfirm) {
+      const overlay = document.createElement('div');
+      overlay.className = 'ra-modal-overlay';
+      /* Generar partículas de confetti */
+      const colors = ['#15803d', '#FF7500', '#1f78d1', '#7c3aed', '#FFC107', '#e91e63'];
+      const confettiPieces = Array.from({ length: 30 }, (_, i) => {
+        const left = Math.random() * 100;
+        const color = colors[i % colors.length];
+        const delay = Math.random() * 0.6;
+        const dur = 1.4 + Math.random() * 0.8;
+        return `<span style="left:${left}%;background:${color};animation-delay:${delay}s;animation-duration:${dur}s"></span>`;
+      }).join('');
+
+      overlay.innerHTML = `
+        <div class="ra-modal" role="dialog" aria-modal="true" aria-labelledby="raModalTitle">
+          <div class="ra-confetti">${confettiPieces}</div>
+          <div class="ra-modal__hero ra-modal__hero--success">
+            <div class="ra-modal__icon ra-modal__icon--success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="ra-modal__title" id="raModalTitle">¡Área aprobada!</div>
+            <div class="ra-modal__subtitle">Esta área cumple con todos los requisitos de la Resolución 933 de 2024. Cuando todas las áreas + documentación general estén aprobadas, se emitirá el concepto de favorabilidad automáticamente.</div>
+          </div>
+          <div class="ra-modal__body">
+            ${(() => {
+              const revisor = ProjectData.getRevisores?.()?.find?.(r => r.especialidades?.includes(areaInfo.id) || r.especialidades?.includes('arquitectura')) || { nombre: 'Juan Manuel Ávila', color: '#7c3aed' };
+              const revInitials = revisor.nombre.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '—';
+              const fechaApr = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+              return `
+                <div class="naowee-confirm-summary">
+                  <div class="naowee-confirm-summary__header">
+                    <h4 class="naowee-confirm-summary__name">${p.nombre}</h4>
+                    <div class="naowee-confirm-summary__meta">
+                      <span class="naowee-confirm-summary__rad">${p.idUnico}</span>
+                      <span class="naowee-confirm-summary__inline">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        <span>${areaInfo.nombre}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="naowee-confirm-summary__stats">
+                    <div class="naowee-confirm-stat">
+                      <span class="naowee-confirm-stat__label">Aprobada por</span>
+                      <div class="naowee-confirm-stat__value-rep">
+                        <div class="naowee-confirm-stat__rep-avatar" style="background:${revisor.color}22;color:${revisor.color}" aria-hidden="true">${revInitials}</div>
+                        <span class="naowee-confirm-stat__rep-name">${revisor.nombre}</span>
+                      </div>
+                    </div>
+                    <div class="naowee-confirm-stat">
+                      <span class="naowee-confirm-stat__label">Fecha de aprobación</span>
+                      <div class="naowee-confirm-stat__value-strong">${fechaApr}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })()}
+          </div>
+          <div class="ra-modal__footer">
+            <button type="button" class="naowee-btn naowee-btn--mute" data-close>Continuar revisando</button>
+            <button type="button" class="naowee-btn btn-aprobar" data-confirm>${ICONS.checkBig} Confirmar aprobación</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+      const close = () => {
+        overlay.classList.remove('is-open');
+        setTimeout(() => overlay.remove(), 240);
+      };
+      overlay.querySelector('[data-close]').addEventListener('click', close);
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      overlay.querySelector('[data-confirm]').addEventListener('click', () => {
+        close();
+        onConfirm();
+        toast({ variant: 'positive', title: 'Área aprobada', message: `"${areaInfo.nombre}" fue aprobada exitosamente.` });
+        setTimeout(() => { window.location.href = `doc-tecnica.html?id=${p.idUnico}`; }, 1200);
+      });
+    }
+
+    renderPage();
+  }
+</script>
+</body>
+</html>

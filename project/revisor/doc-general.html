@@ -801,10 +801,21 @@
               <span class="dg-summary__stat" style="color:#c01818"><strong id="summaryNocumple">0</strong> no cumple</span>
               <span class="dg-summary__stat" style="color:var(--blue-info)"><strong id="summaryNa">0</strong> N/A</span>
             </div>
-            ${(aprobado || !esRevisorGeneral) ? '' : `
+            ${aprobado ? '' : esRevisorGeneral ? `
               <div class="dg-summary__actions">
                 <button type="button" class="naowee-btn btn-devolver-doc" id="btnDevolver">Devolver con observaciones</button>
                 <button type="button" class="naowee-btn btn-aprobar-doc" id="btnAprobar">${ICONS.check} Aprobar documentación general</button>
+              </div>
+            ` : `
+              <!-- Doug 19/05/2026: cuando el revisor activo no es el revisor
+                   general, el flow de aprobar/devolver queda gated. Mostrar un
+                   prompt accionable que cambie al perfil correcto (1 click)
+                   para que el demo no se atasque sin CTAs visibles. -->
+              <div class="dg-summary__actions">
+                <button type="button" class="naowee-btn naowee-btn--loud" id="btnSwitchGeneral" ${revisorGeneralPool ? '' : 'disabled'} style="gap:8px">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                  Cambiar a ${revisorGeneralPool?.nombre?.split(' ')[0] || 'Revisor Doc. General'} para decidir
+                </button>
               </div>
             `}
           </div>
@@ -845,6 +856,28 @@
         : `Devolver con ${nocumple} ${nocumple === 1 ? 'observación' : 'observaciones'} al municipio`;
     }
     updateSummary();
+
+    /* Doug 19/05/2026: si el revisor activo no es Doc General, mostramos
+       el CTA "Cambiar a {nombre}" en lugar de Aprobar/Devolver. El
+       handler hace el swap del revisor activo y recarga (mismo mecanismo
+       que usa el demo-switcher del shell para items [data-revisor]). */
+    document.getElementById('btnSwitchGeneral')?.addEventListener('click', () => {
+      const rev = revisorGeneralPool;
+      if (!rev) return;
+      ProjectData.update(s => {
+        s.perfilActivo = 'revisor';
+        s.perfiles.revisor = {
+          ...s.perfiles.revisor,
+          revisorId: rev.id,
+          nombre: rev.nombre,
+          avatar: rev.avatar,
+          color: rev.color,
+          cargo: `Revisor · ${rev.especialidad}`
+        };
+      });
+      window.location.reload();
+    });
+
     /* Refresh progress bars per bloque */
     function updateBloques() {
       CHECKLIST.forEach((bl, i) => {

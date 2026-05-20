@@ -2266,10 +2266,14 @@ body.has-tooltip-portal-active .has-tooltip::before {
    ═══════════════════════════════════════════════════════════════════ */
 /* min-height SOLO cuando el empty-state está visible — evita gap inferior
    debajo de la última fila cuando hay pocos resultados (`:has()` soportado
-   en navegadores modernos, fallback a 0). */
+   en navegadores modernos, fallback a 0).
+   Doug 19/05/2026: 240px era insuficiente — el contenido (icon 56 +
+   title + msg 2 lineas + btn) sumaba ~302px sin contar el thead skip
+   de 56px. El boton "Limpiar filtros" quedaba clipeado por el borde
+   inferior del wrap. Aumentado a 360px para fit comodo. */
 .naowee-table-card__table-wrap { position: relative; min-height: 0; }
 .naowee-table-card__table-wrap:has(.table-empty-state:not([hidden])) {
-  min-height: 240px;
+  min-height: 360px;
 }
 
 .table-empty-state {

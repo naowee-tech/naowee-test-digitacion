@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519l">
 <style>
   /* v1.1 — Widget de prórroga RBI dentro del panel de decisión */
   .prorroga-widget { margin: 0 0 18px; }
@@ -810,25 +810,35 @@
       }
 
       function openProrrogaDialog() {
+        /* Doug 19/05/2026: refactor al pattern canonico de modal DS
+           (mismo que openEditarConvocatoriaQuick):
+           - __title-group con title (h2) + subtitle apilados verticalmente
+           - __dismiss X button en el header (right edge)
+           - Sin boton "Cancelar" en footer (la X cierra) — solo un CTA primario
+           - Body con padding canonico DS y footer separado del body */
         const overlay = document.createElement('div');
         overlay.className = 'naowee-modal-overlay';
         overlay.innerHTML = `
-          <div class="naowee-modal" style="max-width:480px">
+          <div class="naowee-modal naowee-modal--fixed-header naowee-modal--fixed-footer" style="max-width:480px;width:480px">
             <div class="naowee-modal__header">
-              <div class="naowee-modal__title">Solicitar prórroga RBI</div>
-              <div class="naowee-modal__subtitle">El admin debe aprobar tu solicitud.</div>
+              <div class="naowee-modal__title-group">
+                <h2 class="naowee-modal__title">Solicitar prórroga RBI</h2>
+                <p class="naowee-modal__subtitle">El admin debe aprobar tu solicitud.</p>
+              </div>
+              <button type="button" class="naowee-modal__dismiss" data-pr-cancel aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
-            <div class="naowee-modal__body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="naowee-modal__body" style="display:flex;flex-direction:column;gap:16px">
               <div class="naowee-message naowee-message--informative" role="status">
-  <div class="naowee-message__header">
-    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="naowee-message__title">Tienes derecho a 15 días hábiles extra (una sola vez)</span>
-  </div>
-  <div class="naowee-message__content">
-    <p class="naowee-message__text">Indica por qué necesitas más tiempo. El admin verá tu motivo y aprobará o rechazará la solicitud.</p>
-  </div>
-</div>
-
+                <div class="naowee-message__header">
+                  <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#fff" stroke-width="1.4"/><path d="M8 7v4M8 4.5v.05" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                  <span class="naowee-message__title">Tienes derecho a 15 días hábiles extra (una sola vez)</span>
+                </div>
+                <div class="naowee-message__content">
+                  <p class="naowee-message__text">Indica por qué necesitas más tiempo. El admin verá tu motivo y aprobará o rechazará la solicitud.</p>
+                </div>
+              </div>
               <label class="naowee-textfield naowee-textfield--multiline">
                 <span class="naowee-textfield__label naowee-textfield__label--required">Motivo de la solicitud</span>
                 <div class="naowee-textfield__input-wrap" style="height:auto;padding:12px;align-items:flex-start">
@@ -837,8 +847,7 @@
                 <span class="naowee-helper"><span data-count>0</span> / 400 caracteres</span>
               </label>
             </div>
-            <div class="naowee-modal__footer">
-              <button type="button" class="naowee-btn naowee-btn--mute" data-pr-cancel>Cancelar</button>
+            <div class="naowee-modal__footer" style="justify-content:flex-end">
               <button type="button" class="naowee-btn naowee-btn--loud" id="prSubmit" disabled>Enviar solicitud</button>
             </div>
           </div>
@@ -858,6 +867,9 @@
         };
         overlay.querySelector('[data-pr-cancel]').addEventListener('click', close);
         overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        /* Esc cierra el modal */
+        const onEsc = (e) => { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); } };
+        document.addEventListener('keydown', onEsc);
         submitBtn.addEventListener('click', () => {
           const res = ProjectData.solicitarProrrogaRBI(p.idUnico, motivoEl.value.trim());
           if (!res.ok) {

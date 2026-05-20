@@ -120,6 +120,7 @@
      (modal-registro-escenario.js). Mismos campos, estilos, componentes:
      datos basicos + Leaflet map + geolocation + lat/lon + direccion. */
   import { openRegistroEscenarioModal } from '../shared/modal-registro-escenario-v2.js?v=20260520b';
+  import { toast } from '../shared/toast.js';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'inversion' });
 
@@ -357,7 +358,14 @@
     try {
       const result = openRegistroEscenarioModal({
         proyectoId: btn.dataset.suidModal,
-        onCompleted: () => setTimeout(() => window.location.reload(), 800)
+        onCompleted: (data) => {
+          toast({
+            variant: 'positive',
+            title: 'Escenario registrado en SUID',
+            message: `${data?.nombre || 'Escenario'} quedó pre-validado. La tabla se actualizará en un instante.`
+          });
+          setTimeout(() => window.location.reload(), 1200);
+        }
       });
       console.log('[SUID] openRegistroEscenarioModal returned:', result);
       if (result instanceof Promise) {

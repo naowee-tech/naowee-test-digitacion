@@ -1856,7 +1856,10 @@
    Reusable en cualquier panel-card del dashboard / vistas listado.
    ═══════════════════════════════════════════════════════════════════ */
 .panel-card { padding: 0 !important; overflow: hidden; height: 100%; display: flex; flex-direction: column; }
-.panel-card__body { flex: 1; min-height: 0; padding: 12px 14px 0; }
+.panel-card__body { flex: 1; min-height: 0; padding: 12px 14px; }
+/* Tablas con tfoot: el footer ya cierra visualmente con border-radius,
+   asi que evitamos el padding inferior para que quede pegado al borde. */
+.panel-card__body:has(.dash-table tfoot) { padding-bottom: 0; }
 /* Scroll horizontal cuando la tabla excede el ancho del card */
 .panel-card__body:has(> .dash-table) { overflow-x: auto; }
 

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 <link rel="stylesheet" href="../shared/shell.css?v=20260519a">
-<link rel="stylesheet" href="../shared/pages.css?v=20260520a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260519k">
 </head>
 <body>
 <div class="shell">
@@ -33,7 +33,7 @@
 
   const proyectos = ProjectData.getProyectos();
   const enRevision = proyectos.filter(p => p.estado === 'en_revision');
-  const pendienteDocG = proyectos.filter(p => ['etapa_documental', 'en_revision_docs'].includes(p.estado));
+  const pendienteDocG = proyectos.filter(p => p.estado === 'etapa_documental');
   const subsanando = proyectos.filter(p => p.estado === 'devuelta_subsanacion');
   const conceptosEmitidos = proyectos.filter(p => p.estado === 'concepto_favorable' || p.estado === 'en_inversion');
   const urgentes = enRevision.filter(p => diasRestantes(p.fechaInicioRevision || p.fechaPostulacion) <= 5);
@@ -51,7 +51,7 @@
   const misAreas = [];
   if (revisorActivo) {
     proyectos
-      .filter(p => ['etapa_documental','en_revision_docs','concepto_favorable'].includes(p.estado))
+      .filter(p => ['etapa_documental','concepto_favorable'].includes(p.estado))
       .forEach(p => {
         if (esGeneral && p.docsGeneral) {
           misAreas.push({
@@ -216,8 +216,6 @@
             <div>
               <h3>Tus áreas próximas a vencer</h3>
               <div class="sub">Tu especialidad · ordenadas por días restantes (SLA 15 días desde asignación)</div>
-            </div>
-          </div>
           <div class="panel-card__body" style="padding-bottom:14px">
             <table class="dash-table">
               <thead>

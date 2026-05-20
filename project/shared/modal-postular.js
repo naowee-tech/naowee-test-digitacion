@@ -111,42 +111,34 @@ const AREAS_GENERAL = [
 /* BLOQUE 3 — Documentación técnica (8 áreas Res. 933 Art. 3, cada una su revisor especialista) */
 const AREAS_TECNICA = [
   { id: 'topografico', icon: ICON_TOPO, ref: 'Res. 933 Art. 3.1', label: 'Levantamiento topográfico', docs: [
-    { id: 'topo-plano', label: 'Plano topográfico georreferenciado', required: true },
-    { id: 'topo-memoria', label: 'Memoria descriptiva del levantamiento', required: true },
-    { id: 'topo-profesional', label: 'Matrícula profesional del topógrafo', required: true }
+    { id: 'topo-plano', label: 'Plano topográfico georreferenciado', required: true }
   ]},
   { id: 'suelos', icon: ICON_SUELOS, ref: 'Res. 933 Art. 3.2', label: 'Estudio de suelos', docs: [
-    { id: 'suelos-estudio', label: 'Estudio geotécnico firmado', required: true },
-    { id: 'suelos-ensayos', label: 'Resultados de ensayos de laboratorio', required: true },
-    { id: 'suelos-profesional', label: 'Matrícula profesional COPNIA', required: true }
+    { id: 'suelos-estudio', label: 'Estudio geotécnico firmado', required: true }
   ]},
   { id: 'arquitectonico', icon: ICON_ARQ, ref: 'Res. 933 Art. 3.3', label: 'Diseño arquitectónico', docs: [
-    { id: 'arq-planos', label: 'Planos arquitectónicos (plantas, cortes, fachadas)', required: true },
-    { id: 'arq-memoria', label: 'Memoria descriptiva arquitectónica', required: true },
-    { id: 'arq-zona', label: 'Zonificación de áreas de competencia', required: true }
+    { id: 'arq-principal', label: 'Diseño arquitectónico', required: true },
+    { id: 'arq-zona-comp', label: 'Zona de competencia', required: true },
+    { id: 'arq-otros', label: 'Otros diseños', required: true }
   ]},
   { id: 'estructural', icon: ICON_EST, ref: 'Res. 933 Art. 3.4', label: 'Diseño estructural', docs: [
-    { id: 'est-planos', label: 'Planos estructurales', required: true },
-    { id: 'est-memoria', label: 'Memoria de cálculo estructural', required: true },
-    { id: 'est-matricula', label: 'Matrícula profesional COPNIA', required: true }
+    { id: 'est-principal', label: 'Diseño estructural', required: true }
   ]},
-  { id: 'hidrosanitario', icon: ICON_HIDRO, ref: 'Res. 933 Art. 3.5', label: 'Hidráulico, sanitario y RCI', docs: [
-    { id: 'hidro-planos', label: 'Planos hidrosanitarios + red contra incendio', required: true },
-    { id: 'hidro-memoria', label: 'Memoria descriptiva hidráulica', required: true }
+  { id: 'hidrosanitario', icon: ICON_HIDRO, ref: 'Res. 933 Art. 3.5', label: 'Diseño hidráulico, sanitario y pluvial', docs: [
+    { id: 'hidro-principal', label: 'Diseño hidráulico, sanitario y pluvial', required: true },
+    { id: 'hidro-zona-comp', label: 'Zona de competencia', required: true },
+    { id: 'hidro-otros', label: 'Otros diseños', required: true }
   ]},
-  { id: 'electrico', icon: ICON_ELEC, ref: 'Res. 933 Art. 3.6', label: 'Diseño eléctrico (RETIE/RETILAP)', docs: [
-    { id: 'elec-planos', label: 'Planos eléctricos (fuerza, iluminación, comunicaciones)', required: true },
-    { id: 'elec-memoria', label: 'Memoria de cálculo eléctrico', required: true }
+  { id: 'electrico', icon: ICON_ELEC, ref: 'Res. 933 Art. 3.6', label: 'Diseño eléctrico', docs: [
+    { id: 'elec-principal', label: 'Diseño eléctrico', required: true },
+    { id: 'elec-zona-comp', label: 'Zona de competencia', required: true },
+    { id: 'elec-otros', label: 'Otros diseños', required: true }
   ]},
-  { id: 'ambiental', icon: ICON_AMB, ref: 'Res. 933 Art. 3.7', label: 'Manejo, riesgos y licencia ambiental', docs: [
-    { id: 'amb-plan', label: 'Plan de manejo ambiental', required: true },
-    { id: 'amb-riesgos', label: 'Evaluación de riesgos y vulnerabilidad', required: true },
-    { id: 'amb-inventario', label: 'Inventario florístico y faunístico', required: false }
+  { id: 'ambiental', icon: ICON_AMB, ref: 'Res. 933 Art. 3.7', label: 'Planes de manejo, Riesgos y Licencia ambiental', docs: [
+    { id: 'amb-principal', label: 'Planes de manejo, riesgos y licencia ambiental', required: true }
   ]},
-  { id: 'presupuesto', icon: ICON_PRES, ref: 'Res. 933 Art. 3.8', label: 'Presupuesto integral', docs: [
-    { id: 'pres-detallado', label: 'Presupuesto detallado por capítulos', required: true },
-    { id: 'pres-apus', label: 'Análisis de precios unitarios (APU)', required: true },
-    { id: 'pres-cronograma', label: 'Cronograma de obra', required: true }
+  { id: 'presupuesto', icon: ICON_PRES, ref: 'Res. 933 Art. 3.8', label: 'Presupuesto', docs: [
+    { id: 'pres-principal', label: 'Presupuesto', required: true }
   ]}
 ];
 

@@ -63,8 +63,11 @@
 }
 .proj-tabs-card .naowee-tab { padding: 10px 16px; }
 .proj-tab-panel { padding: 28px; }
-/* Para paneles con tabla: la tabla respira lateralmente del card */
-.proj-tab-panel--flush { padding: 16px 28px 0; }
+/* Para paneles con tabla: la tabla respira lateralmente del card.
+   Doug 19/05/2026: bottom padding agregado (antes era 0) — el hover
+   de la ultima row tocaba el borde del card. 16px da breathing room
+   y la ultima row hover se siente contenida. */
+.proj-tab-panel--flush { padding: 16px 28px; }
 .proj-tab-panel--flush > .naowee-table--in-card { width: 100% !important; margin: 0 !important; }
 
 /* Header de convocatoria-detalle: título con badge inline + descripción colapsable.

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle convocatoria · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260520b">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
+  import { openPostularModal } from '../shared/modal-postular.js?v=20260520g';
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'convocatorias' });
+
+  const id = new URLSearchParams(location.search).get('id');
+  const c = ProjectData.getConvocatorias().find(x => x.id === id);
+  const pageContent = document.getElementById('pageContent');
+
+  if (!c) {
+    pageContent.innerHTML = `
+      <div class="naowee-empty-state">
+        <div class="naowee-empty-state__title">Convocatoria no encontrada</div>`;
+  } else {
+    const isOpen = c.estado === 'abierta';
+    const dias = Math.ceil((new Date(c.cierre) - new Date()) / 86400000);
+
+    /* Proyectos de ESTE municipio postulados a esta convocatoria */
+    const perfilMun = ProjectData.getPerfilData('municipio');
+    const municipiosCubiertos = perfilMun?.municipiosCubiertos || [perfilMun?.municipio].filter(Boolean);
+    const misPostulaciones = ProjectData.getProyectos()
+      .filter(p => p.convocatoriaId === c.id && municipiosCubiertos.includes(p.municipio));
+
+    /* Doug 16/05/2026: utility transversal naowee-sla.
+       Para convocatorias el threshold es más generoso (≤7 days = warn)
+       porque el ciclo es más largo que el SLA de revisión (15d). */
+    const slaVariant = !isOpen ? null
+      : dias <= 0 ? 'vencido'
+      : dias <= 7 ? 'warn'
+      : 'ok';
+
+    pageContent.innerHTML = `
+      <div class="page-fade-in">
+        <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="convocatorias.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Volver a convocatorias activas
+        </a>
+
+        <!-- ═══ Hero canónico de la convocatoria ═══ -->
+        <div class="project-hero">
+          <div class="project-hero__top">
+            <div class="project-hero__left">
+              <div class="project-hero__rad">${c.id} · Bienio ${c.bienio}</div>
+              <h1 class="project-hero__title">${c.nombre}</h1>
+              <p style="font-size:13.5px;line-height:1.55;color:var(--text-secondary);margin:10px 0 0;max-width:680px">${c.descripcion || ''}</p>
+              <div class="project-hero__badges">
+                <span class="naowee-badge naowee-badge--${isOpen ? 'positive' : 'neutral'} naowee-badge--quiet"><span class="naowee-badge__dot"></span>${isOpen ? 'Abierta' : 'Cerrada'}</span>
+                ${c.permiteSegunda ? '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Admite segunda convocatoria</span>' : ''}
+              </div>
+            </div>
+            <div class="project-hero__right">
+              <div class="project-hero__label">Tope por proyecto</div>
+              <div class="project-hero__amount" style="color:var(--green,#15803d)">${formatoMoneda(c.montoMaximoProyecto)}</div>
+              <div class="project-hero__breakdown">Presupuesto total: ${formatoMoneda(c.presupuestoTotal)}</div>
+              ${isOpen && dias !== null ? `
+                <div style="display:flex;justify-content:flex-end;margin-top:10px">
+                  <span class="naowee-sla naowee-sla--${slaVariant}" title="Plazo Resolución 933">
+                    <svg class="naowee-sla__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                    <strong class="naowee-sla__num">${dias <= 0 ? 'Cerró hoy' : `${dias} día${dias === 1 ? '' : 's'}`}</strong>
+                    ${dias > 0 ? '<span class="naowee-sla__label">para postular</span>' : ''}
+                  </span>
+                </div>
+              ` : ''}
+              ${isOpen ? `
+                <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnPostular" style="margin-top:14px">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                  Postular proyecto
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Card unificada con tabs DS ═══ -->
+        <div class="naowee-card proj-tabs-card">
+          <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+            <button class="naowee-tab naowee-tab--selected" data-tab="info" role="tab" type="button">Información general</button>
+            <button class="naowee-tab" data-tab="mis-postulaciones" role="tab" type="button">Mis postulaciones ${misPostulaciones.length > 0 ? `<span class="tab-count">${misPostulaciones.length}</span>` : ''}</button>
+            <span class="naowee-tabs__indicator"></span>
+          </div>
+
+          <!-- Tab: Información general -->
+          <div class="proj-tab-panel" data-panel="info">
+            <dl class="proj-data">
+              <div>
+                <dt>Bienio</dt>
+                <dd>${c.bienio}</dd>
+              </div>
+              <div>
+                <dt>Apertura</dt>
+                <dd>${formatoFecha(c.apertura)}${c.apertura ? ' · 08:00 a.m.' : ''}</dd>
+              </div>
+              <div>
+                <dt>Cierre</dt>
+                <dd>${formatoFecha(c.cierre)}${c.cierre ? ' · 05:00 p.m.' : ''}</dd>
+              </div>
+              <div>
+                <dt>Emisión de conceptos</dt>
+                <dd>${c.emisionConcepto ? formatoFecha(c.emisionConcepto) : '—'}</dd>
+              </div>
+              <div>
+                <dt>Presupuesto total</dt>
+                <dd style="color:var(--green);font-weight:700;font-size:16px">${formatoMoneda(c.presupuestoTotal)}</dd>
+              </div>
+              <div>
+                <dt>Tope por proyecto</dt>
+                <dd style="color:var(--accent);font-weight:700;font-size:16px">${formatoMoneda(c.montoMaximoProyecto)}</dd>
+              </div>
+              <div style="grid-column:1 / -1">
+                <dt>Fuentes de cofinanciación elegibles</dt>
+                <dd>
+                  ${(c.fuentes || []).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet" style="margin-right:4px">${f}</span>`).join('') || '—'}
+                </dd>
+              </div>
+            </dl>
+
+            ${isOpen ? `
+              <div class="convo-status-cenefa convo-status-cenefa--abierta">
+                <span class="convo-status-cenefa__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+                </span>
+                <div class="convo-status-cenefa__body">
+                  <div class="convo-status-cenefa__title">Lista para postular</div>
+                  <p class="convo-status-cenefa__msg">Diligencia la ficha técnica, carga la carta de intención firmada y declara las fuentes de cofinanciación. El radicado se emite automáticamente al enviar.</p>
+                </div>
+                <div class="convo-status-cenefa__action">
+                  <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnPostularAlt">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                    Postular proyecto
+                  </button>
+                </div>
+              </div>
+            ` : `
+              <div class="convo-status-cenefa convo-status-cenefa--cerrada">
+                <span class="convo-status-cenefa__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+                </span>
+                <div class="convo-status-cenefa__body">
+                  <div class="convo-status-cenefa__title">Convocatoria cerrada</div>
+                  <p class="convo-status-cenefa__msg">El período de postulación finalizó el <strong>${formatoFecha(c.cierre)}</strong>. Los proyectos en revisión continúan su trámite normalmente y emitirán concepto en la fecha programada.</p>
+                </div>
+                <div class="convo-status-cenefa__action">
+                  <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatorias.html">Ver otras convocatorias</a>
+                </div>
+              </div>
+            `}
+          </div>
+
+          <!-- Tab: Mis postulaciones a esta convocatoria -->
+          <div class="proj-tab-panel" data-panel="mis-postulaciones" hidden>
+            ${misPostulaciones.length === 0 ? `
+              <div class="naowee-empty-state" style="padding:32px 20px">
+                <div class="naowee-empty-state__title">Aún no tienes postulaciones a esta convocatoria</div>
+                <div class="naowee-empty-state__msg">Postula un proyecto para que aparezca en esta lista con su trazabilidad.</div>
+                ${isOpen ? `<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" id="btnPostularEmpty" style="margin-top:14px">Postular proyecto →</button>` : ''}
+              </div>
+            ` : `
+              <div class="naowee-table-card__table-wrap" style="min-height:0">
+                <table class="naowee-table--in-card">
+                  <thead>
+                    <tr>
+                      <th>Radicado</th>
+                      <th>Proyecto</th>
+                      <th class="numeric">Presupuesto</th>
+                      <th class="numeric">Postulado</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${misPostulaciones.map(p => {
+                      const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'neutral' };
+                      return `
+                        <tr onclick="fadeAndGo('proyecto-perfil.html?id=${p.idUnico}')" style="cursor:pointer">
+                          <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;white-space:nowrap">${(p.radicado || '').split('-CONV-')[0]}</td>
+                          <td class="naowee-table__cell-name proj-name-cell">
+                            <div class="proj-name-cell__title" title="${p.nombre}">${p.nombre}</div>
+                            <div class="naowee-table__cell-muted" style="font-weight:400;font-size:11.5px;margin-top:2px">${p.tipoSolicitud || ''}</div>
+                          </td>
+                          <td class="numeric" style="font-weight:600;white-space:nowrap">${formatoMoneda(p.presupuesto)}</td>
+                          <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px;white-space:nowrap">${fechaCorta(p.fechaPostulacion)}</td>
+                          <td><span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet">${est.label}</span></td>
+                        </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+
+    /* Tabs interaction */
+    const tabsEl = document.querySelector('.naowee-tabs');
+    const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+    const positionIndicator = (tab) => {
+      const r = tab.getBoundingClientRect();
+      const parent = tabsEl.getBoundingClientRect();
+      indicator.style.width = r.width + 'px';
+      indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+    };
+    requestAnimationFrame(() => {
+      const initial = tabsEl.querySelector('.naowee-tab--selected');
+      if (initial) positionIndicator(initial);
+    });
+    tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const key = tab.dataset.tab;
+        tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+        document.querySelectorAll('.proj-tab-panel').forEach(panel => panel.hidden = panel.dataset.panel !== key);
+        positionIndicator(tab);
+      });
+    });
+
+    /* Postular → modal canónico (3 entry points: hero, mensaje info, empty state) */
+    function abrirPostular() {
+      openPostularModal({
+        convocatoriaId: c.id,
+        onPostulado: (nuevo) => { window.location.href = `proyecto-perfil.html?id=${nuevo.idUnico}&nuevo=1`; }
+      });
+    }
+    document.getElementById('btnPostular')?.addEventListener('click', abrirPostular);
+    document.getElementById('btnPostularAlt')?.addEventListener('click', abrirPostular);
+    document.getElementById('btnPostularEmpty')?.addEventListener('click', abrirPostular);
+  }
+</script>
+</body>
+</html>

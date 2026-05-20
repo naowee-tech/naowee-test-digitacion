@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Convocatorias activas · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260520b">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
+  import { openPostularModal } from '../shared/modal-postular.js?v=20260520g';
+  import { toast } from '../shared/toast.js';
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'convocatorias' });
+
+  /* Conteo real de postulaciones por convocatoria — consistente con el detalle */
+  const todosLosProyectos = ProjectData.getProyectos();
+  const convocatorias = ProjectData.getConvocatorias()
+    .slice()
+    .sort((a, b) => new Date(b.apertura) - new Date(a.apertura))
+    .map(c => {
+      const conteoReal = todosLosProyectos.filter(p => p.convocatoriaId === c.id).length;
+      return { ...c, postulaciones: conteoReal || c.postulaciones || 0 };
+    });
+
+  /* Helpers de fecha: devuelven null/false cuando la fecha es inválida
+     (caso de convocatorias creadas sin datepickers diligenciados).
+     Doug 17/05/2026: evita "NaN días para cerrar" en cards demo. */
+  function isValidDate(d) {
+    if (!d) return false;
+    const dt = new Date(d);
+    return !isNaN(dt.getTime());
+  }
+  function diasRestantes(cierre) {
+    if (!isValidDate(cierre)) return null;
+    const ms = new Date(cierre) - new Date();
+    return Math.ceil(ms / (1000 * 60 * 60 * 24));
+  }
+
+  /* Doug 17/05/2026 (feedback Juanma): postulación habilitada solo si
+     estado='abierta' Y la fecha actual está dentro de la ventana
+     apertura..cierre. Aun si el admin no actualizó el estado a 'cerrada',
+     un municipio NO debe poder postular fuera de fechas.
+     Doug 17/05/2026 (rev): si las fechas son inválidas (Invalid Date),
+     no es postulable — el admin debe completar la info primero. */
+  function isPostulable(c) {
+    if (c.estado !== 'abierta') return false;
+    if (!isValidDate(c.apertura) || !isValidDate(c.cierre)) return false;
+    const now = new Date();
+    return now >= new Date(c.apertura) && now <= new Date(c.cierre);
+  }
+  function razonNoPostulable(c) {
+    if (c.estado !== 'abierta') return 'Convocatoria cerrada';
+    if (!isValidDate(c.apertura) || !isValidDate(c.cierre)) return 'Fechas de la convocatoria no definidas — contacta al Ministerio';
+    const now = new Date();
+    if (now < new Date(c.apertura)) return `Postulaciones abren el ${fechaCorta(c.apertura)}`;
+    if (now > new Date(c.cierre)) return `Postulaciones cerraron el ${fechaCorta(c.cierre)}`;
+    return '';
+  }
+
+  /* Formatea bytes en KB/MB para mostrar peso del archivo */
+  function formatBytes(b) {
+    if (!b) return '';
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+    return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  /* Lista canónica de docs de la convocatoria (acto + términos + anexos).
+     Devuelve un array con label + file objeto {name, size}. */
+  function getDocsConvocatoria(c) {
+    const docs = c.documentos || {};
+    const out = [];
+    if (docs.actoAdmin?.name) out.push({ label: 'Acto administrativo', file: docs.actoAdmin });
+    if (docs.terminosRef?.name) out.push({ label: 'Términos de referencia', file: docs.terminosRef });
+    (docs.plantillas || []).forEach((p, i) => {
+      if (!p?.name) return;
+      const total = (docs.plantillas || []).length;
+      out.push({ label: total > 1 ? `Anexo ${i + 1}` : 'Anexo', file: p });
+    });
+    return out;
+  }
+
+  /* Doug 17/05/2026 (rev2): chip compacto inline para docs de convocatoria.
+     Pattern wrap horizontal (como .convo-card__fuentes) en lugar de pills
+     full-row — reduce drásticamente la altura de la card. Tooltip DS muestra
+     filename + size. Click → snackbar de descarga. */
+  function renderDocChip(d) {
+    return `
+      <a href="#" class="convo-doc-chip has-tooltip" data-doc-name="${d.file.name}" data-tooltip="${d.file.name} · ${formatBytes(d.file.size)} · Click para descargar">
+        <span class="convo-doc-chip__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </span>
+        <span class="convo-doc-chip__lbl">${d.label}</span>
+        <svg class="convo-doc-chip__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </a>
+    `;
+  }
+
+  /* ─────────── Render card (vista grilla) ─────────── */
+  function renderCard(c) {
+    const dias = diasRestantes(c.cierre);
+    const isOpen = c.estado === 'abierta';
+    const postulable = isPostulable(c);
+    const noPostulableMsg = razonNoPostulable(c);
+    /* Doug 17/05/2026: si fecha cierre inválida → muestra "Cerró hoy" + variant
+       negative (CTA disabled). Si dias <=0 también. */
+    const countdownVariant = !isOpen ? null
+      : (dias === null) ? 'negative'
+      : dias <= 0 ? 'negative'
+      : dias < 7 ? 'negative'
+      : dias < 15 ? 'caution'
+      : 'informative';
+    const countdownLabel = !isOpen ? null
+      : (dias === null) ? 'Cerró hoy'
+      : dias <= 0 ? 'Cerró hoy'
+      : `${dias} día${dias === 1 ? '' : 's'} para cerrar`;
+    /* Helper para meta de fechas con fallback elegante */
+    const aperturaTxt = isValidDate(c.apertura) ? `${fechaCorta(c.apertura)} · 08:00 a.m.` : 'Sin definir';
+    const cierreTxt = isValidDate(c.cierre) ? `${fechaCorta(c.cierre)} · 05:00 p.m.` : 'Sin definir';
+    const docs = getDocsConvocatoria(c);
+    return `
+      <article class="convo-card" data-estado="${c.estado}" data-search="${(c.id + ' ' + c.nombre).toLowerCase()}">
+        <header class="convo-card__head">
+          <div class="convo-card__head-main">
+            <span class="convo-card__id">${c.id} · Bienio ${c.bienio}</span>
+            <h3 class="convo-card__title" title="${c.nombre}">${c.nombre}</h3>
+          </div>
+          <span class="naowee-badge naowee-badge--${isOpen ? 'positive' : 'neutral'} naowee-badge--quiet">
+            <span class="naowee-badge__dot"></span>${isOpen ? 'Abierta' : 'Cerrada'}
+          </span>
+        </header>
+        <div class="convo-card__body">
+          <p class="convo-card__desc">${c.descripcion || ''}</p>
+          <dl class="convo-card__meta">
+            <div><dt>Apertura</dt><dd>${aperturaTxt}</dd></div>
+            <div><dt>Cierre</dt><dd>${cierreTxt}</dd></div>
+            <div><dt>Tope por proyecto</dt><dd class="convo-card__money">${formatoMoneda(c.montoMaximoProyecto)}</dd></div>
+          </dl>
+          ${(c.fuentes && c.fuentes.length) ? `
+            <div class="convo-card__fuentes">
+              ${c.fuentes.slice(0, 4).map(f => `<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">${f}</span>`).join('')}
+            </div>
+          ` : ''}
+          ${docs.length ? `
+            <div class="convo-card__docs">
+              <div class="convo-card__docs-head">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Documentos publicados por el Ministerio</span>
+                <span class="convo-card__docs-count">${docs.length}</span>
+              </div>
+              <div class="convo-card__docs-chips">
+                ${docs.map(renderDocChip).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+        <footer class="convo-card__foot">
+          <div class="convo-card__foot-info">
+            ${countdownLabel ? `<span class="naowee-badge naowee-badge--${countdownVariant} naowee-badge--quiet">${countdownLabel}</span>` : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">No disponible</span>'}
+          </div>
+          ${postulable
+            ? `<button type="button" class="naowee-btn naowee-btn--loud" data-postular-conv="${c.id}">Postular proyecto →</button>`
+            : (isOpen
+              ? `<button type="button" class="naowee-btn naowee-btn--loud has-tooltip" disabled data-tooltip="${noPostulableMsg}">Postular proyecto →</button>`
+              : `<a href="convocatoria-detalle.html?id=${c.id}" class="naowee-btn naowee-btn--mute">Ver detalle →</a>`)}
+        </footer>
+      </article>`;
+  }
+
+  /* ─────────── Render row (vista lista) ─────────── */
+  function renderRow(c) {
+    const dias = diasRestantes(c.cierre);
+    const isOpen = c.estado === 'abierta';
+    const postulable = isPostulable(c);
+    const noPostulableMsg = razonNoPostulable(c);
+    /* Doug 17/05/2026: consistente con cards — "Cerró hoy" usa variant
+       negative (rojo) para señalar que ya no es postulable, no caution. */
+    let badgeVariant, badgeLabel;
+    if (isOpen) {
+      if (dias === null) {
+        badgeVariant = 'negative'; badgeLabel = 'Cerró hoy';
+      } else if (dias > 0) {
+        badgeVariant = dias < 7 ? 'negative' : dias < 15 ? 'caution' : 'positive';
+        badgeLabel = dias < 15 ? `${dias} día${dias === 1 ? '' : 's'} restantes` : 'Abierta';
+      } else { badgeVariant = 'negative'; badgeLabel = 'Cerró hoy'; }
+    } else {
+      badgeVariant = 'neutral'; badgeLabel = 'Cerrada';
+    }
+    const docs = getDocsConvocatoria(c);
+    return `
+      <tr data-estado="${c.estado}" data-search="${(c.id + ' ' + c.nombre).toLowerCase()}">
+        <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap">${c.id}</td>
+        <td class="naowee-table__cell-name proj-name-cell">
+          <div class="proj-name-cell__title" title="${c.nombre}">${c.nombre}</div>
+        </td>
+        <td class="naowee-table__cell-muted" style="white-space:nowrap">${isValidDate(c.cierre) ? fechaCorta(c.cierre) : '<em style="opacity:.6">Sin definir</em>'}</td>
+        <td class="numeric" style="font-weight:600;color:var(--green);white-space:nowrap">${formatoMoneda(c.montoMaximoProyecto)}</td>
+        <td>
+          ${docs.length ? `
+            <div class="convo-row-docs" data-conv-id="${c.id}">
+              ${docs.slice(0, 3).map(d => `
+                <button type="button" class="convo-row-docs__icon has-tooltip" data-doc-name="${d.file.name}" data-tooltip="${d.label} · ${formatBytes(d.file.size)}" aria-label="Descargar ${d.label}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </button>
+              `).join('')}
+              ${docs.length > 3 ? `<span class="convo-row-docs__more">+${docs.length - 3}</span>` : ''}
+            </div>
+          ` : '<span class="naowee-table__cell-muted" style="font-size:11.5px">—</span>'}
+        </td>
+        <td><span class="naowee-badge naowee-badge--${badgeVariant} naowee-badge--quiet">${badgeLabel}</span></td>
+        <td style="text-align:right">
+          ${postulable
+            ? `<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-postular-conv="${c.id}">Postular →</button>`
+            : (isOpen
+              ? `<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small has-tooltip" disabled data-tooltip="${noPostulableMsg}">Postular →</button>`
+              : `<a href="convocatoria-detalle.html?id=${c.id}" class="naowee-btn naowee-btn--mute naowee-btn--small">Detalle →</a>`)}
+        </td>
+      </tr>`;
+  }
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+      <div class="naowee-page-header">
+        <div class="naowee-page-header__main">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Volver a Mi panel</a>
+          <h1>Convocatorias activas</h1>
+          <p>Convocatorias publicadas por el Ministerio del Deporte para presentar proyectos.</p>
+        </div>
+      </div>
+
+      <div class="naowee-table-card">
+        <div class="naowee-table-card__toolbar">
+          <div class="naowee-table-card__toolbar-left">
+            <div class="naowee-searchbox naowee-searchbox--medium" id="searchbox" style="width:280px">
+              <div class="naowee-searchbox__input-wrap">
+                <span class="naowee-searchbox__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                </span>
+                <input type="text" class="naowee-searchbox__input" id="searchInput" placeholder="Buscar por código o nombre">
+                <button type="button" class="naowee-searchbox__clear" id="searchClear" aria-label="Limpiar búsqueda">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="naowee-filter-dropdown" data-filter="estado">
+              <button class="naowee-filter-dropdown__trigger" type="button">
+                <span data-dd-label>Estado</span>
+                <span class="naowee-filter-dropdown__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              </button>
+              <div class="naowee-filter-dropdown__menu">
+                <button type="button" class="naowee-filter-dropdown__option" data-value="todas" aria-selected="true">
+                  <span class="ff-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="ff-dot" data-color="neutral"></span>
+                  <span class="ff-label">Todas</span>
+                  <span class="ff-count">${convocatorias.length}</span>
+                </button>
+                <button type="button" class="naowee-filter-dropdown__option" data-value="abierta" aria-selected="false">
+                  <span class="ff-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="ff-dot" data-color="positive"></span>
+                  <span class="ff-label">Abiertas</span>
+                  <span class="ff-count">${convocatorias.filter(c => c.estado === 'abierta').length}</span>
+                </button>
+                <button type="button" class="naowee-filter-dropdown__option" data-value="cerrada" aria-selected="false">
+                  <span class="ff-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="ff-dot" data-color="neutral"></span>
+                  <span class="ff-label">Cerradas</span>
+                  <span class="ff-count">${convocatorias.filter(c => c.estado === 'cerrada').length}</span>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" id="filterClear" disabled>Limpiar filtros <span id="filterClearCount"></span></button>
+          </div>
+          <div class="view-toggle" role="group" aria-label="Cambiar vista">
+            <button type="button" class="view-toggle__btn is-active" data-view="cards" aria-pressed="true" aria-label="Vista de tarjetas">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            </button>
+            <button type="button" class="view-toggle__btn" data-view="list" aria-pressed="false" aria-label="Vista de lista">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="naowee-table-card__active-tags" id="filterTags" style="display:none"></div>
+        <div id="viewSlot">
+          ${convocatorias.length === 0 ? `
+            <div class="table-empty">
+              <div class="table-empty__title">No hay convocatorias abiertas</div>
+              <div class="table-empty__msg">Cuando el Ministerio publique una convocatoria, podrás postular tus proyectos desde aquí. Te llegará una notificación por correo.</div>
+            </div>
+          ` : `<div id="cardsView" class="convo-grid">${convocatorias.map(renderCard).join('')}</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+
+  /* ─────────── Estado + filtros + view toggle (mismo patrón que admin) ─────────── */
+  const STATE_LABELS = { todas: 'Todas', abierta: 'Abierta', cerrada: 'Cerrada' };
+  const FILTER_LABELS = { estado: 'Estado' };
+  const activeFilters = {};
+  let searchTerm = '';
+  let currentView = 'cards';
+
+  function renderView() {
+    const slot = document.getElementById('viewSlot');
+    if (currentView === 'cards') {
+      slot.innerHTML = `<div id="cardsView" class="convo-grid">${convocatorias.map(renderCard).join('')}</div>`;
+    } else {
+      slot.innerHTML = `
+        <div class="naowee-table-card__table-wrap">
+          <table class="naowee-table--in-card">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Convocatoria</th>
+                <th>Cierre</th>
+                <th class="numeric">Tope por proyecto</th>
+                <th>Documentos</th>
+                <th>Estado</th>
+                <th style="text-align:right">Acción</th>
+              </tr>
+            </thead>
+            <tbody>${convocatorias.map(renderRow).join('')}</tbody>
+          </table>
+          <div class="table-empty-state" id="emptyState" hidden>
+            <div class="table-empty-state__icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </div>
+            <div class="table-empty-state__title">Sin resultados</div>
+            <div class="table-empty-state__msg">No encontramos convocatorias que coincidan con los filtros aplicados.</div>
+            <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small table-empty-state__btn" id="emptyClearBtn">Limpiar filtros</button>
+          </div>
+        </div>`;
+    }
+    bindPostularButtons();
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const items = document.querySelectorAll('#viewSlot [data-estado]');
+    let visible = 0;
+    items.forEach(el => {
+      const matchEstado = !activeFilters.estado || activeFilters.estado === 'todas' || el.dataset.estado === activeFilters.estado;
+      const matchSearch = !searchTerm || el.dataset.search.includes(searchTerm);
+      const show = matchEstado && matchSearch;
+      el.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    if (currentView === 'list') {
+      const hasFilters = Object.keys(activeFilters).filter(k => activeFilters[k] && activeFilters[k] !== 'todas').length > 0 || !!searchTerm;
+      const emptyEl = document.getElementById('emptyState');
+      if (visible === 0 && hasFilters && emptyEl) emptyEl.hidden = false;
+      else if (emptyEl) emptyEl.hidden = true;
+      document.getElementById('emptyClearBtn')?.addEventListener('click', clearAllFilters);
+    }
+    renderTags();
+  }
+
+  function clearAllFilters() {
+    Object.keys(activeFilters).forEach(k => delete activeFilters[k]);
+    searchTerm = '';
+    const sb = document.getElementById('searchInput');
+    if (sb) sb.value = '';
+    document.getElementById('searchbox')?.classList.remove('naowee-searchbox--has-value');
+    document.querySelectorAll('.naowee-filter-dropdown__option').forEach(o => o.setAttribute('aria-selected', String(o.dataset.value === 'todas')));
+    applyFilters();
+  }
+
+  function renderTags() {
+    const tags = document.getElementById('filterTags');
+    const clear = document.getElementById('filterClear');
+    const clearCount = document.getElementById('filterClearCount');
+    const entries = Object.entries(activeFilters).filter(([, v]) => v && v !== 'todas');
+    tags.innerHTML = entries.map(([key, val]) => `
+      <span class="naowee-tag naowee-tag--small naowee-tag--accent">
+        ${FILTER_LABELS[key]}: ${STATE_LABELS[val] || val}
+        <span class="naowee-tag__active-area" role="button" tabindex="0" aria-label="Quitar filtro" data-remove="${key}">
+          <span class="naowee-tag__close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+        </span>
+      </span>
+    `).join('');
+    tags.style.display = entries.length ? 'flex' : 'none';
+    clear.disabled = entries.length === 0;
+    clearCount.textContent = entries.length ? ` (${entries.length})` : '';
+    document.querySelectorAll('.naowee-filter-dropdown[data-filter]').forEach(dd => {
+      const key = dd.dataset.filter;
+      const lbl = dd.querySelector('[data-dd-label]');
+      const val = activeFilters[key];
+      lbl.textContent = (val && val !== 'todas') ? (STATE_LABELS[val] || val) : FILTER_LABELS[key];
+    });
+    tags.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const k = btn.dataset.remove;
+        delete activeFilters[k];
+        document.querySelectorAll(`.naowee-filter-dropdown[data-filter="${k}"] .naowee-filter-dropdown__option`).forEach(o => o.setAttribute('aria-selected', String(o.dataset.value === 'todas')));
+        applyFilters();
+      });
+    });
+  }
+
+  /* Filter dropdowns */
+  document.querySelectorAll('.naowee-filter-dropdown[data-filter]').forEach(dd => {
+    const trig = dd.querySelector('.naowee-filter-dropdown__trigger');
+    trig.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = dd.classList.contains('is-open');
+      document.querySelectorAll('.naowee-filter-dropdown.is-open').forEach(d => d.classList.remove('is-open'));
+      if (!wasOpen) dd.classList.add('is-open');
+    });
+    dd.querySelectorAll('.naowee-filter-dropdown__option').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        const key = dd.dataset.filter;
+        const val = opt.dataset.value;
+        dd.querySelectorAll('.naowee-filter-dropdown__option').forEach(o => o.setAttribute('aria-selected', String(o === opt)));
+        if (val === 'todas') delete activeFilters[key];
+        else activeFilters[key] = val;
+        dd.classList.remove('is-open');
+        applyFilters();
+      });
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.naowee-filter-dropdown.is-open').forEach(d => d.classList.remove('is-open'));
+  });
+
+  /* Search */
+  const searchBoxEl = document.getElementById('searchbox');
+  const searchInputEl = document.getElementById('searchInput');
+  const searchClearEl = document.getElementById('searchClear');
+  function syncSearchClear() {
+    searchBoxEl.classList.toggle('naowee-searchbox--has-value', !!searchInputEl.value);
+  }
+  searchInputEl.addEventListener('input', e => {
+    searchTerm = e.target.value.trim().toLowerCase();
+    syncSearchClear();
+    applyFilters();
+  });
+  searchClearEl.addEventListener('click', () => {
+    searchInputEl.value = '';
+    searchTerm = '';
+    syncSearchClear();
+    applyFilters();
+    searchInputEl.focus();
+  });
+
+  document.getElementById('filterClear').addEventListener('click', clearAllFilters);
+
+  /* View toggle */
+  document.querySelectorAll('.view-toggle__btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      if (view === currentView) return;
+      currentView = view;
+      document.querySelectorAll('.view-toggle__btn').forEach(b => {
+        const active = b.dataset.view === view;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
+      renderView();
+    });
+  });
+
+  /* Postular proyecto → modal canónico */
+  function bindPostularButtons() {
+    document.querySelectorAll('[data-postular-conv]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        openPostularModal({
+          convocatoriaId: btn.dataset.postularConv,
+          onPostulado: (nuevo) => { window.location.href = `proyecto-perfil.html?id=${nuevo.idUnico}&nuevo=1`; }
+        });
+      });
+    });
+  }
+  bindPostularButtons();
+
+  /* Doug 17/05/2026 (feedback Juanma): descargar documentos publicados
+     por el Ministerio. Como no hay backend, solo simulamos con snackbar.
+     Si en el futuro hay archivos reales, reemplazar por window.location o
+     blob download. Usa event delegation para sobrevivir re-renders. */
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-doc-name]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    toast({
+      variant: 'informative',
+      title: 'Descargando documento',
+      message: el.dataset.docName
+    });
+  });
+</script>
+</body>
+</html>

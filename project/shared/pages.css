@@ -4865,11 +4865,10 @@ body > .naowee-dropdown__menu.is-open {
 }
 .pm-anexo[open] .pm-anexo__chevron { transform: rotate(180deg); }
 .pm-anexo__panel {
-  padding: 0 18px 18px;
+  padding: 16px 18px 18px;
   display: flex; flex-direction: column; gap: 14px;
   border-top: 1px solid var(--border);
 }
-.pm-anexo__panel > * { margin-top: 4px; }
 
 /* ═══════════════════════════════════════════════════════════════════
    v1.1 — Subsanación en modal (antes era municipio/subsanar.html)

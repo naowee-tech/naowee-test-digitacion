@@ -85,22 +85,26 @@ const AREAS_RBI = [
 
 /* BLOQUE 2 — Documentación general (lo revisa el revisor doc general dedicado) */
 const AREAS_GENERAL = [
-  { id: 'general-analisis', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.1', label: 'Análisis del proyecto', docs: [
-    { id: 'gen-memorando', label: 'Memorando técnico de análisis', required: true },
-    { id: 'gen-mga', label: 'Ficha MGA con BPIN', required: true },
-    { id: 'gen-sostenibilidad', label: 'Plan de sostenibilidad 10 años', required: true }
+  { id: 'general-analisis', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.1', label: 'Documento de análisis', docs: [
+    { id: 'gen-analisis', label: 'Documento de análisis del proyecto', required: true }
   ]},
-  { id: 'general-territorial', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.2-2.5', label: 'Planeación territorial y licencias', docs: [
-    { id: 'gen-uso-suelo', label: 'Concepto de uso del suelo', required: true },
-    { id: 'gen-plano-ubicacion', label: 'Plano de ubicación + ficha DANE', required: true },
-    { id: 'gen-licencias', label: 'Licencias urbanísticas (o certificado de no aplicabilidad)', required: true },
-    { id: 'gen-comite', label: 'Concepto del Comité Municipal del Deporte', required: true }
+  { id: 'general-certificaciones', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.2', label: 'Certificaciones', docs: [
+    { id: 'gen-certificaciones', label: 'Certificaciones requeridas', required: true }
   ]},
-  { id: 'general-servicios', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.6-2.7', label: 'Servicios públicos y socialización', docs: [
-    { id: 'gen-agua', label: 'Certificado disponibilidad de agua', required: true },
-    { id: 'gen-energia', label: 'Certificado disponibilidad de energía', required: true },
-    { id: 'gen-alcantarillado', label: 'Certificado de alcantarillado', required: true },
+  { id: 'general-repr-legal', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.3', label: 'Documentos de representante legal', docs: [
+    { id: 'gen-repr-legal', label: 'Documentos del representante legal', required: true }
+  ]},
+  { id: 'general-banco', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.4', label: 'Banco de programas y proyectos', docs: [
+    { id: 'gen-banco', label: 'Inscripción en el banco de programas y proyectos', required: true }
+  ]},
+  { id: 'general-licencias', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.5', label: 'Licencias', docs: [
+    { id: 'gen-licencias', label: 'Licencias urbanísticas (o certificado de no aplicabilidad)', required: true }
+  ]},
+  { id: 'general-socializacion', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.6', label: 'Socialización', docs: [
     { id: 'gen-socializacion', label: 'Acta de socialización comunitaria', required: true }
+  ]},
+  { id: 'general-servicios', icon: ICON_GENERAL, ref: 'Res. 933 Sec. 2.7', label: 'Otros Servicios públicos', docs: [
+    { id: 'gen-servicios', label: 'Certificados de servicios públicos (agua, energía, alcantarillado, etc.)', required: true }
   ]}
 ];
 

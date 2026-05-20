@@ -53,6 +53,8 @@ const STEPS = [
 const ICON_RBI_CARTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>';
 const ICON_RBI_PREDIO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>';
 const ICON_RBI_PRESUP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+const ICON_RBI_FOTO   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+const ICON_RBI_RIESGO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
 /* Legacy ICON_RBI mantenido por backward-compat con otros consumidores */
 const ICON_RBI     = ICON_RBI_CARTA;
 const ICON_GENERAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>';
@@ -67,19 +69,17 @@ const ICON_PRES    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 
 /* BLOQUE 1 — RBI (lo revisa el revisor RBI dedicado) */
 const AREAS_RBI = [
-  { id: 'rbi-intencion', icon: ICON_RBI_CARTA, ref: 'Res. 933 Sec. 1.1', label: 'Carta de intención y formalización', docs: [
-    { id: 'rbi-carta', label: 'Carta de intención firmada por representante legal', required: true },
-    { id: 'rbi-cedula', label: 'Cédula del representante legal', required: true },
-    { id: 'rbi-acto', label: 'Acto administrativo que autoriza la postulación', required: true }
+  { id: 'rbi-intencion', icon: ICON_RBI_CARTA, ref: 'Res. 933 Sec. 1.1', label: 'Carta de intención', docs: [
+    { id: 'rbi-carta', label: 'Carta de intención firmada por representante legal', required: true }
   ]},
   { id: 'rbi-titularidad', icon: ICON_RBI_PREDIO, ref: 'Res. 933 Sec. 1.2-1.3', label: 'Titularidad del predio', docs: [
-    { id: 'rbi-tenencia', label: 'Documento de tenencia / propiedad', required: true },
-    { id: 'rbi-tradicion', label: 'Certificado de tradición y libertad', required: true }
+    { id: 'rbi-tenencia', label: 'Documento de tenencia / propiedad', required: true }
   ]},
-  { id: 'rbi-presupuestal', icon: ICON_RBI_PRESUP, ref: 'Res. 933 Sec. 1.4', label: 'Soporte presupuestal y SUID', docs: [
-    { id: 'rbi-cdp', label: 'Certificado de disponibilidad presupuestal (CDP)', required: true },
-    { id: 'rbi-suid', label: 'Certificado del Sistema Único de Información Deportiva (SUID)', required: true },
-    { id: 'rbi-analisis', label: 'Documento de análisis de necesidad', required: true }
+  { id: 'rbi-fotografico', icon: ICON_RBI_FOTO, ref: 'Res. 933 Sec. 1.4', label: 'Registro fotográfico', docs: [
+    { id: 'rbi-fotos', label: 'Registro fotográfico del predio y entorno', required: true }
+  ]},
+  { id: 'rbi-riesgos', icon: ICON_RBI_RIESGO, ref: 'Res. 933 Sec. 1.5', label: 'Riesgos y norma urbana', docs: [
+    { id: 'rbi-riesgos-norma', label: 'Análisis de riesgos y cumplimiento de norma urbana', required: true }
   ]}
 ];
 

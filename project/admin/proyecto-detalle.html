@@ -24,7 +24,7 @@
   import ProjectData from '../shared/data.js';
   import { mountShell } from '../shared/shell.js?v=20260519e';
   import { ESTADOS_POSTULACION, ESTADOS_AREA, formatoMoneda, formatoFecha } from '../shared/states.js';
-  import { openActivarInversionModal } from '../shared/modal-activar-inversion.js?v=20260516v';
+  import { openActivarInversionModal } from '../shared/modal-activar-inversion.js?v=20260519a';
   ProjectData.setPerfil('admin');
   mountShell({ activeId: 'proyectos' });
 
@@ -442,15 +442,23 @@
       });
     });
 
-    /* Activar inversión: modal en vez de página dedicada */
-    document.getElementById('btnActivarInv')?.addEventListener('click', () => {
-      openActivarInversionModal({
-        proyectoId: p.idUnico,
-        onActivado: () => {
-          /* Refrescar la página para que el hero muestre "En inversión" con BPIN */
-          window.location.reload();
-        }
-      });
+    /* Activar inversión: modal en vez de página dedicada.
+       Doug 19/05/2026: cambiado de bind directo a event delegation
+       en document — sobrevive a cualquier rerender del DOM (más
+       robusto) y captura errores del modal via try/catch. */
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('#btnActivarInv');
+      if (!btn) return;
+      e.preventDefault();
+      try {
+        openActivarInversionModal({
+          proyectoId: p.idUnico,
+          onActivado: () => window.location.reload()
+        });
+      } catch (err) {
+        console.error('[Activar inversión] modal failed:', err);
+        alert('No se pudo abrir el modal de inversión: ' + (err?.message || err));
+      }
     });
 
     /* Reasignar área puntual (admin override) — abre menú emergente con el

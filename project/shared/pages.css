@@ -5356,31 +5356,33 @@ body > .naowee-dropdown__menu.is-open {
 .subs-review__file-time {
   font-style: italic;
 }
-/* Botón preview — outline neutro, hover accent naranja */
+/* Doug 19/05/2026: migrado al pattern ghost canonico DS Naowee.
+   Antes: border-dark + bg gris + icon secondary -> caja outline pesada
+   inconsistente con el resto de icon buttons del modulo.
+   Ahora: transparente sin border en idle, icon en accent naranja,
+   hover bg orange-bg. Mismo pattern que .convo-edit-btn--icon-only,
+   .dg-item__download y todos los ghost icon buttons transversales. */
 .subs-review__file-preview {
   width: 32px; height: 32px;
   border-radius: var(--radius-md, 8px);
-  border: 1px solid var(--border, #e7e9f3);
-  background: var(--bg, #f5f6fa);
-  color: var(--text-secondary, #646587);
+  border: 0;
+  background: transparent;
+  color: var(--accent, #d74009);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: border-color .15s, color .15s, background .15s, transform .12s;
+  transition: background .12s, transform .12s;
 }
 .subs-review__file-preview:hover {
-  background: var(--surface, #fff);
-  color: var(--accent, #d74009);
-  border-color: var(--accent, #d74009);
-  transform: scale(1.06);
+  background: var(--orange-bg, #fff3e6);
 }
 .subs-review__file-preview:active {
-  transform: scale(.96);
+  transform: scale(.94);
 }
 .subs-review__file-preview svg {
-  width: 15px; height: 15px;
+  width: 16px; height: 16px;
 }
 
 /* File missing — variante distinta (no usa el card pattern) */

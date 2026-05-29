@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Panel · Administrador de Convocatorias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260520b">
+
+<style>
+  /* CSS de .estado-row* removido 13/05/2026 — la sección "Distribución por
+     estado" del dashboard fue eliminada por petición de Juanma (acta dev). */
+
+  /* Layout específico del dashboard: 2 columnas con alturas iguales */
+  .layout-2col { align-items: stretch !important; }
+  /* .panel-card y .dash-table viven en shared/pages.css para reuso */
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { ESTADOS_POSTULACION, formatoMoneda, formatoFecha } from '../shared/states.js';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260529a';
+  import { Tour } from '../shared/demo-tour.js?v=20260516b';
+
+  /* Asegurar perfil = admin si llegan desde la landing */
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'inicio' });
+  Tour.mount();
+
+  /* ═══ Saludo dinámico por hora ═══ */
+  const h = new Date().getHours();
+  const saludoBase = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  /* Nombre del perfil activo — se actualiza al cambiar de rol */
+  const userName = ProjectData.getPerfilData()?.nombre || 'Doug';
+  const primerNombre = userName.split(' ')[0];
+
+  /* ═══ Datos derivados ═══ */
+  const proyectos = ProjectData.getProyectos();
+  const convocatorias = ProjectData.getConvocatorias();
+
+  const convoAbiertas = convocatorias.filter(c => c.estado === 'abierta').length;
+  const enRevision   = proyectos.filter(p => p.estado === 'en_revision').length;
+  const enEtapaDoc   = proyectos.filter(p => p.estado === 'etapa_documental').length;
+  const conConcepto  = proyectos.filter(p => p.estado === 'concepto_favorable').length;
+  const enInversion  = proyectos.filter(p => p.estado === 'en_inversion');
+  const totalInversion = enInversion.reduce((s, p) => s + (p.inversion?.montoAprobado || 0), 0);
+
+  /* Formato abreviado de moneda para KPIs (4.800.000.000 → "$4.8 MM") */
+  const formatoMonedaAbrev = (n) => {
+    if (n >= 1e12) return `$${(n / 1e12).toFixed(1).replace(/\.0$/, '')} B`;
+    if (n >= 1e9)  return `$${(n / 1e9).toFixed(1).replace(/\.0$/, '')} MM`;
+    if (n >= 1e6)  return `$${(n / 1e6).toFixed(1).replace(/\.0$/, '')} M`;
+    if (n >= 1e3)  return `$${(n / 1e3).toFixed(0)} K`;
+    return `$${n}`;
+  };
+
+  const recientes = proyectos.slice(0, 5);
+
+  /* v2.0 — Empty state para modo guiado cuando no hay convocatorias.
+     Doug 14/05/2026: punto de partida único para que el usuario no se distraiga. */
+  const demoMode = ProjectData.getDemoMode?.() || 'guided';
+  if (demoMode === 'guided' && convocatorias.length === 0) {
+    document.getElementById('pageContent').innerHTML = `
+      <div class="page-fade-in">
+        <div class="greeting-row">
+          <div class="greeting">
+            <span class="greeting__avatar" aria-hidden="true">👋</span>
+            <div class="greeting__text">
+              <h1 class="greeting__title">Bienvenido, ${primerNombre}</h1>
+              <p class="greeting__sub">Empecemos el flujo de Project. Crea una convocatoria y verás cómo cascadea a cada perfil del Ministerio.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="naowee-card guided-hero" style="margin-top:24px;padding:48px 36px;text-align:center;background:linear-gradient(135deg, #fffaf5 0%, #fff 60%);border:1px solid var(--orange-border, #ffbf75)">
+          <div style="width:72px;height:72px;border-radius:50%;background:var(--orange-bg);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16h6"/></svg>
+          </div>
+          <h2 style="font-size:22px;font-weight:700;margin:0 0 8px;color:var(--text-primary)">Aún no hay convocatorias activas</h2>
+          <p style="font-size:14px;color:var(--text-secondary);max-width:520px;margin:0 auto 28px;line-height:1.55">
+            Como administrador del Ministerio, tu primer paso es <strong>crear una convocatoria</strong>. Define el año, los documentos a pedir y los entes territoriales que pueden postular.
+          </p>
+          <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" data-tour="nueva-convocatoria" id="btnCrearConvocatoriaHero">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            Crear primera convocatoria
+          </button>
+          <div style="margin-top:18px;font-size:12.5px;color:var(--text-secondary)">
+            ¿Ya conoces el flujo?
+            <button type="button" class="naowee-btn naowee-btn--link naowee-btn--small" id="btnSaltarModoLibre" style="vertical-align:baseline;margin-left:4px">Saltar al modo libre con datos de ejemplo →</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('btnCrearConvocatoriaHero')?.addEventListener('click', () => openConvocatoriaModal());
+    document.getElementById('btnSaltarModoLibre')?.addEventListener('click', () => {
+      ProjectData.setDemoMode('free');
+      window.location.reload();
+    });
+  } else {
+    /* ═══ Render normal ═══ */
+    document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+
+      <!-- ═══ Greeting hero ═══ -->
+      <div class="greeting-row">
+        <div class="greeting">
+          <span class="greeting__avatar" aria-hidden="true">👋</span>
+          <div class="greeting__text">
+            <h1 class="greeting__title">${saludoBase}, ${primerNombre}</h1>
+            <div class="convo-desc convo-desc--single-line" data-collapsed="true">
+              <p class="convo-desc__text greeting__sub">
+                Tienes <strong>${convoAbiertas} ${convoAbiertas === 1 ? 'convocatoria abierta' : 'convocatorias abiertas'}</strong>
+                y <strong>${enRevision} ${enRevision === 1 ? 'postulación en revisión' : 'postulaciones en revisión'}</strong>.
+                Vista ejecutiva del bienio 2025-2026 — monitorea el ciclo completo desde la radicación hasta la activación de inversión.
+              </p>
+              <button type="button" class="convo-desc__toggle" hidden>
+                <span class="convo-desc__toggle-text">Ver más</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="greeting-row__actions">
+          <a class="naowee-btn naowee-btn--mute naowee-btn--large" href="convocatorias.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Ver convocatorias
+          </a>
+          <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnNuevaConvo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Crear convocatoria
+          </button>
+        </div>
+      </div>
+
+      ${conConcepto > 0 ? `
+        <!-- Banner: proyectos listos para inversión (concepto favorable emitido) -->
+        <div class="naowee-message naowee-message--positive" role="status" style="margin-bottom:20px">
+  <div class="naowee-message__header">
+    <span class="naowee-message__icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="naowee-message__title">${conConcepto} proyecto${conConcepto > 1 ? 's' : ''} listo${conConcepto > 1 ? 's' : ''} para activar inversión</span>
+  </div>
+  <div class="naowee-message__content">
+    <p class="naowee-message__text">El equipo revisor emitió ${conConcepto > 1 ? 'sus conceptos' : 'su concepto'} favorable${conConcepto > 1 ? 's' : ''}. Revisa los proyectos y activa la inversión correspondiente.</p>
+    <a class="naowee-btn naowee-btn--loud naowee-btn--small naowee-message__action" href="inversion.html">Ver tabla de inversión →</a>
+  </div>
+</div>
+      ` : ''}
+
+      <!-- ═══ KPIs ═══ -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">Convocatorias abiertas</span>
+            <div class="kpi-card__ico kpi-card__ico--caution">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val">${convoAbiertas}<small>de ${convocatorias.length}</small></div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--flat">Bienio 2025-2026</span>
+            <span>${convocatorias.length - convoAbiertas} cerradas</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">Postulaciones recibidas</span>
+            <div class="kpi-card__ico kpi-card__ico--brand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val">${proyectos.length}<small>proyectos</small></div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--up">↑ ${enRevision}</span>
+            <span>en revisión activa</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">En etapa documental</span>
+            <div class="kpi-card__ico" style="background:#f3edff;color:#7c3aed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val">${enEtapaDoc + conConcepto}</div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--up">${conConcepto} listos</span>
+            <span>para inversión</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__lbl">Inversión activa</span>
+            <div class="kpi-card__ico kpi-card__ico--positive">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card__val" title="${formatoMoneda(totalInversion)}">${formatoMonedaAbrev(totalInversion)}<small>COP</small></div>
+          <div class="kpi-card__foot">
+            <span class="kpi-trend kpi-trend--up">${enInversion.length} ${enInversion.length === 1 ? 'proyecto' : 'proyectos'}</span>
+            <span>en ejecución</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Layout 2 columnas ═══ -->
+      <div class="layout-2col">
+
+        <!-- Postulaciones recientes -->
+        <article class="naowee-card panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Postulaciones recientes</h3>
+              <div class="sub">Últimos proyectos radicados o con cambio de estado</div>
+            </div>
+          </div>
+          <div class="panel-card__body">
+            ${recientes.length === 0 ? `
+              <div class="table-empty">
+                <div class="table-empty__title">Sin postulaciones todavía</div>
+                <div class="table-empty__msg">Cuando los municipios radiquen proyectos en una convocatoria, aparecerán aquí.</div>
+              </div>
+            ` : `
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Proyecto</th>
+                    <th>Estado</th>
+                    <th class="numeric">Presupuesto</th>
+                    <th class="numeric">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${recientes.map(p => {
+                    const est = ESTADOS_POSTULACION[p.estado] || { label: p.estado, color: 'gris' };
+                    const flag = p.priorizado
+                      ? '<span class="prio-flag" title="Proyecto de enfoque"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 21V4a1 1 0 011-1h13a1 1 0 01.8 1.6L15 9l3.8 4.4A1 1 0 0118 15H5v6a.5.5 0 01-1 0z"/></svg></span>'
+                      : '<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>';
+                    return `
+                      <tr onclick="fadeAndGo('proyecto-detalle.html?id=${p.idUnico}')">
+                        <td class="name-cell">
+                          <div class="name-cell__inner">${flag}<span class="name-cell__title" title="${p.nombre}">${p.nombre}</span></div>
+                          <div class="meta-line">${p.radicado || '—'} · ${p.municipio}${p.departamento ? `, ${p.departamento}` : ''}</div>
+                        </td>
+                        <td><span class="naowee-badge naowee-badge--${est.color} naowee-badge--quiet naowee-badge--small">${est.label}</span></td>
+                        <td class="numeric" style="font-weight:600">${formatoMoneda(p.presupuesto)}</td>
+                        <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px">${formatoFecha(p.fechaPostulacion)}</td>
+                      </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            `}
+          </div>
+        </article>
+
+        <!-- Convocatorias activas -->
+        <article class="naowee-card panel-card">
+          <div class="panel-head">
+            <div>
+              <h3>Convocatorias activas</h3>
+              <div class="sub">Estado de las convocatorias publicadas</div>
+            </div>
+          </div>
+          <div class="panel-card__body">
+            ${convocatorias.length === 0 ? `
+              <div class="table-empty">
+                <div class="table-empty__title">Sin convocatorias publicadas</div>
+                <div class="table-empty__msg">Crea una convocatoria desde el botón "Crear convocatoria" para que los municipios puedan postular.</div>
+              </div>
+            ` : `
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Convocatoria</th>
+                    <th class="numeric">Cierre</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${convocatorias.slice(0, 6).map(c => {
+                    const titulo = c.nombre && c.nombre.trim() ? c.nombre : `Convocatoria ${c.id}`;
+                    return `
+                      <tr onclick="fadeAndGo('convocatoria-detalle.html?id=${c.id}')">
+                        <td><span class="code-cell">${c.id}</span></td>
+                        <td class="name-cell">
+                          <div class="name-cell__inner"><span class="name-cell__title" title="${titulo}">${titulo}</span></div>
+                        </td>
+                        <td class="numeric" style="color:var(--text-secondary);font-weight:500;font-size:12px;white-space:nowrap">${c.cierre ? formatoFecha(c.cierre) : '—'}</td>
+                      </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            `}
+          </div>
+        </article>
+      </div>
+
+      <!-- Distribución por estado removida 13/05/2026 (Juanma min 14:00):
+           "Esta pantalla yo la parte de abajo la quitaría. Ese gráfico que
+           hiciste de cuántos proyectos, eso lo quitaría." -->
+
+    </div>
+  `;
+  } /* fin else (modo libre o convocatorias > 0) */
+
+  /* Abrir modal "+ Nueva convocatoria" */
+  const openModal = () => openConvocatoriaModal({
+    onCreated: (nueva) => location.href = `convocatoria-detalle.html?id=${nueva.id}&nueva=1`
+  });
+  document.getElementById('btnNuevaConvo')?.addEventListener('click', openModal);
+
+  /* Greeting: ver más / ver menos solo si overflow >1 línea */
+  requestAnimationFrame(() => {
+    const wrap = document.querySelector('.greeting .convo-desc');
+    const txt = wrap?.querySelector('.convo-desc__text');
+    const tog = wrap?.querySelector('.convo-desc__toggle');
+    if (!wrap || !txt || !tog) return;
+    if (txt.scrollHeight > txt.clientHeight + 1) {
+      tog.hidden = false;
+      tog.addEventListener('click', () => {
+        const collapsed = wrap.dataset.collapsed === 'true';
+        wrap.dataset.collapsed = collapsed ? 'false' : 'true';
+        tog.querySelector('.convo-desc__toggle-text').textContent = collapsed ? 'Ver menos' : 'Ver más';
+        tog.querySelector('svg').style.transform = collapsed ? 'rotate(180deg)' : '';
+      });
+    }
+  });
+</script>
+</body>
+</html>

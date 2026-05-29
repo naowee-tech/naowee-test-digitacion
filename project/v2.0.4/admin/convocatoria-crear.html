@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Crear convocatoria · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260520b">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  /* Esta página se mantiene por backwards compatibility (links viejos):
+     monta el shell y abre el modal de "+ Nueva convocatoria" automáticamente.
+     Crear convocatoria ahora es modal, no página dedicada. */
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { openConvocatoriaModal } from '../shared/modal-convocatoria.js?v=20260529a';
+  ProjectData.setPerfil('admin');
+  mountShell({ activeId: 'convocatorias' });
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in" style="text-align:center;padding:80px 24px;color:var(--text-secondary);font-size:14px">
+      Abriendo modal de nueva convocatoria…
+    </div>
+  `;
+
+  setTimeout(() => {
+    openConvocatoriaModal({
+      onCreated: (nueva) => location.href = `convocatoria-detalle.html?id=${nueva.id}&nueva=1`
+    });
+  }, 50);
+</script>
+</body>
+</html>

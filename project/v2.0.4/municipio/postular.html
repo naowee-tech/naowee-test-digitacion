@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Postular proyecto · Municipio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/wizard-page.css">
+<link rel="stylesheet" href="../shared/pages.css?v=20260520b">
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  /*
+   * Postular proyecto — LAUNCHER del modal canónico.
+   *
+   * El wizard de postulación vive ahora en shared/modal-postular.js?v=20260520g
+   * (modal DS oficial, footer en puntas opuestas, stepper con check verde,
+   * file drop refinado, success con confetti). Esta página solo
+   * mantiene compatibilidad con links directos: monta el shell con
+   * el sidebar del municipio y abre el modal automáticamente.
+   *
+   * Al cerrar el modal, el usuario queda en su panel principal.
+   */
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { openPostularModal } from '../shared/modal-postular.js?v=20260520g';
+
+  ProjectData.setPerfil('municipio');
+  mountShell({ activeId: 'postular' });
+
+  /* Página vacía: el contexto visual lo da el modal full-screen.
+     Si el usuario cierra el modal sin postular, lo llevamos a Mi panel. */
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in" style="display:flex;align-items:center;justify-content:center;min-height:60vh;padding:40px 20px">
+      <div class="naowee-empty-state" style="max-width:480px;text-align:center">
+        <div class="naowee-empty-state__icon" style="margin:0 auto 16px;width:56px;height:56px;background:var(--orange-bg,#fff3e6);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </div>
+        <div class="naowee-empty-state__title" style="font-size:18px;font-weight:700;margin-bottom:6px">Abrir formulario de postulación</div>
+        <div class="naowee-empty-state__msg" style="color:var(--text-secondary);margin-bottom:18px">Si el wizard no apareció automáticamente, ábrelo manualmente.</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button type="button" class="naowee-btn naowee-btn--loud" id="btnAbrirPostular">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            Postular proyecto
+          </button>
+          <a class="naowee-btn naowee-btn--mute" href="dashboard.html">Volver al panel</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const convId = new URLSearchParams(location.search).get('conv') || undefined;
+
+  function abrir() {
+    openPostularModal({
+      convocatoriaId: convId,
+      onPostulado: (nuevo) => {
+        window.location.href = `proyecto-perfil.html?id=${nuevo.idUnico}&nuevo=1`;
+      }
+    });
+  }
+
+  /* Abrir el modal automáticamente al cargar la página. Usamos setTimeout
+     en lugar de rAF porque el demo switcher se monta async y mete clicks
+     que pueden cerrar el modal si se abre demasiado pronto. */
+  setTimeout(() => abrir(), 80);
+
+  /* Botón fallback por si el usuario cierra el modal sin postular */
+  document.getElementById('btnAbrirPostular')?.addEventListener('click', abrir);
+</script>
+</body>
+</html>

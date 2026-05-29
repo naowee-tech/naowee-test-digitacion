@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Concepto de favorabilidad · Revisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+<link rel="stylesheet" href="../shared/shell.css?v=20260519a">
+<link rel="stylesheet" href="../shared/pages.css?v=20260520b">
+<style>
+  /* ─── Hero KPIs específicos de esta página ─── */
+  .cf-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .cf-summary { grid-template-columns: 1fr; } }
+  .cf-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .cf-stat__lbl { font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--text-secondary); text-transform: uppercase; }
+  .cf-stat__val { font-size: 26px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1; }
+  .cf-stat__val--green { color: var(--green); }
+  .cf-stat__val--orange { color: var(--accent); }
+  .cf-stat__sub { font-size: 12px; color: var(--text-secondary); }
+  .cf-stat__sub strong { color: var(--text-primary); font-weight: 700; }
+
+  /* ─── Inline progress en la tabla ─── */
+  .cf-progress {
+    display: inline-flex; align-items: center; gap: 8px; min-width: 140px;
+  }
+  .cf-progress__bar {
+    flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .cf-progress__bar > span {
+    display: block; height: 100%; border-radius: 99px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .cf-progress__count {
+    font-size: 11.5px; font-weight: 600; color: var(--text-secondary);
+    font-variant-numeric: tabular-nums; min-width: 36px; text-align: right;
+  }
+
+  /* ─── Modal de cambio de rol (interrumpe la navegación cross-rol) ─── */
+  .cf-modal-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(15, 17, 35, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .cf-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .cf-modal {
+    background: var(--surface); border-radius: var(--radius-xl);
+    width: 100%; max-width: 520px;
+    box-shadow: 0 24px 60px -12px rgba(15, 17, 35, .35), 0 0 0 1px var(--border);
+    transform: translateY(16px) scale(.97); opacity: 0;
+    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+    overflow: hidden;
+  }
+  .cf-modal-overlay.is-open .cf-modal { transform: translateY(0) scale(1); opacity: 1; }
+
+  .cf-modal__hero {
+    padding: 28px 28px 18px; text-align: center;
+    background: linear-gradient(180deg, var(--blue-bg) 0%, #fff 80%);
+    border-bottom: 1px solid var(--border);
+  }
+  .cf-modal__icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--blue-info, #1f78d1); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 12px; box-shadow: 0 8px 24px rgba(31,120,209,.3);
+  }
+  .cf-modal__icon svg { width: 28px; height: 28px; stroke: #fff; }
+  .cf-modal__title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .cf-modal__subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; max-width: 380px; margin-inline: auto; }
+
+  .cf-modal__body { padding: 22px 28px; }
+  .cf-modal__rolswap {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    padding: 16px; background: var(--bg, #f5f6fa); border-radius: var(--radius-lg);
+  }
+  .cf-rol {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    flex: 1; min-width: 0;
+  }
+  .cf-rol__avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .cf-rol__avatar--from { background: #f3edff; color: #7c3aed; }
+  .cf-rol__avatar--to { background: var(--orange-bg); color: var(--accent); }
+  .cf-rol__name { font-size: 12.5px; font-weight: 700; color: var(--text-primary); text-align: center; }
+  .cf-rol__lbl { font-size: 11px; color: var(--text-secondary); text-align: center; }
+  .cf-rol-arrow { color: var(--text-secondary); flex-shrink: 0; }
+
+  .cf-modal__detail {
+    margin-top: 16px; padding: 12px 14px;
+    background: var(--blue-bg); border: 1px solid #cfe1f5; border-radius: var(--radius-md);
+    font-size: 12.5px; color: var(--text-primary); line-height: 1.5;
+  }
+  .cf-modal__detail strong { font-weight: 700; }
+
+  .cf-modal__footer {
+    padding: 14px 28px 18px; display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* Empty state mejorado para tabs */
+  .cf-empty {
+    padding: 60px 32px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .cf-empty__icon {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--bg, #f5f6fa);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); margin-bottom: 6px;
+  }
+  .cf-empty__title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .cf-empty__msg { font-size: 13px; color: var(--text-secondary); max-width: 380px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebarRoot"></div>
+  <div class="main">
+    <header class="top-header" id="topHeader"></header>
+    <div class="page" id="pageContent"></div>
+  </div>
+</div>
+<div id="demoRoleSwitcherRoot"></div>
+
+<script type="module">
+  import ProjectData from '../shared/data.js';
+  import { mountShell } from '../shared/shell.js?v=20260519e';
+  import { formatoMoneda, formatoFecha, fechaCorta } from '../shared/states.js';
+  ProjectData.setPerfil('revisor');
+  mountShell({ activeId: 'concepto' });
+
+  const conConcepto = ProjectData.getProyectos(p => p.estado === 'concepto_favorable' || p.estado === 'en_inversion');
+  const enProceso = ProjectData.getProyectos(p => ['etapa_documental', 'en_revision_docs'].includes(p.estado));
+  const montoCertificado = conConcepto.reduce((s, p) => s + (p.presupuesto || 0), 0);
+
+  const ICONS = {
+    back: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+    flag: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.5.5 0 0 1 .5-.5h9.7a.5.5 0 0 1 .42.78L11.5 5l2.12 3.22a.5.5 0 0 1-.42.78H4v6.5a.5.5 0 0 1-1 0z"/></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    cert: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/><path d="M10 16l-2 4 4-1 4 1-2-4"/></svg>',
+    empty: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+  };
+
+  function renderProcesoRow(p) {
+    const aprobadas = p.docsTecnica?.areas.filter(a => a.estado === 'aprobado').length || 0;
+    const total = p.docsTecnica?.areas.length || 8;
+    const docGenOk = p.docsGeneral?.estadoRevision === 'aprobado';
+    const pct = Math.round((aprobadas / total) * 100);
+    const bothReady = docGenOk && aprobadas === total;
+    return `
+      <tr onclick="fadeAndGo('doc-tecnica.html?id=${p.idUnico}')">
+        <td class="naowee-table__cell-muted" style="font-weight:500;font-size:12px;letter-spacing:.2px;white-space:nowrap;color:var(--text-secondary)">
+          <span class="rad-cell">
+            ${p.priorizado
+              ? `<span class="prio-flag" title="Proyecto de enfoque">${ICONS.flag}</span>`
+              : `<span class="prio-flag prio-flag--empty" aria-hidden="true"></span>`}
+            ${(p.radicado || '—').split('-CONV-')[0]}
+          </span>
+        </td>
+        <td class="naowee-table__cell-name proj-name-cell">
+          <div class="proj-name-cell__title" title="${p.nombre}">${p.nombre}</div>
+        </td>
+        <td>${p.municipio}<div class="naowee-table__cell-muted" style="font-size:11.5px;margin-top:2px">${p.departamento || ''}</div></td>
+        <td class="numeric" style="font-weight:600;white-space:nowrap">${formatoMoneda(p.presupuesto)}</td>
+        <td><span class="naowee-badge naowee-badge--${docGenOk ? 'positive' : 'caution'} naowee-badge--quiet">${docGenOk ? '✓ Aprobada' : 'En revisión'}</span></td>
+        <td>
+          <div class="cf-progress">
+            <div class="cf-progress__bar"><span style="width:${pct}%;background:${bothReady ? 'var(--green)' : aprobadas > 0 ? 'var(--accent)' : 'var(--border-dark)'}"></span></div>
+            <span class="cf-progress__count">${aprobadas}/${total}</span>
+          </div>
+        </td>
+        <td><span class="naowee-badge naowee-badge--${bothReady ? 'positive' : 'caution'} naowee-badge--quiet">${bothReady ? 'Listo para emitir' : 'Pendiente'}</span></td>
+      </tr>`;
+  }
+
+  function renderEmitidoRow(p) {
+    const c = p.conceptoFavorabilidad || {};
+    return `
+      <tr data-emitido-row data-href="../admin/proyecto-detalle.html?id=${p.idUnico}" data-name="${p.nombre}" data-rad="${p.radicado}">
+        <td><span class="code-cell" style="color:var(--green);font-weight:700">${c.certificado || '—'}</span></td>
+        <td class="naowee-table__cell-name proj-name-cell">
+          <div class="proj-name-cell__title" title="${p.nombre}">${p.nombre}</div>
+        </td>
+        <td>${p.municipio}<div class="naowee-table__cell-muted" style="font-size:11.5px;margin-top:2px">${p.departamento || ''}</div></td>
+        <td class="numeric" style="font-weight:600;white-space:nowrap">${formatoMoneda(p.presupuesto)}</td>
+        <td class="naowee-table__cell-muted" style="white-space:nowrap;font-size:12px">${c.ts ? fechaCorta(c.ts) : '—'}</td>
+        <td><span class="naowee-badge naowee-badge--${p.estado === 'en_inversion' ? 'positive' : 'brand'} naowee-badge--quiet">${p.estado === 'en_inversion' ? '✓ En inversión' : 'Concepto favorable'}</span></td>
+      </tr>`;
+  }
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="page-fade-in">
+      <a class="naowee-btn naowee-btn--mute naowee-btn--small back-btn" href="dashboard.html" style="margin-bottom:14px">${ICONS.back}Volver al panel</a>
+
+      <div class="naowee-page-header naowee-page-header--centered">
+        <div class="naowee-page-header__main">
+          <h1>Conceptos de favorabilidad</h1>
+          <p>El concepto se emite automáticamente cuando todas las áreas técnicas + documentación general están aprobadas. Aquí monitoreas el cierre de cada proyecto.</p>
+        </div>
+      </div>
+
+      <!-- KPIs hero -->
+      <section class="cf-summary">
+        <div class="cf-stat">
+          <span class="cf-stat__lbl">En proceso de cierre</span>
+          <span class="cf-stat__val cf-stat__val--orange">${enProceso.length}</span>
+          <span class="cf-stat__sub">Esperan completar revisiones</span>
+        </div>
+        <div class="cf-stat">
+          <span class="cf-stat__lbl">Conceptos emitidos</span>
+          <span class="cf-stat__val cf-stat__val--green">${conConcepto.length}</span>
+          <span class="cf-stat__sub">Bienio 2025-2026</span>
+        </div>
+        <div class="cf-stat">
+          <span class="cf-stat__lbl">Monto certificado</span>
+          <span class="cf-stat__val cf-stat__val--green">${formatoMoneda(montoCertificado)}</span>
+          <span class="cf-stat__sub"><strong>${conConcepto.length}</strong> ${conConcepto.length === 1 ? 'proyecto aprobado' : 'proyectos aprobados'}</span>
+        </div>
+      </section>
+
+      <!-- Card unificada con tabs -->
+      <article class="naowee-card proj-tabs-card">
+        <div class="naowee-tabs naowee-tabs--animated" role="tablist">
+          <button class="naowee-tab naowee-tab--selected" data-tab="proceso" role="tab" type="button">En proceso de cierre <span class="tab-count">${enProceso.length}</span></button>
+          <button class="naowee-tab" data-tab="emitidos" role="tab" type="button">Conceptos emitidos <span class="tab-count">${conConcepto.length}</span></button>
+          <span class="naowee-tabs__indicator"></span>
+        </div>
+
+        <!-- Tab: En proceso de cierre -->
+        <div class="proj-tab-panel proj-tab-panel--flush" data-panel="proceso">
+          ${enProceso.length === 0 ? `
+            <div class="table-empty">
+              <div class="table-empty__title">Sin proyectos en proceso de cierre</div>
+              <div class="table-empty__msg">Los proyectos en revisión documental aparecerán aquí mientras esperan que se aprueben todas las áreas técnicas y la doc. general.</div>
+            </div>
+          ` : `
+            <table class="naowee-table--in-card">
+              <thead>
+                <tr>
+                  <th>Radicado</th>
+                  <th>Proyecto</th>
+                  <th>Municipio</th>
+                  <th class="numeric">Presupuesto</th>
+                  <th>Doc. general</th>
+                  <th>Áreas técnicas</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${enProceso.map(renderProcesoRow).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+
+        <!-- Tab: Conceptos emitidos -->
+        <div class="proj-tab-panel proj-tab-panel--flush" data-panel="emitidos" hidden>
+          ${conConcepto.length === 0 ? `
+            <div class="table-empty">
+              <div class="table-empty__title">Sin conceptos emitidos aún</div>
+              <div class="table-empty__msg">Cuando se aprueben todas las revisiones de un proyecto, el concepto de favorabilidad se emitirá automáticamente y aparecerá aquí.</div>
+            </div>
+          ` : `
+            <table class="naowee-table--in-card">
+              <thead>
+                <tr>
+                  <th>Certificado</th>
+                  <th>Proyecto</th>
+                  <th>Municipio</th>
+                  <th class="numeric">Presupuesto</th>
+                  <th>Fecha emisión</th>
+                  <th>Estado actual</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${conConcepto.map(renderEmitidoRow).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+      </article>
+    </div>
+  `;
+
+  /* Tabs interaction (mismo patrón que el resto del proyecto) */
+  const tabsEl = document.querySelector('.naowee-tabs');
+  const indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+  const positionIndicator = (tab) => {
+    const r = tab.getBoundingClientRect();
+    const parent = tabsEl.getBoundingClientRect();
+    indicator.style.width = r.width + 'px';
+    indicator.style.transform = `translateX(${r.left - parent.left}px)`;
+  };
+  const initial = tabsEl.querySelector('.naowee-tab--selected');
+  /* Sync + RAF + timeout: cubrir todos los tiempos de layout posibles */
+  if (initial) {
+    positionIndicator(initial);
+    requestAnimationFrame(() => positionIndicator(initial));
+    setTimeout(() => positionIndicator(initial), 50);
+  }
+  tabsEl.querySelectorAll('.naowee-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const key = tab.dataset.tab;
+      tabsEl.querySelectorAll('.naowee-tab').forEach(t => t.classList.toggle('naowee-tab--selected', t === tab));
+      document.querySelectorAll('.proj-tab-panel').forEach(p => p.hidden = p.dataset.panel !== key);
+      positionIndicator(tab);
+    });
+  });
+
+  /* ════════════════════════════════════════════════════════════════
+     Modal de cambio de rol: cuando el revisor abre un concepto emitido
+     (proyecto activado en inversión) lo enviamos al panel del admin.
+     Antes de saltar mostramos un modal explicativo para que no sea
+     un swap silencioso de rol.
+     ════════════════════════════════════════════════════════════════ */
+  function openRolSwapModal({ href, name, rad }) {
+    const overlay = document.createElement('div');
+    overlay.className = 'cf-modal-overlay';
+    overlay.innerHTML = `
+      <div class="cf-modal" role="dialog" aria-modal="true" aria-labelledby="cfModalTitle">
+        <div class="cf-modal__hero">
+          <div class="cf-modal__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <div class="cf-modal__title" id="cfModalTitle">Continuar en otro perfil</div>
+          <div class="cf-modal__subtitle">El detalle de proyectos ya activados como inversión vive en el módulo del administrador. Vas a cambiar de perfil para continuar el flujo.</div>
+        </div>
+        <div class="cf-modal__body">
+          <div class="cf-modal__rolswap">
+            <div class="cf-rol">
+              <div class="cf-rol__avatar cf-rol__avatar--from">JA</div>
+              <div class="cf-rol__name">Revisor</div>
+              <div class="cf-rol__lbl">Tu perfil actual</div>
+            </div>
+            <div class="cf-rol-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="cf-rol">
+              <div class="cf-rol__avatar cf-rol__avatar--to">AR</div>
+              <div class="cf-rol__name">Admin · Convocatorias</div>
+              <div class="cf-rol__lbl">Destino</div>
+            </div>
+          </div>
+          <div class="cf-modal__detail">
+            Verás el detalle de <strong>${name}</strong> · ${(rad || '').split('-CONV-')[0]} en el panel del administrador. Podrás regresar al perfil revisor desde el switcher inferior.
+          </div>
+        </div>
+        <div class="cf-modal__footer">
+          <button type="button" class="naowee-btn naowee-btn--mute" data-close>Cancelar</button>
+          <button type="button" class="naowee-btn naowee-btn--loud" data-confirm>Continuar al admin →</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('is-open'));
+
+    const close = () => {
+      overlay.classList.remove('is-open');
+      setTimeout(() => overlay.remove(), 240);
+    };
+    overlay.querySelector('[data-close]').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-confirm]').addEventListener('click', () => {
+      /* Cambiar perfil ANTES de navegar para que el destino arranque en el rol correcto */
+      ProjectData.setPerfil('admin');
+      window.location.href = href;
+    });
+  }
+
+  /* Bind click en filas del tab "Emitidos" */
+  document.querySelectorAll('[data-emitido-row]').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => {
+      openRolSwapModal({
+        href: row.dataset.href,
+        name: row.dataset.name,
+        rad: row.dataset.rad
+      });
+    });
+  });
+</script>
+</body>
+</html>

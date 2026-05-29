@@ -13,7 +13,37 @@
 
 ## [Unreleased] — `v2.0.x` (próximo PATCH)
 
-> Sin cambios funcionales acumulados aún. La última versión publicada es `project-v2.0.3`.
+> Sin cambios funcionales acumulados aún. La última versión publicada es `project-v2.0.4`.
+
+---
+
+## [project-v2.0.4] — 2026-05-29 · Patch áreas técnicas 6→8 (validado con Danna)
+
+> **Hito:** cuarto PATCH consolidado. Alineación del wizard de crear convocatoria con el modelo real del flujo de revisión: las áreas técnicas pasan de 6 a 8 (incluyen Ambiental y Presupuesto). Confirmado con Danna (stakeholder) vía esquema oficial.
+> **Tag git:** `project-v2.0.4` · **Snapshot:** https://naowee-tech.github.io/naowee-test-digitacion/project/v2.0.4/index.html
+
+### Changed — Wizard de convocatoria: 6 → 8 áreas técnicas (Res. 933 Art. 3)
+El selector "Áreas técnicas" del paso 3 (`modal-convocatoria.js`) solo mostraba 6 áreas. El comentario del 14/05 asumía que **Ambiental (Art. 3.7)** y **Presupuesto (Art. 3.8)** "no eran áreas con revisor técnico dedicado" — premisa **desmentida por el propio demo** (Andrea Quintero ya las cubre en el pool, y el flujo completo de checklist/asignación/aprobación ya existía en `revisar-area.html` + `doc-tecnica.html` + seed data).
+
+Agregadas las 2 áreas faltantes:
+- **Planes de manejo, Riesgos y Licencia ambiental** (Art. 3.7) → revisor Andrea Quintero
+- **Presupuesto** (Art. 3.8) → revisor Andrea Quintero
+
+Modelo confirmado por Danna: **8 áreas técnicas**, y para la demo **1 revisor cubre 2 áreas afines** (4 técnicos × 2 áreas) para no expandir demasiado el pool.
+
+### Changed — `admin/usuarios.html` panel de áreas
+Catálogo de áreas técnicas alineado a 8 (faltaban Ambiental + Presupuesto en el panel de reasignación de revisores). Agregados íconos (hoja ambiental, libro de presupuesto) y colores semánticos (`ambiental` verde, `presupuesto` violeta).
+
+### Fixed — Cache-buster de `modal-convocatoria.js` no se propagaba
+El bump de cache-buster del cambio de áreas no aplicó porque el `sed` buscaba `20260519a` cuando los consumidores usaban `20260519h` — el navegador habría servido el módulo cacheado de **6 áreas** pese al código nuevo de 8. Corregido: los **4 consumidores** (`convocatoria-crear`, `convocatorias`, `dashboard`, `revisar-postulacion`) ahora apuntan a `?v=20260529a` fresco.
+
+### Verificación de consistencia (8 áreas en todo el sistema)
+- `modal-postular.js` (municipio) — 8 áreas ✅
+- `modal-convocatoria.js` (admin wizard) — 8 áreas ✅
+- `admin/usuarios.html` (reasignación) — 8 áreas ✅
+- `revisor/doc-tecnica.html` — grid de 8 ✅
+- `revisor/revisar-area.html` — checklists Art. 3.7 (3 ítems) + 3.8 (8 ítems) ✅
+- `data.js` seed (7 proyectos con `docsTecnica`) — 8 áreas c/u ✅
 
 ---
 

@@ -1439,15 +1439,19 @@ function stepCondiciones() {
    acotada (ej. solo iluminación → no requiere estudio de suelos).
    Cada área muestra al responsable del pool de revisores. */
 const AREAS_REVISION_TECNICA = [
-  /* Áreas técnicas según Resolución 933 de 2024 · Art. 3 (Doug 14/05/2026:
-     actualización contra el PDF oficial — solo 6 áreas, sin "Manejo ambiental"
-     ni "Presupuesto integral" porque NO son áreas con revisor técnico dedicado). */
+  /* Áreas técnicas según Resolución 933 de 2024 · Art. 3 — 8 áreas
+     (Doug 29/05/2026, confirmado con Danna vía esquema oficial). Ambiental
+     (3.7) y Presupuesto (3.8) SÍ tienen revisor técnico dedicado: Andrea
+     Quintero cubre ambas en el pool, y el flujo completo (checklist, asignación,
+     aprobación/devolución) ya existe en revisar-area.html + doc-tecnica.html. */
   { id: 'topografico',    label: 'Levantamiento topográfico',              ref: 'Res. 933 Art. 3.1', revisorEspecialidad: 'topografico' },
   { id: 'suelos',         label: 'Estudio de suelos',                      ref: 'Res. 933 Art. 3.2', revisorEspecialidad: 'suelos' },
   { id: 'arquitectonico', label: 'Diseño arquitectónico',                  ref: 'Res. 933 Art. 3.3', revisorEspecialidad: 'arquitectonico' },
   { id: 'estructural',    label: 'Diseño estructural',                     ref: 'Res. 933 Art. 3.4', revisorEspecialidad: 'estructural' },
   { id: 'hidrosanitario', label: 'Diseño hidráulico, sanitario y pluvial', ref: 'Res. 933 Art. 3.5', revisorEspecialidad: 'hidrosanitario' },
-  { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',       ref: 'Res. 933 Art. 3.6', revisorEspecialidad: 'electrico' }
+  { id: 'electrico',      label: 'Diseño eléctrico (RETIE/RETILAP)',       ref: 'Res. 933 Art. 3.6', revisorEspecialidad: 'electrico' },
+  { id: 'ambiental',      label: 'Planes de manejo, Riesgos y Licencia ambiental', ref: 'Res. 933 Art. 3.7', revisorEspecialidad: 'ambiental' },
+  { id: 'presupuesto',    label: 'Presupuesto',                            ref: 'Res. 933 Art. 3.8', revisorEspecialidad: 'presupuesto' }
 ];
 
 function stepRevisionTecnica() {
